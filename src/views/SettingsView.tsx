@@ -8,16 +8,18 @@ import {
   Plus,
   Shield,
   Layers,
-  Database
+  Database,
+  Fingerprint
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
 import { CompaniesView } from "@/views/CompaniesView";
+import { CustomerPortalView } from "@/views/CustomerPortalView";
 import { LoyaltySettingsView } from "@/components/loyalty/LoyaltySettingsView";
 import { TierManagementView } from "@/components/loyalty/TierManagementView";
 import { cn } from "@/lib/utils";
 
-type SettingsTab = 'company' | 'tiers' | 'retention';
+type SettingsTab = 'company' | 'tiers' | 'retention' | 'portal';
 
 export function SettingsView() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('company');
@@ -26,6 +28,7 @@ export function SettingsView() {
     { id: 'company', label: 'Công ty & Chi nhánh', icon: Building2 },
     { id: 'tiers', label: 'Cấp bậc khách hàng', icon: Star },
     { id: 'retention', label: 'Trạng thái & Rủi ro', icon: Clock },
+    { id: 'portal', label: 'Cổng Khách hàng', icon: Fingerprint },
   ];
 
   return (
@@ -87,6 +90,11 @@ export function SettingsView() {
             {activeTab === 'retention' && (
               <div className="max-w-3xl mx-auto">
                 <LoyaltySettingsView />
+              </div>
+            )}
+            {activeTab === 'portal' && (
+              <div className="h-full">
+                <CustomerPortalView />
               </div>
             )}
           </motion.div>

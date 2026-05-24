@@ -32,7 +32,6 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
     { name: "Tiếp thị", view: "marketing", icon: Bell },
     { name: "Phân tích", view: "analytics", icon: BarChart },
     { name: "Cài đặt", view: "settings", icon: Settings, isSecondary: true },
-    { name: "Cổng Khách hàng", view: "portal", icon: Fingerprint, isSecondary: true },
   ];
 
   return (

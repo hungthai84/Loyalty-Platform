@@ -32,12 +32,10 @@ export function Topbar() {
         </form>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="rounded-full flex h-8 w-8 items-center justify-center bg-muted/30 text-muted-foreground hover:text-foreground transition-all">
-              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Chuyển đổi giao diện</span>
-            </button>
+          <DropdownMenuTrigger className="rounded-full flex h-8 w-8 items-center justify-center bg-muted/30 text-muted-foreground hover:text-foreground transition-all">
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Chuyển đổi giao diện</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="glass">
             <DropdownMenuItem onClick={() => setTheme("light")} className="flex items-center gap-2">
