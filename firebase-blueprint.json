@@ -1,0 +1,158 @@
+{
+  "entities": {
+    "Customer": {
+      "title": "Customer",
+      "description": "Represents a customer in the CRM",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "userId": { "type": "string" },
+        "customFields": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "userId", "createdAt", "updatedAt"]
+    },
+    "AttributeDefinition": {
+      "title": "Attribute Definition",
+      "description": "Defines a custom attribute for customers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "key": { "type": "string" },
+        "type": { "type": "string", "enum": ["text", "number", "date", "boolean"] },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["label", "key", "type", "userId", "createdAt"]
+    },
+    "TierConfig": {
+      "title": "Tier Configuration",
+      "description": "Configuration for a membership tier",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "threshold": { "type": "number" },
+        "multiplier": { "type": "number" },
+        "color": { "type": "string" },
+        "conditions": { "type": "array", "items": { "type": "object" } },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "threshold", "userId", "createdAt"]
+    },
+    "RedemptionRule": {
+      "title": "Redemption Rule",
+      "description": "Rule for redeeming points for rewards",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "pointsRequired": { "type": "number" },
+        "rewardValue": { "type": "number" },
+        "rewardType": { "type": "string", "enum": ["discount", "voucher", "item"] },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "pointsRequired", "rewardValue", "rewardType", "userId", "createdAt"]
+    },
+    "EarnRule": {
+      "title": "Earn Rule",
+      "description": "Rule for earning points",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "points": { "type": "number" },
+        "value": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "type", "points", "userId", "createdAt"]
+    },
+    "LoyaltyCampaign": {
+      "title": "Loyalty Campaign",
+      "description": "Automation campaign for loyalty",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "rewardType": { "type": "string" },
+        "rewardValue": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "type", "rewardType", "userId", "createdAt"]
+    },
+    "LoyaltySettings": {
+      "title": "Loyalty Settings",
+      "description": "Thresholds for customer activity status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "inactiveThresholdDays": { "type": "number" },
+        "churnThresholdDays": { "type": "number" },
+        "autoApplyStatus": { "boolean": "boolean" },
+        "userId": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["inactiveThresholdDays", "churnThresholdDays", "userId", "updatedAt"]
+    },
+    "Company": {
+      "title": "Company",
+      "description": "Company or Branch information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "userId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "User's customer database"
+    },
+    "/users/{userId}/attributeDefinitions/{attributeId}": {
+      "schema": "AttributeDefinition",
+      "description": "User's custom customer attribute definitions"
+    },
+    "/users/{userId}/tierConfigs/{tierId}": {
+      "schema": "TierConfig",
+      "description": "User's membership tier configurations"
+    },
+    "/users/{userId}/redemptionRules/{ruleId}": {
+      "schema": "RedemptionRule",
+      "description": "User's point redemption rules"
+    },
+    "/users/{userId}/earnRules/{ruleId}": {
+      "schema": "EarnRule",
+      "description": "User's point earning rules"
+    },
+    "/users/{userId}/loyaltyCampaigns/{campaignId}": {
+      "schema": "LoyaltyCampaign",
+      "description": "User's loyalty automation campaigns"
+    },
+    "/users/{userId}/loyaltySettings/{settingsId}": {
+      "schema": "LoyaltySettings",
+      "description": "User's loyalty threshold settings"
+    },
+    "/users/{userId}/companies/{companyId}": {
+      "schema": "Company",
+      "description": "User's managed companies or branches"
+    }
+  }
+}

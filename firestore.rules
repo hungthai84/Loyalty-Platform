@@ -1,0 +1,155 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 1. Primitive Definitions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+
+    // 2. Validation Blueprints
+    function isValidCustomer(data) {
+      return data.keys().hasAll(['name', 'userId', 'createdAt', 'updatedAt'])
+        && data.keys().size() >= 4
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && (data.get('email', null) == null || (data.email is string && data.email.size() <= 200))
+        && (data.get('phone', null) == null || (data.phone is string && data.phone.size() <= 50))
+        && data.userId == request.auth.uid
+        && data.createdAt == request.time
+        && data.updatedAt == request.time
+        && (data.get('customFields', {}) is map);
+    }
+
+    function isValidAttributeDefinition(data) {
+      return data.keys().hasAll(['label', 'key', 'type', 'userId', 'createdAt'])
+        && data.keys().size() == 5
+        && data.label is string && data.label.size() > 0 && data.label.size() <= 100
+        && data.key is string && data.key.size() > 0 && data.key.size() <= 100
+        && data.type in ['text', 'number', 'date', 'boolean']
+        && data.userId == request.auth.uid
+        && data.createdAt == request.time;
+    }
+
+    function isValidTier(data) {
+      return data.keys().hasAll(['name', 'threshold', 'userId', 'createdAt'])
+        && data.name is string && data.name.size() > 0
+        && data.threshold is number
+        && (data.get('spendThreshold', 0) is number)
+        && (data.get('orderThreshold', 0) is number)
+        && data.userId == request.auth.uid
+        && data.createdAt == request.time;
+    }
+
+    function isValidRedemptionRule(data) {
+      return data.keys().hasAll(['name', 'pointsRequired', 'rewardValue', 'rewardType', 'userId', 'createdAt'])
+        && data.name is string && data.name.size() > 0
+        && data.pointsRequired is number
+        && data.rewardValue is number
+        && data.rewardType in ['discount', 'voucher', 'item']
+        && data.userId == request.auth.uid
+        && data.createdAt == request.time;
+    }
+
+    function isValidEarnRule(data) {
+      return data.keys().hasAll(['name', 'type', 'points', 'userId', 'createdAt'])
+        && data.name is string && data.name.size() > 0
+        && data.type is string
+        && data.points is number
+        && data.userId == request.auth.uid
+        && data.createdAt == request.time;
+    }
+
+    function isValidLoyaltyCampaign(data) {
+      return data.keys().hasAll(['name', 'type', 'rewardType', 'userId', 'createdAt'])
+        && data.name is string && data.name.size() > 0
+        && data.type is string
+        && data.rewardType is string
+        && data.userId == request.auth.uid
+        && data.createdAt == request.time;
+    }
+
+    function isValidLoyaltySettings(data) {
+      return data.keys().hasAll(['inactiveThresholdDays', 'churnThresholdDays', 'userId', 'updatedAt'])
+        && data.inactiveThresholdDays is number
+        && data.churnThresholdDays is number
+        && data.userId == request.auth.uid
+        && data.updatedAt == request.time;
+    }
+
+    function isValidCompany(data) {
+      return data.keys().hasAll(['name', 'userId', 'createdAt'])
+        && data.name is string && data.name.size() > 0
+        && data.userId == request.auth.uid
+        && data.createdAt == request.time;
+    }
+
+    // 3. Resource Matches
+    match /users/{userId}/customers/{customerId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(customerId) && isValidCustomer(incoming());
+      allow update: if isOwner(userId) && (
+        // Action: Standard Update
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'email', 'phone', 'customFields', 'updatedAt'])
+        && incoming().updatedAt == request.time
+        && (incoming().name is string && incoming().name.size() <= 200)
+        && (incoming().get('customFields', {}) is map)
+      );
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/attributeDefinitions/{attributeId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(attributeId) && isValidAttributeDefinition(incoming());
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/tierConfigs/{tierId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(tierId) && isValidTier(incoming());
+      allow update: if isOwner(userId) && incoming().userId == request.auth.uid;
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/redemptionRules/{ruleId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(ruleId) && isValidRedemptionRule(incoming());
+      allow update: if isOwner(userId) && incoming().userId == request.auth.uid;
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/earnRules/{ruleId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(ruleId) && isValidEarnRule(incoming());
+      allow update: if isOwner(userId) && incoming().userId == request.auth.uid;
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/loyaltyCampaigns/{campaignId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(campaignId) && isValidLoyaltyCampaign(incoming());
+      allow update: if isOwner(userId) && incoming().userId == request.auth.uid;
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/loyaltySettings/{settingsId} {
+      allow list, get: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidId(settingsId) && isValidLoyaltySettings(incoming());
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/companies/{companyId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(companyId) && isValidCompany(incoming());
+      allow update: if isOwner(userId) && incoming().userId == request.auth.uid;
+      allow delete: if isOwner(userId);
+    }
+  }
+}
