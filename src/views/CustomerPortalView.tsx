@@ -9,7 +9,7 @@ import { RedemptionRule } from "@/types";
 import { toast } from "sonner";
 
 interface PortalProps {
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export function CustomerPortalView({ onBack }: PortalProps) {

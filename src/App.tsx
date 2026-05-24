@@ -4,7 +4,6 @@ import { Topbar } from "@/components/layout/Topbar";
 import { DashboardView } from "@/views/DashboardView";
 import { CustomersView } from "@/views/CustomersView";
 import { LoyaltyView } from "@/views/LoyaltyView";
-import { CustomerPortalView } from "@/views/CustomerPortalView";
 import { MarketingView } from "@/views/MarketingView";
 import { CompaniesView } from "@/views/CompaniesView";
 import { SettingsView } from "@/views/SettingsView";
@@ -25,9 +24,6 @@ export default function App() {
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
           
           <div className="h-full w-full flex bg-background/50 dark:bg-background/30 backdrop-blur-2xl rounded-[10px] overflow-hidden shadow-2xl shadow-black/10 border border-white/20 dark:border-white/5 relative selection:bg-primary/20">
-            {activeView === "portal" ? (
-              <CustomerPortalView onBack={() => setActiveView("dashboard")} />
-            ) : (
             <>
               {/* Sidebar hidden on mobile, width controlled by component on desktop */}
               <Sidebar 
@@ -54,17 +50,16 @@ export default function App() {
                     <div className="flex-1 flex items-center justify-center p-8 h-[80vh]">
                       <div className="text-center space-y-4">
                         <h3 className="text-2xl font-bold text-muted-foreground font-heading capitalize">Phân hệ {activeView}</h3>
-                        <p className="text-muted-foreground/60 max-w-sm mx-auto">Phân hệ doanh nghiệp này đang được phát triển. Để xem trải nghiệm phía khách hàng, vui lòng nhấp vào Cổng Khách hàng.</p>
+                        <p className="text-muted-foreground/60 max-w-sm mx-auto">Phân hệ doanh nghiệp này đang được phát triển.</p>
                       </div>
                     </div>
                   )}
                 </main>
               </div>
             </>
-          )}
+          </div>
         </div>
         <Toaster />
-      </div>
       </ThemeProvider>
     </FirebaseProvider>
   );

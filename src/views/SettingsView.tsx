@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { 
   Building2, 
   Settings as SettingsIcon, 
@@ -9,7 +10,9 @@ import {
   Shield,
   Layers,
   Database,
-  Fingerprint
+  Fingerprint,
+  Webhook,
+  Key as KeyIcon
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
@@ -19,7 +22,7 @@ import { LoyaltySettingsView } from "@/components/loyalty/LoyaltySettingsView";
 import { TierManagementView } from "@/components/loyalty/TierManagementView";
 import { cn } from "@/lib/utils";
 
-type SettingsTab = 'company' | 'tiers' | 'retention' | 'portal';
+type SettingsTab = 'company' | 'tiers' | 'retention' | 'portal' | 'api';
 
 export function SettingsView() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('company');
@@ -28,6 +31,7 @@ export function SettingsView() {
     { id: 'company', label: 'Công ty & Chi nhánh', icon: Building2 },
     { id: 'tiers', label: 'Cấp bậc khách hàng', icon: Star },
     { id: 'retention', label: 'Trạng thái & Rủi ro', icon: Clock },
+    { id: 'api', label: 'Kết nối API', icon: Webhook },
     { id: 'portal', label: 'Cổng Khách hàng', icon: Fingerprint },
   ];
 
@@ -90,6 +94,48 @@ export function SettingsView() {
             {activeTab === 'retention' && (
               <div className="max-w-3xl mx-auto">
                 <LoyaltySettingsView />
+              </div>
+            )}
+            {activeTab === 'api' && (
+              <div className="max-w-4xl mx-auto space-y-6">
+                <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                  <div className="p-6 border-b border-border bg-muted/10">
+                    <h3 className="font-bold font-heading text-lg flex items-center gap-2">
+                       <KeyIcon className="w-5 h-5 text-primary" /> API Keys
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">Sử dụng API Key để tích hợp SEVA với hệ thống POS hoặc Website của bạn.</p>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    <div className="p-4 bg-muted/50 rounded-xl border border-border flex items-center justify-between">
+                      <div className="font-mono text-sm">sk_live_************************4k2p</div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-none">Live</Badge>
+                        <button className="text-xs text-primary font-bold hover:underline">Sao chép</button>
+                      </div>
+                    </div>
+                    <button className="text-sm text-primary font-bold hover:underline flex items-center gap-2">
+                      <Plus className="w-4 h-4" /> Tạo API Key mới
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                  <div className="p-6 border-b border-border bg-muted/10">
+                    <h3 className="font-bold font-heading text-lg flex items-center gap-2">
+                       <Webhook className="w-5 h-5 text-primary" /> Webhooks
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">Nhận thông báo thời gian thực khi có sự kiện xảy ra (mua hàng, nâng hạng...).</p>
+                  </div>
+                  <div className="p-6">
+                    <div className="text-center py-12 border-2 border-dashed border-border rounded-2xl">
+                      <Webhook className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+                      <p className="text-sm text-muted-foreground">Chưa có Webhook nào được cấu hình.</p>
+                      <button className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold shadow-lg shadow-primary/20">
+                        Thêm Webhook URL
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
             {activeTab === 'portal' && (

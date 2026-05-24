@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { ArrowDown, Clock, Filter, Gift, Mail, MessageSquare, MoveRight, Play, Plus, Zap, AlertCircle, Copy, Trash2, History as HistoryIcon, Paintbrush } from "lucide-react";
+import { ArrowDown, Clock, Filter, Gift, Mail, MessageSquare, MoveRight, Play, Plus, Zap, AlertCircle, Copy, Trash2, History as HistoryIcon, Paintbrush, ListRestart, Activity, CheckCircle2, XCircle, Settings } from "lucide-react";
 import * as motion from "motion/react-client";
 import React, { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -142,6 +142,7 @@ export function MarketingView() {
         <div className="flex items-center space-x-4">
           <TabsList>
             <TabsTrigger value="builder"><Paintbrush className="w-4 h-4 mr-2"/> Trình thiết kế</TabsTrigger>
+            <TabsTrigger value="automations"><ListRestart className="w-4 h-4 mr-2"/> Quy tắc tự động</TabsTrigger>
             <TabsTrigger value="history"><HistoryIcon className="w-4 h-4 mr-2"/> Lịch sử phiên bản</TabsTrigger>
           </TabsList>
           <div className="flex items-center space-x-2">
@@ -345,6 +346,101 @@ export function MarketingView() {
         </div>
       </div>
     </div>
+      </TabsContent>
+
+      <TabsContent value="automations" className="flex-1 overflow-y-auto m-0 p-8 h-full min-h-0 border-none outline-none custom-scrollbar">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-card p-6 rounded-2xl border border-border shadow-sm group hover:border-emerald-500/30 transition-all">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">12</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Luồng đang chạy</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-card p-6 rounded-2xl border border-border shadow-sm group hover:border-amber-500/30 transition-all">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Activity className="w-6 h-6 text-amber-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">1,284</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Kích hoạt (30 ngày)</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-card p-6 rounded-2xl border border-border shadow-sm group hover:border-primary/30 transition-all">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Mail className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">85%</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Tỷ lệ tương tác</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/10">
+              <div>
+                <h3 className="font-bold font-heading text-lg">Chiến dịch Tự động hóa</h3>
+                <p className="text-xs text-muted-foreground">Theo dõi và quản lý các quy tắc marketing tự động.</p>
+              </div>
+              <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                <Plus className="w-4 h-4" /> Tạo chiến dịch
+              </button>
+            </div>
+            <div className="divide-y divide-border">
+              {[
+                { name: 'Chúc mừng Sinh nhật', trigger: 'Ngày sinh nhật', action: 'Email & SMS', status: 'active', usage: 452, trend: '+12%' },
+                { name: 'Khách hàng quay lại', trigger: '90 ngày không giao dịch', action: 'Voucher 20%', status: 'active', usage: 128, trend: '+5%' },
+                { name: 'Nâng hạng Kim cương', trigger: 'Đạt 10,000 điểm', action: 'Quà tặng hiện vật', status: 'active', usage: 34, trend: 'stable' },
+                { name: 'Chào mừng thành viên mới', trigger: 'Đăng ký tài khoản', action: 'Email Onboarding', status: 'paused', usage: 670, trend: '-2%' },
+              ].map((rule, i) => (
+                <div key={i} className="p-6 flex items-center justify-between hover:bg-muted/30 transition-colors group">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${rule.status === 'active' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-500/10 text-slate-600'}`}>
+                      <Zap className="w-5 h-5 group-hover:animate-pulse" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-foreground">{rule.name}</h4>
+                      <div className="flex items-center gap-3 mt-1.5">
+                        <Badge variant="outline" className="bg-muted/50 text-[10px] border-border text-muted-foreground py-0 h-5 px-2">
+                          Trigger: {rule.trigger}
+                        </Badge>
+                        <Badge variant="outline" className="bg-muted/50 text-[10px] border-border text-muted-foreground py-0 h-5 px-2">
+                          Action: {rule.action}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-8">
+                    <div className="text-right hidden sm:block">
+                      <div className="text-sm font-bold">{rule.usage}</div>
+                      <div className={`text-[10px] font-bold ${rule.trend.startsWith('+') ? 'text-emerald-500' : rule.trend === 'stable' ? 'text-muted-foreground' : 'text-rose-500'}`}>
+                        {rule.trend}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Badge variant="outline" className={rule.status === 'active' ? 'bg-emerald-500/10 text-emerald-600 border-none px-3 font-bold' : 'bg-slate-500/10 text-slate-600 border-none px-3 font-bold'}>
+                        {rule.status === 'active' ? 'Hoạt động' : 'Tạm dừng'}
+                      </Badge>
+                      <button className="p-2 hover:bg-muted rounded-xl transition-colors border border-transparent hover:border-border">
+                        <Settings className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </TabsContent>
 
       <TabsContent value="history" className="flex-1 overflow-y-auto m-0 p-8 h-full min-h-0 border-none outline-none">
