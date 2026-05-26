@@ -119,6 +119,24 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "userId", "createdAt"]
+    },
+    "SegmentationRule": {
+      "title": "Segmentation Rule",
+      "description": "Custom rule logic for automated customer tagging",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "tag": { "type": "string" },
+        "color": { "type": "string" },
+        "criteriaType": { "type": "string", "enum": ["total_spend", "time_since_last_purchase", "points_balance"] },
+        "operator": { "type": "string", "enum": ["gte", "lte", "gt", "lt", "eq"] },
+        "value": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "tag", "criteriaType", "operator", "value", "isActive", "userId", "createdAt"]
     }
   },
   "firestore": {
@@ -153,6 +171,10 @@
     "/users/{userId}/companies/{companyId}": {
       "schema": "Company",
       "description": "User's managed companies or branches"
+    },
+    "/users/{userId}/segmentationRules/{ruleId}": {
+      "schema": "SegmentationRule",
+      "description": "User's automated customer segmentation tagging rules"
     }
   }
 }

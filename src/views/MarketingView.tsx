@@ -1,10 +1,42 @@
 import { Badge } from "@/components/ui/badge";
-import { ArrowDown, Clock, Filter, Gift, Mail, MessageSquare, MoveRight, Play, Plus, Zap, AlertCircle, Copy, Trash2, History as HistoryIcon, Paintbrush, ListRestart, Activity, CheckCircle2, XCircle, Settings } from "lucide-react";
+import { 
+  ArrowDown, 
+  Clock, 
+  Filter, 
+  Gift, 
+  Mail, 
+  MessageSquare, 
+  MoveRight, 
+  Play, 
+  Plus, 
+  Zap, 
+  AlertCircle, 
+  Copy, 
+  Trash2, 
+  History as HistoryIcon, 
+  Paintbrush, 
+  ListRestart, 
+  Activity, 
+  CheckCircle2, 
+  XCircle, 
+  Settings,
+  Smartphone, 
+  Send, 
+  Volume2, 
+  Sparkles, 
+  Laptop,
+  Check,
+  Edit2
+} from "lucide-react";
 import * as motion from "motion/react-client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { useFirebase } from "@/components/FirebaseProvider";
+import { db } from "@/lib/firebase";
+import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
+import { cn } from "@/lib/utils";
 
 type GraphNode = { id: string; type: string; title: string };
 type GraphEdge = { from: string; to: string };
@@ -41,13 +73,61 @@ function validateWorkflow(nodes: GraphNode[], edges: GraphEdge[]) {
   return { valid: true };
 }
 
+// Simulated premium customers for fallback
+const STATIC_VIP_CUSTOMERS = [
+  { id: "vip-1", name: "Thái Hồng Hưng", email: "hungthai84@gmail.com", phone: "0908123456", points: 15400, segment: "Atelier (Cực Cao)" },
+  { id: "vip-2", name: "Nguyễn Hương Giang", email: "giang.nguyen@atelier.vn", phone: "0912987654", points: 8300, segment: "Icon (Cao)" },
+  { id: "vip-3", name: "Trần Minh Quân", email: "quan.tm@essential.com", phone: "0988776655", points: 3200, segment: "Essential (Vừa)" },
+];
+
 export function MarketingView() {
+  const { user } = useFirebase();
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
   const [validationError, setValidationError] = useState<string | null>(null);
+  
+  // Real-time fetched customers
+  const [dbCustomers, setDbCustomers] = useState<any[]>([]);
+
+  // Marketing Automation Campaign rules list (with template details)
+  const [campaignRules, setCampaignRules] = useState([
+    { id: 'rule-1', name: 'Chúc mừng Sinh nhật', trigger: 'Ngày sinh nhật', action: 'SMS', template: 'Chào quý khách {customer_name}! Atelier gửi lời chúc mừng tuổi mới đầy tài lộc tới quý khách. Món quà bồi đắp 5,000 điểm đã được tự động cộng vào tài khoản VIP của quý khách. Cảm ơn quý khách đã gắn bó.', status: 'active', usage: 452, trend: '+12%' },
+    { id: 'rule-2', name: 'Khích lệ Khách hàng trễ hạn', trigger: '90 ngày không giao dịch', action: 'Zalo', template: 'Yêu thương gửi trao! Atelier nhớ quý khách {customer_name}. Thân gửi mã VIP Voucher giảm giá ngay 20% cho BST Thượng Vy mới nhất. Hãy ghé showroom sớm nhé!', status: 'active', usage: 128, trend: '+5%' },
+    { id: 'rule-3', name: 'Nâng hạng Kim cương', trigger: 'Đạt 10,000 điểm', action: 'Email', template: 'Thư mời độc quyền: Chào mừng Thành Viên Kim Cương {customer_name}! Quý khách đã mở khóa thành công quyền truy cập phòng chờ thương gia sân bay toàn cầu cùng ưu đãi dặm mua sắm nhân đôi.', status: 'active', usage: 34, trend: 'stable' },
+    { id: 'rule-4', name: 'Chào mừng thành viên mới', trigger: 'Đăng ký tài khoản', action: 'Email', template: 'Chào mừng {customer_name} gia nhập cộng đồng VIP Club. Ưu đãi chiết khấu 10% cho đơn hàng đầu tiên đã sẵn sàng kích hoạt trong ví ứng dụng của quý khách.', status: 'paused', usage: 670, trend: '-2%' },
+  ]);
+
+  // Create campaign dialog states
+  const [newRuleOpen, setNewRuleOpen] = useState(false);
+  const [newCamName, setNewCamName] = useState("");
+  const [newCamTrigger, setNewCamTrigger] = useState("Đăng ký tài khoản");
+  const [newCamAction, setNewCamAction] = useState("SMS");
+  const [newCamTemplate, setNewCamTemplate] = useState("Chào {customer_name}! Thân tặng ưu đãi đặc quyền từ câu lạc bộ thành viên của bạn.");
+
+  // Simulation & Smartphone Sandbox states
+  const [selectedCustomerIndex, setSelectedCustomerIndex] = useState(0);
+  const [selectedRuleId, setSelectedRuleId] = useState("rule-1");
+  const [isSimulatingDispatch, setIsSimulatingDispatch] = useState(false);
+  const [smsHasDispatched, setSmsHasDispatched] = useState(false);
+  const [sentAlertMessage, setSentAlertMessage] = useState("");
+  const [customAudioTriggered, setCustomAudioTriggered] = useState(false);
+  const [simulatedLogs, setSimulatedLogs] = useState<any[]>([]);
+
+  // Fetch real customers if connected to Firebase database
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, `users/${user.uid}/customers`), orderBy("createdAt", "desc"));
+    const unsub = onSnapshot(q, (snap) => {
+      setDbCustomers(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, () => {});
+    return unsub;
+  }, [user]);
+
+  // Combine real database list and static Fallbacks
+  const availableVips = dbCustomers.length > 0 ? dbCustomers : STATIC_VIP_CUSTOMERS;
 
   const handleNodeClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -68,7 +148,6 @@ export function MarketingView() {
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    // Only pan on middle mouse button, or if target is the canvas background
     if (e.button !== 1 && (e.target as HTMLElement).closest('.node-element')) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
@@ -95,7 +174,6 @@ export function MarketingView() {
       const delta = -e.deltaY * zoomSensitivity;
       setScale(s => Math.min(Math.max(0.2, s + delta), 2));
     } else {
-      // Optional: pan with scroll
       setPosition(p => ({
         x: p.x - e.deltaX,
         y: p.y - e.deltaY
@@ -104,14 +182,13 @@ export function MarketingView() {
   };
 
   const handleActivate = () => {
-    // Mocking an invalid graph structure to demonstrate the traversal detection
     const mockNodes: GraphNode[] = [
       { id: 'trigger_1', type: 'trigger', title: 'Kích hoạt: Sinh nhật' },
       { id: 'condition_1', type: 'condition', title: 'Điều kiện' },
       { id: 'action_1', type: 'action', title: 'Gửi Email VIP' },
       { id: 'action_2', type: 'action', title: 'Cộng điểm thưởng' },
       { id: 'action_3', type: 'action', title: 'Gửi Email thường' },
-      { id: 'action_4', type: 'action', title: 'SMS bị ngắt kết nối' }, // Intentional orphaned node
+      { id: 'action_4', type: 'action', title: 'SMS bị ngắt kết nối' },
     ];
     
     const mockEdges: GraphEdge[] = [
@@ -119,17 +196,118 @@ export function MarketingView() {
       { from: 'condition_1', to: 'action_1' },
       { from: 'action_1', to: 'action_2' },
       { from: 'condition_1', to: 'action_3' }
-      // Missing connection to action_4
     ];
 
     const result = validateWorkflow(mockNodes, mockEdges);
     setValidationError(result.valid ? null : result.error!);
+    if (result.valid) {
+      toast.success("Toàn bộ quy trình đã vượt qua kiểm chứng mạng lưới!");
+    } else {
+      toast.error("Có nút chưa liên kết trong trình thiết kế sơ đồ.");
+    }
   };
 
   const handleRevert = (version: string) => {
     toast(`Đã khôi phục quy trình về ${version}`, {
       description: "Mọi thay đổi chưa lưu đã được hủy bỏ.",
     });
+  };
+
+  // Switch Rule Status toggle helper
+  const toggleRuleStatus = (id: string) => {
+    setCampaignRules(prev => prev.map(rule => {
+      if (rule.id === id) {
+        const nextStatus = rule.status === 'active' ? 'paused' : 'active';
+        toast.info(`Quy tắc '${rule.name}' hiện ở trạng thái: ${nextStatus === 'active' ? 'Hoạt động' : 'Tạm dừng'}`);
+        return { ...rule, status: nextStatus };
+      }
+      return rule;
+    }));
+  };
+
+  // Add rule submit handler
+  const handleCreateRule = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCamName.trim()) {
+      toast.error("Tên chiến dịch không được để lãng phí!");
+      return;
+    }
+
+    const newCampaign = {
+      id: `rule-${Date.now()}`,
+      name: newCamName,
+      trigger: newCamTrigger,
+      action: newCamAction,
+      template: newCamTemplate,
+      status: 'active',
+      usage: 0,
+      trend: 'mới tạo'
+    };
+
+    setCampaignRules(prev => [newCampaign, ...prev]);
+    toast.success("Tạo tự động hóa tiếp thị thành công!", {
+      description: "Quy tắc tự động đã nhảy vào danh sách đợi."
+    });
+    setNewRuleOpen(false);
+    // Reset fields
+    setNewCamName("");
+    setNewCamTemplate("Chào {customer_name}! Thân tặng ưu đãi đặc quyền từ câu lạc bộ thành viên của bạn.");
+  };
+
+  // Simulated Dispatch triggers
+  const executeSimulationDispatch = () => {
+    if (availableVips.length === 0) return;
+    const targetCus = availableVips[selectedCustomerIndex];
+    const targetRule = campaignRules.find(r => r.id === selectedRuleId);
+    
+    if (!targetRule) {
+      toast.error("Cần chọn một quy tắc để tiến hành mô phỏng!");
+      return;
+    }
+
+    setIsSimulatingDispatch(true);
+    setSmsHasDispatched(false);
+    setCustomAudioTriggered(false);
+
+    // Dynamic replacement in template
+    const placeholderReplaced = targetRule.template
+      .replace(/{customer_name}/g, targetCus.name)
+      .replace(/{points}/g, (targetCus.points || 0).toLocaleString("vi-VN"));
+
+    setTimeout(() => {
+      setSentAlertMessage(placeholderReplaced);
+      setIsSimulatingDispatch(false);
+      setSmsHasDispatched(true);
+      setCustomAudioTriggered(true);
+
+      // Play soft browser notification beep
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // high chime note-A5
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+      } catch (err) {
+        // silent if blocked
+      }
+
+      // Record logs
+      const logItem = {
+        time: new Date().toLocaleTimeString("vi-VN", { hour12: false }),
+        customerName: targetCus.name,
+        campaignName: targetRule.name,
+        channel: targetRule.action,
+        status: "Đã phân phát",
+        preview: placeholderReplaced.substring(0, 40) + "..."
+      };
+      setSimulatedLogs(prev => [logItem, ...prev]);
+
+      toast.success(`Mô phỏng: Đã kích hoạt [${targetRule.action}] tới ${targetCus.name} thành công!`);
+    }, 1200);
   };
 
   return (
@@ -349,97 +527,468 @@ export function MarketingView() {
       </TabsContent>
 
       <TabsContent value="automations" className="flex-1 overflow-y-auto m-0 p-8 h-full min-h-0 border-none outline-none custom-scrollbar">
-        <div className="max-w-6xl mx-auto space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-card p-6 rounded-2xl border border-border shadow-sm group hover:border-emerald-500/30 transition-all">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+        <div className="max-w-7xl mx-auto space-y-6">
+          
+          {/* Top Summary Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-card p-5 rounded-2xl border border-border shadow-xs group hover:border-[#D4AF37]/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">12</div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Luồng đang chạy</div>
+                  <div className="text-xl font-black font-mono">{campaignRules.filter(r => r.status === 'active').length}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Đang hoạt động</div>
                 </div>
               </div>
+              <Badge variant="outline" className="text-[9px] border-emerald-500/20 bg-emerald-500/5 text-emerald-600">Ổn định</Badge>
             </div>
-            <div className="bg-card p-6 rounded-2xl border border-border shadow-sm group hover:border-amber-500/30 transition-all">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Activity className="w-6 h-6 text-amber-600" />
+
+            <div className="bg-card p-5 rounded-2xl border border-border shadow-xs group hover:border-amber-500/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Activity className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">1,284</div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Kích hoạt (30 ngày)</div>
+                  <div className="text-xl font-black font-mono">1,348</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Lần Kích Hoạt</div>
                 </div>
               </div>
+              <span className="text-[10px] text-emerald-500 font-bold">+18.4%</span>
             </div>
-            <div className="bg-card p-6 rounded-2xl border border-border shadow-sm group hover:border-primary/30 transition-all">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Mail className="w-6 h-6 text-primary" />
+
+            <div className="bg-card p-5 rounded-2xl border border-border shadow-xs group hover:border-blue-500/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Mail className="w-5 h-5 text-blue-500" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">85%</div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Tỷ lệ tương tác</div>
+                  <div className="text-xl font-black font-mono">89.4%</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Đọc Tin Nhắn</div>
                 </div>
               </div>
+              <Badge variant="outline" className="text-[9px] border-blue-500/25 bg-blue-500/5 text-blue-500">Zalo/SMS</Badge>
+            </div>
+
+            <div className="bg-card p-5 rounded-2xl border border-border shadow-xs group hover:border-purple-500/30 transition-all flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <div className="text-xl font-black font-mono">24.5%</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Tỷ lệ đổi quà</div>
+                </div>
+              </div>
+              <Badge variant="outline" className="text-[9px] border-[#D4AF37]/35 bg-[#D4AF37]/10 text-[#D4AF37]">ROI Cao</Badge>
             </div>
           </div>
 
-          <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
-            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/10">
-              <div>
-                <h3 className="font-bold font-heading text-lg">Chiến dịch Tự động hóa</h3>
-                <p className="text-xs text-muted-foreground">Theo dõi và quản lý các quy tắc marketing tự động.</p>
-              </div>
-              <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
-                <Plus className="w-4 h-4" /> Tạo chiến dịch
-              </button>
-            </div>
-            <div className="divide-y divide-border">
-              {[
-                { name: 'Chúc mừng Sinh nhật', trigger: 'Ngày sinh nhật', action: 'Email & SMS', status: 'active', usage: 452, trend: '+12%' },
-                { name: 'Khách hàng quay lại', trigger: '90 ngày không giao dịch', action: 'Voucher 20%', status: 'active', usage: 128, trend: '+5%' },
-                { name: 'Nâng hạng Kim cương', trigger: 'Đạt 10,000 điểm', action: 'Quà tặng hiện vật', status: 'active', usage: 34, trend: 'stable' },
-                { name: 'Chào mừng thành viên mới', trigger: 'Đăng ký tài khoản', action: 'Email Onboarding', status: 'paused', usage: 670, trend: '-2%' },
-              ].map((rule, i) => (
-                <div key={i} className="p-6 flex items-center justify-between hover:bg-muted/30 transition-colors group">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${rule.status === 'active' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-500/10 text-slate-600'}`}>
-                      <Zap className="w-5 h-5 group-hover:animate-pulse" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-foreground">{rule.name}</h4>
-                      <div className="flex items-center gap-3 mt-1.5">
-                        <Badge variant="outline" className="bg-muted/50 text-[10px] border-border text-muted-foreground py-0 h-5 px-2">
-                          Trigger: {rule.trigger}
-                        </Badge>
-                        <Badge variant="outline" className="bg-muted/50 text-[10px] border-border text-muted-foreground py-0 h-5 px-2">
-                          Action: {rule.action}
-                        </Badge>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* Left Column: List of rules and Template Creator */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Collapsible Action Dialog Form to Add Brand Campaign Rule */}
+              {newRuleOpen ? (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="bg-card border border-[#D4AF37]/40 rounded-2xl p-6 shadow-md relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
+                    <Sparkles className="w-24 h-24 text-[#D4AF37]" />
+                  </div>
+
+                  <h3 className="font-black text-sm text-[#D4AF37] uppercase tracking-wider flex items-center gap-2">
+                    <Plus className="w-4 h-4" /> Thiết Thừa Quy Tắc Tự Động Mới
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Xây dựng trình kích hoạt CRM và nội dung phản ứng.</p>
+
+                  <form onSubmit={handleCreateRule} className="space-y-4 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Tên Quy Tắc / Chiến Dịch</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={newCamName}
+                          onChange={(e) => setNewCamName(e.target.value)}
+                          placeholder="Ví dụ: Tri Ân Phân Cấp Atelier"
+                          className="w-full text-xs p-2.5 bg-background border rounded-xl font-semibold outline-none focus:ring-1 focus:ring-[#D4AF37]/50"
+                        />
                       </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Trình kích hoạt (Trigger)</label>
+                        <select
+                          value={newCamTrigger}
+                          onChange={(e) => setNewCamTrigger(e.target.value)}
+                          className="w-full text-xs p-2.5 bg-background border rounded-xl font-semibold outline-none cursor-pointer"
+                        >
+                          <option value="Đăng ký tài khoản">Đăng ký tài khoản mới</option>
+                          <option value="Ngày sinh nhật">Ngày sinh nhật khách hàng</option>
+                          <option value="Độ trễ 90 ngày">90 ngày không giao dịch</option>
+                          <option value="Đạt 10,000 điểm">Đạt mốc 10.000 điểm Loyalty</option>
+                          <option value="Đã nâng hạng">Nâng phân cấp VIP mới</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Kênh gửi (Action Channel)</label>
+                        <select
+                          value={newCamAction}
+                          onChange={(e) => setNewCamAction(e.target.value)}
+                          className="w-full text-xs p-2.5 bg-background border rounded-xl font-semibold outline-none cursor-pointer"
+                        >
+                          <option value="SMS">Tin nhắn SMS truyền thống</option>
+                          <option value="Zalo">Zalo OA (Zalo Official Account)</option>
+                          <option value="Email">Email Marketing siêu cá nhân hóa</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Placeholders Hỗ trợ</label>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <span className="px-2 py-1 bg-muted rounded text-[9px] font-mono select-all cursor-pointer font-bold text-foreground">{"{customer_name}"}</span>
+                          <span className="px-2 py-1 bg-muted rounded text-[9px] font-mono select-all cursor-pointer font-bold text-foreground">{"{points}"}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-[#D4AF37] uppercase flex items-center gap-1.5 font-mono">
+                        Nội dung bản tin (Template Content)
+                      </label>
+                      <textarea
+                        rows={3}
+                        required
+                        value={newCamTemplate}
+                        onChange={(e) => setNewCamTemplate(e.target.value)}
+                        placeholder="Chào {customer_name}! Atelier Thương Vy thân tặng ưu đãi đổi điểm đặc quyền VIP..."
+                        className="w-full text-xs p-2.5 bg-background border rounded-xl outline-none focus:ring-1 focus:ring-[#D4AF37]/50"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setNewRuleOpen(false)}
+                        className="px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted rounded-xl transition-all"
+                      >
+                        Hủy
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-1.5 text-xs font-bold bg-[#D4AF37] text-slate-950 hover:bg-[#C5A028] rounded-xl transition-all uppercase"
+                      >
+                        Lưu quy tắc
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              ) : null}
+
+              {/* Main Campaign rules list container */}
+              <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                <div className="p-5 border-b border-border flex items-center justify-between bg-muted/10">
+                  <div>
+                    <h3 className="font-black text-base flex items-center gap-2">
+                      Quy tắc & Trình Kích hoạt Tự động <span className="px-2 py-0.5 bg-primary/10 text-primary text-[9px] rounded-full uppercase">Realtime</span>
+                    </h3>
+                    <p className="text-xs text-muted-foreground">Theo dõi cấu hình tự động truyền tin theo chân khách hàng.</p>
+                  </div>
+                  {!newRuleOpen && (
+                    <button 
+                      onClick={() => setNewRuleOpen(true)}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" /> Thêm quy tắc
+                    </button>
+                  )}
+                </div>
+
+                <div className="divide-y divide-border">
+                  {campaignRules.map((rule) => (
+                    <div key={rule.id} className="p-5 flex flex-col hover:bg-muted/10 transition-colors group">
+                      
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105",
+                            rule.status === 'active' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-500/10 text-slate-400'
+                          )}>
+                            {rule.action === 'SMS' && <MessageSquare className="w-5 h-5" />}
+                            {rule.action === 'Zalo' && <Smartphone className="w-5 h-5" />}
+                            {rule.action === 'Email' && <Mail className="w-5 h-5" />}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-sm text-foreground flex items-center gap-2">
+                              {rule.name}
+                              {rule.id === selectedRuleId && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-primary/15 text-primary text-[8px] font-black uppercase rounded">
+                                  <Check className="w-2.5 h-2.5" /> Chọn Thử nghiệm
+                                </span>
+                              )}
+                            </h4>
+                            <div className="flex items-center gap-2.5 mt-1">
+                              <Badge variant="outline" className="text-[9px] border-border text-muted-foreground py-0 h-4 px-1.5 font-bold">
+                                Kích hoạt: {rule.trigger}
+                              </Badge>
+                              <Badge variant="outline" className="text-[9px] border-border text-muted-foreground py-0 h-4 px-1.5 font-bold font-mono">
+                                {rule.action}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          <button
+                            onClick={() => setSelectedRuleId(rule.id)}
+                            className={cn(
+                              "text-[10px] uppercase font-black px-2.5 py-1 rounded-lg border transition-all cursor-pointer",
+                              selectedRuleId === rule.id 
+                                ? "bg-primary text-primary-foreground border-primary" 
+                                : "hover:bg-muted border-border text-muted-foreground text-[10px]"
+                            )}
+                          >
+                            Dùng Thử nghiệm
+                          </button>
+                          
+                          <button 
+                            onClick={() => toggleRuleStatus(rule.id)}
+                            className={cn(
+                              "text-[9px] px-2 py-1 rounded-lg font-black transition-all cursor-pointer",
+                              rule.status === 'active' 
+                                ? 'bg-emerald-500/15 text-emerald-500 hover:bg-emerald-500/25' 
+                                : 'bg-slate-500/15 text-slate-500 hover:bg-slate-500/25'
+                            )}
+                          >
+                            {rule.status === 'active' ? 'BẬT' : 'TẮT'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Display Template Preview inline nicely */}
+                      <div className="mt-3.5 pl-12 bg-muted/20 hover:bg-muted/35 border-l-2 border-border/60 p-2.5 rounded-r-xl">
+                        <p className="text-[11px] text-muted-foreground italic leading-relaxed line-clamp-2">
+                          "{rule.template}"
+                        </p>
+                      </div>
+
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column: Premium Smartphone sandboxed simulator preview */}
+            <div className="lg:col-span-5 space-y-6">
+              
+              <div className="bg-card border border-border rounded-3xl p-6 relative shadow-lg">
+                <div className="absolute top-4 right-4 z-40 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                  ⚡ SANDBOX INTERACTIVE
+                </div>
+
+                <h3 className="font-black text-sm text-foreground uppercase tracking-wider flex items-center gap-1.5 border-b pb-2.5 border-border/80">
+                  <Smartphone className="w-4 h-4 text-[#D4AF37]" /> Trình Mô Phỏng Truyền Gửi CRM
+                </h3>
+
+                <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+                  Thiết lập khách hàng nhận & kịch bản tiếp thị để chứng kiến công cụ logic gộp dữ liệu biên ra tin nhắn trên điện thoại:
+                </p>
+
+                {/* Simulated Customer selection drop-down */}
+                <div className="space-y-4 mt-4 bg-muted/20 p-4 rounded-2xl border border-border/50">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-muted-foreground">1. CHỌN KHÁCH HÀNG VIP</label>
+                      <select
+                        value={selectedCustomerIndex}
+                        onChange={(e) => {
+                          setSelectedCustomerIndex(Number(e.target.value));
+                          setSmsHasDispatched(false);
+                        }}
+                        className="w-full text-xs p-2 bg-background border rounded-lg font-bold text-foreground outline-none cursor-pointer"
+                      >
+                        {availableVips.map((vip, i) => (
+                          <option key={vip.id || i} value={i}>
+                            {vip.name} ({vip.segment || "VIP"})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-[#D4AF37]">2. KỊCH BẢN ĐANG CHỌN</label>
+                      <input 
+                        type="text" 
+                        disabled 
+                        value={campaignRules.find(r => r.id === selectedRuleId)?.name || "Chưa chọn"}
+                        className="w-full text-xs p-2 bg-background border border-border/80 rounded-lg font-bold text-muted-foreground"
+                      />
                     </div>
                   </div>
-                  <div className="flex items-center gap-8">
-                    <div className="text-right hidden sm:block">
-                      <div className="text-sm font-bold">{rule.usage}</div>
-                      <div className={`text-[10px] font-bold ${rule.trend.startsWith('+') ? 'text-emerald-500' : rule.trend === 'stable' ? 'text-muted-foreground' : 'text-rose-500'}`}>
-                        {rule.trend}
+
+                  <div className="flex justify-between items-center bg-background/50 p-2.5 rounded-xl border border-border/30">
+                    <div className="space-y-0.5">
+                      <span className="text-[8px] text-muted-foreground font-black uppercase">Thông tin thiết bị</span>
+                      <p className="text-[10px] font-bold text-foreground font-mono">
+                        SDT: {availableVips[selectedCustomerIndex]?.phone || "N/A"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={executeSimulationDispatch}
+                      disabled={isSimulatingDispatch}
+                      className="py-1.5 px-3 bg-slate-900 hover:bg-[#D4AF37] hover:text-slate-950 text-white font-black text-[9px] tracking-widest uppercase rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <Send className="w-3 h-3" />
+                      {isSimulatingDispatch ? "Đang xâu chuỗi..." : "Chạy tự động"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Smartphone Container Mockup */}
+                <div className="mt-6 flex justify-center">
+                  <div className="w-[280px] h-[480px] rounded-[44px] border-[10px] border-slate-950 bg-slate-900 shadow-2xl relative overflow-hidden flex flex-col">
+                    
+                    {/* Speaker & camera bar (Bezel bar) */}
+                    <div className="absolute top-0 inset-x-0 h-6 bg-slate-950 flex justify-center items-center z-50">
+                      <div className="w-16 h-3.5 bg-black rounded-b-xl flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 bg-zinc-800 rounded-full mr-1.5" />
+                        <div className="w-8 h-1 bg-zinc-900 rounded" />
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant="outline" className={rule.status === 'active' ? 'bg-emerald-500/10 text-emerald-600 border-none px-3 font-bold' : 'bg-slate-500/10 text-slate-600 border-none px-3 font-bold'}>
-                        {rule.status === 'active' ? 'Hoạt động' : 'Tạm dừng'}
-                      </Badge>
-                      <button className="p-2 hover:bg-muted rounded-xl transition-colors border border-transparent hover:border-border">
-                        <Settings className="w-4 h-4 text-muted-foreground" />
-                      </button>
+
+                    {/* Notification Slide down overlay */}
+                    {smsHasDispatched && (
+                      <motion.div 
+                        initial={{ y: -80, opacity: 0 }}
+                        animate={{ y: 8 }}
+                        className="absolute top-8 inset-x-2 bg-slate-950/90 text-white p-3 rounded-2xl border border-zinc-700/60 shadow-xl z-50 animate-bounce"
+                      >
+                        <div className="flex items-center gap-1.5 text-[8px] font-black text-[#D4AF37] uppercase tracking-wider">
+                          <Zap className="w-2.5 h-2.5" /> Triêu hồi tự động: {campaignRules.find(r => r.id === selectedRuleId)?.action || "CRM"}
+                        </div>
+                        <p className="text-[9px] leading-tight text-slate-100 font-bold mt-1">
+                          Gửi từ Seva CRM: <span className="font-normal text-slate-300">{sentAlertMessage.substring(0, 70)}...</span>
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {/* Screen Content */}
+                    <div className="flex-1 bg-gradient-to-b from-[#2E1065] to-slate-950 p-4 pt-10 flex flex-col justify-between text-white relative">
+                      
+                      {/* Top status icons on screen */}
+                      <div className="flex justify-between items-center text-[8px] text-zinc-300 font-bold tracking-tight font-mono">
+                        <span>09:41</span>
+                        <div className="flex items-center gap-1">
+                          <span>LTE</span>
+                          <div className="w-3 h-1.5 bg-current rounded-xs" />
+                        </div>
+                      </div>
+
+                      {/* Mock App view based on selected channel */}
+                      <div className="my-auto flex flex-col items-center justify-center p-3 text-center space-y-3">
+                        
+                        {campaignRules.find(r => r.id === selectedRuleId)?.action === 'Zalo' ? (
+                          <>
+                            {/* Zalo Mock UI view */}
+                            <div className="w-10 h-10 bg-sky-500 text-white rounded-full flex items-center justify-center font-black text-xs shadow-md">
+                              Za
+                            </div>
+                            <div className="space-y-1">
+                              <h4 className="text-[10px] font-black">Phòng Hộp Chat Zalo VIP</h4>
+                              <p className="text-[8px] text-zinc-300">Seva Atelier Official Account</p>
+                            </div>
+                            
+                            <div className="w-full bg-white/10 p-2.5 rounded-xl text-left text-[9px] font-medium leading-relaxed max-h-[140px] overflow-y-auto mt-2 border border-white/5">
+                              {smsHasDispatched ? sentAlertMessage : `(Bấm "Chạy tự động" để tải tin nhắn Zalo mô phỏng cho ${availableVips[selectedCustomerIndex]?.name})`}
+                            </div>
+                          </>
+                        ) : campaignRules.find(r => r.id === selectedRuleId)?.action === 'Email' ? (
+                          <>
+                            {/* Mail Mock UI */}
+                            <div className="w-10 h-10 bg-indigo-500 rounded-2xl flex items-center justify-center font-black text-xs shadow-md">
+                              <Mail className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="space-y-1">
+                              <h4 className="text-[10px] font-black">Atelier Mailbox</h4>
+                              <p className="text-[8px] text-zinc-300">Tiêu đề: Ưu đãi Độc Quyền</p>
+                            </div>
+
+                            <div className="w-full bg-white/15 p-2.5 rounded-xl text-left text-[9px] leading-relaxed max-h-[140px] overflow-y-auto mt-2 border border-white/5">
+                              {smsHasDispatched ? (
+                                <div className="space-y-1.5">
+                                  <div className="font-bold border-b border-white/10 pb-1 text-sky-400">Gửi tới: {availableVips[selectedCustomerIndex]?.email}</div>
+                                  <div>{sentAlertMessage}</div>
+                                </div>
+                              ) : `(Bấm "Chạy tự động" để soạn thảo Email bồi đắp tự động)`}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {/* Default SMS Mock */}
+                            <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center font-black text-xs shadow-md">
+                              <MessageSquare className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="space-y-1">
+                              <h4 className="text-[10px] font-black">Hộp thư Tin nhắn SMS</h4>
+                              <p className="text-[8px] text-zinc-300">CRM-Gateway: +19008198</p>
+                            </div>
+
+                            <div className="w-full bg-slate-800/80 p-2.5 rounded-xl text-left text-[9px] font-medium leading-relaxed max-h-[140px] overflow-y-auto mt-2 border border-white/5">
+                              {smsHasDispatched ? sentAlertMessage : `(Chờ mô phỏng tin nhắn SMS chúc mừng)`}
+                            </div>
+                          </>
+                        )}
+
+                        {isSimulatingDispatch && (
+                          <div className="flex items-center gap-1 text-[8px] text-[#D4AF37] tracking-wider uppercase animate-pulse">
+                            <Activity className="w-3 h-3 animate-spin" /> Đang phát xạ truyền tin...
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Mock physical back button at the bottom screen */}
+                      <div className="text-center text-[7px] text-zinc-500 font-bold select-none pt-1">
+                        Slide To Unlock
+                      </div>
                     </div>
                   </div>
                 </div>
-              ))}
+
+                {/* Simulated log outputs */}
+                <div className="mt-5 space-y-2">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest block font-mono">
+                    HỒ SƠ GỬI TIN GẦN ĐÂY (System Dispatch Logs)
+                  </span>
+                  
+                  <div className="bg-background border rounded-xl overflow-hidden text-[10px] max-h-[100px] overflow-y-auto font-mono text-muted-foreground divide-y divide-border border-border">
+                    {simulatedLogs.length === 0 ? (
+                      <div className="p-3 text-center italic">Chưa có nhật ký truyền phát nào trong phiên này.</div>
+                    ) : (
+                      simulatedLogs.map((log, i) => (
+                        <div key={i} className="p-2 flex items-center justify-between text-[9px]">
+                          <span className="text-slate-500 shrink-0">{log.time}</span>
+                          <span className="font-bold text-foreground truncate max-w-[80px] text-left ml-2">{log.customerName}</span>
+                          <span className="bg-[#D4AF37]/10 text-[#D4AF37] px-1 rounded truncate max-w-[70px]">{log.campaignName}</span>
+                          <span className="font-bold text-emerald-500 shrink-0">{log.channel}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+              </div>
+
             </div>
+
           </div>
+
         </div>
       </TabsContent>
 

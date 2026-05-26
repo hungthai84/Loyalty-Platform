@@ -12,7 +12,8 @@ import {
   Database,
   Fingerprint,
   Webhook,
-  Key as KeyIcon
+  Key as KeyIcon,
+  Activity
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
@@ -20,9 +21,10 @@ import { CompaniesView } from "@/views/CompaniesView";
 import { CustomerPortalView } from "@/views/CustomerPortalView";
 import { LoyaltySettingsView } from "@/components/loyalty/LoyaltySettingsView";
 import { TierManagementView } from "@/components/loyalty/TierManagementView";
+import { SystemStatusMonitor } from "@/components/layout/SystemStatusMonitor";
 import { cn } from "@/lib/utils";
 
-type SettingsTab = 'company' | 'tiers' | 'retention' | 'portal' | 'api';
+type SettingsTab = 'company' | 'tiers' | 'retention' | 'portal' | 'api' | 'monitor';
 
 export function SettingsView() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('company');
@@ -33,6 +35,7 @@ export function SettingsView() {
     { id: 'retention', label: 'Trạng thái & Rủi ro', icon: Clock },
     { id: 'api', label: 'Kết nối API', icon: Webhook },
     { id: 'portal', label: 'Cổng Khách hàng', icon: Fingerprint },
+    { id: 'monitor', label: 'Giám sát Hệ thống', icon: Activity },
   ];
 
   return (
@@ -141,6 +144,11 @@ export function SettingsView() {
             {activeTab === 'portal' && (
               <div className="h-full">
                 <CustomerPortalView />
+              </div>
+            )}
+            {activeTab === 'monitor' && (
+              <div className="max-w-6xl mx-auto pb-12">
+                <SystemStatusMonitor />
               </div>
             )}
           </motion.div>

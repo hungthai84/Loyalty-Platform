@@ -91,6 +91,18 @@ service cloud.firestore {
         && data.createdAt == request.time;
     }
 
+    function isValidSegmentationRule(data) {
+      return data.keys().hasAll(['name', 'tag', 'criteriaType', 'operator', 'value', 'isActive', 'userId', 'createdAt'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.tag is string && data.tag.size() > 0 && data.tag.size() <= 100
+        && data.criteriaType in ['total_spend', 'time_since_last_purchase', 'points_balance']
+        && data.operator in ['gte', 'lte', 'gt', 'lt', 'eq']
+        && data.value is number
+        && data.isActive is bool
+        && data.userId == request.auth.uid
+        && data.createdAt == request.time;
+    }
+
     // 3. Resource Matches
     match /users/{userId}/customers/{customerId} {
       allow list, get: if isOwner(userId);
@@ -149,6 +161,15 @@ service cloud.firestore {
       allow list, get: if isOwner(userId);
       allow create: if isOwner(userId) && isValidId(companyId) && isValidCompany(incoming());
       allow update: if isOwner(userId) && incoming().userId == request.auth.uid;
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/segmentationRules/{ruleId} {
+      allow list, get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(ruleId) && isValidSegmentationRule(incoming());
+      allow update: if isOwner(userId) && incoming().userId == request.auth.uid && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'tag', 'color', 'criteriaType', 'operator', 'value', 'isActive'])
+      );
       allow delete: if isOwner(userId);
     }
   }

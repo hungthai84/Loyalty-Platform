@@ -37,6 +37,7 @@ import { RedemptionRuleDialog } from "@/components/loyalty/RedemptionRuleDialog"
 import { EarnRuleDialog } from "@/components/loyalty/EarnRuleDialog";
 import { LoyaltyCampaignDialog } from "@/components/loyalty/LoyaltyCampaignDialog";
 import { SegmentationRuleDialog } from "@/components/loyalty/SegmentationRuleDialog";
+import { OfferAnalysis } from "@/components/loyalty/OfferAnalysis";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -292,7 +293,7 @@ export function LoyaltyView() {
     { id: 'engagement', label: 'Tương tác & AI', icon: Scissors },
     { id: 'automation', label: 'Chiến dịch Tự động', icon: Zap },
     { id: 'vip', label: 'Đặc quyền VIP', icon: Gem },
-    { id: 'analytics', label: 'Chỉ số Loyalty', icon: TrendingUp },
+    { id: 'analytics', label: 'Phân tích & Tối ưu Ưu Đãi', icon: TrendingUp },
   ];
 
   return (
@@ -724,23 +725,27 @@ export function LoyaltyView() {
             )}
 
             {activeTab === 'analytics' && (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                 {[
-                   { label: "Mức độ hài lòng AI", value: "9.2/10", icon: Gem, color: 'text-indigo-500' },
-                   { label: "Tỷ lệ nâng hạng", value: "24.5%", icon: ArrowUpRight, color: 'text-emerald-500' },
-                   { label: "Churn Risk Score", value: "12 (Low)", icon: Zap, color: 'text-rose-500' },
-                   { label: "Referral GMV", value: "$12,400", icon: Users, color: 'text-blue-500' },
-                 ].map((stat, i) => (
-                   <Card key={i} className="p-5 flex flex-col justify-between border-border/50 bg-card/50">
-                      <div className="flex justify-between items-start">
-                         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</span>
-                         <stat.icon className={cn("w-4 h-4", stat.color)} />
-                      </div>
-                      <div className="mt-4">
-                         <h4 className="text-2xl font-black">{stat.value}</h4>
-                      </div>
-                   </Card>
-                 ))}
+              <div className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                   {[
+                     { label: "Mức độ hài lòng AI", value: "9.2/10", icon: Gem, color: 'text-indigo-500' },
+                     { label: "Tỷ lệ nâng hạng", value: "24.5%", icon: ArrowUpRight, color: 'text-emerald-500' },
+                     { label: "Churn Risk Score", value: "12 (Low)", icon: Zap, color: 'text-rose-500' },
+                     { label: "Referral GMV", value: "$12,400", icon: Users, color: 'text-blue-500' },
+                   ].map((stat, i) => (
+                     <Card key={i} className="p-5 flex flex-col justify-between border-border/50 bg-card/50">
+                        <div className="flex justify-between items-start">
+                           <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</span>
+                           <stat.icon className={cn("w-4 h-4", stat.color)} />
+                        </div>
+                        <div className="mt-4">
+                           <h4 className="text-2xl font-black">{stat.value}</h4>
+                        </div>
+                     </Card>
+                   ))}
+                </div>
+
+                <OfferAnalysis campaigns={campaigns} customers={customers} />
               </div>
             )}
           </motion.div>
