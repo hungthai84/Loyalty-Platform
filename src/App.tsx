@@ -12,11 +12,11 @@ import { AnalyticsView } from "./views/AnalyticsView";
 import { AnalysisView } from "./views/AnalysisView";
 import { FirebaseProvider, useFirebase } from "@/components/FirebaseProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { ShieldAlert, LogIn, LogOut, Lock, Trophy, Sparkles } from "lucide-react";
+import { ShieldAlert, LogIn, LogOut, Lock, Trophy, Sparkles, UserCheck } from "lucide-react";
 
 function AppContent() {
   const [activeView, setActiveView] = useState("dashboard");
-  const { user, loading, signIn, logout } = useFirebase();
+  const { user, loading, signIn, logout, guestLogin } = useFirebase();
 
   // 1. Loading State
   if (loading) {
@@ -51,12 +51,28 @@ function AppContent() {
             </p>
           </div>
 
-          <button 
-            onClick={signIn}
-            className="w-full py-3.5 bg-primary text-primary-foreground rounded-2xl font-bold flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] transition-all shadow-xl shadow-primary/25 cursor-pointer"
-          >
-            <LogIn className="w-4 h-4" /> Đăng nhập bằng Google Account
-          </button>
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={signIn}
+              className="w-full py-3.5 bg-zinc-900 border border-zinc-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 active:scale-[0.99] transition-all shadow-xl shadow-black/10 cursor-pointer text-sm"
+            >
+              <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.57h3.3c1.93,-1.78 3.04,-4.4 3.04,-7.48c0,-0.61 -0.05,-1.2 -0.16,-1.79z" fill="#4285F4" />
+                <path d="M12,20.6c2.4,0 4.41,-0.8 5.88,-2.16l-3.3,-2.57c-0.91,0.61 -2.08,0.98 -3.29,0.98 -2.31,0 -4.26,-1.56 -4.96,-3.66H2.9V15.7c1.47,2.93 4.51,4.9 8.04,4.9z" fill="#34A853" />
+                <path d="M7.04,13.15c-0.18,-0.53 -0.28,-1.1 -0.28,-1.68s0.1,-1.14 0.28,-1.68V7.22H2.9C2.29,8.44 1.95,9.83 1.95,11.3s0.34,2.86 0.95,4.08l4.14,-3.23z" fill="#FBBC05" />
+                <path d="M12,5.2c1.3,0 2.48,0.45 3.4,1.32l2.55,-2.55C16.4,2.54 14.41,1.7 12,1.7c-3.53,0 -6.57,1.97 -8.04,4.9l4.14,3.23c0.7,-2.11 2.65,-3.66 4.96,-3.66z" fill="#EA4335" />
+              </svg>
+              Đăng nhập bằng Gmail (Google Account)
+            </button>
+
+            <button 
+              onClick={guestLogin}
+              className="w-full py-3.5 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.99] transition-all shadow-md cursor-pointer text-sm"
+            >
+              <UserCheck className="w-4 h-4 mr-0.5" />
+              Truy cập bằng tài khoản Khách (Quyền Admin)
+            </button>
+          </div>
           
           <div className="pt-2 text-[10px] text-muted-foreground/60 flex items-center justify-center gap-1">
             <Lock className="w-3 h-3" /> Đường truyền kết nối hoàn toàn SSL mã hóa bảo mật
