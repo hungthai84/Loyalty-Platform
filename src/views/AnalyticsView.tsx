@@ -52,7 +52,7 @@ export function AnalyticsView() {
     <div className="flex-1 p-8 pt-6 space-y-8 overflow-y-auto max-h-[calc(100vh-64px)]">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight font-heading">Phân tích & Báo cáo</h2>
+          <h2 className="text-3xl font-bold tracking-tight font-heading">Báo cáo & Thống kê</h2>
           <p className="text-muted-foreground text-sm mt-1">
             Theo dõi hiệu quả chương trình ưu đãi của bạn.
           </p>
@@ -70,10 +70,10 @@ export function AnalyticsView() {
       {/* KPI Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[
-          { title: "Tổng khách hàng", value: "1,284", icon: Users, trend: "+12.5%", positive: true },
-          { title: "Điểm đã cấp", value: "4.2M", icon: Activity, trend: "+18.2%", positive: true },
+          { title: "Tổng khách hàng", value: "1.284", icon: Users, trend: "+12.5%", positive: true },
+          { title: "Điểm đã cấp", value: "4.2M pts", icon: Activity, trend: "+18.2%", positive: true },
           { title: "Tỷ lệ đổi quà", value: "32.4%", icon: Gift, trend: "-2.1%", positive: false },
-          { title: "Doanh thu ước tính", value: "$45,280", icon: TrendingUp, trend: "+7.4%", positive: true },
+          { title: "Doanh thu ước tính", value: "1.150.000.000 ₫", icon: TrendingUp, trend: "+7.4%", positive: true },
         ].map((stat, i) => (
           <motion.div
             key={stat.title}
@@ -200,6 +200,91 @@ export function AnalyticsView() {
         </Card>
       </div>
 
+      {/* Customers per Loyalty Tier Bar Chart */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <Card className="border border-border/50 bg-sidebar backdrop-blur-sm shadow-sm">
+          <CardHeader>
+            <CardTitle className="font-heading">Quy mô tệp khách hàng theo Hạng hội viên</CardTitle>
+            <CardDescription>
+              Số lượng hội viên thuộc các phân tầng Atelier, Icon, Essential và Member đang hoạt động trong hệ thống.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-[320px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={[
+                  { tier: "Member", count: 520, label: "Member (Hạng Phổ thông)" },
+                  { tier: "Essential", count: 340, label: "Essential (Hạng Bạc)" },
+                  { tier: "Icon", count: 180, label: "Icon (Hạng Vàng VIP)" },
+                  { tier: "Atelier", count: 65, label: "Atelier (Hạng Thượng lưu)" },
+                ]}
+                margin={{ top: 20, right: 30, left: 10, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
+                <XAxis 
+                  dataKey="tier" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fill: "#64748b", fontWeight: "600" }}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fill: "#64748b" }}
+                />
+                <Tooltip 
+                  cursor={{ fill: "rgba(212, 175, 55, 0.04)", radius: 10 }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      const colors: Record<string, string> = {
+                        Member: "#94a3b8",
+                        Essential: "#38bdf8",
+                        Icon: "#facc15",
+                        Atelier: "#D4AF37"
+                      };
+                      return (
+                        <div className="bg-card border border-border rounded-xl p-3 shadow-xl backdrop-blur-md">
+                          <p className="font-bold text-xs flex items-center gap-1.5" style={{ color: colors[data.tier] }}>
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[data.tier] }} />
+                            {data.label}
+                          </p>
+                          <p className="text-foreground text-sm font-semibold mt-1">
+                            {data.count.toLocaleString("vi-VN")} thành viên
+                          </p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            Chiếm {((data.count / 1105) * 100).toFixed(1)}% tổng quy mô
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar 
+                  dataKey="count" 
+                  radius={[12, 12, 0, 0]}
+                  maxBarSize={60}
+                >
+                  {[
+                    { tier: "Member", fill: "#94a3b8" },
+                    { tier: "Essential", fill: "#38bdf8" },
+                    { tier: "Icon", fill: "#facc15" },
+                    { tier: "Atelier", fill: "#D4AF37" },
+                  ].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Grid for Bottom Sections */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
@@ -210,7 +295,7 @@ export function AnalyticsView() {
           <CardContent>
             <div className="space-y-4">
               {[
-                { name: "Voucher giảm giá $50", count: 245, growth: "+12%" },
+                { name: "Voucher giảm giá 1.250.000 ₫", count: 245, growth: "+12%" },
                 { name: "Miễn phí đánh bóng trang sức", count: 184, growth: "+5%" },
                 { name: "Bộ quà tặng nến thơm VIP", count: 92, growth: "+24%" },
                 { name: "Giảm 10% đơn hàng kế tiếp", count: 76, growth: "-3%" },

@@ -58,8 +58,13 @@ export function DashboardView() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
                   <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value / 1000}k`} />
-                  <Tooltip wrapperClassName="rounded-xl border shadow-lg bg-card text-card-foreground" contentStyle={{ borderRadius: "8px", border: "none" }} cursor={{ stroke: 'var(--color-border)' }} />
+                  <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${(value / 1000000000).toLocaleString('vi-VN')} Tỷ`} />
+                  <Tooltip 
+                    wrapperClassName="rounded-xl border shadow-lg bg-card text-card-foreground" 
+                    contentStyle={{ borderRadius: "8px", border: "none" }} 
+                    cursor={{ stroke: 'var(--color-border)' }} 
+                    formatter={(value: number) => [new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value), "Doanh thu"]}
+                  />
                   <Area type="monotone" dataKey="revenue" stroke="var(--color-primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
                 </AreaChart>
               </ResponsiveContainer>

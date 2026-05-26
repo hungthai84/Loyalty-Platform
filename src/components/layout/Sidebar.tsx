@@ -12,7 +12,8 @@ import {
   Fingerprint,
   LogOut,
   ChevronRight,
-  Building2
+  Building2,
+  Sparkles
 } from "lucide-react";
 
 interface SidebarProps {
@@ -30,7 +31,8 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
     { name: "Khách hàng", view: "customers", icon: Users },
     { name: "Ưu đãi", view: "loyalty", icon: Award },
     { name: "Tiếp thị", view: "marketing", icon: Bell },
-    { name: "Phân tích", view: "analytics", icon: BarChart },
+    { name: "Phân tích", view: "analysis", icon: Sparkles },
+    { name: "Báo cáo", view: "analytics", icon: BarChart },
     { name: "Cài đặt", view: "settings", icon: Settings, isSecondary: true },
   ];
 

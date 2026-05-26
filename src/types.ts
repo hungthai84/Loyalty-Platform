@@ -3,6 +3,12 @@ export interface Customer {
   name: string;
   email: string;
   phone: string;
+  avatarUrl?: string;
+  facebook?: string;
+  zalo?: string;
+  linkedin?: string;
+  instagram?: string;
+  tiktok?: string;
   points?: number;
   lastTransactionAt?: any;
   activityStatus?: 'active' | 'inactive' | 'churn_risk';
@@ -80,6 +86,19 @@ export interface LoyaltySettings {
   autoApplyStatus: boolean;
   userId: string;
   updatedAt: any;
+}
+
+export interface SegmentationRule {
+  id: string;
+  name: string;
+  tag: string;
+  color: string;
+  criteriaType: 'total_spend' | 'time_since_last_purchase' | 'points_balance';
+  operator: 'gte' | 'lte' | 'gt' | 'lt' | 'eq';
+  value: number; // value can represent points, spend in VND, or space/days in inactivity
+  isActive: boolean;
+  userId: string;
+  createdAt: any;
 }
 
 export interface Company {

@@ -15,7 +15,7 @@ export function Topbar() {
   const { setTheme, theme } = useTheme();
   
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/60 backdrop-blur-xl px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/60 px-6">
       <button className="md:hidden">
         <Menu className="h-6 w-6 text-muted-foreground" />
       </button>

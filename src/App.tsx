@@ -9,6 +9,7 @@ import { CompaniesView } from "@/views/CompaniesView";
 import { SettingsView } from "@/views/SettingsView";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsView } from "./views/AnalyticsView";
+import { AnalysisView } from "./views/AnalysisView";
 import { FirebaseProvider } from "@/components/FirebaseProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -18,12 +19,11 @@ export default function App() {
   return (
     <FirebaseProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <div className="h-screen w-screen bg-muted/40 p-[10px] overflow-hidden relative theme-transition">
-          {/* Glass background decorative elements */}
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="h-screen w-screen p-[10px] overflow-hidden relative theme-transition">
+          {/* Gorgeous Uiverse.io Soft Pastel Rotating Glow Background */}
+          <div className="uiverse-container" />
           
-          <div className="h-full w-full flex bg-background/50 dark:bg-background/30 backdrop-blur-2xl rounded-[10px] overflow-hidden shadow-2xl shadow-black/10 border border-white/20 dark:border-white/5 relative selection:bg-primary/20">
+          <div className="h-full w-full flex bg-white/45 dark:bg-[#080808]/40 backdrop-blur-3xl rounded-[16px] overflow-hidden shadow-2xl shadow-black/15 border border-white/40 dark:border-white/5 relative selection:bg-primary/20">
             <>
               {/* Sidebar hidden on mobile, width controlled by component on desktop */}
               <Sidebar 
@@ -36,13 +36,14 @@ export default function App() {
               <div className="flex-1 flex flex-col w-full min-w-0 transition-all duration-300">
                 <Topbar />
                 
-                <main className="flex-1 overflow-auto bg-muted/5">
+                <main className="flex-1 overflow-auto bg-background/60">
                   {activeView === "dashboard" && <DashboardView />}
                   {activeView === "customers" && <CustomersView />}
                   {activeView === "companies" && <CompaniesView />}
                   {activeView === "loyalty" && <LoyaltyView />}
                   {activeView === "marketing" && <MarketingView />}
                   {activeView === "analytics" && <AnalyticsView />}
+                  {activeView === "analysis" && <AnalysisView />}
                   {activeView === "settings" && <SettingsView />}
                   
                   {/* Fallback for other standard views */}
