@@ -314,7 +314,7 @@ export function SeedDemoData() {
           name,
           email,
           phone,
-          avatarUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(name)}`,
+          avatarUrl: "",
           facebook: `facebook.com/user.${i}`,
           zalo: phone,
           points: pts,

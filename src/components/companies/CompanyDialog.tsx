@@ -32,7 +32,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
       const data = {
         id,
         name,
-        logoUrl: logoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=128`,
+        logoUrl,
         address,
         userId: user.uid,
         createdAt: company?.createdAt || serverTimestamp(),

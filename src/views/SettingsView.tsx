@@ -13,7 +13,9 @@ import {
   Fingerprint,
   Webhook,
   Key as KeyIcon,
-  Activity
+  Activity,
+  GitCompare,
+  Gift
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
@@ -21,12 +23,14 @@ import { CompaniesView } from "@/views/CompaniesView";
 import { CustomerPortalView } from "@/views/CustomerPortalView";
 import { LoyaltySettingsView } from "@/components/loyalty/LoyaltySettingsView";
 import { TierManagementView } from "@/components/loyalty/TierManagementView";
+import { StatusTransitionConfigView } from "@/components/loyalty/StatusTransitionConfigView";
+import { PointRedemptionConfigView } from "@/components/loyalty/PointRedemptionConfigView";
 import { SystemStatusMonitor } from "@/components/layout/SystemStatusMonitor";
 import { SeedDemoData } from "@/components/layout/SeedDemoData";
 import { RoleManager } from "@/components/settings/RoleManager";
 import { cn } from "@/lib/utils";
 
-type SettingsTab = 'company' | 'tiers' | 'retention' | 'portal' | 'api' | 'monitor' | 'demo' | 'roles';
+type SettingsTab = 'company' | 'tiers' | 'redemption' | 'retention' | 'transitions' | 'portal' | 'api' | 'monitor' | 'demo' | 'roles';
 
 export function SettingsView() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('company');
@@ -34,7 +38,9 @@ export function SettingsView() {
   const tabs = [
     { id: 'company', label: 'Công ty & Chi nhánh', icon: Building2 },
     { id: 'tiers', label: 'Cấp bậc khách hàng', icon: Star },
+    { id: 'redemption', label: 'Đổi quà ưu đãi', icon: Gift },
     { id: 'retention', label: 'Trạng thái & Rủi ro', icon: Clock },
+    { id: 'transitions', label: 'Luật chuyển trạng thái', icon: GitCompare },
     { id: 'api', label: 'Kết nối API', icon: Webhook },
     { id: 'portal', label: 'Cổng Khách hàng', icon: Fingerprint },
     { id: 'monitor', label: 'Giám sát Hệ thống', icon: Activity },
@@ -44,129 +50,167 @@ export function SettingsView() {
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-muted/5">
-      <div className="px-8 pt-8 pb-4 space-y-6 bg-background border-b border-border/50">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight font-heading">Cấu hình Hệ thống</h2>
-            <p className="text-muted-foreground text-sm mt-1">Quản lý các thiết lập nền tảng cho hệ thống ưu đãi và CRM.</p>
+      <div className="px-8 py-5 bg-background border-b border-border/50 shrink-0">
+        <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full">
+          <div className="flex items-center gap-4 text-left">
+            <div className="p-3 bg-[#2f6cf5]/10 rounded-2xl text-[#2f6cf5] flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+              <motion.div
+                animate={{ 
+                  rotate: 360
+                }}
+                transition={{ 
+                  repeat: Infinity,
+                  duration: 8,
+                  ease: "linear"
+                }}
+              >
+                <SettingsIcon className="w-8 h-8 text-[#2f6cf5]" />
+              </motion.div>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">Cấu hình Hệ thống</h2>
+              <p className="text-muted-foreground text-sm mt-1">Quản lý các thiết lập nền tảng cho hệ thống ưu đãi và CRM.</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-xl border border-border">
-             <Shield className="w-4 h-4 text-primary" />
-             <span className="text-xs font-bold uppercase tracking-widest">Enterprise Access</span>
+          <div className="flex items-center gap-2 px-4 py-2 bg-muted/40 rounded-xl border border-border shrink-0 self-start lg:self-auto">
+             <Shield className="w-4 h-4 text-[#2f6cf5]" />
+             <span className="text-xs font-bold uppercase tracking-widest text-foreground">Enterprise Access</span>
           </div>
         </div>
+      </div>
 
-        <div className="flex gap-1 p-1 bg-muted/40 rounded-2xl w-fit">
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Side: Vertical Tabs */}
+        <div className="w-72 bg-background border-r border-border/50 flex flex-col p-4 shrink-0 gap-1 overflow-y-auto custom-scrollbar">
+          <span className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-widest px-3 mb-2 block">
+            Mục cấu hình
+          </span>
           {tabs.map((tab) => {
             const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as SettingsTab)}
                 className={cn(
-                  "flex items-center px-6 py-2 rounded-xl text-sm font-bold transition-all gap-2",
-                  activeTab === tab.id 
-                    ? "bg-background text-primary shadow-sm" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                  "flex items-center px-4 py-2.5 rounded-xl text-xs font-bold transition-all gap-3 text-left w-full cursor-pointer",
+                  isActive 
+                    ? "bg-primary/10 text-primary" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
               >
-                <Icon className="w-4 h-4" />
-                {tab.label}
+                <Icon className={cn("w-4.5 h-4.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground/80")} />
+                <span className="truncate flex-1">{tab.label}</span>
+                {isActive && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 animate-pulse" />
+                )}
               </button>
             );
           })}
         </div>
-      </div>
 
-      <div className="flex-1 overflow-y-auto p-8 pt-6 custom-scrollbar">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.2 }}
-            className="h-full"
-          >
-            {activeTab === 'company' && (
-              <div className="max-w-6xl mx-auto">
-                 <CompaniesView embedded />
-              </div>
-            )}
-            {activeTab === 'tiers' && (
-              <div className="max-w-6xl mx-auto">
-                <TierManagementView />
-              </div>
-            )}
-            {activeTab === 'retention' && (
-              <div className="max-w-3xl mx-auto">
-                <LoyaltySettingsView />
-              </div>
-            )}
-            {activeTab === 'api' && (
-              <div className="max-w-4xl mx-auto space-y-6">
-                <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
-                  <div className="p-6 border-b border-border bg-muted/10">
-                    <h3 className="font-bold font-heading text-lg flex items-center gap-2">
-                       <KeyIcon className="w-5 h-5 text-primary" /> API Keys
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-1">Sử dụng API Key để tích hợp SEVA với hệ thống POS hoặc Website của bạn.</p>
-                  </div>
-                  <div className="p-6 space-y-4">
-                    <div className="p-4 bg-muted/50 rounded-xl border border-border flex items-center justify-between">
-                      <div className="font-mono text-sm">sk_live_************************4k2p</div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-none">Live</Badge>
-                        <button className="text-xs text-primary font-bold hover:underline">Sao chép</button>
-                      </div>
-                    </div>
-                    <button className="text-sm text-primary font-bold hover:underline flex items-center gap-2">
-                      <Plus className="w-4 h-4" /> Tạo API Key mới
-                    </button>
-                  </div>
+        {/* Right Side: Active Setting Panel */}
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-muted/10">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15 }}
+              className="h-full"
+            >
+              {activeTab === 'company' && (
+                <div className="max-w-6xl mx-auto">
+                   <CompaniesView embedded />
                 </div>
-
-                <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
-                  <div className="p-6 border-b border-border bg-muted/10">
-                    <h3 className="font-bold font-heading text-lg flex items-center gap-2">
-                       <Webhook className="w-5 h-5 text-primary" /> Webhooks
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-1">Nhận thông báo thời gian thực khi có sự kiện xảy ra (mua hàng, nâng hạng...).</p>
-                  </div>
-                  <div className="p-6">
-                    <div className="text-center py-12 border-2 border-dashed border-border rounded-2xl">
-                      <Webhook className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
-                      <p className="text-sm text-muted-foreground">Chưa có Webhook nào được cấu hình.</p>
-                      <button className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold shadow-lg shadow-primary/20">
-                        Thêm Webhook URL
+              )}
+              {activeTab === 'tiers' && (
+                <div className="max-w-6xl mx-auto">
+                  <TierManagementView />
+                </div>
+              )}
+              {activeTab === 'redemption' && (
+                <div className="max-w-6xl mx-auto pb-12">
+                  <PointRedemptionConfigView />
+                </div>
+              )}
+              {activeTab === 'retention' && (
+                <div className="max-w-3xl mx-auto">
+                  <LoyaltySettingsView />
+                </div>
+              )}
+              {activeTab === 'transitions' && (
+                <div className="max-w-6xl mx-auto pb-12">
+                  <StatusTransitionConfigView />
+                </div>
+              )}
+              {activeTab === 'api' && (
+                <div className="max-w-4xl mx-auto space-y-6">
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                    <div className="p-6 border-b border-border bg-muted/10">
+                      <h3 className="font-bold font-heading text-lg flex items-center gap-2">
+                         <KeyIcon className="w-5 h-5 text-primary" /> API Keys
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1">Sử dụng API Key để tích hợp SEVA với hệ thống POS hoặc Website của bạn.</p>
+                    </div>
+                    <div className="p-6 space-y-4">
+                      <div className="p-4 bg-muted/50 rounded-xl border border-border flex items-center justify-between">
+                        <div className="font-mono text-sm">sk_live_************************4k2p</div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-none">Live</Badge>
+                          <button className="text-xs text-primary font-bold hover:underline">Sao chép</button>
+                        </div>
+                      </div>
+                      <button className="text-sm text-primary font-bold hover:underline flex items-center gap-2">
+                        <Plus className="w-4 h-4" /> Tạo API Key mới
                       </button>
                     </div>
                   </div>
+
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                    <div className="p-6 border-b border-border bg-muted/10">
+                      <h3 className="font-bold font-heading text-lg flex items-center gap-2">
+                         <Webhook className="w-5 h-5 text-primary" /> Webhooks
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1">Nhận thông báo thời gian thực khi có sự kiện xảy ra (mua hàng, nâng hạng...).</p>
+                    </div>
+                    <div className="p-6">
+                      <div className="text-center py-12 border-2 border-dashed border-border rounded-2xl">
+                        <Webhook className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+                        <p className="text-sm text-muted-foreground">Chưa có Webhook nào được cấu hình.</p>
+                        <button className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold shadow-lg shadow-primary/20">
+                          Thêm Webhook URL
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
-            {activeTab === 'portal' && (
-              <div className="h-full">
-                <CustomerPortalView />
-              </div>
-            )}
-            {activeTab === 'monitor' && (
-              <div className="max-w-6xl mx-auto pb-12">
-                <SystemStatusMonitor />
-              </div>
-            )}
-            {activeTab === 'demo' && (
-              <div className="max-w-6xl mx-auto pb-12">
-                <SeedDemoData />
-              </div>
-            )}
-            {activeTab === 'roles' && (
-              <div className="max-w-6xl mx-auto pb-12">
-                <RoleManager />
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+              )}
+              {activeTab === 'portal' && (
+                <div className="h-full">
+                  <CustomerPortalView />
+                </div>
+              )}
+              {activeTab === 'monitor' && (
+                <div className="max-w-6xl mx-auto pb-12">
+                  <SystemStatusMonitor />
+                </div>
+              )}
+              {activeTab === 'demo' && (
+                <div className="max-w-6xl mx-auto pb-12">
+                  <SeedDemoData />
+                </div>
+              )}
+              {activeTab === 'roles' && (
+                <div className="max-w-6xl mx-auto pb-12">
+                  <RoleManager />
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

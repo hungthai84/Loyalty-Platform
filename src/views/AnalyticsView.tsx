@@ -50,18 +50,36 @@ const tierData = [
 export function AnalyticsView() {
   return (
     <div className="flex-1 p-8 pt-6 space-y-8 overflow-y-auto max-h-[calc(100vh-64px)]">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight font-heading">Báo cáo & Thống kê</h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Theo dõi hiệu quả chương trình ưu đãi của bạn.
-          </p>
+      <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full text-left">
+        <div className="flex items-center gap-4 text-left">
+          <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-500 flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+            <motion.div
+              animate={{ 
+                scale: [1, 1.15, 0.95, 1.05, 1],
+                y: [0, -3, 3, -1, 0]
+              }}
+              transition={{ 
+                repeat: Infinity,
+                duration: 5,
+                ease: "easeInOut"
+              }}
+            >
+              <TrendingUp className="w-8 h-8 text-emerald-500" />
+            </motion.div>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">Báo cáo & Thống kê</h2>
+            <p className="text-muted-foreground text-sm mt-1">
+              Theo dõi hiệu quả chương trình ưu đãi của bạn.
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors bg-card">
+          <button className="px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-muted transition-all bg-card cursor-pointer">
             Xuất báo cáo
           </button>
-          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">
+          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all cursor-pointer font-bold shadow-lg shadow-primary/20">
             Tùy chỉnh khoảng thời gian
           </button>
         </div>

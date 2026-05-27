@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import * as motion from "motion/react-client";
 import { 
   DollarSign, 
   TrendingUp, 
@@ -56,7 +57,8 @@ import {
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
-import { Customer } from "@/types";
+import { Customer, LoyaltyCampaign } from "@/types";
+import { OfferAnalysis } from "@/components/loyalty/OfferAnalysis";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
 
 const CLV_TREND_BY_TIER_DATA = [
@@ -121,6 +123,7 @@ export function AnalysisView() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
   const [dbCustomers, setDbCustomers] = useState<Customer[]>([]);
+  const [campaigns, setCampaigns] = useState<LoyaltyCampaign[]>([]);
 
   // Listen for customers from Firebase Firestore to make this data LIVE!
   useEffect(() => {
@@ -128,6 +131,16 @@ export function AnalysisView() {
     const q = query(collection(db, `users/${user.uid}/customers`), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snapshot) => {
       setDbCustomers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer)));
+    });
+    return unsub;
+  }, [user]);
+
+  // Listen for campaigns from Firebase Firestore
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, `users/${user.uid}/loyaltyCampaigns`), orderBy("createdAt", "desc"));
+    const unsub = onSnapshot(q, (snapshot) => {
+      setCampaigns(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as LoyaltyCampaign)));
     });
     return unsub;
   }, [user]);
@@ -375,14 +388,32 @@ export function AnalysisView() {
     <div className="flex-1 p-8 pt-6 space-y-6 overflow-y-auto max-h-[calc(100vh-64px)]">
       
       {/* Title & Metadata Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4 border-border/40">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight font-heading flex items-center gap-2">
-            <Sparkles className="w-8 h-8 text-[#2f6cf5] animate-pulse" /> Phân tích Hành vi & Hiệu quả Loyalty
-          </h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Chẩn đoán sức sống của tệp khách hàng VIP, đo lường chi phí Loyalty và tính toán chỉ số tỷ suất hoàn vốn ROI.
-          </p>
+      <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md">
+        <div className="flex items-center gap-4 text-left">
+          <div className="p-3 bg-primary/10 rounded-2xl text-primary flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+            <motion.div
+              animate={{ 
+                scale: [1, 1.15, 0.95, 1.05, 1],
+                rotate: [0, 10, -10, 5, 0]
+              }}
+              transition={{ 
+                repeat: Infinity,
+                duration: 5,
+                ease: "easeInOut"
+              }}
+            >
+              <Sparkles className="w-8 h-8 text-[#2f6cf5]" />
+            </motion.div>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground flex items-center gap-2">
+              Phân tích Hành vi & Hiệu quả Loyalty
+            </h2>
+            <p className="text-muted-foreground text-sm mt-1">
+              Chẩn đoán sức sống của tệp khách hàng VIP, đo lường chi phí Loyalty và tính toán chỉ số tỷ suất hoàn vốn ROI.
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -423,6 +454,7 @@ export function AnalysisView() {
           { id: 'clv_repeat', name: 'CLV & Repeat Purchase', icon: TrendingUp },
           { id: 'vip_crm', name: 'VIP CRM & Booking', icon: Users },
           { id: 'ai_advisor', name: 'AI Analytics Advisor', icon: Sparkles },
+          { id: 'offer_analysis', name: 'Phân tích & Tối ưu Ưu đãi', icon: Award },
           { id: 'rules', name: 'Hệ thống Rules', icon: Settings },
         ].map((tab) => (
           <button
@@ -1151,6 +1183,13 @@ export function AnalysisView() {
             </div>
 
           </div>
+        </div>
+      )}
+
+      {/* 5b. TAB: OFFER ANALYSIS */}
+      {activeTab === 'offer_analysis' && (
+        <div className="space-y-6">
+          <OfferAnalysis campaigns={campaigns} customers={customers} />
         </div>
       )}
 

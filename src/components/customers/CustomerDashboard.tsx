@@ -170,13 +170,12 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
             
             <div className="flex flex-col items-center text-center space-y-4 pt-4">
               <div className="relative group">
-                <div className="w-24 h-24 rounded-3xl border-2 border-[#2f6cf5]/30 overflow-hidden bg-background shadow-lg transition-transform hover:scale-105 duration-300">
-                  <img 
-                    src={avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(customer.name)}`} 
-                    className="w-full h-full object-cover" 
-                    alt={customer.name} 
-                    onError={(e) => { (e.target as any).src = "https://api.dicebear.com/7.x/pixel-art/svg"; }}
-                  />
+                <div className="w-24 h-24 rounded-3xl border-2 border-[#2f6cf5]/30 overflow-hidden bg-primary/10 text-primary shadow-lg transition-transform hover:scale-105 duration-300 flex items-center justify-center text-2xl font-bold uppercase shrink-0">
+                  {avatar ? (
+                    <img src={avatar} className="w-full h-full object-cover" alt={customer.name} />
+                  ) : (
+                    customer.name.slice(0, 2)
+                  )}
                 </div>
                 {!isUpdatingField && (
                   <button 
@@ -296,7 +295,9 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
                   <div key={attr.id} className="flex justify-between items-center bg-background/50 p-2 rounded-xl text-xs">
                     <span className="text-muted-foreground font-medium">{attr.label}</span>
                     <span className="font-bold text-foreground">
-                      {customer.customFields?.[attr.key]?.toString() || '—'}
+                      {Array.isArray(customer.customFields?.[attr.key])
+                        ? (customer.customFields?.[attr.key] as any as string[]).join(', ')
+                        : customer.customFields?.[attr.key]?.toString() || '—'}
                     </span>
                   </div>
                 ))}

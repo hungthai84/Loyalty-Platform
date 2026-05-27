@@ -23,9 +23,13 @@ export interface AttributeDefinition {
   id: string;
   label: string;
   key: string;
-  type: 'text' | 'number' | 'date' | 'boolean';
+  type: 'text' | 'number' | 'date' | 'boolean' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'time';
   userId: string;
   createdAt: any;
+  placeholder?: string;
+  isRequired?: boolean;
+  defaultValue?: string;
+  options?: string[]; // for select, radio, checkbox
 }
 
 export interface TierCondition {

@@ -451,16 +451,34 @@ export function MarketingView() {
 
   return (
     <Tabs defaultValue="automations" className="flex-1 h-[calc(100vh-64px)] flex flex-col p-8 pt-6 overflow-hidden max-h-screen">
-      <div className="flex items-center justify-between pb-6 shrink-0">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight font-heading">Tự động hóa Tiếp thị</h2>
-          <p className="text-muted-foreground text-sm mt-1">Cấu hình và theo dõi các kịch bản gửi tin/ưu đãi tự động tới khách hàng VIP.</p>
+      <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mb-6 shrink-0 text-left">
+        <div className="flex items-center gap-4 text-left">
+          <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-500 flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+            <motion.div
+              animate={{ 
+                scale: [1, 1.15, 0.95, 1.05, 1],
+                y: [0, -3, 3, -1, 0]
+              }}
+              transition={{ 
+                repeat: Infinity,
+                duration: 4.8,
+                ease: "easeInOut"
+              }}
+            >
+              <Zap className="w-8 h-8 text-indigo-500 fill-indigo-500/10" />
+            </motion.div>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">Tự động hóa Tiếp thị</h2>
+            <p className="text-muted-foreground text-sm mt-1">Cấu hình và theo dõi các kịch bản gửi tin/ưu đãi tự động tới khách hàng VIP.</p>
+          </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <TabsList>
-            <TabsTrigger value="automations"><ListRestart className="w-4 h-4 mr-2"/> Quy tắc tự động</TabsTrigger>
-            <TabsTrigger value="sendgrid"><Mail className="w-4 h-4 mr-2"/> SendGrid Email</TabsTrigger>
-            <TabsTrigger value="history"><HistoryIcon className="w-4 h-4 mr-2"/> Lịch sử phiên bản</TabsTrigger>
+        <div className="flex items-center space-x-4 shrink-0">
+          <TabsList className="bg-muted/60 p-1 rounded-xl border border-border/40">
+            <TabsTrigger value="automations" className="rounded-lg text-xs font-bold py-1.5 px-3 whitespace-nowrap"><ListRestart className="w-4 h-4 mr-2"/> Quy tắc tự động</TabsTrigger>
+            <TabsTrigger value="sendgrid" className="rounded-lg text-xs font-bold py-1.5 px-3 whitespace-nowrap"><Mail className="w-4 h-4 mr-2"/> SendGrid Email</TabsTrigger>
+            <TabsTrigger value="history" className="rounded-lg text-xs font-bold py-1.5 px-3 whitespace-nowrap"><HistoryIcon className="w-4 h-4 mr-2"/> Lịch sử phiên bản</TabsTrigger>
           </TabsList>
         </div>
       </div>

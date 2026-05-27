@@ -37,11 +37,10 @@ import { RedemptionRuleDialog } from "@/components/loyalty/RedemptionRuleDialog"
 import { EarnRuleDialog } from "@/components/loyalty/EarnRuleDialog";
 import { LoyaltyCampaignDialog } from "@/components/loyalty/LoyaltyCampaignDialog";
 import { SegmentationRuleDialog } from "@/components/loyalty/SegmentationRuleDialog";
-import { OfferAnalysis } from "@/components/loyalty/OfferAnalysis";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-type TabType = 'tiers' | 'segmentation' | 'engagement' | 'automation' | 'vip' | 'analytics';
+type TabType = 'tiers' | 'segmentation' | 'engagement' | 'automation' | 'vip';
 
 const COLOR_PRESET_MAP: Record<string, { badge: string; text: string; bg: string }> = {
   gold: { badge: 'bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/30', text: 'text-[#2f6cf5]', bg: 'bg-[#2f6cf5]' },
@@ -293,35 +292,53 @@ export function LoyaltyView() {
     { id: 'engagement', label: 'Tương tác & AI', icon: Scissors },
     { id: 'automation', label: 'Chiến dịch Tự động', icon: Zap },
     { id: 'vip', label: 'Đặc quyền VIP', icon: Gem },
-    { id: 'analytics', label: 'Phân tích & Tối ưu Ưu Đãi', icon: TrendingUp },
   ];
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-muted/10">
-      <div className="px-8 pt-8 pb-4 space-y-6 bg-background border-b border-border/50">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight font-heading">Chương trình Ưu đãi</h2>
-            <p className="text-muted-foreground text-sm mt-1">Xây dựng trọn vẹn đặc quyền và trải nghiệm VIP cho khách hàng.</p>
+      <div className="px-8 pt-6 pb-6 border-b border-border/50 shrink-0 space-y-6">
+        <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full">
+          <div className="flex items-center gap-4 text-left">
+            <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-500 flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.15, 0.95, 1.05, 1],
+                  rotate: [0, 15, -15, 10, 0]
+                }}
+                transition={{ 
+                  repeat: Infinity,
+                  duration: 5.5,
+                  ease: "easeInOut"
+                }}
+              >
+                <Trophy className="w-8 h-8 text-amber-500" />
+              </motion.div>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">Chương trình Ưu đãi</h2>
+              <p className="text-muted-foreground text-sm mt-1">Xây dựng trọn vẹn đặc quyền và trải nghiệm VIP cho khách hàng.</p>
+            </div>
           </div>
+
           <div className="flex gap-4">
-             <div className="hidden lg:flex items-center gap-6 px-6 py-3 bg-muted/30 rounded-2xl border border-border/50">
+             <div className="hidden lg:flex items-center gap-6 px-6 py-3 bg-muted/40 rounded-xl border border-border/50">
                 <div className="text-center">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold leading-none mb-1">Retention</p>
-                  <p className="text-lg font-bold">84%</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#2f6cf5] font-extrabold leading-none mb-1">Retention</p>
+                  <p className="text-lg font-extrabold text-foreground">84%</p>
                 </div>
                 <div className="w-px h-8 bg-border/50" />
                 <div className="text-center">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold leading-none mb-1">Referrals</p>
-                  <p className="text-lg font-bold">124</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#2f6cf5] font-extrabold leading-none mb-1">Referrals</p>
+                  <p className="text-lg font-extrabold text-foreground">124</p>
                 </div>
              </div>
              <button 
                 onClick={() => { setSelectedEarnRule(undefined); setShowEarnDialog(true); }}
-                className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center"
+                className="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center shrink-0 cursor-pointer"
               >
                 <Plus className="w-4 h-4 mr-2" /> Thiết lập mới
-              </button>
+             </button>
           </div>
         </div>
 
@@ -602,11 +619,13 @@ export function LoyaltyView() {
                                   
                                   return (
                                     <div key={cust.id} className="p-3 bg-muted/20 border border-border/40 rounded-xl flex items-center gap-3 hover:bg-muted/45 transition-all">
-                                      <img 
-                                        src={cust.avatarUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(cust.name)}`} 
-                                        className="w-8 h-8 rounded-lg border border-border/20 shadow-xs" 
-                                        alt="" 
-                                      />
+                                      {cust.avatarUrl ? (
+                                        <img src={cust.avatarUrl} className="w-8 h-8 rounded-lg border border-border/20 shadow-xs object-cover" alt="" />
+                                      ) : (
+                                        <div className="w-8 h-8 rounded-lg border border-border/20 shadow-xs bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold uppercase shrink-0">
+                                          {cust.name.slice(0, 2)}
+                                        </div>
+                                      )}
                                       <div className="flex-1 min-w-0">
                                         <h5 className="text-xs font-bold text-foreground truncate">{cust.name}</h5>
                                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono mt-0.5">
@@ -724,30 +743,7 @@ export function LoyaltyView() {
               </div>
             )}
 
-            {activeTab === 'analytics' && (
-              <div className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                   {[
-                     { label: "Mức độ hài lòng AI", value: "9.2/10", icon: Gem, color: 'text-indigo-500' },
-                     { label: "Tỷ lệ nâng hạng", value: "24.5%", icon: ArrowUpRight, color: 'text-emerald-500' },
-                     { label: "Churn Risk Score", value: "12 (Low)", icon: Zap, color: 'text-rose-500' },
-                     { label: "Referral GMV", value: "$12,400", icon: Users, color: 'text-blue-500' },
-                   ].map((stat, i) => (
-                     <Card key={i} className="p-5 flex flex-col justify-between border-border/50 bg-card/50">
-                        <div className="flex justify-between items-start">
-                           <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</span>
-                           <stat.icon className={cn("w-4 h-4", stat.color)} />
-                        </div>
-                        <div className="mt-4">
-                           <h4 className="text-2xl font-black">{stat.value}</h4>
-                        </div>
-                     </Card>
-                   ))}
-                </div>
 
-                <OfferAnalysis campaigns={campaigns} customers={customers} />
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
       </div>

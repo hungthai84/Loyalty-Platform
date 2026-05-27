@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Download, Plus, Settings, Facebook, Linkedin, Instagram, ArrowRight, User } from "lucide-react";
+import { Search, Filter, Download, Plus, Settings, Facebook, Linkedin, Instagram, ArrowRight, User, Upload } from "lucide-react";
 import * as motion from "motion/react-client";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -11,6 +11,7 @@ import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
 import { Customer, AttributeDefinition, Company } from "@/types";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
 import { AddCustomerDialog } from "@/components/customers/AddCustomerDialog";
+import { ImportCustomersDialog } from "@/components/customers/ImportCustomersDialog";
 import { AttributeManager } from "@/components/customers/AttributeManager";
 import { CustomerDashboard } from "@/components/customers/CustomerDashboard";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
@@ -36,6 +37,7 @@ export function CustomersView() {
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showAttrManager, setShowAttrManager] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [search, setSearch] = useState("");
   
   // New state to view a single customer details dashboard
@@ -151,24 +153,49 @@ export function CustomersView() {
         />
       ) : (
         <>
-          <div className="flex items-center justify-between space-y-2">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight font-heading">Danh sách Khách hàng</h2>
-              <p className="text-muted-foreground text-sm mt-1">Quản lý hồ sơ cá nhân, liên kết mạng xã hội đa điểm và điểm số.</p>
+          <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full">
+            <div className="flex items-center gap-4 text-left">
+              <div className="p-3 bg-primary/10 rounded-2xl text-primary flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.15, 0.95, 1.05, 1],
+                    y: [0, -3, 3, -1, 0]
+                  }}
+                  transition={{ 
+                    repeat: Infinity,
+                    duration: 5,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <User className="w-8 h-8 text-[#2f6cf5]" />
+                </motion.div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">Danh sách Khách hàng</h2>
+                <p className="text-muted-foreground text-sm mt-1">Quản lý hồ sơ cá nhân, liên kết mạng xã hội đa điểm và điểm số.</p>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
+
+            <div className="flex flex-wrap items-center gap-2">
               <button 
                 onClick={() => setShowAttrManager(true)}
-                className="flex items-center justify-center px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors"
+                className="flex items-center justify-center px-4 py-2 border border-border rounded-xl text-sm font-medium bg-card hover:bg-muted transition-colors"
               >
-                <Settings className="w-4 h-4 mr-2" /> Trường tùy chỉnh
+                <Settings className="w-4 h-4 mr-2 text-muted-foreground" /> Trường tùy chỉnh
               </button>
-              <button className="flex items-center justify-center px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors">
-                <Download className="w-4 h-4 mr-2" /> Xuất dữ liệu
+              <button className="flex items-center justify-center px-4 py-2 border border-border rounded-xl text-sm font-medium bg-card hover:bg-muted transition-colors">
+                <Download className="w-4 h-4 mr-2 text-muted-foreground" /> Xuất dữ liệu
+              </button>
+              <button 
+                onClick={() => setShowImportDialog(true)}
+                className="flex items-center justify-center px-4 py-2 bg-card border border-border rounded-xl text-sm font-medium hover:bg-muted transition-colors text-foreground"
+              >
+                <Upload className="w-4 h-4 mr-2 text-[#2f6cf5]" /> Nhập CSV
               </button>
               <button 
                 onClick={() => setShowAddDialog(true)}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors flex items-center"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors flex items-center shadow-lg shadow-primary/25 font-bold cursor-pointer"
               >
                 <Plus className="w-4 h-4 mr-2" /> Thêm khách hàng
               </button>
@@ -256,13 +283,12 @@ export function CustomersView() {
                         {/* AVATAR + NAME */}
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl overflow-hidden border border-border bg-background shrink-0 shadow-xs">
-                              <img 
-                                src={customer.avatarUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(customer.name)}`} 
-                                className="w-full h-full object-cover" 
-                                alt={customer.name}
-                                onError={(e) => { (e.target as any).src = "https://api.dicebear.com/7.x/pixel-art/svg"; }}
-                              />
+                            <div className="w-9 h-9 rounded-xl overflow-hidden border border-border bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-xs font-bold text-xs uppercase">
+                              {customer.avatarUrl ? (
+                                <img src={customer.avatarUrl} className="w-full h-full object-cover" alt={customer.name} />
+                              ) : (
+                                customer.name.slice(0, 2)
+                              )}
                             </div>
                             <div>
                               <div className="font-extrabold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5 flex-wrap">
@@ -403,6 +429,15 @@ export function CustomersView() {
         <AttributeManager 
           onClose={() => setShowAttrManager(false)} 
           attributes={attributes}
+        />
+      )}
+
+      {showImportDialog && (
+        <ImportCustomersDialog 
+          onClose={() => setShowImportDialog(false)} 
+          attributes={attributes}
+          companies={companies}
+          userId={user.uid}
         />
       )}
     </div>

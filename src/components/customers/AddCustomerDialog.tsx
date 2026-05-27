@@ -28,7 +28,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
-  const [activityStatus, setActivityStatus] = useState('ACTIVE');
+  const [activityStatus, setActivityStatus] = useState('NEW_MEMBER');
   const [companies, setCompanies] = useState<Company[]>([]);
   const [customFields, setCustomFields] = useState<Record<string, any>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -85,7 +85,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
     const path = `users/${user.uid}/customers/${customerId}`;
 
     // Select default avatar if empty
-    const finalAvatar = avatarUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(name)}`;
+    const finalAvatar = avatarUrl;
 
     try {
       await setDoc(doc(db, path), {
@@ -209,20 +209,89 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
                 <div className="pt-4 border-t mt-4 space-y-3">
                   <h4 className="text-xs font-bold text-primary uppercase tracking-wider pb-1">Trường thông tin bổ sung</h4>
                   <div className="grid grid-cols-2 gap-4">
-                    {attributes.map(attr => (
-                      <div key={attr.id} className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-muted-foreground">{attr.label}</label>
-                        <input 
-                          type={attr.type === 'number' ? 'number' : 'text'}
-                          className="w-full px-3 py-1.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                          value={customFields[attr.key] || ''}
-                          onChange={e => setCustomFields({
-                            ...customFields,
-                            [attr.key]: attr.type === 'number' ? Number(e.target.value) : e.target.value
-                          })}
-                        />
-                      </div>
-                    ))}
+                    {attributes.map(attr => {
+                      const value = customFields[attr.key] || '';
+                      
+                      return (
+                        <div key={attr.id} className="space-y-1.5 col-span-2 md:col-span-1">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1">
+                            {attr.label}
+                            {attr.isRequired && <span className="text-destructive">*</span>}
+                          </label>
+                          
+                          {attr.type === 'textarea' ? (
+                            <textarea 
+                              className="w-full px-3 py-2 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[80px] resize-y"
+                              placeholder={attr.placeholder}
+                              value={value}
+                              onChange={e => setCustomFields({ ...customFields, [attr.key]: e.target.value })}
+                            />
+                          ) : attr.type === 'select' ? (
+                            <select
+                              className="w-full px-3 py-2 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                              value={value}
+                              onChange={e => setCustomFields({ ...customFields, [attr.key]: e.target.value })}
+                            >
+                              <option value="">-- Chọn --</option>
+                              {attr.options?.map(opt => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                          ) : attr.type === 'radio' ? (
+                            <div className="flex flex-wrap gap-3 pt-1">
+                              {attr.options?.map(opt => (
+                                <label key={opt} className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-foreground">
+                                  <input 
+                                    type="radio" 
+                                    name={attr.key} 
+                                    value={opt} 
+                                    checked={value === opt}
+                                    onChange={e => setCustomFields({ ...customFields, [attr.key]: e.target.value })}
+                                    className="accent-primary w-3.5 h-3.5"
+                                  />
+                                  <span>{opt}</span>
+                                </label>
+                              ))}
+                            </div>
+                          ) : attr.type === 'checkbox' ? (
+                            <div className="flex flex-wrap gap-3 pt-1">
+                              {attr.options?.map(opt => {
+                                const currentValues = Array.isArray(value) ? value : (value ? [value] : []);
+                                const isChecked = currentValues.includes(opt);
+                                return (
+                                  <label key={opt} className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-foreground">
+                                    <input 
+                                      type="checkbox" 
+                                      value={opt} 
+                                      checked={isChecked}
+                                      onChange={e => {
+                                        const newValues = isChecked 
+                                          ? currentValues.filter(v => v !== opt)
+                                          : [...currentValues, opt];
+                                        setCustomFields({ ...customFields, [attr.key]: newValues });
+                                      }}
+                                      className="accent-primary w-3.5 h-3.5 rounded-sm"
+                                    />
+                                    <span>{opt}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <input 
+                              type={attr.type === 'number' ? 'number' : attr.type === 'time' ? 'time' : attr.type === 'date' ? 'date' : 'text'}
+                              className="w-full px-3 py-2 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                              placeholder={attr.placeholder}
+                              value={value}
+                              onChange={e => setCustomFields({
+                                ...customFields,
+                                [attr.key]: attr.type === 'number' ? Number(e.target.value) : e.target.value
+                              })}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -253,11 +322,11 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl border border-border overflow-hidden bg-background shrink-0 shadow-sm flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl border border-border overflow-hidden bg-primary/10 shrink-0 shadow-sm flex items-center justify-center text-primary font-bold text-xl uppercase">
                     {avatarUrl ? (
-                      <img src={avatarUrl} className="w-full h-full object-cover" alt="Preview" onError={(e) => { (e.target as any).src = "https://api.dicebear.com/7.x/pixel-art/svg"; }} />
+                      <img src={avatarUrl} className="w-full h-full object-cover" alt="Preview" />
                     ) : (
-                      <div className="text-[10px] text-muted-foreground font-semibold text-center p-1">Tự động tạo</div>
+                      name ? name.slice(0, 2) : "KH"
                     )}
                   </div>
                   <div className="flex-1 space-y-1">
@@ -278,13 +347,6 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
                           <img src={p} className="w-full h-full object-cover" />
                         </button>
                       ))}
-                      <button 
-                        type="button" 
-                        onClick={() => setAvatarUrl(`https://api.dicebear.com/7.x/adventurer/svg?seed=${name || 'happy'}`)}
-                        className="text-[9px] font-bold hover:underline ml-1.5 text-[#2f6cf5]"
-                      >
-                        Tạo Avatar vẽ tay ⚡
-                      </button>
                     </div>
                   </div>
                 </div>
