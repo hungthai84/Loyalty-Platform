@@ -239,15 +239,15 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
     <div className="space-y-6">
       
       {/* Title Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-sidebar/50 border border-[#D4AF37]/20 rounded-3xl backdrop-blur-md gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-sidebar/50 border border-[#2f6cf5]/20 rounded-3xl backdrop-blur-md gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-[#D4AF37]/10 rounded-2xl text-[#D4AF37]">
+          <div className="p-2.5 bg-[#2f6cf5]/10 rounded-2xl text-[#2f6cf5]">
             <Calculator className="w-6 h-6 animate-pulse" />
           </div>
           <div>
             <h3 className="text-lg font-black tracking-tight text-foreground flex items-center gap-2">
               Mô phỏng & Phân tích Hiệu Quả Ưu Đãi VIP
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[9px] font-black uppercase tracking-wider rounded border border-[#D4AF37]/20 leading-none">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#2f6cf5]/10 text-[#2f6cf5] text-[9px] font-black uppercase tracking-wider rounded border border-[#2f6cf5]/20 leading-none">
                 <Sparkles className="w-3 h-3" /> AI Simulation Model
               </span>
             </h3>
@@ -275,8 +275,8 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
         
         {/* Controls Column */}
         <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-xs space-y-4">
-          <h4 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest border-b pb-2.5 border-border/40 flex items-center gap-1.5 font-mono">
-            <Layers className="w-4 h-4 text-[#D4AF37]" /> THIẾT LẬP THAM SỐ CHIẾN DỊCH
+          <h4 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest border-b pb-2.5 border-border/40 flex items-center gap-1.5 font-mono">
+            <Layers className="w-4 h-4 text-[#2f6cf5]" /> THIẾT LẬP THAM SỐ CHIẾN DỊCH
           </h4>
 
           <div className="space-y-4 pr-1">
@@ -293,7 +293,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
                 step="10"
                 value={targetSize} 
                 onChange={(e) => setTargetSize(Number(e.target.value))} 
-                className="w-full accent-[#D4AF37]" 
+                className="w-full accent-[#2f6cf5]" 
               />
               <div className="flex justify-between text-[10px] text-muted-foreground leading-none">
                 <span>10 KH</span>
@@ -305,7 +305,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
             <div className="space-y-1">
               <div className="flex justify-between text-xs font-semibold">
                 <span className="text-muted-foreground">Ưu đãi / Quà cấp (Mỗi VIP)</span>
-                <span className="text-foreground font-mono font-bold text-[#D4AF37]">{formatShortVND(incentiveValue)}</span>
+                <span className="text-foreground font-mono font-bold text-[#2f6cf5]">{formatShortVND(incentiveValue)}</span>
               </div>
               <input 
                 type="range" 
@@ -314,7 +314,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
                 step="100000"
                 value={incentiveValue} 
                 onChange={(e) => setIncentiveValue(Number(e.target.value))} 
-                className="w-full accent-[#D4AF37]" 
+                className="w-full accent-[#2f6cf5]" 
               />
               <div className="flex justify-between text-[10px] text-muted-foreground leading-none">
                 <span>100K ₫</span>
@@ -335,7 +335,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
                 step="1"
                 value={redemptionRate} 
                 onChange={(e) => setRedemptionRate(Number(e.target.value))} 
-                className="w-full accent-[#D4AF37]" 
+                className="w-full accent-[#2f6cf5]" 
               />
               <div className="flex justify-between text-[10px] text-muted-foreground leading-none">
                 <span>5%</span>
@@ -356,7 +356,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
                 step="1000000"
                 value={expectedAOV} 
                 onChange={(e) => setExpectedAOV(Number(e.target.value))} 
-                className="w-full accent-[#D4AF37]" 
+                className="w-full accent-[#2f6cf5]" 
               />
               <div className="flex justify-between text-[10px] text-muted-foreground leading-none">
                 <span>2 Tr ₫</span>
@@ -403,9 +403,9 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
 
             <div className="p-4 bg-sidebar/50 rounded-2xl border border-border/50 flex flex-col justify-between">
               <span className="text-[10px] uppercase font-bold text-muted-foreground leading-none flex items-center gap-1">
-                <Coins className="w-3.5 h-3.5 text-[#D4AF37]" /> Tổng chi phí
+                <Coins className="w-3.5 h-3.5 text-[#2f6cf5]" /> Tổng chi phí
               </span>
-              <h4 className="text-2xl font-black font-heading mt-2 font-mono text-[#D4AF37] truncate">
+              <h4 className="text-2xl font-black font-heading mt-2 font-mono text-[#2f6cf5] truncate">
                 {formatShortVND(calculatedMetrics.totalCost)}
               </h4>
               <span className="text-[9px] text-muted-foreground mt-2 block border-t pt-1.5 font-mono">
@@ -425,7 +425,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
               </span>
             </div>
 
-            <div className="p-4 bg-sidebar/50 rounded-2xl border border-[#D4AF37]/30 flex flex-col justify-between relative overflow-hidden">
+            <div className="p-4 bg-sidebar/50 rounded-2xl border border-[#2f6cf5]/30 flex flex-col justify-between relative overflow-hidden">
               <div className="absolute top-0 right-0 w-12 h-12 bg-primary/5 rounded-full blur-xs" />
               <span className="text-[10px] uppercase font-bold text-primary leading-none flex items-center gap-1">
                 <Percent className="w-3.5 h-3.5" /> Tỷ lệ hoàn vốn ROI
@@ -447,8 +447,8 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
                 <AreaChart data={cumulativeTrendData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorCostSim" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.25}/>
-                      <stop offset="95%" stopColor="#D4AF37" stopOpacity={0.0}/>
+                      <stop offset="5%" stopColor="#2f6cf5" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#2f6cf5" stopOpacity={0.0}/>
                     </linearGradient>
                     <linearGradient id="colorRevSim" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10B981" stopOpacity={0.25}/>
@@ -459,7 +459,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
                   <XAxis dataKey="name" stroke="#888" fontSize={10} tickLine={false} />
                   <YAxis stroke="#888" fontSize={10} tickLine={false} unit="M" />
                   <Tooltip contentStyle={{ backgroundColor: "rgba(9, 9, 11, 0.95)", borderRadius: "12px", border: "1px solid rgba(128,128,128,0.2)", color: "#fff" }} />
-                  <Area type="monotone" name="Chi phí tích lũy (Tr ₫)" dataKey="Tổng chi phí lũy kế" stroke="#D4AF37" strokeWidth={2} fillOpacity={1} fill="url(#colorCostSim)" />
+                  <Area type="monotone" name="Chi phí tích lũy (Tr ₫)" dataKey="Tổng chi phí lũy kế" stroke="#2f6cf5" strokeWidth={2} fillOpacity={1} fill="url(#colorCostSim)" />
                   <Area type="monotone" name="Doanh thu tích lũy (Tr ₫)" dataKey="Doanh thu bồi đắp lũy kế" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorRevSim)" />
                 </AreaChart>
               </ResponsiveContainer>
@@ -478,7 +478,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
                     <XAxis dataKey="name" stroke="#888" fontSize={9} tickLine={false} />
                     <YAxis stroke="#888" fontSize={9} tickLine={false} unit="M" />
                     <Tooltip />
-                    <Bar name="Tổng chi (Tr)" dataKey="cost" fill="#D4AF37" radius={[3, 3, 0, 0]} />
+                    <Bar name="Tổng chi (Tr)" dataKey="cost" fill="#2f6cf5" radius={[3, 3, 0, 0]} />
                     <Bar name="Doanh số (Tr)" dataKey="revenue" fill="#10b981" radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -486,9 +486,9 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
             </div>
 
             {/* Right side: AI Advisor call */}
-            <div className="bg-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-2xl p-5 flex flex-col justify-between">
+            <div className="bg-[#2f6cf5]/5 border border-[#2f6cf5]/20 rounded-2xl p-5 flex flex-col justify-between">
               <div>
-                <span className="text-[9px] uppercase font-bold tracking-widest text-[#D4AF37] block">AI Advisor Suite</span>
+                <span className="text-[9px] uppercase font-bold tracking-widest text-[#2f6cf5] block">AI Advisor Suite</span>
                 <h5 className="text-xs font-bold text-foreground mt-1">Chẩn đoán và Đề xuất Thâm dụng ngân sách</h5>
                 <p className="text-[10px] text-muted-foreground mt-1.5 leading-relaxed">
                   Gửi các tham số chiến dịch đang cấu hình lên mô hình phân tích để dò soát lỗi biên lợi nhuận.
@@ -498,7 +498,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
               <button
                 onClick={runAIEstimation}
                 disabled={aiOptimizing}
-                className="w-full mt-3 py-2 bg-[#D4AF37] hover:bg-[#C5A028] disabled:opacity-50 text-slate-950 font-black rounded-xl text-[10px] flex items-center justify-center gap-1 px-3 transition-all tracking-wider uppercase cursor-pointer"
+                className="w-full mt-3 py-2 bg-[#2f6cf5] hover:bg-[#1652f1] disabled:opacity-50 text-slate-950 font-black rounded-xl text-[10px] flex items-center justify-center gap-1 px-3 transition-all tracking-wider uppercase cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 {aiOptimizing ? "Chẩn đoán..." : "Tối ưu hóa bằng AI"}
@@ -512,22 +512,22 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
 
       {/* AI Analysis detailed feedback block */}
       {aiAnalysisResult && (
-        <div className="bg-gradient-to-r from-[#D4AF37]/10 via-[#D4AF37]/5 to-[#D4AF37]/10 border border-[#D4AF37]/40 rounded-3xl p-6 relative overflow-hidden animate-fade-in">
+        <div className="bg-gradient-to-r from-[#2f6cf5]/10 via-[#2f6cf5]/5 to-[#2f6cf5]/10 border border-[#2f6cf5]/40 rounded-3xl p-6 relative overflow-hidden animate-fade-in">
           
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-            <Gem className="w-40 h-40 text-[#D4AF37]" />
+            <Gem className="w-40 h-40 text-[#2f6cf5]" />
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#D4AF37]/30 pb-4 gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#2f6cf5]/30 pb-4 gap-4">
             <div className="flex items-center gap-3">
-              <span className="text-3xl font-black text-[#D4AF37]">{aiAnalysisResult.score}</span>
+              <span className="text-3xl font-black text-[#2f6cf5]">{aiAnalysisResult.score}</span>
               <div>
                 <h4 className="text-sm font-black text-foreground uppercase tracking-wide">Điểm Khả thi & Tối Ưu Chiến Dịch (Campaign Score)</h4>
                 <p className="text-xs text-muted-foreground mt-0.5">Dựa trên tỷ suất, giá trị gán, và tần suất mua lặp lại của hội viên.</p>
               </div>
             </div>
             
-            <div className="px-4 py-1.5 border border-[#D4AF37]/30 bg-[#D4AF37]/10 text-[#D4AF37] text-xs font-bold uppercase rounded-xl">
+            <div className="px-4 py-1.5 border border-[#2f6cf5]/30 bg-[#2f6cf5]/10 text-[#2f6cf5] text-xs font-bold uppercase rounded-xl">
               Cấp độ: {aiAnalysisResult.score >= 85 ? "Khuyến khích chạy" : "Cần tinh chỉnh gấp"}
             </div>
           </div>
@@ -553,14 +553,14 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
           </div>
 
           {/* AI Ideal Parameters display table */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-5 border-t border-[#D4AF37]/20 bg-background/40 p-4 rounded-2xl border border-border/40">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-5 border-t border-[#2f6cf5]/20 bg-background/40 p-4 rounded-2xl border border-border/40">
             <div className="space-y-0.5">
               <span className="text-[9px] text-muted-foreground uppercase font-bold">Mức Hóa Đơn Tối Thiểu (Suggested Threshold)</span>
               <p className="text-xs font-black text-foreground font-mono">{formatVND(aiAnalysisResult.minSpendRequirement)}</p>
             </div>
             <div className="space-y-0.5">
               <span className="text-[9px] text-muted-foreground uppercase font-bold">Giá Trị Ưu Đãi Tối Ưu (Suggested Incentive)</span>
-              <p className="text-xs font-black text-[#D4AF37] font-mono">{formatVND(aiAnalysisResult.suggestedIncentive)}</p>
+              <p className="text-xs font-black text-[#2f6cf5] font-mono">{formatVND(aiAnalysisResult.suggestedIncentive)}</p>
             </div>
             <div className="space-y-0.5">
               <span className="text-[9px] text-muted-foreground uppercase font-bold">Chỉ tiêu AOV Nhắm mục tiêu (Suggested AOV Target)</span>

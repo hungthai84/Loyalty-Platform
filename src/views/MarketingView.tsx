@@ -126,8 +126,147 @@ export function MarketingView() {
     return unsub;
   }, [user]);
 
-  // Combine real database list and static Fallbacks
+  // Combined real database list and static Fallbacks
   const availableVips = dbCustomers.length > 0 ? dbCustomers : STATIC_VIP_CUSTOMERS;
+
+  // SendGrid Custom Email States
+  const [sgApiKey, setSgApiKey] = useState("");
+  const [sgFromEmail, setSgFromEmail] = useState("vip@seva-atelier.com");
+  const [sgFromName, setSgFromName] = useState("Atelier Luxury Club");
+  const [sgToEmail, setSgToEmail] = useState(user?.email || "hungthai84@gmail.com");
+  const [sgSubject, setSgSubject] = useState("✨ Quà Tặng Sinh Nhật Đặc Quyền: Chúc Mừng Sinh Nhật Quý Hội Viên!");
+  const [sgGreetingText, setSgGreetingText] = useState(
+    "Chúc mừng ngày sinh nhật của bạn! Atelier thân gửi tới bạn những lời chúc mừng thăng hoa nhất. Như một món quà bồi đắp tri ân, chúng tôi đã tự động gửi tặng mã ưu đãi đặc quyền trị giá 5.000 điểm tích lũy cùng mã giảm giá BST Thượng Vy hoàn toàn miễn phí."
+  );
+  const [sgVoucherCode, setSgVoucherCode] = useState("BDAYVIP5000");
+  const [sgTheme, setSgTheme] = useState<"gold_luxury" | "royal_deco" | "minimal">("gold_luxury");
+  const [isSendingSgTest, setIsSendingSgTest] = useState(false);
+  const [showSgHelpModal, setShowSgHelpModal] = useState(false);
+
+  const getSgHtmlPreview = () => {
+    const greetingHtml = sgGreetingText.replace(/\n/g, "<br />");
+    if (sgTheme === "gold_luxury") {
+      return `
+        <div style="font-family: sans-serif; background-color: #0b0f19; color: #f3f4f6; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 2px solid #d4af37; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15);">
+          <div style="text-align: center; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 25px; margin-bottom: 30px;">
+            <h1 style="color: #d4af37; font-size: 26px; letter-spacing: 3px; margin: 0 0 10px 0; text-transform: uppercase;">ATELIER HAUTE JOAILLERIE</h1>
+            <p style="color: #9ca3af; font-size: 11px; letter-spacing: 2px; margin: 0; text-transform: uppercase;">The Elite Loyalty Circle</p>
+          </div>
+          <div style="padding: 10px 20px; text-align: center;">
+            <p style="color: #d4af37; font-size: 13px; font-style: italic; margin-bottom: 25px; letter-spacing: 1px;">Kính gửi Quý Khách,</p>
+            <h2 style="font-size: 22px; color: #ffffff; margin-bottom: 20px; font-weight: 300; line-height: 1.4;">Đặc Quyền Tuổi Mới - Thăng Hoa Thịnh Vượng</h2>
+            <div style="font-size: 14px; line-height: 1.8; color: #d1d5db; margin-bottom: 35px; text-align: justify;">
+              ${greetingHtml}
+            </div>
+            <div style="background: linear-gradient(135deg, #111827 0%, #1f2937 100%); border: 1px dashed #d4af37; padding: 25px; border-radius: 12px; margin-bottom: 40px; text-align: center;">
+              <span style="display: block; font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">Mã Ưu Đãi Sinh Nhật Độc Quyền</span>
+              <strong style="display: block; font-size: 24px; color: #d4af37; font-family: monospace; letter-spacing: 3px; font-weight: bold; margin-bottom: 12px;">${sgVoucherCode}</strong>
+              <span style="font-size: 11px; color: #9ca3af; display: block;">Mã có hiệu lực trong 30 ngày • Miễn phí vận chuyển toàn quốc</span>
+            </div>
+            <a href="#" style="background-color: #d4af37; color: #0b0f19; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; padding: 14px 28px; text-decoration: none; border-radius: 4px; display: inline-block;">Kích Hoạt Đặc Quyền VIP</a>
+          </div>
+          <div style="margin-top: 45px; padding-top: 25px; border-top: 1px solid rgba(212, 175, 55, 0.2); text-align: center; font-size: 10px; color: #6b7280; line-height: 1.6;">
+            Trân trọng gửi chúc,<br />
+            <strong>Ban Quản Trị Atelier Haute Club</strong><br />
+            Showroom Trung Tâm & Lounge VIP sảnh sâm panh • Hotline hỗ trợ 1900-SEVAGO
+          </div>
+        </div>
+      `;
+    } else if (sgTheme === "royal_deco") {
+      return `
+        <div style="font-family: Georgia, serif; background-color: #fffdec; color: #1e293b; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 3px double #1e3a8a; box-shadow: 0 4px 15px rgba(30, 58, 138, 0.08);">
+          <div style="text-align: center; border-bottom: 2px double #1e3a8a; padding-bottom: 20px; margin-bottom: 25px;">
+            <span style="font-size: 24px; font-weight: bold; color: #1e3a8a; letter-spacing: 2px;">ROYAL DECO SEVA</span>
+            <div style="font-size: 10px; color: #475569; letter-spacing: 1px; margin-top: 5px;">EXCLUSIVE LUXURY RELATIONS</div>
+          </div>
+          <div style="padding: 10px 15px; text-align: center;">
+            <h3 style="font-size: 20px; color: #1e3a8a;">Chúc Mừng Sinh Nhật Thành viên VIP!</h3>
+            <p style="font-size: 13px; line-height: 1.7; color: #334155; margin: 20px 0; text-align: justify;">
+              ${greetingHtml}
+            </p>
+            <div style="background-color: #1e3a8a; color: #fffdec; padding: 20px; margin: 30px auto; max-width: 320px; border-radius: 8px; text-align: center;">
+              <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; display: block;">MÃ QUÀ SANG TRỌNG</span>
+              <strong style="font-size: 22px; font-weight: bold; font-family: monospace; margin-top: 5px; letter-spacing: 2px; display: block;">${sgVoucherCode}</strong>
+            </div>
+          </div>
+          <div style="text-align: center; font-size: 10px; color: #64748b; margin-top: 40px; border-top: 1px solid #cbd5e1; padding-top: 20px; line-height: 1.5;">
+            Cảm ơn quý hội viên đã chọn Seva làm bạn đồng hành trọn đời.<br />
+            Phòng Dịch Vụ Khách Hàng Thượng Lưu Seva Services.
+          </div>
+        </div>
+      `;
+    } else {
+      return `
+        <div style="font-family: sans-serif; color: #111827; background-color: #f9fafb; padding: 30px; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <h2 style="font-size: 20px; font-weight: bold; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px; margin-bottom: 20px;">Đặc Quyền Sinh Nhật Hội Viên</h2>
+          <p style="font-size: 14px; line-height: 1.6; color: #374151;">
+            ${greetingHtml}
+          </p>
+          <div style="background-color: #f3f4f6; border-left: 4px solid #2f6cf5; padding: 15px; margin: 25px 0;">
+            <span style="font-size: 11px; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 4px;">Mã Ưu Đãi</span>
+            <strong style="font-size: 18px; font-weight: bold; font-family: monospace; color: #2f6cf5;">${sgVoucherCode}</strong>
+          </div>
+          <div style="font-size: 11px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 30px;">
+            Đây là email tự động gửi từ hệ thống loyalty SEVA CRM.
+          </div>
+        </div>
+      `;
+    }
+  };
+
+  const handleSendSendGridTest = async () => {
+    setIsSendingSgTest(true);
+    const toastId = toast.loading("Đang thiết lập kết nối tới SendGrid API...");
+    try {
+      const response = await fetch("/api/sendgrid/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          apiKey: sgApiKey,
+          fromEmail: sgFromEmail,
+          fromName: sgFromName,
+          toEmail: sgToEmail,
+          subject: sgSubject,
+          htmlContent: getSgHtmlPreview()
+        })
+      });
+
+      const resData = await response.json().catch(() => ({}));
+      if (response.ok && resData.success) {
+        toast.success(resData.message || "Gửi email SendGrid thành công!", { id: toastId });
+        setSimulatedLogs(prev => [{
+          time: new Date().toLocaleTimeString("vi-VN", { hour12: false }),
+          customerName: "Test Recipient",
+          campaignName: "SendGrid Birthday",
+          channel: "Email",
+          status: "Đã phân phát",
+          preview: sgSubject.substring(0, 40) + "..."
+        }, ...prev]);
+      } else {
+        toast.error(resData.message || "Không thể truyền phát qua SendGrid API", { id: toastId });
+        setShowSgHelpModal(true);
+      }
+    } catch (err: any) {
+      toast.error(`Lỗi kết nối API: ${err.message}`, { id: toastId });
+    } finally {
+      setIsSendingSgTest(false);
+    }
+  };
+
+  const handleSimulateLocalDispatch = () => {
+    const toastId = toast.loading("Mô phỏng gửi tin...");
+    setTimeout(() => {
+      toast.success("Sandbox Simulator: Sinh nhật của Thai Hong Hung đã kích hoạt gửi Email SendGrid thành công (Giả lập)!", { id: toastId });
+      setSimulatedLogs(prev => [{
+        time: new Date().toLocaleTimeString("vi-VN", { hour12: false }),
+        customerName: "Thái Hồng Hưng",
+        campaignName: "SendGrid Birthday",
+        channel: "Email (Sim)",
+        status: "Đã phân phát",
+        preview: sgSubject.substring(0, 40) + "..."
+      }, ...prev]);
+    }, 1000);
+  };
 
   const handleNodeClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -320,6 +459,7 @@ export function MarketingView() {
         <div className="flex items-center space-x-4">
           <TabsList>
             <TabsTrigger value="automations"><ListRestart className="w-4 h-4 mr-2"/> Quy tắc tự động</TabsTrigger>
+            <TabsTrigger value="sendgrid"><Mail className="w-4 h-4 mr-2"/> SendGrid Email</TabsTrigger>
             <TabsTrigger value="history"><HistoryIcon className="w-4 h-4 mr-2"/> Lịch sử phiên bản</TabsTrigger>
           </TabsList>
         </div>
@@ -331,7 +471,7 @@ export function MarketingView() {
           
           {/* Top Summary Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-card p-5 rounded-2xl border border-border shadow-xs group hover:border-[#D4AF37]/30 transition-all flex items-center justify-between">
+            <div className="bg-card p-5 rounded-2xl border border-border shadow-xs group hover:border-[#2f6cf5]/30 transition-all flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -380,7 +520,7 @@ export function MarketingView() {
                   <div className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Tỷ lệ đổi quà</div>
                 </div>
               </div>
-              <Badge variant="outline" className="text-[9px] border-[#D4AF37]/35 bg-[#D4AF37]/10 text-[#D4AF37]">ROI Cao</Badge>
+              <Badge variant="outline" className="text-[9px] border-[#2f6cf5]/35 bg-[#2f6cf5]/10 text-[#2f6cf5]">ROI Cao</Badge>
             </div>
           </div>
 
@@ -394,13 +534,13 @@ export function MarketingView() {
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="bg-card border border-[#D4AF37]/40 rounded-2xl p-6 shadow-md relative overflow-hidden"
+                  className="bg-card border border-[#2f6cf5]/40 rounded-2xl p-6 shadow-md relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
-                    <Sparkles className="w-24 h-24 text-[#D4AF37]" />
+                    <Sparkles className="w-24 h-24 text-[#2f6cf5]" />
                   </div>
 
-                  <h3 className="font-black text-sm text-[#D4AF37] uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="font-black text-sm text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2">
                     <Plus className="w-4 h-4" /> Thiết Thừa Quy Tắc Tự Động Mới
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">Xây dựng trình kích hoạt CRM và nội dung phản ứng.</p>
@@ -415,7 +555,7 @@ export function MarketingView() {
                           value={newCamName}
                           onChange={(e) => setNewCamName(e.target.value)}
                           placeholder="Ví dụ: Tri Ân Phân Cấp Atelier"
-                          className="w-full text-xs p-2.5 bg-background border rounded-xl font-semibold outline-none focus:ring-1 focus:ring-[#D4AF37]/50"
+                          className="w-full text-xs p-2.5 bg-background border rounded-xl font-semibold outline-none focus:ring-1 focus:ring-[#2f6cf5]/50"
                         />
                       </div>
 
@@ -459,7 +599,7 @@ export function MarketingView() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-[#D4AF37] uppercase flex items-center gap-1.5 font-mono">
+                      <label className="text-[10px] font-bold text-[#2f6cf5] uppercase flex items-center gap-1.5 font-mono">
                         Nội dung bản tin (Template Content)
                       </label>
                       <textarea
@@ -468,7 +608,7 @@ export function MarketingView() {
                         value={newCamTemplate}
                         onChange={(e) => setNewCamTemplate(e.target.value)}
                         placeholder="Chào {customer_name}! Atelier Thương Vy thân tặng ưu đãi đổi điểm đặc quyền VIP..."
-                        className="w-full text-xs p-2.5 bg-background border rounded-xl outline-none focus:ring-1 focus:ring-[#D4AF37]/50"
+                        className="w-full text-xs p-2.5 bg-background border rounded-xl outline-none focus:ring-1 focus:ring-[#2f6cf5]/50"
                       />
                     </div>
 
@@ -482,7 +622,7 @@ export function MarketingView() {
                       </button>
                       <button
                         type="submit"
-                        className="px-4 py-1.5 text-xs font-bold bg-[#D4AF37] text-slate-950 hover:bg-[#C5A028] rounded-xl transition-all uppercase"
+                        className="px-4 py-1.5 text-xs font-bold bg-[#2f6cf5] text-slate-950 hover:bg-[#1652f1] rounded-xl transition-all uppercase"
                       >
                         Lưu quy tắc
                       </button>
@@ -503,7 +643,7 @@ export function MarketingView() {
                   {!newRuleOpen && (
                     <button 
                       onClick={() => setNewRuleOpen(true)}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] rounded-xl text-xs font-bold transition-all cursor-pointer"
+                      className="flex items-center gap-1 px-3 py-1.5 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-xl text-xs font-bold transition-all cursor-pointer"
                     >
                       <Plus className="w-4 h-4" /> Thêm quy tắc
                     </button>
@@ -594,7 +734,7 @@ export function MarketingView() {
                 </div>
 
                 <h3 className="font-black text-sm text-foreground uppercase tracking-wider flex items-center gap-1.5 border-b pb-2.5 border-border/80">
-                  <Smartphone className="w-4 h-4 text-[#D4AF37]" /> Trình Mô Phỏng Truyền Gửi CRM
+                  <Smartphone className="w-4 h-4 text-[#2f6cf5]" /> Trình Mô Phỏng Truyền Gửi CRM
                 </h3>
 
                 <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
@@ -623,7 +763,7 @@ export function MarketingView() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-[#D4AF37]">2. KỊCH BẢN ĐANG CHỌN</label>
+                      <label className="text-[9px] font-bold text-[#2f6cf5]">2. KỊCH BẢN ĐANG CHỌN</label>
                       <input 
                         type="text" 
                         disabled 
@@ -643,7 +783,7 @@ export function MarketingView() {
                     <button
                       onClick={executeSimulationDispatch}
                       disabled={isSimulatingDispatch}
-                      className="py-1.5 px-3 bg-slate-900 hover:bg-[#D4AF37] hover:text-slate-950 text-white font-black text-[9px] tracking-widest uppercase rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+                      className="py-1.5 px-3 bg-slate-900 hover:bg-[#2f6cf5] hover:text-slate-950 text-white font-black text-[9px] tracking-widest uppercase rounded-lg transition-all flex items-center gap-1 cursor-pointer"
                     >
                       <Send className="w-3 h-3" />
                       {isSimulatingDispatch ? "Đang xâu chuỗi..." : "Chạy tự động"}
@@ -670,7 +810,7 @@ export function MarketingView() {
                         animate={{ y: 8 }}
                         className="absolute top-8 inset-x-2 bg-slate-950/90 text-white p-3 rounded-2xl border border-zinc-700/60 shadow-xl z-50 animate-bounce"
                       >
-                        <div className="flex items-center gap-1.5 text-[8px] font-black text-[#D4AF37] uppercase tracking-wider">
+                        <div className="flex items-center gap-1.5 text-[8px] font-black text-[#2f6cf5] uppercase tracking-wider">
                           <Zap className="w-2.5 h-2.5" /> Triêu hồi tự động: {campaignRules.find(r => r.id === selectedRuleId)?.action || "CRM"}
                         </div>
                         <p className="text-[9px] leading-tight text-slate-100 font-bold mt-1">
@@ -747,7 +887,7 @@ export function MarketingView() {
                         )}
 
                         {isSimulatingDispatch && (
-                          <div className="flex items-center gap-1 text-[8px] text-[#D4AF37] tracking-wider uppercase animate-pulse">
+                          <div className="flex items-center gap-1 text-[8px] text-[#2f6cf5] tracking-wider uppercase animate-pulse">
                             <Activity className="w-3 h-3 animate-spin" /> Đang phát xạ truyền tin...
                           </div>
                         )}
@@ -775,7 +915,7 @@ export function MarketingView() {
                         <div key={i} className="p-2 flex items-center justify-between text-[9px]">
                           <span className="text-slate-500 shrink-0">{log.time}</span>
                           <span className="font-bold text-foreground truncate max-w-[80px] text-left ml-2">{log.customerName}</span>
-                          <span className="bg-[#D4AF37]/10 text-[#D4AF37] px-1 rounded truncate max-w-[70px]">{log.campaignName}</span>
+                          <span className="bg-[#2f6cf5]/10 text-[#2f6cf5] px-1 rounded truncate max-w-[70px]">{log.campaignName}</span>
                           <span className="font-bold text-emerald-500 shrink-0">{log.channel}</span>
                         </div>
                       ))
@@ -856,6 +996,213 @@ export function MarketingView() {
                 </div>
               </div>
 
+            </div>
+          </div>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="sendgrid" className="flex-1 overflow-y-auto m-0 p-8 h-full min-h-0 border-none outline-none custom-scrollbar">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="bg-[#2f6cf5]/5 border border-[#2f6cf5]/20 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h3 className="font-bold text-[#2f6cf5] text-base flex items-center gap-2">
+                <Mail className="w-5 h-5" /> Tích Hợp Gửi Thư Tự Động Sinh Nhật (SendGrid API)
+              </h3>
+              <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
+                Thiết lập này liên kết trực tiếp tới máy chủ SendGrid. Khi tới ngày sinh nhật của hội viên VIP, hệ thống sẽ tự động phát văn bản chúc mừng với thiết kế thượng lưu được định nghĩa bên dưới.
+              </p>
+            </div>
+            <button 
+              onClick={handleSimulateLocalDispatch}
+              className="px-5 py-2.5 bg-[#2f6cf5]/10 text-[#2f6cf5] border border-[#2f6cf5]/30 rounded-xl text-xs font-bold hover:bg-[#2f6cf5]/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4" /> Mô Phỏng Tự Động Gửi Tin
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left side: Configuration and template content */}
+            <div className="lg:col-span-5 bg-card border border-border/60 rounded-2xl p-6 shadow-sm space-y-5">
+              <div className="space-y-4">
+                <h4 className="font-bold text-foreground text-sm uppercase tracking-wide">1. Cấu hình gửi thư SendGrid</h4>
+                
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">SendGrid API Key</label>
+                  <input 
+                    type="password" 
+                    value={sgApiKey}
+                    onChange={(e) => setSgApiKey(e.target.value)}
+                    placeholder="SG.xxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxx (Để trống nếu dùng .env)"
+                    className="w-full p-2.5 bg-background border rounded-xl text-xs font-mono"
+                  />
+                  <span className="text-[9px] text-muted-foreground mt-1 block">Khuyến nghị khai báo <code>SENDGRID_API_KEY</code> trong tệp bảo mật <code>.env</code>.</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Email Người gửi (From)</label>
+                    <input 
+                      type="email" 
+                      value={sgFromEmail}
+                      onChange={(e) => setSgFromEmail(e.target.value)}
+                      placeholder="vip@seva-atelier.com"
+                      className="w-full p-2 bg-background border rounded-xl text-xs font-semibold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Tên Người gửi</label>
+                    <input 
+                      type="text" 
+                      value={sgFromName}
+                      onChange={(e) => setSgFromName(e.target.value)}
+                      placeholder="Atelier Luxury Club"
+                      className="w-full p-2 bg-background border rounded-xl text-xs font-semibold"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-3 border-t">
+                <h4 className="font-bold text-foreground text-sm uppercase tracking-wide">2. Thiết lập Mẫu Thư Mừng Tuổi Mới</h4>
+
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Phong cách Giao diện (Email Style)</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button 
+                      onClick={() => setSgTheme("gold_luxury")}
+                      className={`py-2 px-3 border rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
+                        sgTheme === "gold_luxury" 
+                          ? "border-amber-500 bg-amber-500/5 text-amber-600 font-extrabold" 
+                          : "border-border hover:border-foreground"
+                      }`}
+                    >
+                      Gold Luxury
+                    </button>
+                    <button 
+                      onClick={() => setSgTheme("royal_deco")}
+                      className={`py-2 px-3 border rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
+                        sgTheme === "royal_deco" 
+                          ? "border-blue-700 bg-blue-700/5 text-blue-700 font-extrabold" 
+                          : "border-border hover:border-foreground"
+                      }`}
+                    >
+                      Royal Deco
+                    </button>
+                    <button 
+                      onClick={() => setSgTheme("minimal")}
+                      className={`py-2 px-3 border rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
+                        sgTheme === "minimal" 
+                          ? "border-slate-800 bg-slate-800/5 text-slate-800 font-extrabold" 
+                          : "border-border hover:border-foreground"
+                      }`}
+                    >
+                      Minimal
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Tiêu đề Email (Subject Line)</label>
+                  <input 
+                    type="text" 
+                    value={sgSubject}
+                    onChange={(e) => setSgSubject(e.target.value)}
+                    placeholder="✨ Quà Tặng Sinh Nhật Đặc Quyền..."
+                    className="w-full p-2 bg-background border rounded-xl text-xs font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Văn bản lời chúc (Greeting Content)</label>
+                  <textarea 
+                    value={sgGreetingText}
+                    onChange={(e) => setSgGreetingText(e.target.value)}
+                    rows={4}
+                    className="w-full p-2.5 bg-background border rounded-xl text-xs font-semibold leading-relaxed"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Mã Gift Voucher Tặng kèm</label>
+                  <input 
+                    type="text" 
+                    value={sgVoucherCode}
+                    onChange={(e) => setSgVoucherCode(e.target.value)}
+                    placeholder="BDAYVIP5000"
+                    className="w-full p-2 bg-background border rounded-xl text-xs font-mono font-bold tracking-widest text-primary uppercase"
+                  />
+                </div>
+              </div>
+
+              {/* Delivery Test Panel */}
+              <div className="space-y-4 pt-3 border-t">
+                <h4 className="font-bold text-foreground text-sm uppercase tracking-wide">3. Kiểm tra truyền phát thực tế</h4>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <input 
+                      type="email" 
+                      value={sgToEmail}
+                      onChange={(e) => setSgToEmail(e.target.value)}
+                      placeholder="hungthai84@gmail.com"
+                      className="w-full p-2 bg-background border rounded-xl text-xs font-semibold"
+                    />
+                  </div>
+                  <button 
+                    onClick={handleSendSendGridTest}
+                    disabled={isSendingSgTest}
+                    className="px-4 py-2 bg-primary hover:bg-primary/95 disabled:bg-muted text-primary-foreground font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md shrink-0 cursor-pointer"
+                  >
+                    {isSendingSgTest ? (
+                      <span>Đang gửi...</span>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5" /> Gửi Thử Nghiệm
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side: HTML Live Preview Mock Frame */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="bg-muted/10 border border-border/80 rounded-2xl p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <div>
+                    <h4 className="font-bold text-foreground text-sm uppercase tracking-wide flex items-center gap-2 font-heading">
+                      <Laptop className="w-4 h-4 text-primary" /> XEM TRƯỚC SẢN PHẨM EMAIL THƯỢNG HẠNG (LIVE PREVIEW)
+                    </h4>
+                    <p className="text-[10px] text-muted-foreground">Thư sẽ xuất hiện hệt như thế này trong hộp thư đến của hội viên VIP.</p>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] border-amber-500/20 bg-amber-500/5 text-amber-500 font-bold">Responsive</Badge>
+                </div>
+
+                {/* Simulated Web Client interface */}
+                <div className="bg-background border rounded-2xl shadow-xl overflow-hidden">
+                  {/* Browser Bar */}
+                  <div className="bg-muted/65 px-4 py-3 border-b flex items-center gap-3">
+                    <div className="flex gap-1.5 shrink-0">
+                      <div className="w-2.5 h-2.5 bg-rose-500 rounded-full" />
+                      <div className="w-2.5 h-2.5 bg-amber-400 rounded-full" />
+                      <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full" />
+                    </div>
+                    <div className="bg-background text-muted-foreground text-[10px] px-3.5 py-1 rounded-lg w-full max-w-sm truncate text-left border border-border/40 flex items-center justify-between">
+                      <span>{sgSubject}</span>
+                    </div>
+                  </div>
+
+                  {/* Mail Header Meta Info */}
+                  <div className="p-4 border-b text-[11px] text-muted-foreground space-y-1 bg-muted/10 text-left">
+                    <div><strong className="text-foreground">Từ người gửi:</strong> {sgFromName} &lt;{sgFromEmail}&gt;</div>
+                    <div><strong className="text-foreground">Tới:</strong> {sgToEmail}</div>
+                  </div>
+
+                  {/* HTML View */}
+                  <div className="p-6 bg-slate-900 overflow-y-auto max-h-[500px] custom-scrollbar flex justify-center">
+                    <div className="w-full max-w-[550px]" dangerouslySetInnerHTML={{ __html: getSgHtmlPreview() }} />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

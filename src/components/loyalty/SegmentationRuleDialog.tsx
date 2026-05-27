@@ -36,7 +36,7 @@ const OPERATORS = [
 ];
 
 const COLOR_PRESETS = [
-  { id: 'gold', name: 'Vàng Ánh Kim', hex: '#D4AF37', border: 'border-[#D4AF37]/30 bg-[#D4AF37]/10 text-[#D4AF37]' },
+  { id: 'gold', name: 'Vàng Ánh Kim', hex: '#2f6cf5', border: 'border-[#2f6cf5]/30 bg-[#2f6cf5]/10 text-[#2f6cf5]' },
   { id: 'emerald', name: 'Xanh Ngọc Lục Bảo', hex: '#10b981', border: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500' },
   { id: 'rose', name: 'Đỏ Ruby', hex: '#f43f5e', border: 'border-rose-500/30 bg-rose-500/10 text-rose-500' },
   { id: 'sky', name: 'Xanh Đại Dương', hex: '#0ea5e9', border: 'border-sky-500/30 bg-sky-500/10 text-sky-500' },

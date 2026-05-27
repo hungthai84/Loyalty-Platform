@@ -44,7 +44,7 @@ import { toast } from "sonner";
 type TabType = 'tiers' | 'segmentation' | 'engagement' | 'automation' | 'vip' | 'analytics';
 
 const COLOR_PRESET_MAP: Record<string, { badge: string; text: string; bg: string }> = {
-  gold: { badge: 'bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/30', text: 'text-[#D4AF37]', bg: 'bg-[#D4AF37]' },
+  gold: { badge: 'bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/30', text: 'text-[#2f6cf5]', bg: 'bg-[#2f6cf5]' },
   emerald: { badge: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30', text: 'text-emerald-500', bg: 'bg-emerald-500' },
   rose: { badge: 'bg-rose-500/10 text-rose-500 border-rose-500/30', text: 'text-rose-500', bg: 'bg-rose-500' },
   sky: { badge: 'bg-sky-500/10 text-sky-500 border-sky-500/30', text: 'text-sky-500', bg: 'bg-sky-500' },
@@ -572,7 +572,7 @@ export function LoyaltyView() {
                           <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md flex flex-col h-full rounded-2xl">
                             <div className="border-b pb-4 mb-4">
                               <div className="flex justify-between items-center mb-1">
-                                <span className="text-[10px] uppercase font-bold tracking-widest text-[#D4AF37]">Trình kiểm tra tệp</span>
+                                <span className="text-[10px] uppercase font-bold tracking-widest text-[#2f6cf5]">Trình kiểm tra tệp</span>
                                 <span className={cn("px-2 py-0.5 text-[9px] font-bold rounded shadow-2xs border", colorMeta.badge)}>
                                   {activeRule.tag}
                                 </span>

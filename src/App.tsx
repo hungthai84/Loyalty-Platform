@@ -12,6 +12,7 @@ import { AnalyticsView } from "./views/AnalyticsView";
 import { AnalysisView } from "./views/AnalysisView";
 import { FirebaseProvider, useFirebase } from "@/components/FirebaseProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 import { ShieldAlert, LogIn, LogOut, Lock, Trophy, Sparkles, UserCheck } from "lucide-react";
 
 function AppContent() {
@@ -37,8 +38,8 @@ function AppContent() {
       <div className="h-screen w-screen flex items-center justify-center p-4 relative overflow-hidden">
         <div className="uiverse-container" />
         <div className="relative bg-card/60 backdrop-blur-2xl border border-border w-full max-w-md rounded-3xl p-8 shadow-2xl space-y-6 text-center">
-          <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-primary/5 border border-primary/20">
-            <Trophy className="w-10 h-10 text-primary" />
+          <div className="w-20 h-20 rounded-3xl overflow-hidden mx-auto shadow-2xl shadow-blue-500/10 hover:scale-105 transition-transform duration-300">
+            <BrandLogo className="w-full h-full" />
           </div>
           
           <div className="space-y-2">
@@ -67,7 +68,7 @@ function AppContent() {
 
             <button 
               onClick={guestLogin}
-              className="w-full py-3.5 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.99] transition-all shadow-md cursor-pointer text-sm"
+              className="w-full py-3.5 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.99] transition-all shadow-md cursor-pointer text-sm"
             >
               <UserCheck className="w-4 h-4 mr-0.5" />
               Truy cập bằng tài khoản Khách (Quyền Admin)

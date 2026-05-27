@@ -49,13 +49,30 @@ import {
   Legend, 
   PieChart, 
   Pie, 
-  Cell 
+  Cell,
+  LineChart,
+  Line
 } from 'recharts';
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
 import { Customer } from "@/types";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
+
+const CLV_TREND_BY_TIER_DATA = [
+  { month: 'T6/25', Member: 5.2, Essential: 15.6, Icon: 52.0, Atelier: 120.5 },
+  { month: 'T7/25', Member: 5.5, Essential: 16.2, Icon: 55.4, Atelier: 125.8 },
+  { month: 'T8/25', Member: 5.9, Essential: 17.5, Icon: 58.1, Atelier: 135.0 },
+  { month: 'T9/25', Member: 6.2, Essential: 18.0, Icon: 61.2, Atelier: 142.2 },
+  { month: 'T10/25', Member: 6.4, Essential: 19.4, Icon: 65.8, Atelier: 156.4 },
+  { month: 'T11/25', Member: 6.8, Essential: 20.1, Icon: 72.0, Atelier: 168.0 },
+  { month: 'T12/25', Member: 7.5, Essential: 22.4, Icon: 81.5, Atelier: 189.5 },
+  { month: 'T1/26', Member: 8.0, Essential: 24.5, Icon: 89.0, Atelier: 204.0 },
+  { month: 'T2/26', Member: 8.4, Essential: 26.0, Icon: 94.2, Atelier: 215.8 },
+  { month: 'T3/26', Member: 9.1, Essential: 28.2, Icon: 102.5, Atelier: 232.0 },
+  { month: 'T4/26', Member: 9.5, Essential: 30.8, Icon: 110.4, Atelier: 245.5 },
+  { month: 'T5/26', Member: 10.2, Essential: 34.0, Icon: 121.2, Atelier: 268.4 }
+];
 
 const INITIAL_CUSTOMERS = [
   { id: 'SVG-9081', name: 'Đoàn Hương Giang', phone: '0912***888', email: 'giang.dh@sevago.vip', tier: 'Atelier', status: 'Active', clv: 245000000, repeat_rate: 85, last_purchase: '2026-05-18', risk_score: 12, region: 'Hà Nội', collection: 'Heritage' },
@@ -75,9 +92,9 @@ const REPEAT_PURCHASE_BY_COLLECTION = [
 ];
 
 const REGIONAL_METRICS = [
-  { region: 'Hà Nội Showroom', rate: 36, target: 30, color: '#D4AF37' },
-  { region: 'TP.HCM Boutique', rate: 34, target: 30, color: '#C5A028' },
-  { region: 'Đà Nẵng Lounge', rate: 22, target: 30, color: '#AA8518' },
+  { region: 'Hà Nội Showroom', rate: 36, target: 30, color: '#2f6cf5' },
+  { region: 'TP.HCM Boutique', rate: 34, target: 30, color: '#1652f1' },
+  { region: 'Đà Nẵng Lounge', rate: 22, target: 30, color: '#0e3ec5' },
 ];
 
 const INITIAL_RULE_ENGINE = {
@@ -149,6 +166,7 @@ export function AnalysisView() {
   const [pointCost, setPointCost] = useState(30000000);
   const [eventCost, setEventCost] = useState(20000000);
   const [giftCost, setGiftCost] = useState(15000000);
+  const [quarterlyBudgetCeiling, setQuarterlyBudgetCeiling] = useState(100000000); // 100M VND default quarterly budget ceiling
 
   // CLV Inputs
   const [aov, setAov] = useState(5000000); // Average Order Value: 5 Million VND
@@ -194,6 +212,34 @@ export function AnalysisView() {
     if (actualCost === 0) return 0;
     return ((clvIncrease - actualCost) / actualCost) * 100;
   }, [clvIncrease, actualCost]);
+
+  const loyaltyVsRevenueChartData = useMemo(() => {
+    const baseRevenue = revenue || 10000000000;
+    const baseCogs = cogs || 6000000000;
+    const ratio = loyaltyRatio || 5;
+
+    const projections = [
+      { name: "Mức tối thiểu", factor: 0.5 },
+      { name: "Mức thấp", factor: 0.75 },
+      { name: "Hiện tại", factor: 1.0 },
+      { name: "Kỳ vọng thấp", factor: 1.25 },
+      { name: "Kỳ vọng cao", factor: 1.5 },
+      { name: "Mục tiêu tối đa", factor: 1.75 }
+    ];
+
+    return projections.map((p) => {
+      const projRev = baseRevenue * p.factor;
+      const projCogs = baseCogs * p.factor;
+      const projGrossProfit = Math.max(0, projRev - projCogs);
+      const projBudget = projGrossProfit * (ratio / 100);
+
+      return {
+        name: p.name,
+        revenue: projRev,
+        budget: projBudget,
+      };
+    });
+  }, [revenue, cogs, loyaltyRatio]);
 
   const triggerToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToastMessage(message);
@@ -318,9 +364,9 @@ export function AnalysisView() {
       if (counts[tierKey] !== undefined) counts[tierKey]++;
     });
     return [
-      { name: 'Atelier (≥150M)', value: counts.Atelier || 1, color: '#D4AF37' },
-      { name: 'Icon (≥50M)', value: counts.Icon || 1, color: '#C5A028' },
-      { name: 'Essential (≥15M)', value: counts.Essential || 1, color: '#AA8518' },
+      { name: 'Atelier (≥150M)', value: counts.Atelier || 1, color: '#2f6cf5' },
+      { name: 'Icon (≥50M)', value: counts.Icon || 1, color: '#1652f1' },
+      { name: 'Essential (≥15M)', value: counts.Essential || 1, color: '#0e3ec5' },
       { name: 'Member (Mặc định)', value: counts.Member || 1, color: '#7E600F' }
     ];
   }, [customers]);
@@ -332,7 +378,7 @@ export function AnalysisView() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4 border-border/40">
         <div>
           <h2 className="text-3xl font-bold tracking-tight font-heading flex items-center gap-2">
-            <Sparkles className="w-8 h-8 text-[#D4AF37] animate-pulse" /> Phân tích Hành vi & Hiệu quả Loyalty
+            <Sparkles className="w-8 h-8 text-[#2f6cf5] animate-pulse" /> Phân tích Hành vi & Hiệu quả Loyalty
           </h2>
           <p className="text-muted-foreground text-sm mt-1">
             Chẩn đoán sức sống của tệp khách hàng VIP, đo lường chi phí Loyalty và tính toán chỉ số tỷ suất hoàn vốn ROI.
@@ -341,7 +387,7 @@ export function AnalysisView() {
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/65 border rounded-xl text-xs">
-            <Briefcase className="w-4 h-4 text-[#D4AF37]" />
+            <Briefcase className="w-4 h-4 text-[#2f6cf5]" />
             <span className="text-muted-foreground">Phân quyền:</span>
             <select 
               value={userRole} 
@@ -349,7 +395,7 @@ export function AnalysisView() {
                 setUserRole(e.target.value);
                 triggerToast(`Đã chuyển phân quyền sang: ${e.target.value}`, 'info');
               }}
-              className="bg-transparent text-[#D4AF37] outline-none cursor-pointer font-bold"
+              className="bg-transparent text-[#2f6cf5] outline-none cursor-pointer font-bold"
             >
               <option value="Admin">Admin (Full)</option>
               <option value="Marketing">Marketing</option>
@@ -396,8 +442,8 @@ export function AnalysisView() {
 
       {/* Dynamic Toast Display */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#D4AF37]">
-          <Award className="w-5 h-5 text-[#D4AF37]" />
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]">
+          <Award className="w-5 h-5 text-[#2f6cf5]" />
           <div className="text-xs font-bold text-foreground">{toastMessage}</div>
         </div>
       )}
@@ -406,19 +452,19 @@ export function AnalysisView() {
       {activeTab === 'dashboard' && (
         <div className="space-y-6">
           {/* Proactive Insight banner */}
-          <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="bg-[#2f6cf5]/10 border border-[#2f6cf5]/30 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-[#D4AF37]/20 rounded-xl text-[#D4AF37] shrink-0 mt-0.5">
+              <div className="p-2 bg-[#2f6cf5]/20 rounded-xl text-[#2f6cf5] shrink-0 mt-0.5">
                 <Sparkles className="w-4 h-4 animate-pulse" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">Premium Insights & Churn Signal Alert</h4>
+                <h4 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-wider">Premium Insights & Churn Signal Alert</h4>
                 <p className="text-xs text-muted-foreground mt-0.5">Tỷ lệ giữ chân khách VIP tháng này đạt 89% (vượt target 85%). Hệ thống phát hiện khách hàng Lê Thúy Diễm đang hoạt động suy giảm nhẹ.</p>
               </div>
             </div>
             <button 
               onClick={() => { setActiveTab('ai_advisor'); setSelectedAIVip('SVG-5510'); }}
-              className="text-[11px] font-bold tracking-wider text-[#D4AF37] border border-[#D4AF37]/40 rounded-xl px-4 py-2 hover:bg-[#D4AF37]/10 transition-all text-nowrap"
+              className="text-[11px] font-bold tracking-wider text-[#2f6cf5] border border-[#2f6cf5]/40 rounded-xl px-4 py-2 hover:bg-[#2f6cf5]/10 transition-all text-nowrap"
             >
               CHĂM SÓC KHÁCH HÀNG AI
             </button>
@@ -438,7 +484,7 @@ export function AnalysisView() {
                   <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider block">{card.label}</span>
                   <span className="text-2xl font-bold tracking-tight text-foreground block mt-2">{card.value}</span>
                 </div>
-                <div className="text-[10px] text-[#D4AF37] mt-3 font-medium border-t border-border/30 pt-2">{card.sub}</div>
+                <div className="text-[10px] text-[#2f6cf5] mt-3 font-medium border-t border-border/30 pt-2">{card.sub}</div>
               </div>
             ))}
           </div>
@@ -468,8 +514,8 @@ export function AnalysisView() {
                   >
                     <defs>
                       <linearGradient id="colorClv" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.25}/>
-                        <stop offset="95%" stopColor="#D4AF37" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#2f6cf5" stopOpacity={0.25}/>
+                        <stop offset="95%" stopColor="#2f6cf5" stopOpacity={0}/>
                       </linearGradient>
                       <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#10B981" stopOpacity={0.25}/>
@@ -480,7 +526,7 @@ export function AnalysisView() {
                     <XAxis dataKey="month" stroke="#71717A" fontSize={10} />
                     <YAxis stroke="#71717A" fontSize={10} unit="M" />
                     <Tooltip contentStyle={{ backgroundColor: 'rgba(20, 20, 22, 0.85)', backdropFilter: 'blur(16px)', color: '#fff', fontSize: '11px', borderRadius: '12px' }} />
-                    <Area type="monotone" dataKey="clvIncrease" stroke="#D4AF37" strokeWidth={2} fillOpacity={1} fill="url(#colorClv)" name="CLV tăng thêm (Tr ₫)" />
+                    <Area type="monotone" dataKey="clvIncrease" stroke="#2f6cf5" strokeWidth={2} fillOpacity={1} fill="url(#colorClv)" name="CLV tăng thêm (Tr ₫)" />
                     <Area type="monotone" dataKey="loyaltyCost" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorCost)" name="Chi phí Loyalty (Tr ₫)" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -514,7 +560,7 @@ export function AnalysisView() {
                 </ResponsiveContainer>
                 <div className="absolute text-center flex flex-col">
                   <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Tổng VIP</span>
-                  <span className="text-lg font-bold text-[#D4AF37]">{totalMembers}</span>
+                  <span className="text-lg font-bold text-[#2f6cf5]">{totalMembers}</span>
                 </div>
               </div>
 
@@ -539,7 +585,7 @@ export function AnalysisView() {
             
             {/* Form controls */}
             <div className="bg-sidebar border border-border/50 rounded-2xl p-6 space-y-4">
-              <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest border-b pb-2 border-border/40">THAM SỐ TÀI CHÍNH ĐẦU VÀO</h3>
+              <h3 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest border-b pb-2 border-border/40">THAM SỐ TÀI CHÍNH ĐẦU VÀO</h3>
               
               <div className="space-y-3">
                 <div>
@@ -551,7 +597,7 @@ export function AnalysisView() {
                     onChange={(e) => handleNumericInputChange(e.target.value, setRevenue)} 
                     className="w-full p-2 text-xs rounded-xl bg-background border focus:ring-2 focus:ring-primary/20 outline-none font-semibold text-foreground" 
                   />
-                  <span className="text-[10px] text-[#D4AF37] font-semibold mt-1 block">≈ {formatBillionVND(revenue)}</span>
+                  <span className="text-[10px] text-[#2f6cf5] font-semibold mt-1 block">≈ {formatBillionVND(revenue)}</span>
                 </div>
 
                 <div>
@@ -575,14 +621,26 @@ export function AnalysisView() {
                       max="20" 
                       value={loyaltyRatio} 
                       onChange={(e) => setLoyaltyRatio(Number(e.target.value))} 
-                      className="w-full accent-[#D4AF37]" 
+                      className="w-full accent-[#2f6cf5]" 
                     />
-                    <span className="text-xs font-bold text-[#D4AF37]">{loyaltyRatio}%</span>
+                    <span className="text-xs font-bold text-[#2f6cf5]">{loyaltyRatio}%</span>
                   </div>
                 </div>
 
+                <div>
+                  <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Trần ngân sách hàng quý (₫)</label>
+                  <input 
+                    type="text" 
+                    inputMode="numeric"
+                    value={formatInputValue(quarterlyBudgetCeiling)} 
+                    onChange={(e) => handleNumericInputChange(e.target.value, setQuarterlyBudgetCeiling)} 
+                    className="w-full p-2 text-xs rounded-xl bg-background border focus:ring-2 focus:ring-primary/20 outline-none font-semibold text-foreground" 
+                  />
+                  <span className="text-[10px] text-muted-foreground mt-1 block">Hạn mức kiểm soát dự báo: {formatMillionVND(quarterlyBudgetCeiling)}</span>
+                </div>
+
                 <div className="border-t border-border/40 pt-3 space-y-2">
-                  <span className="text-[10px] font-bold text-[#D4AF37] uppercase block tracking-wider">Bố trí Quỹ Chi phí VIP</span>
+                  <span className="text-[10px] font-bold text-[#2f6cf5] uppercase block tracking-wider">Bố trí Quỹ Chi phí VIP</span>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <span className="text-[9px] text-muted-foreground block">Voucher Cost</span>
@@ -610,12 +668,12 @@ export function AnalysisView() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-sidebar border border-border/50 rounded-2xl p-5 flex flex-col justify-between">
                   <span className="text-[9px] text-muted-foreground font-bold uppercase">Ngân sách Loyalty cho phép</span>
-                  <h3 className="text-3xl font-extrabold text-[#D4AF37] mt-1">{formatMillionVND(loyaltyBudget)}</h3>
+                  <h3 className="text-3xl font-extrabold text-[#2f6cf5] mt-1">{formatMillionVND(loyaltyBudget)}</h3>
                   <span className="text-[9px] text-muted-foreground mt-2 block border-t pt-2">Tính trên: Lợi nhuận gộp x {loyaltyRatio}%</span>
                 </div>
                 <div className="bg-sidebar border border-border/50 rounded-2xl p-5 flex flex-col justify-between">
                   <span className="text-[9px] text-muted-foreground font-bold uppercase">Chi phí thực tế phân bổ</span>
-                  <h3 className="text-3xl font-extrabold text-[#D4AF37] mt-1">{formatMillionVND(actualCost)}</h3>
+                  <h3 className="text-3xl font-extrabold text-[#2f6cf5] mt-1">{formatMillionVND(actualCost)}</h3>
                   <span className="text-[9px] text-muted-foreground mt-2 block border-t pt-2">Tổng vouchers, điểm, event và quà tặng</span>
                 </div>
                 <div className="bg-sidebar border border-border/50 rounded-2xl p-5 flex flex-col justify-between">
@@ -630,12 +688,48 @@ export function AnalysisView() {
                   <h3 className="text-3xl font-extrabold text-foreground mt-1">{costRatioOfRevenue.toFixed(2)}%</h3>
                   <span className="text-[9px] text-muted-foreground mt-2 block border-t pt-2">Target lý tưởng: &lt; 5% Doanh số</span>
                 </div>
+
+                {/* Conditional budget utilization card */}
+                <div className={`md:col-span-2 border rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 ${actualCost > quarterlyBudgetCeiling ? 'bg-rose-500/10 dark:bg-rose-950/20 border-rose-500/40 text-rose-950 dark:text-rose-100' : 'bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/20 text-emerald-950 dark:text-emerald-100'}`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <span className="text-[9px] uppercase font-bold text-muted-foreground block">Chỉ báo sử dụng trần ngân sách hàng quý</span>
+                      <h3 className={`text-2xl font-black mt-1 ${actualCost > quarterlyBudgetCeiling ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                        {((actualCost / quarterlyBudgetCeiling) * 100).toFixed(1)}% Sử dụng
+                      </h3>
+                    </div>
+                    <div>
+                      {actualCost > quarterlyBudgetCeiling ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-rose-500 text-white animate-pulse">
+                          <AlertTriangle className="w-3.5 h-3.5" /> Vượt trần ngân sách Quý!
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-600 text-white">
+                          <CheckCircle className="w-3.5 h-3.5" /> Trong hạn mức an toàn
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="w-full bg-muted-foreground/25 rounded-full h-2.5 overflow-hidden border border-border/20">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-500 ${actualCost > quarterlyBudgetCeiling ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                        style={{ width: `${Math.min((actualCost / quarterlyBudgetCeiling) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex justify-between text-[10px] mt-2 text-muted-foreground font-semibold">
+                      <span>Đã phân bổ: {formatVND(actualCost)}</span>
+                      <span>Trần giới hạn hàng quý (Ceiling): {formatVND(quarterlyBudgetCeiling)}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* ROI specific box */}
-              <div className="bg-sidebar border border-[#D4AF37]/30 rounded-2xl p-6 space-y-4">
+              <div className="bg-sidebar border border-[#2f6cf5]/30 rounded-2xl p-6 space-y-4">
                 <div>
-                  <h4 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest">LOYALTY ROI - SỨC MẠNH BIÊN LỢI NHUẬN</h4>
+                  <h4 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest">LOYALTY ROI - SỨC MẠNH BIÊN LỢI NHUẬN</h4>
                   <p className="text-[10px] text-muted-foreground mt-0.5">Tính toán tỷ suất hoàn vốn dựa trên doanh số CLV bồi đắp thêm từ các chiến dịch VIP.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
@@ -651,8 +745,52 @@ export function AnalysisView() {
                   </div>
                   <div className="text-center bg-muted/40 p-4 rounded-xl border border-border/35">
                     <span className="text-[9px] text-muted-foreground uppercase font-bold block">Tỷ Lệ ROI Ước Tính</span>
-                    <span className="text-4xl font-extrabold text-[#D4AF37] tracking-tight">{calculatedROI.toFixed(0)}%</span>
+                    <span className="text-4xl font-extrabold text-[#2f6cf5] tracking-tight">{calculatedROI.toFixed(0)}%</span>
                   </div>
+                </div>
+              </div>
+
+              {/* Doanh thu gộp vs Ngân sách Loyalty Chart */}
+              <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 border-border/40">
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">XU HƯỚNG TƯƠNG QUAN: DOANH THU VS NGÂN SÁCH LOYALTY</h3>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Mô phỏng sự thay đổi tuyến tính của ngân sách Loyalty theo các mức doanh thu gộp dự phòng.</p>
+                  </div>
+                </div>
+
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={loyaltyVsRevenueChartData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorRevenueProj" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorBudgetProj" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#2f6cf5" stopOpacity={0.25}/>
+                          <stop offset="95%" stopColor="#2f6cf5" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(120, 120, 120, 0.1)" />
+                      <XAxis dataKey="name" stroke="#71717A" fontSize={10} tickLine={false} />
+                      <YAxis yAxisId="left" stroke="#3b82f6" fontSize={10} tickFormatter={(v) => formatBillionVND(v)} tickLine={false} axisLine={false} />
+                      <YAxis yAxisId="right" orientation="right" stroke="#2f6cf5" fontSize={10} tickFormatter={(v) => formatMillionVND(v)} tickLine={false} axisLine={false} />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'rgba(20, 20, 22, 0.85)', 
+                          backdropFilter: 'blur(16px)', 
+                          color: '#fff', 
+                          fontSize: '11px', 
+                          borderRadius: '12px',
+                          border: '1px solid rgba(255, 255, 255, 0.1)' 
+                        }}
+                        formatter={(value: any, name: any) => [formatVND(Number(value)), name]}
+                      />
+                      <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRevenueProj)" name="Doanh thu gộp" />
+                      <Area yAxisId="right" type="monotone" dataKey="budget" stroke="#2f6cf5" strokeWidth={2.5} fillOpacity={1} fill="url(#colorBudgetProj)" name="Ngân sách Loyalty" />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
@@ -706,7 +844,7 @@ export function AnalysisView() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <div className="bg-sidebar border border-border/50 rounded-2xl p-6 space-y-4">
-              <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest border-b pb-2 border-border/40">BỘ MÔ PHỎNG GIÁ TRỊ VÒNG ĐỜI (CLV)</h3>
+              <h3 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest border-b pb-2 border-border/40">BỘ MÔ PHỎNG GIÁ TRỊ VÒNG ĐỜI (CLV)</h3>
               
               <div className="space-y-4">
                 <div>
@@ -724,14 +862,14 @@ export function AnalysisView() {
 
                 <div className="p-4 bg-muted/50 rounded-2xl text-center border">
                   <span className="text-[10px] text-muted-foreground font-bold block uppercase tracking-wider">Tổng CLV Ước Tính</span>
-                  <h3 className="text-3xl font-extrabold text-[#D4AF37] mt-1">{formatMillionVND(calculatedCLV)}</h3>
+                  <h3 className="text-3xl font-extrabold text-[#2f6cf5] mt-1">{formatMillionVND(calculatedCLV)}</h3>
                   <span className="text-[9px] text-muted-foreground block mt-1">Công thức: AOV × Tần suất × Vòng đời</span>
                 </div>
               </div>
             </div>
 
             <div className="lg:col-span-2 bg-card border border-border/50 rounded-2xl p-6 space-y-4">
-              <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest">TỶ LỆ LẶP LẠI THEO BỘ SƯU TẬP (COLLECTION)</h3>
+              <h3 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest">TỶ LỆ LẶP LẠI THEO BỘ SƯU TẬP (COLLECTION)</h3>
               
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -740,7 +878,7 @@ export function AnalysisView() {
                     <XAxis dataKey="name" stroke="#71717A" fontSize={10} />
                     <YAxis stroke="#71717A" fontSize={10} unit="%" />
                     <Tooltip />
-                    <Bar dataKey="repeatRate" fill="#D4AF37" name="Tỷ lệ lặp lại (%)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="repeatRate" fill="#2f6cf5" name="Tỷ lệ lặp lại (%)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -749,12 +887,37 @@ export function AnalysisView() {
                 {REGIONAL_METRICS.map((regional, index) => (
                   <div key={index} className="space-y-1">
                     <span className="text-[10px] text-muted-foreground block">{regional.region}</span>
-                    <span className="text-sm font-bold text-[#D4AF37]">{regional.rate}% mua lại</span>
+                    <span className="text-sm font-bold text-[#2f6cf5]">{regional.rate}% mua lại</span>
                   </div>
                 ))}
               </div>
             </div>
 
+          </div>
+
+          <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 border-border/40">
+              <div>
+                <h3 className="text-sm font-bold text-foreground font-heading">XU HƯỚNG TĂNG TRƯỞNG GIÁ TRỊ VÒNG ĐỜI (CLV) 12 THÁNG QUA CÁC HẠNG</h3>
+                <p className="text-[10px] text-muted-foreground">Phân tích biến động tăng trưởng CLV trung bình lũy kế của hội viên các phân tầng (Đơn vị: Triệu ₫).</p>
+              </div>
+            </div>
+
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={CLV_TREND_BY_TIER_DATA} margin={{ top: 15, right: 20, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(120, 120, 120, 0.1)" />
+                  <XAxis dataKey="month" stroke="#71717A" fontSize={10} />
+                  <YAxis stroke="#71717A" fontSize={10} unit="M" />
+                  <Tooltip contentStyle={{ backgroundColor: 'rgba(20, 20, 22, 0.85)', backdropFilter: 'blur(16px)', color: '#fff', fontSize: '11px', borderRadius: '12px' }} />
+                  <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
+                  <Line type="monotone" dataKey="Atelier" stroke="#2f6cf5" strokeWidth={3} activeDot={{ r: 6 }} name="Atelier (Cao cấp)" />
+                  <Line type="monotone" dataKey="Icon" stroke="#f59e0b" strokeWidth={2.5} name="Icon (Vàng VIP)" />
+                  <Line type="monotone" dataKey="Essential" stroke="#10b981" strokeWidth={2} name="Essential (Bạc)" />
+                  <Line type="monotone" dataKey="Member" stroke="#94a3b8" strokeWidth={1.5} name="Member (Thành viên)" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
       )}
@@ -800,19 +963,19 @@ export function AnalysisView() {
                             <span className="text-[10px] text-muted-foreground">{c.phone}</span>
                           </td>
                           <td className="py-2.5 text-center">
-                            <span className="px-2 py-0.5 rounded-full text-[9px] bg-amber-500/10 text-[#D4AF37] border border-[#D4AF37]/30 font-bold">{c.tier}</span>
+                            <span className="px-2 py-0.5 rounded-full text-[9px] bg-amber-500/10 text-[#2f6cf5] border border-[#2f6cf5]/30 font-bold">{c.tier}</span>
                           </td>
                           <td className="py-2.5 text-center">
                             <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${c.status === 'Active' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>{c.status}</span>
                           </td>
-                          <td className="py-2.5 text-right font-bold text-[#D4AF37]">{formatMillionVND(c.clv)}</td>
+                          <td className="py-2.5 text-right font-bold text-[#2f6cf5]">{formatMillionVND(c.clv)}</td>
                           <td className="py-2.5 text-center">
                             <span className={`font-bold ${c.risk_score > 50 ? 'text-rose-500' : 'text-emerald-500'}`}>{c.risk_score}%</span>
                           </td>
                           <td className="py-2.5 text-right">
                             <button 
                               onClick={() => { setActiveTab('ai_advisor'); setSelectedAIVip(c.id); }}
-                              className="px-2.5 py-1 text-[9px] uppercase font-bold text-[#D4AF37] bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/35 rounded-xl transition-all"
+                              className="px-2.5 py-1 text-[9px] uppercase font-bold text-[#2f6cf5] bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/35 rounded-xl transition-all"
                             >
                               AI Phân Tích
                             </button>
@@ -827,8 +990,8 @@ export function AnalysisView() {
 
             {/* Booking Form */}
             <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
-              <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest flex items-center gap-1.5 border-b pb-2 border-border/40">
-                <Calendar className="w-4 h-4 text-[#D4AF37]" /> ĐẶT LỊCH ĐÓN TIẾP SHOWROOM VIP
+              <h3 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest flex items-center gap-1.5 border-b pb-2 border-border/40">
+                <Calendar className="w-4 h-4 text-[#2f6cf5]" /> ĐẶT LỊCH ĐÓN TIẾP SHOWROOM VIP
               </h3>
 
               <form onSubmit={handleBookAppointment} className="space-y-3">
@@ -868,7 +1031,7 @@ export function AnalysisView() {
                       <div className="font-bold">{b.customerName}</div>
                       <span className="text-[9px] text-muted-foreground">{b.type}</span>
                     </div>
-                    <span className="px-2 py-1 bg-background border rounded-lg text-[9px] font-bold text-[#D4AF37]">{b.time}</span>
+                    <span className="px-2 py-1 bg-background border rounded-lg text-[9px] font-bold text-[#2f6cf5]">{b.time}</span>
                   </div>
                 ))}
               </div>
@@ -884,8 +1047,8 @@ export function AnalysisView() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
-              <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest flex items-center gap-1.5 border-b pb-2 border-border/40">
-                <Sparkles className="w-4 h-4 text-[#D4AF37]" /> Cấu hình Trí khôn nhân tạo AI
+              <h3 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest flex items-center gap-1.5 border-b pb-2 border-border/40">
+                <Sparkles className="w-4 h-4 text-[#2f6cf5]" /> Cấu hình Trí khôn nhân tạo AI
               </h3>
 
               <div className="space-y-3">
@@ -954,19 +1117,19 @@ export function AnalysisView() {
               {aiResponse ? (
                 <div className="space-y-4">
                   <div className="bg-card border border-border/50 rounded-2xl p-5 space-y-2">
-                    <span className="text-xs font-bold text-[#D4AF37] uppercase flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> Đánh giá Churn Risk</span>
+                    <span className="text-xs font-bold text-[#2f6cf5] uppercase flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> Đánh giá Churn Risk</span>
                     <p className="text-xs leading-relaxed text-foreground">{aiResponse.riskAnalysis}</p>
                   </div>
                   <div className="bg-card border border-border/50 rounded-2xl p-5 space-y-2">
-                    <span className="text-xs font-bold text-[#D4AF37] uppercase flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Đề xuất Ưu đãi & Thặng dư tài chính</span>
+                    <span className="text-xs font-bold text-[#2f6cf5] uppercase flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Đề xuất Ưu đãi & Thặng dư tài chính</span>
                     <p className="text-xs leading-relaxed text-foreground">{aiResponse.marketingStrategy}</p>
                   </div>
                   <div className="bg-card border border-border/50 rounded-2xl p-5 space-y-2">
-                    <span className="text-xs font-bold text-[#D4AF37] uppercase flex items-center gap-2"><Calendar className="w-4 h-4" /> Kế hoạch Đón Tiếp & Trải nghiệm salon</span>
+                    <span className="text-xs font-bold text-[#2f6cf5] uppercase flex items-center gap-2"><Calendar className="w-4 h-4" /> Kế hoạch Đón Tiếp & Trải nghiệm salon</span>
                     <p className="text-xs leading-relaxed text-foreground">{aiResponse.privateExperience}</p>
                   </div>
                   <div className="bg-muted/40 p-5 rounded-2xl border border-dashed space-y-3">
-                    <span className="text-xs font-bold text-[#D4AF37] uppercase block border-b pb-2">Bản sao Thư Tri Ân Gửi Khách Hàng Cao Cấp</span>
+                    <span className="text-xs font-bold text-[#2f6cf5] uppercase block border-b pb-2">Bản sao Thư Tri Ân Gửi Khách Hàng Cao Cấp</span>
                     <p className="text-xs italic leading-relaxed whitespace-pre-line text-foreground/90">"{aiResponse.personalOffer}"</p>
                     <div className="text-right">
                       <button 
@@ -980,7 +1143,7 @@ export function AnalysisView() {
                 </div>
               ) : (
                 <div className="h-64 border border-dashed rounded-2xl flex flex-col items-center justify-center text-center p-6 bg-muted/20">
-                  <Sparkles className="w-10 h-10 animate-pulse text-[#D4AF37]/50 mb-3" />
+                  <Sparkles className="w-10 h-10 animate-pulse text-[#2f6cf5]/50 mb-3" />
                   <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Sẵn Sàng Chẩn Đoán AI</span>
                   <p className="text-xs text-muted-foreground max-w-sm mt-1">Lựa chọn khách hàng VIP và bấm nút để khởi tạo cố vấn trải nghiệm cá nhân hóa.</p>
                 </div>

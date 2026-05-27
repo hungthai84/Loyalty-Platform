@@ -245,7 +245,7 @@ export function AnalyticsView() {
                         Member: "#94a3b8",
                         Essential: "#38bdf8",
                         Icon: "#facc15",
-                        Atelier: "#D4AF37"
+                        Atelier: "#2f6cf5"
                       };
                       return (
                         <div className="bg-card border border-border rounded-xl p-3 shadow-xl backdrop-blur-md">
@@ -274,7 +274,7 @@ export function AnalyticsView() {
                     { tier: "Member", fill: "#94a3b8" },
                     { tier: "Essential", fill: "#38bdf8" },
                     { tier: "Icon", fill: "#facc15" },
-                    { tier: "Atelier", fill: "#D4AF37" },
+                    { tier: "Atelier", fill: "#2f6cf5" },
                   ].map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}

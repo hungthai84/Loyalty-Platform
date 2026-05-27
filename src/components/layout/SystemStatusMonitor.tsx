@@ -355,8 +355,8 @@ export function SystemStatusMonitor() {
               <AreaChart data={latencyHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorFb" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#D4AF37" stopOpacity={0.0}/>
+                    <stop offset="5%" stopColor="#2f6cf5" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#2f6cf5" stopOpacity={0.0}/>
                   </linearGradient>
                   <linearGradient id="colorCrm" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.4}/>
@@ -379,7 +379,7 @@ export function SystemStatusMonitor() {
                   type="monotone" 
                   name="Google Cloud Firestore (ms)"
                   dataKey="firebase" 
-                  stroke="#D4AF37" 
+                  stroke="#2f6cf5" 
                   fillOpacity={1} 
                   fill="url(#colorFb)" 
                 />

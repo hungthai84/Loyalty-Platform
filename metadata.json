@@ -1,5 +1,5 @@
 {
-  "name": "SEVA Loyalty CRM Platform",
+  "name": "Loyalty Platform",
   "description": "Enterprise-grade Jewelry & Retail Loyalty CRM Platform featuring Customer Management, Loyalty Rules, Analytics, and Omnichannel capabilities.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

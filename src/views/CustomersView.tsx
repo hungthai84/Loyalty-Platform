@@ -17,7 +17,7 @@ import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { Building2 } from "lucide-react";
 
 const COLOR_PRESET_MAP_SHORT: Record<string, string> = {
-  gold: 'bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/20',
+  gold: 'bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/20',
   emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
   rose: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
   sky: 'bg-sky-500/10 text-sky-500 border-sky-500/20',
@@ -367,7 +367,7 @@ export function CustomersView() {
                         <TableCell>{renderStatusBadge(customer.activityStatus)}</TableCell>
                         
                         {/* POINTS */}
-                        <TableCell className="font-extrabold text-[#D4AF37]">{customer.points?.toLocaleString() || 0} pts</TableCell>
+                        <TableCell className="font-extrabold text-[#2f6cf5]">{customer.points?.toLocaleString() || 0} pts</TableCell>
                         
                         {/* EXTRA ATTRIBUTE */}
                         {attributes.slice(0, 1).map(attr => (

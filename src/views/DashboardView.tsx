@@ -1,18 +1,53 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { kpiData, revenueData, recentCustomers } from "@/data/mockData";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowUpRight, ArrowDownRight, Gem } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Gem, Wifi, WifiOff } from "lucide-react";
 import * as motion from "motion/react-client";
 
 export function DashboardView() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   return (
     <div className="flex-1 space-y-6 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight font-heading">Tổng quan</h2>
-        <div className="flex items-center space-x-2">
-          {/* Calendar placeholder */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight font-heading">Tổng quan</h2>
+          <p className="text-sm text-muted-foreground mt-1">Số liệu thống kê và thông tin tổng quan hệ thống.</p>
+        </div>
+        
+        <div className="flex items-center">
+          {isOnline ? (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold animate-fade-in">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <Wifi className="w-3.5 h-3.5 mr-0.5" />
+              <span>Đã kết nối Firestore</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-500/20 text-xs font-semibold animate-fade-in">
+              <span className="h-2 w-2 rounded-full bg-rose-500"></span>
+              <WifiOff className="w-3.5 h-3.5 mr-0.5" />
+              <span>Mất kết nối Firestore (Ngoại tuyến)</span>
+            </div>
+          )}
         </div>
       </div>
 

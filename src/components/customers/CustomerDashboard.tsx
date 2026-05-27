@@ -7,7 +7,7 @@ import {
   ArrowLeft, Gift, Shield, User, Phone, Mail, Calendar, 
   Facebook, Linkedin, Instagram, Landmark, Plus, Minus, 
   Sparkles, Check, Edit2, CheckCircle2, Award, ExternalLink,
-  MessageSquare, Heart, RefreshCw, Smartphone
+  MessageSquare, Heart, RefreshCw, Smartphone, Upload
 } from 'lucide-react';
 import * as motion from 'motion/react-client';
 import { CUSTOMER_STATUSES } from '@/data/customerStatuses';
@@ -48,7 +48,7 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
   // Calculate membership tier locally
   const getTierInfo = (pts: number) => {
     if (pts >= 2500) {
-      return { name: 'Atelier (Thượng lưu)', nextTarget: 'Tối đa', progress: 100, color: 'text-[#D4AF37] border-[#D4AF37]', bg: 'bg-[#D4AF37]/10' };
+      return { name: 'Atelier (Thượng lưu)', nextTarget: 'Tối đa', progress: 100, color: 'text-[#2f6cf5] border-[#2f6cf5]', bg: 'bg-[#2f6cf5]/10' };
     } else if (pts >= 1000) {
       return { name: 'Icon (Vàng VIP)', nextTarget: `${2500 - pts} pts nâng Atelier`, progress: (pts / 2500) * 100, color: 'text-yellow-500 border-yellow-500', bg: 'bg-yellow-500/10' };
     } else if (pts >= 500) {
@@ -60,46 +60,72 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
 
   const tier = getTierInfo(points);
 
-  const updateFirestore = async (updatedData: Partial<Customer>) => {
+  const updateFirestore = async (updatedData: Partial<Customer>, successMessage?: string) => {
     const docRef = doc(db, `users/${userId}/customers/${customer.id}`);
+    const toastId = toast.loading("Đang lưu thông tin...");
     try {
       await updateDoc(docRef, {
         ...updatedData,
         updatedAt: serverTimestamp()
       });
+      if (successMessage) {
+        toast.success(successMessage, { id: toastId });
+      } else {
+        toast.dismiss(toastId);
+      }
+      return true;
     } catch (error) {
       console.error("Error updating customer config: ", error);
-      toast.error("Không thể lưu cấu hình đến cloud");
+      toast.error("Không thể lưu cấu hình đến cloud", { id: toastId });
+      return false;
     }
   };
 
   const handleAdjustPoints = async (amount: number) => {
     const newPts = Math.max(0, points + amount);
     setPoints(newPts);
-    toast.success(`${amount > 0 ? 'Thêm' : 'Khấu trừ'} ${Math.abs(amount)} điểm thành công!`);
-    await updateFirestore({ points: newPts });
+    const successMsg = `${amount > 0 ? 'Thêm' : 'Khấu trừ'} ${Math.abs(amount)} điểm thành công!`;
+    await updateFirestore({ points: newPts }, successMsg);
   };
 
   const handleSaveSocialLinks = async () => {
     setIsEditingSocial(false);
-    toast.success("Đã đồng bộ mạng xã hội của khách hàng!");
     await updateFirestore({
       facebook: fb,
       zalo: zl,
       linkedin: li,
       instagram: ig,
       tiktok: tt,
-    });
+    }, "Đã đồng bộ mạng xã hội của khách hàng!");
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1.5 * 1024 * 1024) {
+      toast.error("Kích thước tệp quá lớn. Vui lòng chọn ảnh nhỏ hơn 1.5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatar(reader.result as string);
+      toast.success("Tải ảnh lên thành công!");
+    };
+    reader.onerror = () => {
+      toast.error("Có lỗi xảy ra khi đọc tệp ảnh.");
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveProfileHeader = async () => {
     setIsUpdatingField(false);
-    toast.success("Cập nhật thông tin thành công!");
     await updateFirestore({
       avatarUrl: avatar,
       phone,
       email
-    });
+    }, "Cập nhật thông tin thành công!");
   };
 
   // Helper matching the status definition config colors
@@ -140,11 +166,11 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
             className="rounded-3xl border border-border/50 bg-sidebar/75 backdrop-blur-md p-6 relative overflow-hidden shadow-xl"
           >
             {/* Elegant luxury gold visual overlay background */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 blur-3xl rounded-full" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#2f6cf5]/5 blur-3xl rounded-full" />
             
             <div className="flex flex-col items-center text-center space-y-4 pt-4">
               <div className="relative group">
-                <div className="w-24 h-24 rounded-3xl border-2 border-[#D4AF37]/30 overflow-hidden bg-background shadow-lg transition-transform hover:scale-105 duration-300">
+                <div className="w-24 h-24 rounded-3xl border-2 border-[#2f6cf5]/30 overflow-hidden bg-background shadow-lg transition-transform hover:scale-105 duration-300">
                   <img 
                     src={avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(customer.name)}`} 
                     className="w-full h-full object-cover" 
@@ -178,15 +204,32 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
             {/* Editing avatar, email, phone */}
             {isUpdatingField ? (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 border-t pt-4 space-y-3">
-                <h4 className="text-[10px] font-bold uppercase text-[#D4AF37] tracking-wider mb-2">Sửa thông tin cơ bản</h4>
+                <h4 className="text-[10px] font-bold uppercase text-[#2f6cf5] tracking-wider mb-2">Sửa thông tin cơ bản</h4>
                 
                 <div className="space-y-1">
-                  <span className="text-[9px] text-muted-foreground block font-bold">ẢNH ĐẠI DIỆN LINK</span>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[9px] text-muted-foreground block font-bold">ẢNH ĐẠI DIỆN LINK</span>
+                    <div>
+                      <input 
+                        type="file"
+                        id="dashboard-avatar-upload"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                      <label 
+                        htmlFor="dashboard-avatar-upload"
+                        className="text-[8px] font-bold uppercase py-0.5 px-2 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-md cursor-pointer transition-colors flex items-center gap-1"
+                      >
+                        <Upload className="w-2.5 h-2.5" /> Tải từ máy
+                      </label>
+                    </div>
+                  </div>
                   <input 
                     className="w-full p-2 text-xs bg-background border rounded-lg focus:ring-1 focus:ring-primary/20 outline-none font-mono"
                     value={avatar}
                     onChange={e => setAvatar(e.target.value)}
-                    placeholder="https://images.unsplash.com/..."
+                    placeholder="https://images.unsplash.com/... hoặc Base64"
                   />
                 </div>
                 <div className="space-y-1">
@@ -215,7 +258,7 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
                   </button>
                   <button 
                     onClick={handleSaveProfileHeader}
-                    className="flex-1 py-1.5 bg-[#D4AF37] text-white rounded-lg text-xs font-bold"
+                    className="flex-1 py-1.5 bg-[#2f6cf5] text-white rounded-lg text-xs font-bold"
                   >
                     Lưu hồ sơ
                   </button>
@@ -224,16 +267,16 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
             ) : (
               <div className="mt-6 border-t border-border/40 pt-6 space-y-4 text-xs font-medium">
                 <div className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors">
-                  <Phone className="w-4 h-4 shrink-0 text-[#D4AF37]" />
+                  <Phone className="w-4 h-4 shrink-0 text-[#2f6cf5]" />
                   <span>{phone || 'Chưa cung cấp SĐT'}</span>
                 </div>
                 <div className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors">
-                  <Mail className="w-4 h-4 shrink-0 text-[#D4AF37]" />
+                  <Mail className="w-4 h-4 shrink-0 text-[#2f6cf5]" />
                   <span className="truncate">{email || 'Chưa có email'}</span>
                 </div>
                 {company && (
                   <div className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors border-t border-border/30 pt-3">
-                    <Landmark className="w-4 h-4 shrink-0 text-[#D4AF37]" />
+                    <Landmark className="w-4 h-4 shrink-0 text-[#2f6cf5]" />
                     <div className="min-w-0">
                       <p className="font-bold text-foreground truncate">{company.name}</p>
                       <p className="text-[10px] text-muted-foreground truncate">{company.address || 'Không địa chỉ'}</p>
@@ -272,16 +315,16 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
             <motion.div 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-[#D4AF37]/30 bg-sidebar/75 p-6 flex flex-col justify-between shadow-lg relative overflow-hidden"
+              className="rounded-3xl border border-[#2f6cf5]/30 bg-sidebar/75 p-6 flex flex-col justify-between shadow-lg relative overflow-hidden"
             >
               {/* Golden glow decorative bar */}
-              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#D4AF37]" />
+              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#2f6cf5]" />
               
               <div>
-                <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest block">QUỸ LOYALTY POINTS</span>
+                <span className="text-[10px] font-bold text-[#2f6cf5] uppercase tracking-widest block">QUỸ LOYALTY POINTS</span>
                 <div className="flex items-baseline gap-1 mt-2">
                   <span className="text-4xl font-extrabold text-foreground tracking-tight">{points.toLocaleString()}</span>
-                  <span className="text-xs font-bold text-[#D4AF37]">pts</span>
+                  <span className="text-xs font-bold text-[#2f6cf5]">pts</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">
                   Ngân quỹ điểm được tích lũy thông qua giao dịch, các cột mốc chi tiêu và tương tác xã hội.
@@ -305,7 +348,7 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
                   </button>
                   <button 
                     onClick={() => handleAdjustPoints(200)}
-                    className="flex-1 py-1 px-2 border border-[#D4AF37]/40 bg-[#D4AF37]/5 rounded-xl text-xs hover:bg-[#D4AF37]/10 font-bold flex items-center justify-center gap-1 transition-all text-[#D4AF37]"
+                    className="flex-1 py-1 px-2 border border-[#2f6cf5]/40 bg-[#2f6cf5]/5 rounded-xl text-xs hover:bg-[#2f6cf5]/10 font-bold flex items-center justify-center gap-1 transition-all text-[#2f6cf5]"
                   >
                     <Sparkles className="w-3 h-3" /> +200 pt
                   </button>
@@ -330,7 +373,7 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
                 {/* Meter road bar */}
                 <div className="w-full bg-muted rounded-full h-2.5 mt-2 overflow-hidden relative">
                   <div 
-                    className="bg-gradient-to-r from-yellow-500 to-[#D4AF37] h-full rounded-full transition-all duration-300"
+                    className="bg-gradient-to-r from-yellow-500 to-[#2f6cf5] h-full rounded-full transition-all duration-300"
                     style={{ width: `${tier.progress}%` }}
                   />
                 </div>
@@ -344,7 +387,7 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
               </div>
 
               <div className="bg-muted/30 p-3 rounded-2xl border border-border/40 mt-4 flex items-center gap-2">
-                <Award className="w-5 h-5 text-[#D4AF37]" />
+                <Award className="w-5 h-5 text-[#2f6cf5]" />
                 <div className="min-w-0">
                   <p className="text-[10px] font-bold text-foreground">Sử dụng điểm đổi quà cao cấp</p>
                   <p className="text-[9px] text-muted-foreground">Phòng chờ VIP, Sự kiện kín tại showroom</p>
@@ -501,9 +544,9 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
 
             <div className="space-y-3">
               {MOCK_CRM_ACTIVITIES.map((activity) => (
-                <div key={activity.id} className="flex items-center justify-between bg-background/55 p-3 rounded-2xl border border-border/45 hover:border-[#D4AF37]/30 transition-all">
+                <div key={activity.id} className="flex items-center justify-between bg-background/55 p-3 rounded-2xl border border-border/45 hover:border-[#2f6cf5]/30 transition-all">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-muted/65 flex items-center justify-center font-bold text-xs text-[#D4AF37]">
+                    <div className="w-8 h-8 rounded-xl bg-muted/65 flex items-center justify-center font-bold text-xs text-[#2f6cf5]">
                       {activity.type === 'order' ? '🛒' : activity.type === 'reward' ? '🎁' : '⚡'}
                     </div>
                     <div className="min-w-0">

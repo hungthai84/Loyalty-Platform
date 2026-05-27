@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { motion, AnimatePresence } from "motion/react";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 import {
   LayoutDashboard,
   Users,
@@ -55,18 +56,16 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
           "px-6 py-2 flex items-center transition-all duration-300",
           !isHovered && "px-[22px]"
         )}>
-          <div className="w-9 h-9 shrink-0 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-            <span className="text-primary-foreground font-bold font-heading text-lg">S</span>
-          </div>
+          <BrandLogo className="w-9 h-9 shrink-0 shadow-lg shadow-primary/20 hover:scale-105 transition-transform duration-300" />
           <AnimatePresence>
             {isHovered && (
               <motion.h2 
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="text-xl font-bold tracking-tight font-heading ml-3 whitespace-nowrap"
+                className="text-lg font-black tracking-tight font-heading ml-3 whitespace-nowrap bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-300"
               >
-                SEVA
+                Loyalty Platform
               </motion.h2>
             )}
           </AnimatePresence>

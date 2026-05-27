@@ -4,7 +4,7 @@ import { collection, doc, setDoc, serverTimestamp, query, orderBy, onSnapshot } 
 import { useFirebase } from '@/components/FirebaseProvider';
 import { handleFirestoreError, OperationType } from '@/lib/firestore-errors';
 import { toast } from 'sonner';
-import { X, Building2, Facebook, Link2, Linkedin, Instagram, Play } from 'lucide-react';
+import { X, Building2, Facebook, Link2, Linkedin, Instagram, Play, Upload } from 'lucide-react';
 import * as motion from 'motion/react-client';
 import { AttributeDefinition, Company } from '@/types';
 import { CUSTOMER_STATUSES } from '@/data/customerStatuses';
@@ -53,6 +53,27 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
 
     return () => unsubscribe();
   }, [user]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Firebase custom document sizes can handle Base64 strings. Let's limit image to ~1.5MB for robustness and faster loadtimes.
+    if (file.size > 1.5 * 1024 * 1024) {
+      toast.error("Kích thước tệp quá lớn. Vui lòng chọn ảnh nhỏ hơn 1.5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarUrl(reader.result as string);
+      toast.success("Tải ảnh lên thành công!");
+    };
+    reader.onerror = () => {
+      toast.error("Có lỗi xảy ra khi đọc tệp ảnh.");
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,7 +234,24 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
               
               {/* Avatar Selection */}
               <div className="space-y-3">
-                <span className="text-xs font-semibold uppercase text-muted-foreground block">Ảnh đại diện (Avatar URL)</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground block">Ảnh đại diện</span>
+                  <div className="relative">
+                    <input 
+                      type="file"
+                      id="customer-dialog-upload"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                    <label 
+                      htmlFor="customer-dialog-upload"
+                      className="text-[10px] font-bold uppercase py-1 px-2.5 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-lg cursor-pointer transition-colors flex items-center gap-1.5"
+                    >
+                      <Upload className="w-3 h-3" /> Tự tải từ thiết bị
+                    </label>
+                  </div>
+                </div>
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-2xl border border-border overflow-hidden bg-background shrink-0 shadow-sm flex items-center justify-center">
                     {avatarUrl ? (
@@ -227,7 +265,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
                       className="w-full px-3 py-1.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all font-mono"
                       value={avatarUrl}
                       onChange={e => setAvatarUrl(e.target.value)}
-                      placeholder="https://images.unsplash.com/photo-..."
+                      placeholder="https://images.unsplash.com/photo-... hoặc Base64"
                     />
                     <div className="flex gap-1.5">
                       {PRESET_AVATARS.map((p, idx) => (
@@ -243,7 +281,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
                       <button 
                         type="button" 
                         onClick={() => setAvatarUrl(`https://api.dicebear.com/7.x/adventurer/svg?seed=${name || 'happy'}`)}
-                        className="text-[9px] font-bold hover:underline ml-1.5 text-[#D4AF37]"
+                        className="text-[9px] font-bold hover:underline ml-1.5 text-[#2f6cf5]"
                       >
                         Tạo Avatar vẽ tay ⚡
                       </button>

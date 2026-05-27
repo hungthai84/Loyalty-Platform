@@ -22,9 +22,11 @@ import { CustomerPortalView } from "@/views/CustomerPortalView";
 import { LoyaltySettingsView } from "@/components/loyalty/LoyaltySettingsView";
 import { TierManagementView } from "@/components/loyalty/TierManagementView";
 import { SystemStatusMonitor } from "@/components/layout/SystemStatusMonitor";
+import { SeedDemoData } from "@/components/layout/SeedDemoData";
+import { RoleManager } from "@/components/settings/RoleManager";
 import { cn } from "@/lib/utils";
 
-type SettingsTab = 'company' | 'tiers' | 'retention' | 'portal' | 'api' | 'monitor';
+type SettingsTab = 'company' | 'tiers' | 'retention' | 'portal' | 'api' | 'monitor' | 'demo' | 'roles';
 
 export function SettingsView() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('company');
@@ -36,6 +38,8 @@ export function SettingsView() {
     { id: 'api', label: 'Kết nối API', icon: Webhook },
     { id: 'portal', label: 'Cổng Khách hàng', icon: Fingerprint },
     { id: 'monitor', label: 'Giám sát Hệ thống', icon: Activity },
+    { id: 'demo', label: 'Sandbox Dữ liệu', icon: Database },
+    { id: 'roles', label: 'Vai trò & Phân quyền', icon: Shield },
   ];
 
   return (
@@ -149,6 +153,16 @@ export function SettingsView() {
             {activeTab === 'monitor' && (
               <div className="max-w-6xl mx-auto pb-12">
                 <SystemStatusMonitor />
+              </div>
+            )}
+            {activeTab === 'demo' && (
+              <div className="max-w-6xl mx-auto pb-12">
+                <SeedDemoData />
+              </div>
+            )}
+            {activeTab === 'roles' && (
+              <div className="max-w-6xl mx-auto pb-12">
+                <RoleManager />
               </div>
             )}
           </motion.div>
