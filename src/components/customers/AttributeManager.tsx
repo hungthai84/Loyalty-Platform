@@ -33,12 +33,10 @@ export function AttributeManager({ onClose, attributes }: AttributeManagerProps)
   const [label, setLabel] = useState('');
   const [placeholder, setPlaceholder] = useState('');
   const [isRequired, setIsRequired] = useState(false);
-  const [includeLabel, setIncludeLabel] = useState(false);
   const [defaultValue, setDefaultValue] = useState('');
   const [options, setOptions] = useState<string[]>([]);
   const [newOption, setNewOption] = useState('');
 
-  const activeTypeInfo = FIELD_TYPES.find(t => t.id === selectedType);
   const prefersOptions = ['select', 'radio', 'checkbox'].includes(selectedType);
 
   const handleAddOption = (e?: React.KeyboardEvent | React.MouseEvent) => {
@@ -55,7 +53,7 @@ export function AttributeManager({ onClose, attributes }: AttributeManagerProps)
 
   const handleAdd = async () => {
     if (!user) return;
-    if (!label.trim()) return toast.error("Tên trường là bắt buộc");
+    if (!label.trim()) return toast.error("Tên thuộc tính là bắt buộc");
 
     const key = label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
     if (attributes.some(a => a.key === key)) return toast.error("Thuộc tính với tên này đã tồn tại");
@@ -111,227 +109,155 @@ export function AttributeManager({ onClose, attributes }: AttributeManagerProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-5xl bg-card border border-border shadow-2xl rounded-2xl flex flex-col h-[85vh] overflow-hidden"
+        className="w-full max-w-2xl bg-card border border-border shadow-2xl rounded-[1.25rem] flex flex-col max-h-[85vh] overflow-hidden"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-background shrink-0">
-          <h3 className="text-xl font-bold font-heading">Thêm thuộc tính</h3>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
-              <Switch checked={keepAdding} onCheckedChange={setKeepAdding} id="keep-adding" />
-              <label htmlFor="keep-adding" className="text-sm font-medium cursor-pointer select-none">
-                Tiếp tục thêm mới
-              </label>
-            </div>
-            <button onClick={onClose} className="p-2 hover:bg-muted/80 rounded-full transition-colors text-muted-foreground hover:text-foreground">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <h2 className="text-lg font-bold text-foreground">Quản lý Thuộc tính Mở rộng</h2>
+          <button onClick={onClose} className="p-2 hover:bg-muted/80 rounded-full transition-colors">
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
         </div>
 
-        {/* Content */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left Sidebar - Type Selection */}
-          <div className="w-64 border-r border-border bg-background p-4 flex flex-col gap-2 shrink-0 overflow-y-auto">
-            {FIELD_TYPES.map(type => {
-              const Icon = type.icon;
-              const isActive = selectedType === type.id;
-              return (
-                <button
-                  key={type.id}
-                  onClick={() => setSelectedType(type.id)}
-                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                    isActive 
-                      ? 'bg-primary/95 text-primary-foreground shadow-sm' 
-                      : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-primary-foreground' : ''}`} />
-                  {type.label}
-                </button>
-              );
-            })}
-            
-            {/* View Existing Attributes */}
-            {attributes.length > 0 && (
-              <div className="mt-8">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 px-4">Đã tạo ({attributes.length})</h4>
-                <div className="space-y-1">
-                  {attributes.map(attr => (
-                    <div key={attr.id} className="flex flex-col gap-1 px-4 py-2 hover:bg-muted/50 rounded-lg group">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium truncate pr-2">{attr.label}</span>
-                        <button onClick={() => handleDelete(attr.id)} className="p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors" title="Xóa thuộc tính">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground/70 font-mono">{attr.type}</span>
-                    </div>
-                  ))}
+        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-8">
+          
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Thêm mới</h3>
+            <div className="bg-muted/30 p-5 rounded-2xl border border-border space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5 focus-within:text-primary transition-colors">
+                  <label className="text-xs font-semibold text-muted-foreground group-focus-within:text-primary block pl-1">
+                    Tên hiển thị <span className="text-destructive">*</span>
+                  </label>
+                  <input 
+                    value={label}
+                    onChange={e => setLabel(e.target.value)}
+                    placeholder="VD: Sở thích..."
+                    className="w-full px-4 py-2.5 bg-background border-border border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
                 </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground block pl-1">Kiểu dữ liệu</label>
+                  <select 
+                    value={selectedType}
+                    onChange={e => setSelectedType(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
+                  >
+                    {FIELD_TYPES.map(type => (
+                      <option key={type.id} value={type.id}>{type.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Tùy chọn cho danh sách (select, radio, checkbox) */}
+              {prefersOptions && (
+                <div className="space-y-3 p-4 rounded-xl border border-primary/20 bg-primary/5">
+                  <label className="text-xs font-semibold text-foreground block pl-1">Các tùy chọn (Nhấn chọn 'Thêm')</label>
+                  <div className="flex gap-2">
+                    <input 
+                      value={newOption}
+                      onChange={e => setNewOption(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleAddOption(e)}
+                      placeholder="Nhập giá trị tùy chọn..."
+                      className="flex-1 px-4 py-2 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                    <button 
+                      type="button"
+                      onClick={handleAddOption}
+                      className="px-4 py-2 bg-primary/10 text-primary font-medium rounded-xl hover:bg-primary/20 transition-colors text-sm"
+                    >
+                      Thêm
+                    </button>
+                  </div>
+                  {options.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {options.map((opt, i) => (
+                        <div key={i} className="flex items-center gap-2 px-3 py-1 bg-background border border-border rounded-lg text-xs shadow-sm">
+                          <span>{opt}</span>
+                          <button 
+                            type="button"
+                            onClick={() => handleRemoveOption(i)} 
+                            className="p-0.5 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5 focus-within:text-primary transition-colors">
+                  <label className="text-xs font-semibold text-muted-foreground group-focus-within:text-primary block pl-1">Văn bản gợi ý (Placeholder)</label>
+                  <input 
+                    value={placeholder}
+                    onChange={e => setPlaceholder(e.target.value)}
+                    placeholder="Tùy chọn..."
+                    className="w-full px-4 py-2 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-1.5 pt-6 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Switch checked={isRequired} onCheckedChange={setIsRequired} id="is-required" />
+                    <label htmlFor="is-required" className="text-xs font-medium cursor-pointer text-muted-foreground">Bắt buộc nhập</label>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Switch checked={keepAdding} onCheckedChange={setKeepAdding} id="keep-adding" />
+                    <label htmlFor="keep-adding" className="text-xs font-medium cursor-pointer text-muted-foreground">Tiếp tục thêm</label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button 
+                  disabled={submitting || !label.trim()}
+                  onClick={handleAdd}
+                  className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50 text-sm"
+                >
+                  {submitting ? 'Đang tạo...' : 'Lưu Thuộc Tính'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Thuộc tính đã có</h3>
+            {attributes.length === 0 ? (
+              <div className="text-center py-6 bg-muted/20 border border-dashed rounded-xl">
+                <p className="text-xs text-muted-foreground">Chưa có thuộc tính mở rộng nào.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {attributes.map(attr => (
+                  <div key={attr.id} className="flex items-center justify-between bg-card border rounded-xl p-3 shadow-sm hover:border-primary/20 transition-all">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm">{attr.label}</span>
+                        {attr.isRequired && <span className="text-[10px] bg-destructive/10 text-destructive px-2 py-0.5 rounded-full font-medium">Bắt buộc</span>}
+                      </div>
+                      <span className="text-[11px] text-muted-foreground font-mono mt-1">Type: {attr.type} - Key: {attr.key}</span>
+                    </div>
+                    <button 
+                      onClick={() => handleDelete(attr.id)}
+                      className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                      title="Xóa thuộc tính"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Right Area - Configuration Form */}
-          <div className="flex-1 bg-muted/20 p-8 overflow-y-auto">
-            <div className="max-w-3xl mx-auto space-y-8">
-              
-              {/* Top Banner / Preview */}
-              <div className="bg-background border border-border rounded-xl p-4 shadow-sm text-sm text-muted-foreground">
-                <p className="font-mono mb-1">-</p>
-                <p>Tối đa 256 ký tự</p>
-              </div>
-
-              {/* Form Fields container */}
-              <div className="space-y-6">
-                
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Tên trường */}
-                  <div className="space-y-1.5 focus-within:text-primary transition-colors">
-                    <label className="text-xs font-semibold text-muted-foreground group-focus-within:text-primary block pl-1">
-                      Tên trường <span className="text-destructive">*</span>
-                    </label>
-                    <input 
-                      value={label}
-                      onChange={e => setLabel(e.target.value)}
-                      placeholder="Tối đa 48 ký tự"
-                      className="w-full px-4 py-3 bg-background border-border border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                    />
-                  </div>
-
-                  {/* Gợi ý */}
-                  <div className="space-y-1.5 focus-within:text-primary transition-colors">
-                    <label className="text-xs font-semibold text-muted-foreground group-focus-within:text-primary block pl-1">Gợi ý</label>
-                    <input 
-                      value={placeholder}
-                      onChange={e => setPlaceholder(e.target.value)}
-                      placeholder="Tối đa 256 ký tự"
-                      className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Kiểu dữ liệu */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground block pl-1">Kiểu dữ liệu</label>
-                  <select 
-                    disabled
-                    value={selectedType}
-                    className="w-full px-4 py-3 bg-muted/50 border border-border rounded-xl text-sm outline-none appearance-none cursor-not-allowed opacity-80 font-medium text-foreground"
-                  >
-                    <option value={selectedType}>{activeTypeInfo?.label}</option>
-                  </select>
-                </div>
-
-                {prefersOptions && (
-                  <div className="space-y-3 p-5 rounded-xl border border-primary/20 bg-primary/5">
-                    <label className="text-sm font-semibold text-foreground block pl-1">Tùy chọn cho danh sách</label>
-                    <div className="flex gap-2">
-                      <input 
-                        value={newOption}
-                        onChange={e => setNewOption(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleAddOption(e)}
-                        placeholder="Nhập giá trị và nhấn Enter..."
-                        className="flex-1 px-4 py-2 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      />
-                      <button 
-                        type="button"
-                        onClick={handleAddOption}
-                        className="px-4 py-2 bg-primary/10 text-primary font-medium rounded-xl hover:bg-primary/20 transition-colors text-sm"
-                      >
-                        Thêm
-                      </button>
-                    </div>
-                    {options.length > 0 && (
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        {options.map((opt, i) => (
-                          <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-background border border-border rounded-lg text-sm shadow-sm">
-                            <span>{opt}</span>
-                            <button 
-                              type="button"
-                              onClick={() => handleRemoveOption(i)} 
-                              className="p-0.5 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Giới hạn block */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-muted-foreground block pl-1">Giới hạn dữ liệu</label>
-                    <select className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                      <option>Không dùng</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-muted-foreground flex justify-between block pl-1">
-                      Giới hạn ký tự
-                      <span className="text-muted-foreground/50 border border-muted-foreground/30 rounded-full w-4 h-4 inline-flex items-center justify-center text-[10px] cursor-help">?</span>
-                    </label>
-                    <input 
-                      placeholder="Tối đa 256 ký tự"
-                      disabled
-                      className="w-full px-4 py-3 bg-muted/40 border border-border rounded-xl text-sm outline-none opacity-80 cursor-not-allowed"
-                    />
-                  </div>
-                </div>
-
-                {/* Toggles */}
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-center gap-4">
-                    <Switch checked={isRequired} onCheckedChange={setIsRequired} id="is-required" />
-                    <label htmlFor="is-required" className="text-sm font-medium cursor-pointer">Dữ liệu bắt buộc</label>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <Switch checked={includeLabel} onCheckedChange={setIncludeLabel} id="include-label" />
-                    <label htmlFor="include-label" className="text-sm font-medium cursor-pointer">Bao gồm nhãn cho hộp ký tự</label>
-                  </div>
-                </div>
-
-                {/* Giá trị mặc định */}
-                <div className="space-y-1.5 pt-2 focus-within:text-primary transition-colors">
-                  <label className="text-xs font-semibold text-muted-foreground block pl-1">Giá trị mặc định</label>
-                  <input 
-                    value={defaultValue}
-                    onChange={e => setDefaultValue(e.target.value)}
-                    placeholder="Tối đa 256 ký tự"
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  />
-                </div>
-
-              </div>
-            </div>
-          </div>
         </div>
-
-        {/* Footer Actions */}
-        <div className="flex items-center justify-end px-6 py-4 border-t border-border bg-background shrink-0 gap-3">
-          <button 
-            onClick={onClose}
-            className="px-6 py-2 bg-muted text-muted-foreground font-medium rounded-xl hover:bg-muted/80 transition-colors text-sm"
-          >
-            Hủy
-          </button>
-          <button 
-            disabled={submitting || !label.trim()}
-            onClick={handleAdd}
-            className="px-8 py-2 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50 text-sm"
-          >
-            Lưu
-          </button>
-        </div>
-
       </motion.div>
     </div>
   );

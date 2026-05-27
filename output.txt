@@ -1,0 +1,124 @@
+        <div style="font-family: sans-serif; background-color: #0b0f19; color: #f3f4f6; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 2px solid #d4af37; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15);">
+            <h1 style="color: #d4af37; font-size: 26px; letter-spacing: 3px; margin: 0 0 10px 0; text-transform: uppercase;">ATELIER HAUTE JOAILLERIE</h1>
+            <p style="color: #9ca3af; font-size: 11px; letter-spacing: 2px; margin: 0; text-transform: uppercase;">The Elite Loyalty Circle</p>
+            <p style="color: #d4af37; font-size: 13px; font-style: italic; margin-bottom: 25px; letter-spacing: 1px;">Kính gửi Quý Khách,</p>
+            <h2 style="font-size: 22px; color: #ffffff; margin-bottom: 20px; font-weight: 300; line-height: 1.4;">Đặc Quyền Tuổi Mới - Thăng Hoa Thịnh Vượng</h2>
+            <div style="font-size: 14px; line-height: 1.8; color: #d1d5db; margin-bottom: 35px; text-align: justify;">
+              <span style="display: block; font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">Mã Ưu Đãi Sinh Nhật Độc Quyền</span>
+              <strong style="display: block; font-size: 24px; color: #d4af37; font-family: monospace; letter-spacing: 3px; font-weight: bold; margin-bottom: 12px;">${sgVoucherCode}</strong>
+              <span style="font-size: 11px; color: #9ca3af; display: block;">Mã có hiệu lực trong 30 ngày • Miễn phí vận chuyển toàn quốc</span>
+            <a href="#" style="background-color: #d4af37; color: #0b0f19; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; padding: 14px 28px; text-decoration: none; border-radius: 4px; display: inline-block;">Kích Hoạt Đặc Quyền VIP</a>
+          <div style="margin-top: 45px; padding-top: 25px; border-top: 1px solid rgba(212, 175, 55, 0.2); text-align: center; font-size: 10px; color: #6b7280; line-height: 1.6;">
+        <div style="font-family: Georgia, serif; background-color: #fffdec; color: #1e293b; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 3px double #1e3a8a; box-shadow: 0 4px 15px rgba(30, 58, 138, 0.08);">
+            <span style="font-size: 24px; font-weight: bold; color: #1e3a8a; letter-spacing: 2px;">ROYAL DECO SEVA</span>
+            <div style="font-size: 10px; color: #475569; letter-spacing: 1px; margin-top: 5px;">EXCLUSIVE LUXURY RELATIONS</div>
+            <h3 style="font-size: 20px; color: #1e3a8a;">Chúc Mừng Sinh Nhật Thành viên VIP!</h3>
+            <p style="font-size: 13px; line-height: 1.7; color: #334155; margin: 20px 0; text-align: justify;">
+              <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; display: block;">MÃ QUÀ SANG TRỌNG</span>
+              <strong style="font-size: 22px; font-weight: bold; font-family: monospace; margin-top: 5px; letter-spacing: 2px; display: block;">${sgVoucherCode}</strong>
+          <div style="text-align: center; font-size: 10px; color: #64748b; margin-top: 40px; border-top: 1px solid #cbd5e1; padding-top: 20px; line-height: 1.5;">
+        <div style="font-family: sans-serif; color: #111827; background-color: #f9fafb; padding: 30px; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <h2 style="font-size: 20px; font-weight: bold; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px; margin-bottom: 20px;">Đặc Quyền Sinh Nhật Hội Viên</h2>
+          <p style="font-size: 14px; line-height: 1.6; color: #374151;">
+            <span style="font-size: 11px; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 4px;">Mã Ưu Đãi</span>
+            <strong style="font-size: 18px; font-weight: bold; font-family: monospace; color: #2f6cf5;">${sgVoucherCode}</strong>
+          <div style="font-size: 11px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 30px;">
+            <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">Tự động hóa Tiếp thị</h2>
+            <TabsTrigger value="automations" className="rounded-lg text-xs font-bold py-1.5 px-3 whitespace-nowrap"><ListRestart className="w-4 h-4 mr-2"/> Quy tắc tự động</TabsTrigger>
+            <TabsTrigger value="sendgrid" className="rounded-lg text-xs font-bold py-1.5 px-3 whitespace-nowrap"><Mail className="w-4 h-4 mr-2"/> SendGrid Email</TabsTrigger>
+            <TabsTrigger value="history" className="rounded-lg text-xs font-bold py-1.5 px-3 whitespace-nowrap"><HistoryIcon className="w-4 h-4 mr-2"/> Lịch sử phiên bản</TabsTrigger>
+                  <div className="text-xl font-black font-mono">{campaignRules.filter(r => r.status === 'active').length}</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Đang hoạt động</div>
+                  <div className="text-xl font-black font-mono">1,348</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Lần Kích Hoạt</div>
+              <span className="text-[10px] text-emerald-500 font-bold">+18.4%</span>
+                  <div className="text-xl font-black font-mono">89.4%</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Đọc Tin Nhắn</div>
+                  <div className="text-xl font-black font-mono">24.5%</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-wider">Tỷ lệ đổi quà</div>
+                  <h3 className="font-black text-sm text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Tên Quy Tắc / Chiến Dịch</label>
+                          className="w-full text-xs p-2.5 bg-background border rounded-xl font-semibold outline-none focus:ring-1 focus:ring-[#2f6cf5]/50"
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Trình kích hoạt (Trigger)</label>
+                          className="w-full text-xs p-2.5 bg-background border rounded-xl font-semibold outline-none cursor-pointer"
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Kênh gửi (Action Channel)</label>
+                          className="w-full text-xs p-2.5 bg-background border rounded-xl font-semibold outline-none cursor-pointer"
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Placeholders Hỗ trợ</label>
+                          <span className="px-2 py-1 bg-muted rounded text-[9px] font-mono select-all cursor-pointer font-bold text-foreground">{"{customer_name}"}</span>
+                          <span className="px-2 py-1 bg-muted rounded text-[9px] font-mono select-all cursor-pointer font-bold text-foreground">{"{points}"}</span>
+                      <label className="text-[10px] font-bold text-[#2f6cf5] uppercase flex items-center gap-1.5 font-mono">
+                        className="px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted rounded-xl transition-all"
+                        className="px-4 py-1.5 text-xs font-bold bg-[#2f6cf5] text-slate-950 hover:bg-[#1652f1] rounded-xl transition-all uppercase"
+                    <h3 className="font-black text-base flex items-center gap-2">
+                      className="flex items-center gap-1 px-3 py-1.5 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-xl text-xs font-bold transition-all cursor-pointer"
+                            <h4 className="font-bold text-sm text-foreground flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-primary/15 text-primary text-[8px] font-black uppercase rounded">
+                              <Badge variant="outline" className="text-[9px] border-border text-muted-foreground py-0 h-4 px-1.5 font-bold">
+                              <Badge variant="outline" className="text-[9px] border-border text-muted-foreground py-0 h-4 px-1.5 font-bold font-mono">
+                              "text-[10px] uppercase font-black px-2.5 py-1 rounded-lg border transition-all cursor-pointer",
+                              "text-[9px] px-2 py-1 rounded-lg font-black transition-all cursor-pointer",
+                <div className="absolute top-4 right-4 z-40 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                <h3 className="font-black text-sm text-foreground uppercase tracking-wider flex items-center gap-1.5 border-b pb-2.5 border-border/80">
+                      <label className="text-[9px] font-bold text-muted-foreground">1. CHỌN KHÁCH HÀNG VIP</label>
+                        className="w-full text-xs p-2 bg-background border rounded-lg font-bold text-foreground outline-none cursor-pointer"
+                      <label className="text-[9px] font-bold text-[#2f6cf5]">2. KỊCH BẢN ĐANG CHỌN</label>
+                        className="w-full text-xs p-2 bg-background border border-border/80 rounded-lg font-bold text-muted-foreground"
+                      <span className="text-[8px] text-muted-foreground font-black uppercase">Thông tin thiết bị</span>
+                      <p className="text-[10px] font-bold text-foreground font-mono">
+                      className="py-1.5 px-3 bg-slate-900 hover:bg-[#2f6cf5] hover:text-slate-950 text-white font-black text-[9px] tracking-widest uppercase rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+                        <div className="flex items-center gap-1.5 text-[8px] font-black text-[#2f6cf5] uppercase tracking-wider">
+                        <p className="text-[9px] leading-tight text-slate-100 font-bold mt-1">
+                          Gửi từ Seva CRM: <span className="font-normal text-slate-300">{sentAlertMessage.substring(0, 70)}...</span>
+                      <div className="flex justify-between items-center text-[8px] text-zinc-300 font-bold tracking-tight font-mono">
+                            <div className="w-10 h-10 bg-sky-500 text-white rounded-full flex items-center justify-center font-black text-xs shadow-md">
+                              <h4 className="text-[10px] font-black">Phòng Hộp Chat Zalo VIP</h4>
+                            <div className="w-full bg-white/10 p-2.5 rounded-xl text-left text-[9px] font-medium leading-relaxed max-h-[140px] overflow-y-auto mt-2 border border-white/5">
+                            <div className="w-10 h-10 bg-indigo-500 rounded-2xl flex items-center justify-center font-black text-xs shadow-md">
+                              <h4 className="text-[10px] font-black">Atelier Mailbox</h4>
+                                  <div className="font-bold border-b border-white/10 pb-1 text-sky-400">Gửi tới: {availableVips[selectedCustomerIndex]?.email}</div>
+                            <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center font-black text-xs shadow-md">
+                              <h4 className="text-[10px] font-black">Hộp thư Tin nhắn SMS</h4>
+                            <div className="w-full bg-slate-800/80 p-2.5 rounded-xl text-left text-[9px] font-medium leading-relaxed max-h-[140px] overflow-y-auto mt-2 border border-white/5">
+                      <div className="text-center text-[7px] text-zinc-500 font-bold select-none pt-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest block font-mono">
+                  <div className="bg-background border rounded-xl overflow-hidden text-[10px] max-h-[100px] overflow-y-auto font-mono text-muted-foreground divide-y divide-border border-border">
+                          <span className="font-bold text-foreground truncate max-w-[80px] text-left ml-2">{log.customerName}</span>
+                          <span className="font-bold text-emerald-500 shrink-0">{log.channel}</span>
+              <h3 className="font-semibold">Kích hoạt gần đây</h3>
+                    <h4 className="font-medium text-foreground">Phiên bản hiện tại (Đang hoạt động)</h4>
+                    <h4 className="font-medium text-foreground">v2.1 - Cập nhật mẫu Email</h4>
+                  <button onClick={() => handleRevert('v2.1 - Cập nhật mẫu Email')} className="mt-2 text-sm text-primary hover:underline font-medium">Khôi phục phiên bản này</button>
+                    <h4 className="font-medium text-foreground">v2.0 - Thêm hành động Cộng điểm</h4>
+                  <button onClick={() => handleRevert('v2.0 - Thêm hành động Cộng điểm')} className="mt-2 text-sm text-primary hover:underline font-medium">Khôi phục phiên bản này</button>
+                    <h4 className="font-medium text-foreground">v1.0 - Xuất bản lần đầu</h4>
+                  <button onClick={() => handleRevert('v1.0 - Xuất bản lần đầu')} className="mt-2 text-sm text-primary hover:underline font-medium">Khôi phục phiên bản này</button>
+              <h3 className="font-bold text-[#2f6cf5] text-base flex items-center gap-2">
+              className="px-5 py-2.5 bg-[#2f6cf5]/10 text-[#2f6cf5] border border-[#2f6cf5]/30 rounded-xl text-xs font-bold hover:bg-[#2f6cf5]/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                <h4 className="font-bold text-foreground text-sm uppercase tracking-wide">1. Cấu hình gửi thư SendGrid</h4>
+                  <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">SendGrid API Key</label>
+                    className="w-full p-2.5 bg-background border rounded-xl text-xs font-mono"
+                    <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Email Người gửi (From)</label>
+                      className="w-full p-2 bg-background border rounded-xl text-xs font-semibold"
+                    <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Tên Người gửi</label>
+                      className="w-full p-2 bg-background border rounded-xl text-xs font-semibold"
+                <h4 className="font-bold text-foreground text-sm uppercase tracking-wide">2. Thiết lập Mẫu Thư Mừng Tuổi Mới</h4>
+                  <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Phong cách Giao diện (Email Style)</label>
+                      className={`py-2 px-3 border rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
+                          ? "border-amber-500 bg-amber-500/5 text-amber-600 font-extrabold" 
+                      className={`py-2 px-3 border rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
+                          ? "border-blue-700 bg-blue-700/5 text-blue-700 font-extrabold" 
+                      className={`py-2 px-3 border rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
+                          ? "border-slate-800 bg-slate-800/5 text-slate-800 font-extrabold" 
+                  <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Tiêu đề Email (Subject Line)</label>
+                    className="w-full p-2 bg-background border rounded-xl text-xs font-semibold"
+                  <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Văn bản lời chúc (Greeting Content)</label>
+                    className="w-full p-2.5 bg-background border rounded-xl text-xs font-semibold leading-relaxed"
+                  <label className="block text-[10px] text-muted-foreground font-bold uppercase mb-1">Mã Gift Voucher Tặng kèm</label>
+                    className="w-full p-2 bg-background border rounded-xl text-xs font-mono font-bold tracking-widest text-primary uppercase"
+                <h4 className="font-bold text-foreground text-sm uppercase tracking-wide">3. Kiểm tra truyền phát thực tế</h4>
+                      className="w-full p-2 bg-background border rounded-xl text-xs font-semibold"
+                    className="px-4 py-2 bg-primary hover:bg-primary/95 disabled:bg-muted text-primary-foreground font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md shrink-0 cursor-pointer"
+                    <h4 className="font-bold text-foreground text-sm uppercase tracking-wide flex items-center gap-2 font-heading">
+                  <Badge variant="outline" className="text-[10px] border-amber-500/20 bg-amber-500/5 text-amber-500 font-bold">Responsive</Badge>
+      <span className="text-sm font-medium">{label}</span>
+          <h4 className="font-semibold text-sm text-foreground">{title}</h4>

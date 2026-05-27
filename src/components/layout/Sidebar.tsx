@@ -11,7 +11,6 @@ import {
   Settings,
   Bell,
   Fingerprint,
-  LogOut,
   ChevronRight,
   Building2,
   Sparkles
@@ -24,7 +23,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className, activeView, setActiveView }: SidebarProps) {
-  const { user, logout } = useFirebase();
+  const { user } = useFirebase();
   const [isHovered, setIsHovered] = useState(false);
 
   const menuItems = [
@@ -119,45 +118,10 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
       </div>
 
       <div className={cn(
-        "px-4 py-4 border-t border-border/50 bg-muted/5 transition-all",
+        "px-4 py-4 border-t border-border/50 bg-muted/5 transition-all text-center",
         !isHovered && "px-2"
       )}>
-        {user ? (
-          <div className={cn(
-            "flex items-center gap-3 transition-all",
-            !isHovered ? "justify-center" : "justify-between"
-          )}>
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-9 h-9 rounded-xl bg-muted border border-border/50 flex items-center justify-center text-xs font-medium shrink-0 shadow-sm">
-                {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
-              </div>
-              <AnimatePresence>
-                {isHovered && (
-                  <motion.div 
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "auto" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className="flex flex-col text-sm truncate"
-                  >
-                    <span className="font-semibold truncate leading-none mb-1">{user.displayName || 'Người dùng'}</span>
-                    <span className="text-[10px] text-muted-foreground truncate opacity-70 uppercase tracking-tighter">{user.email}</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            {isHovered && (
-              <button 
-                onClick={logout}
-                className="p-2 hover:bg-destructive/10 hover:text-destructive rounded-lg text-muted-foreground transition-all"
-                title="Đăng xuất"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        ) : (
-          isHovered && <div className="text-xs text-muted-foreground text-center">Chưa đăng nhập</div>
-        )}
+        <p className="text-[10px] text-muted-foreground/60 font-medium">Seva v1.0</p>
       </div>
     </motion.div>
   );

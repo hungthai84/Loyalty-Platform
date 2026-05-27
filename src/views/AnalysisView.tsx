@@ -35,7 +35,8 @@ import {
   X,
   AlertCircle,
   ShieldCheck,
-  HeartPulse
+  HeartPulse,
+  Network
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -57,8 +58,9 @@ import {
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
-import { Customer, LoyaltyCampaign } from "@/types";
+import { Customer, LoyaltyCampaign, Company, AttributeDefinition } from "@/types";
 import { OfferAnalysis } from "@/components/loyalty/OfferAnalysis";
+import { CrossBranchAnalysis } from "@/components/customers/CrossBranchAnalysis";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
 
 const CLV_TREND_BY_TIER_DATA = [
@@ -124,6 +126,8 @@ export function AnalysisView() {
   const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
   const [dbCustomers, setDbCustomers] = useState<Customer[]>([]);
   const [campaigns, setCampaigns] = useState<LoyaltyCampaign[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [attributes, setAttributes] = useState<AttributeDefinition[]>([]);
 
   // Listen for customers from Firebase Firestore to make this data LIVE!
   useEffect(() => {
@@ -141,6 +145,26 @@ export function AnalysisView() {
     const q = query(collection(db, `users/${user.uid}/loyaltyCampaigns`), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snapshot) => {
       setCampaigns(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as LoyaltyCampaign)));
+    });
+    return unsub;
+  }, [user]);
+
+  // Listen for companies from Firebase Firestore
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, `users/${user.uid}/companies`), orderBy("name", "asc"));
+    const unsub = onSnapshot(q, (snapshot) => {
+      setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
+    });
+    return unsub;
+  }, [user]);
+
+  // Listen for attributes from Firebase Firestore
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, `users/${user.uid}/attributeDefinitions`), orderBy("createdAt", "asc"));
+    const unsub = onSnapshot(q, (snapshot) => {
+      setAttributes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AttributeDefinition)));
     });
     return unsub;
   }, [user]);
@@ -450,6 +474,7 @@ export function AnalysisView() {
       <div className="flex flex-wrap items-center gap-1.5 bg-muted/40 p-1 rounded-2xl border max-w-full overflow-x-auto whitespace-nowrap">
         {[
           { id: 'dashboard', name: 'Tổng quan', icon: Layers },
+          { id: 'cross_branch', name: 'Điểm chung chi nhánh', icon: Network },
           { id: 'loyalty_cost', name: 'Loyalty Cost & ROI', icon: DollarSign },
           { id: 'clv_repeat', name: 'CLV & Repeat Purchase', icon: TrendingUp },
           { id: 'vip_crm', name: 'VIP CRM & Booking', icon: Users },
@@ -477,6 +502,17 @@ export function AnalysisView() {
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]">
           <Award className="w-5 h-5 text-[#2f6cf5]" />
           <div className="text-xs font-bold text-foreground">{toastMessage}</div>
+        </div>
+      )}
+
+      {/* NEW TAB: CROSS BRANCH ANALYSIS */}
+      {activeTab === 'cross_branch' && (
+        <div className="space-y-6">
+          <CrossBranchAnalysis
+            customers={customers}
+            companies={companies}
+            attributes={attributes}
+          />
         </div>
       )}
 

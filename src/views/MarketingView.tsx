@@ -147,7 +147,7 @@ export function MarketingView() {
     const greetingHtml = sgGreetingText.replace(/\n/g, "<br />");
     if (sgTheme === "gold_luxury") {
       return `
-        <div style="font-family: sans-serif; background-color: #0b0f19; color: #f3f4f6; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 2px solid #d4af37; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15);">
+        <div style="font-family: 'Roboto', sans-serif; background-color: #0b0f19; color: #f3f4f6; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 2px solid #d4af37; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15);">
           <div style="text-align: center; border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 25px; margin-bottom: 30px;">
             <h1 style="color: #d4af37; font-size: 26px; letter-spacing: 3px; margin: 0 0 10px 0; text-transform: uppercase;">ATELIER HAUTE JOAILLERIE</h1>
             <p style="color: #9ca3af; font-size: 11px; letter-spacing: 2px; margin: 0; text-transform: uppercase;">The Elite Loyalty Circle</p>
@@ -174,7 +174,7 @@ export function MarketingView() {
       `;
     } else if (sgTheme === "royal_deco") {
       return `
-        <div style="font-family: Georgia, serif; background-color: #fffdec; color: #1e293b; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 3px double #1e3a8a; box-shadow: 0 4px 15px rgba(30, 58, 138, 0.08);">
+        <div style="font-family: 'Roboto', sans-serif; background-color: #fffdec; color: #1e293b; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 3px double #1e3a8a; box-shadow: 0 4px 15px rgba(30, 58, 138, 0.08);">
           <div style="text-align: center; border-bottom: 2px double #1e3a8a; padding-bottom: 20px; margin-bottom: 25px;">
             <span style="font-size: 24px; font-weight: bold; color: #1e3a8a; letter-spacing: 2px;">ROYAL DECO SEVA</span>
             <div style="font-size: 10px; color: #475569; letter-spacing: 1px; margin-top: 5px;">EXCLUSIVE LUXURY RELATIONS</div>
@@ -197,7 +197,7 @@ export function MarketingView() {
       `;
     } else {
       return `
-        <div style="font-family: sans-serif; color: #111827; background-color: #f9fafb; padding: 30px; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div style="font-family: 'Roboto', sans-serif; color: #111827; background-color: #f9fafb; padding: 30px; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px;">
           <h2 style="font-size: 20px; font-weight: bold; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px; margin-bottom: 20px;">Đặc Quyền Sinh Nhật Hội Viên</h2>
           <p style="font-size: 14px; line-height: 1.6; color: #374151;">
             ${greetingHtml}

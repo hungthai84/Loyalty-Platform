@@ -1,4 +1,4 @@
-import { Bell, Search, Menu, Sun, Moon, Monitor, Check, X, AlertTriangle, Sparkles, CheckCircle2 } from "lucide-react";
+import { Bell, Search, Menu, Sun, Moon, Monitor, Check, X, AlertTriangle, Sparkles, CheckCircle2, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFirebase } from "@/components/FirebaseProvider";
@@ -9,6 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 interface SystemNotification {
@@ -21,7 +22,7 @@ interface SystemNotification {
 }
 
 export function Topbar() {
-  const { user } = useFirebase();
+  const { user, logout } = useFirebase();
   const { setTheme, theme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -79,7 +80,7 @@ export function Topbar() {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/60 px-6">
+    <header className="sticky top-0 z-[100] flex h-16 items-center gap-4 border-b bg-background/60 px-6">
       <button className="md:hidden">
         <Menu className="h-6 w-6 text-muted-foreground" />
       </button>
@@ -128,7 +129,7 @@ export function Topbar() {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-11 w-80 sm:w-96 rounded-2xl border border-border/80 bg-background/95 backdrop-blur-md shadow-2xl p-4 z-50 text-xs text-foreground animate-fadeIn">
+            <div className="absolute right-0 top-11 w-80 sm:w-96 rounded-2xl border border-border/80 bg-background/95 backdrop-blur-md shadow-2xl p-4 z-[100] text-xs text-foreground animate-fadeIn">
               <div className="flex items-center justify-between border-b border-border/60 pb-2 mb-2">
                 <span className="font-bold uppercase tracking-wider text-muted-foreground text-[10px]">Thông báo hệ thống</span>
                 {unreadCount > 0 && (
@@ -181,10 +182,29 @@ export function Topbar() {
           )}
         </div>
 
-        <Avatar className="h-8 w-8 border">
-          <AvatarImage src={user?.photoURL || ""} alt={user?.displayName || "User"} />
-          <AvatarFallback>{user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}</AvatarFallback>
-        </Avatar>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="focus:outline-none">
+            <Avatar className="h-8 w-8 border cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all">
+              <AvatarImage src={user?.photoURL || ""} alt={user?.displayName || "User"} />
+              <AvatarFallback>{user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 glass">
+            <div className="px-1.5 py-1 text-xs font-medium text-muted-foreground font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user?.displayName || 'Người dùng'}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user?.email}
+                </p>
+              </div>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="flex flex-row items-center gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10" onClick={logout}>
+              <LogOut className="h-4 w-4" />
+              <span>Đăng xuất</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
