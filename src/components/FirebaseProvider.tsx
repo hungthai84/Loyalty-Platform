@@ -239,13 +239,15 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
     try {
       const u = auth.currentUser;
       const userDocRef = doc(db, 'system_users', u.uid);
+      const isSuperAdminEmail = u.email?.toLowerCase() === 'hungthai84@gmail.com';
+      
       const systemUserData = {
         uid: u.uid,
         email: u.email,
-        displayName: displayName || u.displayName || "Thành viên mới",
+        displayName: displayName || u.displayName || (isSuperAdminEmail ? "Thái Hồng Hưng" : "Thành viên mới"),
         photoURL: u.photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
-        role: "Support",
-        status: "pending",
+        role: (isSuperAdminEmail ? "Admin" : "Support") as "Admin" | "Manager" | "Support",
+        status: (isSuperAdminEmail ? "approved" : "pending") as "pending" | "approved" | "rejected",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -257,7 +259,11 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
         updatedAt: new Date()
       } as any);
 
-      toast.success("Đăng ký thành công! Đang chờ Admin duyệt.");
+      if (isSuperAdminEmail) {
+        toast.success("Hệ thống nhận diện Super Admin! Tài khoản của bạn đã được phê duyệt trực tiếp.");
+      } else {
+        toast.success("Đăng ký thành công! Đang chờ Admin duyệt.");
+      }
     } catch (e: any) {
       console.error("Registration write failed: ", e);
       toast.error(`Không thể thực hiện đăng ký: ${e.message}`);
