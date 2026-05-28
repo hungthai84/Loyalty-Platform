@@ -16,6 +16,8 @@ import { AttributeManager } from "@/components/customers/AttributeManager";
 import { CustomerDashboard } from "@/components/customers/CustomerDashboard";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { Building2 } from "lucide-react";
+import { getGuestCustomers, getGuestAttributes, getGuestCompanies } from "@/data/guestData";
+
 
 const COLOR_PRESET_MAP_SHORT: Record<string, string> = {
   gold: 'bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/20',
@@ -45,8 +47,18 @@ export function CustomersView() {
 
   useEffect(() => {
     if (!user) {
-      setLoading(false);
-      return;
+      const loadGuestData = () => {
+        setCustomers(getGuestCustomers());
+        setAttributes(getGuestAttributes());
+        setCompanies(getGuestCompanies());
+        setLoading(false);
+      };
+
+      loadGuestData();
+      window.addEventListener("crm_guest_data_changed", loadGuestData);
+      return () => {
+        window.removeEventListener("crm_guest_data_changed", loadGuestData);
+      };
     }
 
     const customersPath = `users/${user.uid}/customers`;
@@ -124,29 +136,12 @@ export function CustomersView() {
 
   if (authLoading) return <div className="p-8 text-center">Đang tải...</div>;
 
-  if (!user) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight font-heading">Quản lý Khách hàng</h2>
-          <p className="text-muted-foreground text-sm mt-1">Vui lòng đăng nhập để quản lý cơ sở dữ liệu khách hàng của bạn.</p>
-        </div>
-        <button 
-          onClick={signIn}
-          className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-bold hover:scale-105 transition-transform shadow-lg"
-        >
-          Đăng nhập với Google
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="flex-1 space-y-6 p-8 pt-6">
       {currentCustomerData ? (
         <CustomerDashboard 
           customer={currentCustomerData}
-          userId={user.uid}
+          userId={user?.uid || "guest"}
           companies={companies}
           attributes={attributes}
           onBack={() => setSelectedCustomer(null)}
@@ -437,7 +432,7 @@ export function CustomersView() {
           onClose={() => setShowImportDialog(false)} 
           attributes={attributes}
           companies={companies}
-          userId={user.uid}
+          userId={user?.uid || "guest"}
         />
       )}
     </div>

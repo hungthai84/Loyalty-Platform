@@ -39,6 +39,24 @@ import { LoyaltyCampaignDialog } from "@/components/loyalty/LoyaltyCampaignDialo
 import { SegmentationRuleDialog } from "@/components/loyalty/SegmentationRuleDialog";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { 
+  getGuestTiers, 
+  getGuestRedemptionRules, 
+  getGuestEarnRules, 
+  getGuestCampaigns, 
+  getGuestSegmentationRules, 
+  getGuestCustomers,
+  saveGuestTier,
+  saveGuestRedemptionRule,
+  deleteGuestRedemptionRule,
+  saveGuestEarnRule,
+  deleteGuestEarnRule,
+  saveGuestCampaign,
+  deleteGuestCampaign,
+  saveGuestSegmentationRule,
+  deleteGuestSegmentationRule,
+  saveGuestCustomer
+} from "@/data/guestData";
 
 type TabType = 'tiers' | 'segmentation' | 'engagement' | 'automation' | 'vip';
 
@@ -112,8 +130,21 @@ export function LoyaltyView() {
 
   useEffect(() => {
     if (!user) {
-      setLoading(false);
-      return;
+      const loadGuestData = () => {
+        setTiers(getGuestTiers());
+        setRules(getGuestRedemptionRules());
+        setEarnRules(getGuestEarnRules());
+        setCampaigns(getGuestCampaigns());
+        setSegmentationRules(getGuestSegmentationRules());
+        setCustomers(getGuestCustomers());
+        setLoading(false);
+      };
+
+      loadGuestData();
+      window.addEventListener("crm_guest_data_changed", loadGuestData);
+      return () => {
+        window.removeEventListener("crm_guest_data_changed", loadGuestData);
+      };
     }
 
     const tPath = `users/${user.uid}/tierConfigs`;
@@ -159,51 +190,63 @@ export function LoyaltyView() {
   }, [user]);
 
   const handleBootstrapRules = async () => {
-    if (!user) return;
+    const templates = [
+      {
+        id: 'seg_big_spender',
+        name: 'Khách hàng chi tiêu lớn (Big Spender)',
+        tag: 'BIG SPENDER',
+        color: 'gold',
+        criteriaType: 'total_spend',
+        operator: 'gte',
+        value: 50000000,
+        isActive: true,
+      },
+      {
+        id: 'seg_inactive_member',
+        name: 'Thành viên đóng băng (Inactive)',
+        tag: 'INACTIVE',
+        color: 'slate',
+        criteriaType: 'time_since_last_purchase',
+        operator: 'gte',
+        value: 30,
+        isActive: true,
+      },
+      {
+        id: 'seg_loyalty_elite',
+        name: 'Thành viên ưu tú (Elite VIP)',
+        tag: 'ELITE VIP',
+        color: 'emerald',
+        criteriaType: 'points_balance',
+        operator: 'gte',
+        value: 1000,
+        isActive: true,
+      },
+      {
+        id: 'seg_winback_candidate',
+        name: 'Rủi ro rời bỏ cao (Churn Risk)',
+        tag: 'CHURN RISK',
+        color: 'rose',
+        criteriaType: 'time_since_last_purchase',
+        operator: 'gte',
+        value: 15,
+        isActive: true,
+      }
+    ];
+
     const toastId = toast.loading("Đang tự động thiết lập phân khúc mẫu...");
     try {
-      const templates = [
-        {
-          id: 'seg_big_spender',
-          name: 'Khách hàng chi tiêu lớn (Big Spender)',
-          tag: 'BIG SPENDER',
-          color: 'gold',
-          criteriaType: 'total_spend',
-          operator: 'gte',
-          value: 50000000,
-          isActive: true,
-        },
-        {
-          id: 'seg_inactive_member',
-          name: 'Thành viên đóng băng (Inactive)',
-          tag: 'INACTIVE',
-          color: 'slate',
-          criteriaType: 'time_since_last_purchase',
-          operator: 'gte',
-          value: 30,
-          isActive: true,
-        },
-        {
-          id: 'seg_loyalty_elite',
-          name: 'Thành viên ưu tú (Elite VIP)',
-          tag: 'ELITE VIP',
-          color: 'emerald',
-          criteriaType: 'points_balance',
-          operator: 'gte',
-          value: 1000,
-          isActive: true,
-        },
-        {
-          id: 'seg_winback_candidate',
-          name: 'Rủi ro rời bỏ cao (Churn Risk)',
-          tag: 'CHURN RISK',
-          color: 'rose',
-          criteriaType: 'time_since_last_purchase',
-          operator: 'gte',
-          value: 15,
-          isActive: true,
+      if (!user) {
+        for (const t of templates) {
+          const ruleData: SegmentationRule = {
+            ...t,
+            userId: 'guest',
+            createdAt: new Date().toISOString(),
+          } as any;
+          saveGuestSegmentationRule(ruleData);
         }
-      ];
+        toast.success("Đã đồng bộ trọn bộ phân khúc mẫu thành công! (dùng thử)", { id: toastId });
+        return;
+      }
 
       for (const t of templates) {
         const id = t.id;
@@ -222,7 +265,7 @@ export function LoyaltyView() {
   };
 
   const handleSyncTagsToCustomers = async () => {
-    if (!user || customers.length === 0 || segmentationRules.length === 0) {
+    if (customers.length === 0 || segmentationRules.length === 0) {
       toast.error("Không có quy tắc hoặc khách hàng nào để đồng bộ.");
       return;
     }
@@ -231,6 +274,28 @@ export function LoyaltyView() {
     const toastId = toast.loading("Đang gán nhãn tự động cho toàn bộ khách hàng...");
 
     try {
+      if (!user) {
+        let updatedCount = 0;
+        for (const customer of customers) {
+          const matchedTags = segmentationRules
+            .filter(r => r.isActive && evaluateCustomerSegment(customer, r))
+            .map(r => ({ tag: r.tag, color: r.color }));
+
+          const updatedCustomer = {
+            ...customer,
+            customFields: {
+              ...customer.customFields,
+              autoTags: matchedTags
+            },
+            updatedAt: new Date().toISOString()
+          };
+          saveGuestCustomer(updatedCustomer);
+          updatedCount++;
+        }
+        toast.success(`Đã tự động tính toán & gán thành công nhãn phân khúc cho ${updatedCount} khách hàng! (dùng thử)`, { id: toastId });
+        return;
+      }
+
       const batch = writeBatch(db);
       let updatedCount = 0;
 
@@ -263,28 +328,6 @@ export function LoyaltyView() {
   };
 
   if (authLoading) return <div className="p-8 text-center text-muted-foreground font-medium">Khởi tạo hệ thống Ưu đãi...</div>;
-
-  if (!user) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-muted/10 min-h-[80vh]">
-        <div className="max-w-md space-y-6">
-          <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-primary/10">
-            <Trophy className="w-10 h-10 text-primary" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight font-heading">Hệ thống Ưu đãi</h2>
-            <p className="text-muted-foreground text-sm">Nâng tầm trải nghiệm khách hàng với đặc quyền VIP và cá nhân hóa AI.</p>
-          </div>
-          <button 
-            onClick={signIn}
-            className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-primary/25"
-          >
-            Đăng nhập để bắt đầu
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   const tabs = [
     { id: 'tiers', label: 'Hạng & Tích điểm', icon: Star },

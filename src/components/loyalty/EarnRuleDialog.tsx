@@ -18,6 +18,7 @@ import { doc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { EarnRule } from "@/types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { saveGuestEarnRule, deleteGuestEarnRule } from "@/data/guestData";
 
 interface EarnRuleDialogProps {
   onClose: () => void;
@@ -45,27 +46,36 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
     if (!name || points <= 0) {
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
     setSubmitting(true);
-    try {
-      const id = rule?.id || Math.random().toString(36).substring(7);
-      const ruleData = {
-        id,
-        name,
-        type,
-        points: Number(points),
-        value: type === 'purchase' ? Number(value) : 0,
-        isActive,
-        userId: user.uid,
-        createdAt: rule?.createdAt || serverTimestamp(),
-      };
+    const id = rule?.id || Math.random().toString(36).substring(7);
+    const ruleData: EarnRule = {
+      id,
+      name,
+      type,
+      points: Number(points),
+      value: type === 'purchase' ? Number(value) : 0,
+      isActive,
+      userId: user?.uid || "guest",
+      createdAt: rule?.createdAt || new Date().toISOString(),
+    };
 
-      await setDoc(doc(db, `users/${user.uid}/earnRules`, id), ruleData);
+    try {
+      if (!user) {
+        saveGuestEarnRule(ruleData);
+        toast.success(rule ? "Đã cập nhật quy tắc (dùng thử)" : "Đã tạo quy tắc mới (dùng thử)");
+        onClose();
+        return;
+      }
+
+      await setDoc(doc(db, `users/${user.uid}/earnRules`, id), {
+        ...ruleData,
+        createdAt: rule?.createdAt || serverTimestamp(),
+      });
       toast.success(rule ? "Đã cập nhật quy tắc" : "Đã tạo quy tắc mới");
       onClose();
     } catch (error) {
@@ -77,11 +87,18 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
   };
 
   const handleDelete = async () => {
-    if (!user || !rule) return;
+    if (!rule) return;
     if (!confirm("Bạn có chắc chắn muốn xóa quy tắc này?")) return;
 
     setSubmitting(true);
     try {
+      if (!user) {
+        deleteGuestEarnRule(rule.id);
+        toast.success("Đã xóa quy tắc (dùng thử)");
+        onClose();
+        return;
+      }
+
       await deleteDoc(doc(db, `users/${user.uid}/earnRules`, rule.id));
       toast.success("Đã xóa quy tắc");
       onClose();

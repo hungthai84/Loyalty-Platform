@@ -6,8 +6,9 @@ import { handleFirestoreError, OperationType } from '@/lib/firestore-errors';
 import { toast } from 'sonner';
 import { X, Building2, Facebook, Link2, Linkedin, Instagram, Play, Upload } from 'lucide-react';
 import * as motion from 'motion/react-client';
-import { AttributeDefinition, Company } from '@/types';
+import { AttributeDefinition, Company, Customer } from '@/types';
 import { CUSTOMER_STATUSES } from '@/data/customerStatuses';
+import { getGuestCompanies, saveGuestCustomer } from '@/data/guestData';
 
 const PRESET_AVATARS = [
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&crop=faces&q=80",
@@ -42,7 +43,10 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
   const [tiktok, setTiktok] = useState('');
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setCompanies(getGuestCompanies());
+      return;
+    }
     
     const q = query(collection(db, `users/${user.uid}/companies`), orderBy("name", "asc"));
     const unsubscribe = onSnapshot(q, (snap) => {
@@ -77,40 +81,52 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
     if (!name.trim()) return toast.error("Họ và tên là bắt buộc");
 
     setSubmitting(true);
     const customerId = `CUS-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    const path = `users/${user.uid}/customers/${customerId}`;
 
     // Select default avatar if empty
     const finalAvatar = avatarUrl;
 
+    const newCustomer: Customer = {
+      id: customerId,
+      name,
+      email,
+      phone,
+      avatarUrl: finalAvatar,
+      facebook,
+      zalo,
+      linkedin,
+      instagram,
+      tiktok,
+      points: Math.floor(Math.random() * 250), // Starter loyalty points
+      companyId: selectedCompanyId || null,
+      activityStatus: activityStatus as any,
+      userId: user?.uid || "guest",
+      customFields,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
     try {
+      if (!user) {
+        saveGuestCustomer(newCustomer);
+        toast.success("Thêm khách hàng thành công (Lưu tạm dạng khách)");
+        onClose();
+        return;
+      }
+
+      const path = `users/${user.uid}/customers/${customerId}`;
       await setDoc(doc(db, path), {
-        id: customerId,
-        name,
-        email,
-        phone,
-        avatarUrl: finalAvatar,
-        facebook,
-        zalo,
-        linkedin,
-        instagram,
-        tiktok,
-        points: Math.floor(Math.random() * 250), // Starter loyalty points
-        companyId: selectedCompanyId || null,
-        activityStatus,
-        userId: user.uid,
-        customFields,
+        ...newCustomer,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
       toast.success("Thêm khách hàng thành công");
       onClose();
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
+      handleFirestoreError(error, OperationType.WRITE, `users/${user?.uid || "guest"}/customers/${customerId}`);
       toast.error("Không thể thêm khách hàng");
     } finally {
       setSubmitting(false);

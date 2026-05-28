@@ -15,6 +15,7 @@ import { doc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { SegmentationRule } from "@/types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { saveGuestSegmentationRule, deleteGuestSegmentationRule } from "@/data/guestData";
 
 interface SegmentationRuleDialogProps {
   onClose: () => void;
@@ -58,7 +59,6 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
     if (!name.trim()) {
       toast.error("Vui lòng điền tên quy tắc phân khúc");
       return;
@@ -73,22 +73,32 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
     }
 
     setSubmitting(true);
-    try {
-      const id = rule?.id || Math.random().toString(36).substring(7);
-      const ruleData: SegmentationRule = {
-        id,
-        name: name.trim(),
-        tag: tag.trim(),
-        color,
-        criteriaType,
-        operator,
-        value: Number(value),
-        isActive,
-        userId: user.uid,
-        createdAt: rule?.createdAt || serverTimestamp(),
-      };
+    const id = rule?.id || Math.random().toString(36).substring(7);
+    const ruleData: SegmentationRule = {
+      id,
+      name: name.trim(),
+      tag: tag.trim(),
+      color,
+      criteriaType,
+      operator,
+      value: Number(value),
+      isActive,
+      userId: user?.uid || "guest",
+      createdAt: rule?.createdAt || new Date().toISOString(),
+    };
 
-      await setDoc(doc(db, `users/${user.uid}/segmentationRules`, id), ruleData);
+    try {
+      if (!user) {
+        saveGuestSegmentationRule(ruleData);
+        toast.success(rule ? "Đã cập nhật quy tắc phân khúc (dùng thử)" : "Đã thiết lập quy tắc phân khúc mới (dùng thử)");
+        onClose();
+        return;
+      }
+
+      await setDoc(doc(db, `users/${user.uid}/segmentationRules`, id), {
+        ...ruleData,
+        createdAt: rule?.createdAt || serverTimestamp(),
+      });
       toast.success(rule ? "Đã cập nhật quy tắc phân khúc" : "Đã thiết lập quy tắc phân khúc mới");
       onClose();
     } catch (error) {
@@ -100,11 +110,18 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
   };
 
   const handleDelete = async () => {
-    if (!user || !rule) return;
+    if (!rule) return;
     if (!confirm("Bạn có chắc chắn muốn xóa quy tắc phân khúc này?")) return;
 
     setSubmitting(true);
     try {
+      if (!user) {
+        deleteGuestSegmentationRule(rule.id);
+        toast.success("Đã xóa quy tắc phân khúc (dùng thử)");
+        onClose();
+        return;
+      }
+
       await deleteDoc(doc(db, `users/${user.uid}/segmentationRules`, rule.id));
       toast.success("Đã xóa quy tắc phân khúc");
       onClose();

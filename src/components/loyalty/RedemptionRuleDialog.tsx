@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import * as motion from 'motion/react-client';
 import { RedemptionRule } from '@/types';
+import { saveGuestRedemptionRule, deleteGuestRedemptionRule } from '@/data/guestData';
 
 interface RedemptionRuleDialogProps {
   onClose: () => void;
@@ -23,27 +24,38 @@ export function RedemptionRuleDialog({ onClose, rule }: RedemptionRuleDialogProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
     if (!name.trim()) return toast.error("Name is required");
 
     setSubmitting(true);
     const id = rule?.id || `RULE-${Date.now()}`;
-    const path = `users/${user.uid}/redemptionRules/${id}`;
+
+    const newRule: RedemptionRule = {
+      id,
+      name,
+      pointsRequired: Number(pointsRequired),
+      rewardValue: Number(rewardValue),
+      rewardType,
+      userId: user?.uid || 'guest',
+      createdAt: rule?.createdAt || new Date().toISOString(),
+    };
 
     try {
+      if (!user) {
+        saveGuestRedemptionRule(newRule);
+        toast.success(rule ? "Đã cập nhật quy tắc (dùng thử)" : "Đã tạo quy tắc mới (dùng thử)");
+        onClose();
+        return;
+      }
+
+      const path = `users/${user.uid}/redemptionRules/${id}`;
       await setDoc(doc(db, path), {
-        id,
-        name,
-        pointsRequired: Number(pointsRequired),
-        rewardValue: Number(rewardValue),
-        rewardType,
-        userId: user.uid,
+        ...newRule,
         createdAt: rule?.createdAt || serverTimestamp(),
       });
       toast.success(rule ? "Đã cập nhật quy tắc" : "Đã tạo quy tắc mới");
       onClose();
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
+      handleFirestoreError(error, OperationType.WRITE, `users/${user?.uid || "guest"}/redemptionRules/${id}`);
       toast.error("Không thể lưu quy tắc");
     } finally {
       setSubmitting(false);
@@ -51,16 +63,23 @@ export function RedemptionRuleDialog({ onClose, rule }: RedemptionRuleDialogProp
   };
 
   const handleDelete = async () => {
-    if (!user || !rule) return;
+    if (!rule) return;
     if (!confirm("Bạn có chắc chắn muốn xóa quy tắc này không?")) return;
 
-    const path = `users/${user.uid}/redemptionRules/${rule.id}`;
     try {
+      if (!user) {
+        deleteGuestRedemptionRule(rule.id);
+        toast.success("Đã xóa quy tắc (dùng thử)");
+        onClose();
+        return;
+      }
+
+      const path = `users/${user.uid}/redemptionRules/${rule.id}`;
       await deleteDoc(doc(db, path));
       toast.success("Đã xóa quy tắc");
       onClose();
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, path);
+      handleFirestoreError(error, OperationType.DELETE, `users/${user?.uid || "guest"}/redemptionRules/${rule.id}`);
     }
   };
 

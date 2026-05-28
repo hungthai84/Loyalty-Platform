@@ -6,6 +6,7 @@ import { doc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { LoyaltyCampaign } from "@/types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { saveGuestCampaign, deleteGuestCampaign } from "@/data/guestData";
 
 interface LoyaltyCampaignDialogProps {
   onClose: () => void;
@@ -32,28 +33,37 @@ export function LoyaltyCampaignDialog({ onClose, campaign }: LoyaltyCampaignDial
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
     if (!name || rewardValue <= 0) {
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
     setSubmitting(true);
-    try {
-      const id = campaign?.id || Math.random().toString(36).substring(7);
-      const data = {
-        id,
-        name,
-        type,
-        rewardType,
-        rewardValue: Number(rewardValue),
-        description,
-        isActive,
-        userId: user.uid,
-        createdAt: campaign?.createdAt || serverTimestamp(),
-      };
+    const id = campaign?.id || Math.random().toString(36).substring(7);
+    const data: LoyaltyCampaign = {
+      id,
+      name,
+      type,
+      rewardType,
+      rewardValue: Number(rewardValue),
+      description,
+      isActive,
+      userId: user?.uid || "guest",
+      createdAt: campaign?.createdAt || new Date().toISOString(),
+    };
 
-      await setDoc(doc(db, `users/${user.uid}/loyaltyCampaigns`, id), data);
+    try {
+      if (!user) {
+        saveGuestCampaign(data);
+        toast.success(campaign ? "Đã cập nhật chiến dịch (dùng thử)" : "Đã tạo chiến dịch mới (dùng thử)");
+        onClose();
+        return;
+      }
+
+      await setDoc(doc(db, `users/${user.uid}/loyaltyCampaigns`, id), {
+        ...data,
+        createdAt: campaign?.createdAt || serverTimestamp(),
+      });
       toast.success(campaign ? "Đã cập nhật chiến dịch" : "Đã tạo chiến dịch tự động mới");
       onClose();
     } catch (error) {
@@ -65,10 +75,17 @@ export function LoyaltyCampaignDialog({ onClose, campaign }: LoyaltyCampaignDial
   };
 
   const handleDelete = async () => {
-    if (!user || !campaign) return;
+    if (!campaign) return;
     if (!confirm("Xóa chiến dịch tự động này?")) return;
     setSubmitting(true);
     try {
+      if (!user) {
+        deleteGuestCampaign(campaign.id);
+        toast.success("Đã xóa chiến dịch (dùng thử)");
+        onClose();
+        return;
+      }
+
       await deleteDoc(doc(db, `users/${user.uid}/loyaltyCampaigns`, campaign.id));
       toast.success("Đã xóa chiến dịch");
       onClose();
