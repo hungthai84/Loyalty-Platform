@@ -118,10 +118,45 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
       </div>
 
       <div className={cn(
-        "px-4 py-4 border-t border-border/50 bg-muted/5 transition-all text-center",
-        !isHovered && "px-2"
+        "px-3 py-4 border-t border-border/50 transition-all",
+        !isHovered && "px-2 flex justify-center"
       )}>
-        <p className="text-[10px] text-muted-foreground/60 font-medium">Seva v1.0</p>
+        <button
+          onClick={() => setActiveView("portal")}
+          className={cn(
+            "w-full flex items-center rounded-xl py-2.5 text-sm font-medium transition-all group relative justify-center",
+            activeView === "portal"
+              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+              : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+            !isHovered ? "px-0" : "px-3 space-x-3 justify-start"
+          )}
+          title={!isHovered ? "Cổng Loyalty" : undefined}
+        >
+          <Fingerprint className={cn(
+            "h-5 w-5 shrink-0 transition-transform duration-300",
+            activeView === "portal" ? "text-primary-foreground" : "text-muted-foreground group-hover:scale-110"
+          )} />
+          
+          <AnimatePresence>
+            {isHovered && (
+              <motion.span
+                initial={{ opacity: 0, x: -5 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -5 }}
+                className="whitespace-nowrap overflow-hidden text-sm"
+              >
+                Cổng Loyalty
+              </motion.span>
+            )}
+          </AnimatePresence>
+
+          {isHovered && activeView === "portal" && (
+            <motion.div 
+              layoutId="activeIndicator"
+              className="absolute right-2 w-1.5 h-1.5 rounded-full bg-primary-foreground/50" 
+            />
+          )}
+        </button>
       </div>
     </motion.div>
   );

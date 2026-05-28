@@ -15,6 +15,8 @@ export interface Customer {
   companyId?: string;
   userId: string;
   customFields?: Record<string, any>;
+  orders?: any[];
+  tickets?: any[];
   createdAt: any; // ServerTimestamp
   updatedAt: any; // ServerTimestamp
 }

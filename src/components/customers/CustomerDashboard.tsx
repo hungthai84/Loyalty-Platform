@@ -567,6 +567,164 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
             </div>
           </motion.div>
 
+          {/* API ĐƠN HÀNG ĐÃ MUA */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-xs font-bold text-foreground uppercase tracking-widest">ĐƠN HÀNG ĐÃ MUA (CRM API)</h4>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Dữ liệu đơn hàng đồng bộ trực tiếp từ hệ thống ERP/CRM.</p>
+              </div>
+              <button 
+                onClick={async () => {
+                  try {
+                    // Start by simulating the POST to the new gateway API
+                    const apiRes = await fetch("/api/pos/orders", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        customerPhone: customer.phone,
+                        items: 'OLED Smart TV 4K...'
+                      })
+                    });
+                    
+                    const result = await apiRes.json();
+                    
+                    if (result.success) {
+                      // On success, we apply the updated data to Firestore 
+                      const newOrder = result.data;
+                      const mockOrders = [
+                        newOrder,
+                        { id: `SO-${Math.floor(Math.random() * 10000)}`, date: '15/04/2026', total: '35,000,000 đ', status: 'Đang giao', items: 'Apple Watch Series 11...', statusClasses: 'bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/20' }
+                      ];
+                      await updateFirestore({ orders: [...(customer.orders || []), ...mockOrders] }, result.message);
+                    } else {
+                      toast.error(result.message);
+                    }
+                  } catch (err: any) {
+                    toast.error(`Lỗi hệ thống: ${err.message}`);
+                  }
+                }}
+                className="px-3 py-1 rounded-xl text-xs font-bold border border-border bg-background hover:bg-muted transition-all flex items-center gap-1.5"
+                title="Đồng bộ dữ liệu mới nhất"
+              >
+                <RefreshCw className="w-3 h-3 text-[#2f6cf5]" /> Đồng bộ giả lập
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {(!customer.orders || customer.orders.length === 0) ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 border border-dashed rounded-2xl">
+                  <div className="w-12 h-12 bg-background border rounded-2xl flex items-center justify-center mb-3 text-muted-foreground shadow-sm">
+                    🛒
+                  </div>
+                  <span className="text-sm font-bold text-foreground">Chưa có thông tin đơn hàng</span>
+                  <span className="text-[10px] text-muted-foreground mt-1 max-w-xs">Hệ thống chưa ghi nhận phát sinh đơn hàng nào hoặc API chưa đồng bộ dữ liệu.</span>
+                </div>
+              ) : (
+                customer.orders.map((order: any) => (
+                  <div key={order.id} className="p-4 rounded-2xl border border-border/60 bg-background shadow-sm hover:border-primary/20 transition-all flex flex-col gap-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-foreground">{order.id}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${order.statusClasses}`}>
+                          {order.status}
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold text-foreground">{order.total}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span className="truncate max-w-[200px]">{order.items}</span>
+                      <span>{order.date}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+
+          {/* API PHIẾU HỖ TRỢ */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-xs font-bold text-foreground uppercase tracking-widest">PHIẾU HỖ TRỢ & TICKET (CRM API)</h4>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Lịch sử khiếu nại, bảo hành và yêu cầu hỗ trợ từ khách hàng.</p>
+              </div>
+              <button 
+                onClick={async () => {
+                  try {
+                    const apiRes = await fetch("/api/crm/tickets", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        customerPhone: customer.phone,
+                        subject: 'Tư vấn nâng cấp thiết bị POS'
+                      })
+                    });
+                    
+                    const result = await apiRes.json();
+                    
+                    if (result.success) {
+                      const mockTickets = [
+                        result.data,
+                        { id: `SUP-${Math.floor(Math.random() * 10000)}`, date: '10/01/2026', subject: 'Tư vấn nâng cấp gói bảo hành Vàng', status: 'Đã đóng', severity: 'Thấp' }
+                      ];
+                      await updateFirestore({ tickets: [...(customer.tickets || []), ...mockTickets] }, result.message);
+                    } else {
+                      toast.error(result.message);
+                    }
+                  } catch (err: any) {
+                    toast.error(`Lỗi hệ thống: ${err.message}`);
+                  }
+                }}
+                className="px-3 py-1 rounded-xl text-xs font-bold border border-border bg-background hover:bg-muted transition-all"
+              >
+                Giả lập Ticket CRM
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {(!customer.tickets || customer.tickets.length === 0) ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 border border-dashed rounded-2xl">
+                  <div className="w-12 h-12 bg-background border rounded-2xl flex items-center justify-center mb-3 text-muted-foreground shadow-sm">
+                    🎫
+                  </div>
+                  <span className="text-sm font-bold text-foreground">Chưa có phiếu hỗ trợ</span>
+                  <span className="text-[10px] text-muted-foreground mt-1 max-w-xs">Khách hàng chưa có yêu cầu hỗ trợ hoặc khiếu nại nào được ghi nhận.</span>
+                </div>
+              ) : (
+                customer.tickets.map((ticket: any) => (
+                  <div key={ticket.id} className="p-4 rounded-2xl border border-border/60 bg-background shadow-sm hover:border-primary/20 transition-all flex flex-col gap-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-foreground">{ticket.id}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${ticket.status === 'Đang xử lý' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-slate-500/10 text-slate-500 border-slate-500/20'}`}>
+                          {ticket.status}
+                        </span>
+                      </div>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${ticket.severity === 'Cao' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'}`}>
+                        {ticket.severity}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span className="truncate max-w-[250px] font-medium text-foreground">{ticket.subject}</span>
+                      <span>{ticket.date}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+
         </div>
 
       </div>

@@ -57,6 +57,67 @@ async function startServer() {
     }
   });
 
+  // POS Orders Gateway
+  app.post("/api/pos/orders", async (req, res) => {
+    try {
+      const { customerPhone, orderId, total, items, date } = req.body;
+      
+      console.log(`[POS API Gateway] Received order ${orderId} for customer ${customerPhone}`);
+      
+      // Mock processing delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      return res.json({ 
+        success: true, 
+        message: "Dữ liệu đơn hàng từ POS đã được tiếp nhận thành công.",
+        data: {
+          id: orderId || `SO-${Math.floor(Math.random() * 10000)}`,
+          date: date || new Date().toLocaleDateString('vi-VN'),
+          total: total || 'Liên hệ mua hàng',
+          status: 'Hoàn thành',
+          items: items || 'Sản phẩm đồng bộ',
+          statusClasses: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+        }
+      });
+    } catch (err: any) {
+      console.error("POS API Gateway error:", err);
+      return res.status(500).json({
+        success: false,
+        message: `Lỗi đồng bộ từ POS: ${err.message}`
+      });
+    }
+  });
+
+  // CRM Tickets Gateway
+  app.post("/api/crm/tickets", async (req, res) => {
+    try {
+      const { customerPhone, ticketId, subject, severity, status, date } = req.body;
+      
+      console.log(`[CRM API Gateway] Received ticket ${ticketId} for customer ${customerPhone}`);
+      
+      // Mock processing delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      return res.json({ 
+        success: true, 
+        message: "Phiếu hỗ trợ từ CRM đã được tiếp nhận thành công.",
+        data: {
+          id: ticketId || `SUP-${Math.floor(Math.random() * 10000)}`,
+          date: date || new Date().toLocaleDateString('vi-VN'),
+          subject: subject || 'Yêu cầu hỗ trợ từ khách hàng',
+          status: status || 'Đang xử lý',
+          severity: severity || 'Thấp'
+        }
+      });
+    } catch (err: any) {
+      console.error("CRM API Gateway error:", err);
+      return res.status(500).json({
+        success: false,
+        message: `Lỗi đồng bộ từ CRM: ${err.message}`
+      });
+    }
+  });
+
   // Serve static UI assets or run Vite Dev Server
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

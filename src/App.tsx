@@ -7,6 +7,7 @@ import { LoyaltyView } from "@/views/LoyaltyView";
 import { MarketingView } from "@/views/MarketingView";
 import { CompaniesView } from "@/views/CompaniesView";
 import { SettingsView } from "@/views/SettingsView";
+import { CustomerPortalView } from "@/views/CustomerPortalView";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsView } from "./views/AnalyticsView";
 import { AnalysisView } from "./views/AnalysisView";
@@ -151,6 +152,7 @@ function AppContent() {
           {activeView === "analytics" && <AnalyticsView />}
           {activeView === "analysis" && <AnalysisView />}
           {activeView === "settings" && <SettingsView />}
+          {activeView === "portal" && <CustomerPortalView />}
           
           {["support", "billing"].includes(activeView) && (
             <div className="flex-1 flex items-center justify-center p-8 h-[80vh]">
