@@ -120,6 +120,22 @@
       },
       "required": ["name", "userId", "createdAt"]
     },
+    "SystemUser": {
+      "title": "System User",
+      "description": "Users of this CRM with their system roles and approval status",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "Manager", "Support"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "status", "createdAt", "updatedAt"]
+    },
     "SegmentationRule": {
       "title": "Segmentation Rule",
       "description": "Custom rule logic for automated customer tagging",
@@ -140,6 +156,10 @@
     }
   },
   "firestore": {
+    "/system_users/{userId}": {
+      "schema": "SystemUser",
+      "description": "Registered CRM system users and approval requests"
+    },
     "/users/{userId}/customers/{customerId}": {
       "schema": "Customer",
       "description": "User's customer database"

@@ -18,7 +18,9 @@ import { ShieldAlert, LogIn, LogOut, Lock, Trophy, Sparkles, UserCheck } from "l
 
 function AppContent() {
   const [activeView, setActiveView] = useState("dashboard");
-  const { user, loading, signIn, logout, guestLogin } = useFirebase();
+  const { user, systemUser, loading, signIn, logout, registerUser, refreshStatus } = useFirebase();
+  const [regName, setRegName] = useState("");
+  const [loginMode, setLoginMode] = useState<'login' | 'register'>('login');
 
   // 1. Loading State
   if (loading) {
@@ -36,45 +38,92 @@ function AppContent() {
   // 2. Unauthenticated State
   if (!user) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="h-screen w-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ fontFamily: '"Roboto", sans-serif' }}>
         <div className="uiverse-container" />
         <div className="relative bg-card/60 backdrop-blur-2xl border border-border w-full max-w-md rounded-3xl p-8 shadow-2xl space-y-6 text-center">
           <div className="w-20 h-20 rounded-3xl overflow-hidden mx-auto shadow-2xl shadow-blue-500/10 hover:scale-105 transition-transform duration-300">
             <BrandLogo className="w-full h-full" />
           </div>
+
+          {/* Interactive Mode Tabs */}
+          <div className="grid grid-cols-2 p-1 bg-muted/60 dark:bg-muted/80 rounded-xl border border-border/40 text-xs font-bold">
+            <button
+              onClick={() => setLoginMode('login')}
+              className={`py-2 rounded-lg transition-all ${
+                loginMode === 'login'
+                  ? 'bg-primary text-primary-foreground shadow-sm font-extrabold'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
+              }`}
+            >
+              Đăng Nhập
+            </button>
+            <button
+              onClick={() => setLoginMode('register')}
+              className={`py-2 rounded-lg transition-all ${
+                loginMode === 'register'
+                  ? 'bg-primary text-primary-foreground shadow-sm font-extrabold'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
+              }`}
+            >
+              Đăng Ký
+            </button>
+          </div>
           
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary border border-primary/20 text-[10px] font-black tracking-widest uppercase rounded-full leading-none">
-              <Sparkles className="w-3.5 h-3.5" /> CRM & LOYALTY PLATFORM
-            </span>
-            <h2 className="text-2xl font-black tracking-tight font-heading text-foreground pt-1">Hệ Thống Phân Khúc & Ưu Đãi VIP</h2>
-            <p className="text-muted-foreground text-xs leading-relaxed max-w-sm mx-auto">
-              Giải pháp tích điểm, phân loại & gán nhãn tự động dành riêng cho tập đoàn. Đăng nhập để sử dụng tiếp.
-            </p>
-          </div>
+          {loginMode === 'login' ? (
+            <div className="space-y-4 animate-fade-in">
+              <div className="space-y-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary border border-primary/20 text-[10px] font-black tracking-widest uppercase rounded-full leading-none">
+                  <Sparkles className="w-3.5 h-3.5" /> SYSTEM ACCESS
+                </span>
+                <h2 className="text-2xl font-black tracking-tight font-heading text-foreground pt-1">Hệ thống quản lý khách hàng thân thiết</h2>
+                <p className="text-muted-foreground text-xs leading-relaxed max-w-sm mx-auto">
+                  Vui lòng đăng nhập bằng địa chỉ Gmail của bạn để sử dụng.
+                </p>
+              </div>
 
-          <div className="flex flex-col gap-3">
-            <button 
-              onClick={signIn}
-              className="w-full py-3.5 bg-zinc-900 border border-zinc-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 active:scale-[0.99] transition-all shadow-xl shadow-black/10 cursor-pointer text-sm"
-            >
-              <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.57h3.3c1.93,-1.78 3.04,-4.4 3.04,-7.48c0,-0.61 -0.05,-1.2 -0.16,-1.79z" fill="#4285F4" />
-                <path d="M12,20.6c2.4,0 4.41,-0.8 5.88,-2.16l-3.3,-2.57c-0.91,0.61 -2.08,0.98 -3.29,0.98 -2.31,0 -4.26,-1.56 -4.96,-3.66H2.9V15.7c1.47,2.93 4.51,4.9 8.04,4.9z" fill="#34A853" />
-                <path d="M7.04,13.15c-0.18,-0.53 -0.28,-1.1 -0.28,-1.68s0.1,-1.14 0.28,-1.68V7.22H2.9C2.29,8.44 1.95,9.83 1.95,11.3s0.34,2.86 0.95,4.08l4.14,-3.23z" fill="#FBBC05" />
-                <path d="M12,5.2c1.3,0 2.48,0.45 3.4,1.32l2.55,-2.55C16.4,2.54 14.41,1.7 12,1.7c-3.53,0 -6.57,1.97 -8.04,4.9l4.14,3.23c0.7,-2.11 2.65,-3.66 4.96,-3.66z" fill="#EA4335" />
-              </svg>
-              Đăng nhập bằng Gmail (Google Account)
-            </button>
+              <div className="flex flex-col gap-3 pt-2">
+                <button 
+                  onClick={signIn}
+                  className="w-full py-3.5 bg-zinc-900 border border-zinc-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 active:scale-[0.99] transition-all shadow-xl shadow-black/10 cursor-pointer text-sm"
+                >
+                  <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.57h3.3c1.93,-1.78 3.04,-4.4 3.04,-7.48c0,-0.61 -0.05,-1.2 -0.16,-1.79z" fill="#4285F4" />
+                    <path d="M12,20.6c2.4,0 4.41,-0.8 5.88,-2.16l-3.3,-2.57c-0.91,0.61 -2.08,0.98 -3.29,0.98 -2.31,0 -4.26,-1.56 -4.96,-3.66H2.9V15.7c1.47,2.93 4.51,4.9 8.04,4.9z" fill="#34A853" />
+                    <path d="M7.04,13.15c-0.18,-0.53 -0.28,-1.1 -0.28,-1.68s0.1,-1.14 0.28,-1.68V7.22H2.9C2.29,8.44 1.95,9.83 1.95,11.3s0.34,2.86 0.95,4.08l4.14,-3.23z" fill="#FBBC05" />
+                    <path d="M12,5.2c1.3,0 2.48,0.45 3.4,1.32l2.55,-2.55C16.4,2.54 14.41,1.7 12,1.7c-3.53,0 -6.57,1.97 -8.04,4.9l4.14,3.23c0.7,-2.11 2.65,-3.66 4.96,-3.66z" fill="#EA4335" />
+                  </svg>
+                  Đăng nhập bằng Gmail (Google Account)
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 animate-fade-in">
+              <div className="space-y-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-black tracking-widest uppercase rounded-full leading-none">
+                  <ShieldAlert className="w-3.5 h-3.5 animate-pulse" /> NEW ACCOUNT WAITLIST
+                </span>
+                <h2 className="text-2xl font-black tracking-tight font-heading text-foreground pt-1">Đăng Ký Thành Viên Mới</h2>
+                <p className="text-muted-foreground text-xs leading-relaxed max-w-sm mx-auto">
+                  Tài khoản đăng ký cần được xét duyệt & phân quyền cụ thể bởi Quản trị viên (Admin) trước khi có thể truy cập đầy đủ các chức năng nội bộ.
+                </p>
+              </div>
 
-            <button 
-              onClick={guestLogin}
-              className="w-full py-3.5 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.99] transition-all shadow-md cursor-pointer text-sm"
-            >
-              <UserCheck className="w-4 h-4 mr-0.5" />
-              Truy cập bằng tài khoản Khách (Quyền Admin)
-            </button>
-          </div>
+              <div className="flex flex-col gap-3 pt-2">
+                <button 
+                  onClick={signIn}
+                  className="w-full py-3.5 bg-zinc-900 border border-zinc-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 active:scale-[0.99] transition-all shadow-xl shadow-black/10 cursor-pointer text-sm"
+                >
+                  <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.57h3.3c1.93,-1.78 3.04,-4.4 3.04,-7.48c0,-0.61 -0.05,-1.2 -0.16,-1.79z" fill="#4285F4" />
+                    <path d="M12,20.6c2.4,0 4.41,-0.8 5.88,-2.16l-3.3,-2.57c-0.91,0.61 -2.08,0.98 -3.29,0.98 -2.31,0 -4.26,-1.56 -4.96,-3.66H2.9V15.7c1.47,2.93 4.51,4.9 8.04,4.9z" fill="#34A853" />
+                    <path d="M7.04,13.15c-0.18,-0.53 -0.28,-1.1 -0.28,-1.68s0.1,-1.14 0.28,-1.68V7.22H2.9C2.29,8.44 1.95,9.83 1.95,11.3s0.34,2.86 0.95,4.08l4.14,-3.23z" fill="#FBBC05" />
+                    <path d="M12,5.2c1.3,0 2.48,0.45 3.4,1.32l2.55,-2.55C16.4,2.54 14.41,1.7 12,1.7c-3.53,0 -6.57,1.97 -8.04,4.9l4.14,3.23c0.7,-2.11 2.65,-3.66 4.96,-3.66z" fill="#EA4335" />
+                  </svg>
+                  Đăng ký bằng tài khoản Gmail
+                </button>
+              </div>
+            </div>
+          )}
           
           <div className="pt-2 text-[10px] text-muted-foreground/60 flex items-center justify-center gap-1">
             <Lock className="w-3 h-3" /> Đường truyền kết nối hoàn toàn SSL mã hóa bảo mật
@@ -84,31 +133,118 @@ function AppContent() {
     );
   }
 
-  // 3. Authorized Email Rule check (Only hungthai84@gmail.com is granted highest access)
-  const isAuthorizedAdmin = user.email?.toLowerCase() === "hungthai84@gmail.com";
-
-  if (!isAuthorizedAdmin) {
+  // 3. Unregistered waitlist status checking
+  if (!systemUser) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="h-screen w-screen flex items-center justify-center p-4 relative overflow-hidden animate-fade-in" style={{ fontFamily: '"Roboto", sans-serif' }}>
+        <div className="uiverse-container" />
+        <div className="relative bg-card/80 backdrop-blur-3xl border border-primary/20 w-full max-w-md rounded-3xl p-8 shadow-3xl text-center space-y-6">
+          <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-primary/10 border border-primary/20">
+            <UserCheck className="w-10 h-10 text-primary animate-pulse" />
+          </div>
+
+          <div className="space-y-2.5">
+            <span className="inline-flex px-3 py-0.5 bg-primary/10 text-primary border border-primary/20 text-[9px] font-black uppercase tracking-wider rounded-md">
+              Đăng ký thành viên
+            </span>
+            <h3 className="text-xl font-extrabold tracking-tight font-heading text-primary">Yêu Cầu Truy Cập Phê Duyệt</h3>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              Bạn đã xác thực Google thành công! Tuy nhiên, tài khoản Gmail của bạn chưa có quyền sử dụng hệ thống CRM này. Vui lòng đăng ký và chờ Admin cấp quyền.
+            </p>
+            <div className="p-3 bg-muted/40 rounded-xl border border-border/80 text-xs text-foreground font-mono font-bold select-all inline-block w-full">
+              {user.email}
+            </div>
+
+            <div className="space-y-2 text-left pt-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Họ và tên hiển thị</label>
+              <input
+                type="text"
+                value={regName || user.displayName || ""}
+                onChange={(e) => setRegName(e.target.value)}
+                placeholder="Nhập họ và tên của bạn"
+                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={() => registerUser(regName || user.displayName || "")}
+              className="w-full py-3 bg-primary text-primary-foreground hover:scale-[1.01] rounded-xl text-xs font-extrabold tracking-wide flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-primary/15"
+            >
+              Gửi yêu cầu đăng ký chờ duyệt
+            </button>
+            <button 
+              onClick={logout}
+              className="w-full py-3 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" /> Đăng xuất & Đổi tài khoản khác
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Pending Approval state
+  if (systemUser.status === 'pending') {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center p-4 relative overflow-hidden animate-fade-in" style={{ fontFamily: '"Roboto", sans-serif' }}>
+        <div className="uiverse-container" />
+        <div className="relative bg-card/80 backdrop-blur-3xl border border-amber-500/20 w-full max-w-md rounded-3xl p-8 shadow-3xl text-center space-y-6">
+          <div className="w-20 h-20 bg-amber-500/10 rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-amber-500/10 border border-amber-500/20">
+            <ShieldAlert className="w-10 h-10 text-amber-500 animate-pulse" />
+          </div>
+
+          <div className="space-y-2.5">
+            <span className="inline-flex px-3 py-0.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[9px] font-black uppercase tracking-wider rounded-md">
+              Đang Chờ Phê Duyệt
+            </span>
+            <h3 className="text-xl font-extrabold tracking-tight font-heading text-amber-500">Đăng Ký Thành Công!</h3>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              Yêu cầu của bạn đã được chuyển tới Quản trị viên hệ thống. Sau khi quản trị viên phê duyệt trạng thái & phân vai trò quyền hạn, bạn mới có thể đăng nhập.
+            </p>
+            <p className="text-xs text-foreground font-semibold">
+              Tài khoản: <span className="text-primary">{systemUser.email}</span>
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            <button 
+              onClick={refreshStatus}
+              className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold hover:scale-[1.01] transition-transform shadow-md duration-300 cursor-pointer"
+            >
+              Kiểm tra trạng thái duyệt
+            </button>
+            <button 
+              onClick={logout}
+              className="w-full py-3 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" /> Đăng xuất tài khoản này
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 5. Rejected state
+  if (systemUser.status === 'rejected') {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center p-4 relative overflow-hidden animate-fade-in" style={{ fontFamily: '"Roboto", sans-serif' }}>
         <div className="uiverse-container" />
         <div className="relative bg-card/80 backdrop-blur-3xl border border-rose-500/20 w-full max-w-md rounded-3xl p-8 shadow-3xl text-center space-y-6">
           <div className="w-20 h-20 bg-rose-500/10 rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-rose-500/10 border border-rose-500/20">
-            <ShieldAlert className="w-10 h-10 text-rose-500 animate-pulse" />
+            <ShieldAlert className="w-10 h-10 text-rose-500" />
           </div>
 
           <div className="space-y-2.5">
             <span className="inline-flex px-3 py-0.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[9px] font-black uppercase tracking-wider rounded-md">
               Hạn Chế Truy Cập
             </span>
-            <h3 className="text-xl font-extrabold tracking-tight font-heading text-rose-500">Quyền Hạn Cao Nhất Bị Từ Chối</h3>
+            <h3 className="text-xl font-extrabold tracking-tight font-heading text-rose-500">Yêu Cầu Bị Từ Chối</h3>
             <p className="text-muted-foreground text-xs leading-relaxed">
-              Xin lỗi! Hệ thống CRM & quản trị VIP này có cấu hình phân quyền bảo mật nghiêm ngặt. Chỉ người sở hữu tài khoản được ủy quyền độc quyền dưới đây mới có thể tiếp tục:
-            </p>
-            <div className="p-3 bg-muted/40 rounded-xl border border-border/80 text-xs text-foreground font-mono font-bold select-all inline-block">
-              hungthai84@gmail.com
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-snug">
-              Bạn đang đăng nhập với tài khoản: <span className="font-semibold text-rose-500">{user.email || "Không rõ email"}</span>
+              Yêu cầu truy cập CRM này của bạn đã bị từ chối bởi Admin. Vui lòng liên hệ với ban điều hành công ty để biết thêm chi tiết.
             </p>
           </div>
 
@@ -119,19 +255,13 @@ function AppContent() {
             >
               <LogOut className="w-4 h-4" /> Đăng xuất & Đổi tài khoản khác
             </button>
-            <button
-              onClick={() => window.location.reload()}
-              className="w-full text-[10px] text-muted-foreground/60 hover:text-foreground font-semibold transition-all"
-            >
-              Nhấp để tải lại trang
-            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  // 4. Authorized Content for hungthai84@gmail.com
+  // 6. Approved State - Authorized Content and Access
   return (
     <div className="h-full w-full flex bg-white/45 dark:bg-[#080808]/40 backdrop-blur-3xl rounded-[16px] overflow-hidden shadow-2xl shadow-black/15 border border-white/40 dark:border-white/5 relative selection:bg-primary/20">
       <Sidebar 

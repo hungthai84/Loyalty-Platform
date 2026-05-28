@@ -122,7 +122,12 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+    -ms-overflow-style: none !important;  /* IE and Edge */
+    scrollbar-width: none !important;  /* Firefox */
+  }
+  *::-webkit-scrollbar {
+    display: none !important; /* Chrome, Safari, Opera */
+  }
   body {
     margin: 0;
     padding: 0;
@@ -257,3 +262,18 @@
 .animate-float-delay {
   animation: float-delay 20s ease-in-out infinite;
 }
+
+@keyframes row-shake {
+  0%, 100% { transform: translateX(0) scale(1); }
+  15% { transform: translateX(-1.2px) rotate(-0.06deg); }
+  35% { transform: translateX(1.2px) rotate(0.04deg); }
+  55% { transform: translateX(-0.8px) rotate(-0.04deg); }
+  75% { transform: translateX(0.8px) rotate(0.02deg); }
+  90% { transform: translateX(-0.4px); }
+}
+
+.row-shake:hover {
+  animation: row-shake 0.35s cubic-bezier(.36,.07,.19,.97) both;
+  background-color: var(--muted) !important;
+}
+

@@ -17,6 +17,7 @@ export interface Customer {
   customFields?: Record<string, any>;
   orders?: any[];
   tickets?: any[];
+  statusHistory?: any[];
   createdAt: any; // ServerTimestamp
   updatedAt: any; // ServerTimestamp
 }

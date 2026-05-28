@@ -275,7 +275,7 @@ export function CustomersView() {
                       <TableRow 
                         key={customer.id} 
                         onClick={() => setSelectedCustomer(customer)}
-                        className="hover:bg-muted/50 transition-colors cursor-pointer group"
+                        className="hover:bg-muted/50 transition-colors cursor-pointer group row-shake"
                       >
                         {/* ID */}
                         <TableCell className="font-mono text-xs text-muted-foreground">{customer.id}</TableCell>

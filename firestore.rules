@@ -14,6 +14,12 @@ service cloud.firestore {
     function existing() { return resource.data; }
     function isSignedIn() { return request.auth != null; }
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isSystemAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'hungthai84@gmail.com' ||
+        (exists(/databases/$(database)/documents/system_users/$(request.auth.uid)) && get(/databases/$(database)/documents/system_users/$(request.auth.uid)).data.role == 'Admin')
+      );
+    }
 
     // 2. Validation Blueprints
     function isValidCustomer(data) {
@@ -104,6 +110,17 @@ service cloud.firestore {
     }
 
     // 3. Resource Matches
+    match /system_users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isSystemAdmin());
+      allow list: if isSignedIn() && isSystemAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId && incoming().status == 'pending' && incoming().email == request.auth.token.email;
+      allow update: if isSignedIn() && (
+        isSystemAdmin() || 
+        (request.auth.uid == userId && incoming().status == 'pending' && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'updatedAt']))
+      );
+      allow delete: if isSignedIn() && isSystemAdmin();
+    }
+
     match /users/{userId}/customers/{customerId} {
       allow list, get: if isOwner(userId);
       allow create: if isOwner(userId) && isValidId(customerId) && isValidCustomer(incoming());
