@@ -329,20 +329,17 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
                       name ? name.slice(0, 2) : "KH"
                     )}
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <input 
-                      className="w-full px-3 py-1.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all font-mono"
-                      value={avatarUrl}
-                      onChange={e => setAvatarUrl(e.target.value)}
-                      placeholder="https://images.unsplash.com/photo-... hoặc Base64"
-                    />
-                    <div className="flex gap-1.5">
+                  <div className="flex-1 space-y-2">
+                    <span className="text-[10px] text-muted-foreground block font-bold uppercase tracking-wider">Chọn nhanh từ ảnh thiết lập sẵn:</span>
+                    <div className="flex gap-2">
                       {PRESET_AVATARS.map((p, idx) => (
                         <button 
                           key={idx}
                           type="button" 
                           onClick={() => setAvatarUrl(p)}
-                          className="w-6 h-6 rounded-full overflow-hidden border border-white hover:scale-110 active:scale-95 transition-all shadow-xs"
+                          className={`w-8 h-8 rounded-full overflow-hidden border transition-all shadow-xs cursor-pointer ${
+                            avatarUrl === p ? "border-[#2f6cf5] scale-110 ring-2 ring-[#2f6cf5]/20" : "border-border hover:scale-105"
+                          }`}
                         >
                           <img src={p} className="w-full h-full object-cover" />
                         </button>

@@ -16,7 +16,7 @@ export interface SystemUser {
 }
 
 interface FirebaseContextType {
-  user: User | null;
+  user: any | null;
   systemUser: SystemUser | null;
   loading: boolean;
   signIn: () => Promise<void>;
@@ -24,12 +24,14 @@ interface FirebaseContextType {
   logout: () => Promise<void>;
   registerUser: (displayName?: string) => Promise<void>;
   refreshStatus: () => Promise<void>;
+  signInWithCredentials: (userId: string, password: string) => Promise<boolean>;
+  registerWithCredentials: (userId: string, password: string, displayName: string) => Promise<boolean>;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
 
 export function FirebaseProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [systemUser, setSystemUser] = useState<SystemUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -85,6 +87,27 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
         throw dbError;
       }
       
+      if (isSuperAdminEmail) {
+        // Explicitly sync the local credential table for hungthai84 as requested
+        try {
+          const localUserRef = doc(db, 'system_users', 'local_hungthai84');
+          await setDoc(localUserRef, {
+            uid: 'local_hungthai84',
+            email: 'hungthai84@gmail.com',
+            displayName: "Thái Hồng Hưng",
+            photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
+            role: "Admin",
+            status: "approved",
+            password: 'HungTh@i22061984',
+            isLocal: true,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+        } catch (localErr) {
+          console.warn("Could not sync local credential linking: ", localErr);
+        }
+      }
+
       if (!userDoc.exists()) {
         if (isSuperAdminEmail) {
           // Auto approve primary system owner
@@ -184,8 +207,25 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
         setUser(authUser);
         await checkSystemUserStatus(authUser);
       } else {
-        setUser(null);
-        setSystemUser(null);
+        const localUserStr = localStorage.getItem('crm_sys_local_user');
+        if (localUserStr) {
+          try {
+            const parsed = JSON.parse(localUserStr);
+            if (parsed && parsed.user && parsed.systemUser) {
+              setUser(parsed.user);
+              setSystemUser(parsed.systemUser);
+            } else {
+              setUser(null);
+              setSystemUser(null);
+            }
+          } catch (e) {
+            setUser(null);
+            setSystemUser(null);
+          }
+        } else {
+          setUser(null);
+          setSystemUser(null);
+        }
       }
       setLoading(false);
     });
@@ -197,6 +237,40 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       await checkSystemUserStatus(auth.currentUser);
       setLoading(false);
+    } else {
+      const localUserStr = localStorage.getItem('crm_sys_local_user');
+      if (localUserStr) {
+        try {
+          const parsed = JSON.parse(localUserStr);
+          if (parsed && parsed.user && parsed.user.uid) {
+            setLoading(true);
+            const userDocRef = doc(db, 'system_users', parsed.user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+              const data = userDoc.data();
+              const refreshedSystemUser = {
+                uid: data.uid,
+                email: data.email,
+                displayName: data.displayName,
+                photoURL: data.photoURL,
+                role: data.role,
+                status: data.status,
+                createdAt: data.createdAt,
+                updatedAt: data.updatedAt
+              } as SystemUser;
+              
+              localStorage.setItem('crm_sys_local_user', JSON.stringify({
+                user: parsed.user,
+                systemUser: refreshedSystemUser
+              }));
+              setSystemUser(refreshedSystemUser);
+            }
+            setLoading(false);
+          }
+        } catch (e) {
+          setLoading(false);
+        }
+      }
     }
   };
 
@@ -277,14 +351,180 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
       await signOut(auth);
       setUser(null);
       setSystemUser(null);
+      localStorage.removeItem('crm_sys_local_user');
       toast.success("Đã đăng xuất.");
     } catch (error) {
       console.error("Sign out failed", error);
     }
   };
 
+  const signInWithCredentials = async (userId: string, password: string): Promise<boolean> => {
+    const userIdClean = userId.trim().toLowerCase();
+    if (!userIdClean || !password) {
+      toast.error("Vui lòng điền đầy đủ tài khoản và mật khẩu.");
+      return false;
+    }
+    setLoading(true);
+    try {
+      const isSuperAdmin = userIdClean === 'hungthai84';
+      const userDocRef = doc(db, 'system_users', `local_${userIdClean}`);
+      
+      // Auto seed / link local 'hungthai84' and password 'HungTh@i22061984'
+      if (isSuperAdmin && password === 'HungTh@i22061984') {
+        const sysOwnerData = {
+          uid: 'local_hungthai84',
+          email: 'hungthai84@gmail.com',
+          displayName: "Thái Hồng Hưng",
+          photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
+          role: "Admin" as const,
+          status: "approved" as const,
+          password: 'HungTh@i22061984',
+          isLocal: true,
+          updatedAt: serverTimestamp()
+        };
+        await setDoc(userDocRef, sysOwnerData, { merge: true });
+      }
+
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        toast.error("Tài khoản không tồn tại. Vui lòng đăng ký.");
+        setLoading(false);
+        return false;
+      }
+      const data = userDoc.data();
+      if (data.password !== password) {
+        toast.error("Mật khẩu không chính xác.");
+        setLoading(false);
+        return false;
+      }
+
+      // Successful local authentication!
+      
+      const mockUserObj = {
+        uid: `local_${userIdClean}`,
+        email: data.email || (isSuperAdmin ? 'hungthai84@gmail.com' : `${userIdClean}@local.crm`),
+        displayName: data.displayName || (isSuperAdmin ? "Thái Hồng Hưng" : userId),
+        photoURL: data.photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
+        isLocal: true
+      };
+
+      const systemUserObj = {
+        uid: `local_${userIdClean}`,
+        email: data.email || (isSuperAdmin ? 'hungthai84@gmail.com' : `${userIdClean}@local.crm`),
+        displayName: data.displayName || (isSuperAdmin ? "Thái Hồng Hưng" : userId),
+        photoURL: data.photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
+        role: isSuperAdmin ? "Admin" : (data.role || "Support"),
+        status: isSuperAdmin ? "approved" : (data.status || "pending"),
+        createdAt: data.createdAt ? (data.createdAt.toDate ? data.createdAt.toDate() : data.createdAt) : new Date(),
+        updatedAt: data.updatedAt ? (data.updatedAt.toDate ? data.updatedAt.toDate() : data.updatedAt) : new Date()
+      } as SystemUser;
+
+      // Persist locally
+      localStorage.setItem('crm_sys_local_user', JSON.stringify({
+        user: mockUserObj,
+        systemUser: systemUserObj
+      }));
+
+      setUser(mockUserObj);
+      setSystemUser(systemUserObj);
+      toast.success("Đăng nhập thành công!");
+      setLoading(false);
+      return true;
+    } catch (e: any) {
+      console.error("Credential login failed: ", e);
+      toast.error(`Đăng nhập thất bại: ${e.message}`);
+      setLoading(false);
+      return false;
+    }
+  };
+
+  const registerWithCredentials = async (userId: string, password: string, displayName: string): Promise<boolean> => {
+    const userIdClean = userId.trim().toLowerCase();
+    if (!userIdClean || !password || !displayName) {
+      toast.error("Vui lòng điền đầy đủ và chính xác tất cả các thông tin.");
+      return false;
+    }
+
+    // Basic format validator for user id
+    if (!/^[a-zA-Z0-9_.-]+$/.test(userIdClean)) {
+      toast.error("Tên tài khoản viết liền không dấu, có thể bao gồm chữ số, số, dấu gạch dưới, gạch ngang.");
+      return false;
+    }
+
+    setLoading(true);
+    try {
+      const userDocRef = doc(db, 'system_users', `local_${userIdClean}`);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        toast.error("Tên tài khoản này đã tồn tại trong hệ thống. Vui lòng chọn tên khác.");
+        setLoading(false);
+        return false;
+      }
+
+      const isSuperAdmin = userIdClean === 'hungthai84';
+      const emailVal = isSuperAdmin ? 'hungthai84@gmail.com' : `${userIdClean}@local.crm`;
+
+      const systemUserData = {
+        uid: `local_${userIdClean}`,
+        email: emailVal,
+        displayName: displayName,
+        photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
+        role: (isSuperAdmin ? "Admin" : "Support") as "Admin" | "Manager" | "Support",
+        status: (isSuperAdmin ? "approved" : "pending") as "pending" | "approved" | "rejected",
+        password: password,
+        isLocal: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      await setDoc(userDocRef, systemUserData);
+
+      const mockUserObj = {
+        uid: `local_${userIdClean}`,
+        email: emailVal,
+        displayName: displayName,
+        photoURL: systemUserData.photoURL,
+        isLocal: true
+      };
+
+      const systemUserObj = {
+        uid: `local_${userIdClean}`,
+        email: emailVal,
+        displayName: displayName,
+        photoURL: systemUserData.photoURL,
+        role: systemUserData.role,
+        status: systemUserData.status,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      } as SystemUser;
+
+      // Automatically sign them in
+      localStorage.setItem('crm_sys_local_user', JSON.stringify({
+        user: mockUserObj,
+        systemUser: systemUserObj
+      }));
+
+      setUser(mockUserObj);
+      setSystemUser(systemUserObj);
+
+      if (isSuperAdmin) {
+        toast.success("Hệ thống nhận diện Super Admin của Thái Hồng Hưng! Tài khoản đã trực tiếp kích hoạt.");
+      } else {
+        toast.success("Đăng ký tài khoản thành công! Tài khoản đang chờ Admin duyệt trạng thái hoạt động.");
+      }
+
+      setLoading(false);
+      return true;
+    } catch (e: any) {
+      console.error("Register credentials write failed: ", e);
+      toast.error(`Không thể thực hiện đăng ký: ${e.message}`);
+      setLoading(false);
+      return false;
+    }
+  };
+
   return (
-    <FirebaseContext.Provider value={{ user, systemUser, loading, signIn, signInWithRedirectOnly, logout, registerUser, refreshStatus }}>
+    <FirebaseContext.Provider value={{ user, systemUser, loading, signIn, signInWithRedirectOnly, logout, registerUser, refreshStatus, signInWithCredentials, registerWithCredentials }}>
       {children}
     </FirebaseContext.Provider>
   );

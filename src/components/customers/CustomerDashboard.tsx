@@ -403,31 +403,24 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 border-t pt-4 space-y-3">
                 <h4 className="text-[10px] font-bold uppercase text-[#2f6cf5] tracking-wider mb-2">Sửa thông tin cơ bản</h4>
                 
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-[9px] text-muted-foreground block font-bold">ẢNH ĐẠI DIỆN LINK</span>
-                    <div>
-                      <input 
-                        type="file"
-                        id="dashboard-avatar-upload"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleFileChange}
-                      />
-                      <label 
-                        htmlFor="dashboard-avatar-upload"
-                        className="text-[8px] font-bold uppercase py-0.5 px-2 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-md cursor-pointer transition-colors flex items-center gap-1"
-                      >
-                        <Upload className="w-2.5 h-2.5" /> Tải từ máy
-                      </label>
-                    </div>
+                <div className="space-y-2 bg-background/50 p-3 rounded-xl border border-dashed border-border/80">
+                  <span className="text-[9px] text-muted-foreground block font-bold uppercase tracking-wider mb-1">CẬP NHẬT ẢNH ĐẠI DIỆN</span>
+                  <div className="flex items-center gap-2.5">
+                    <input 
+                      type="file"
+                      id="dashboard-avatar-upload"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                    <label 
+                      htmlFor="dashboard-avatar-upload"
+                      className="text-[10px] font-bold uppercase py-1.5 px-3 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-lg cursor-pointer transition-colors flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <Upload className="w-3 h-3" /> Tải ảnh từ máy tính
+                    </label>
+                    <span className="text-[9px] text-muted-foreground">Vui lòng tải tệp ảnh từ máy</span>
                   </div>
-                  <input 
-                    className="w-full p-2 text-xs bg-background border rounded-lg focus:ring-1 focus:ring-primary/20 outline-none font-mono"
-                    value={avatar}
-                    onChange={e => setAvatar(e.target.value)}
-                    placeholder="https://images.unsplash.com/... hoặc Base64"
-                  />
                 </div>
                 <div className="space-y-1">
                   <span className="text-[9px] text-muted-foreground block font-bold">SỐ ĐIỆN THOẠI</span>

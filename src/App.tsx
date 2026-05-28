@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { DashboardView } from "@/views/DashboardView";
@@ -18,9 +18,26 @@ import { ShieldAlert, LogIn, LogOut, Lock, Trophy, Sparkles, UserCheck } from "l
 
 function AppContent() {
   const [activeView, setActiveView] = useState("dashboard");
-  const { user, systemUser, loading, signIn, logout, registerUser, refreshStatus } = useFirebase();
+  const { user, systemUser, loading, signIn, logout, registerUser, refreshStatus, signInWithCredentials, registerWithCredentials } = useFirebase();
   const [regName, setRegName] = useState("");
   const [loginMode, setLoginMode] = useState<'login' | 'register'>('login');
+
+  // Credentials input states
+  const [idInput, setIdInput] = useState("");
+  const [pwdInput, setPwdInput] = useState("");
+  const [regIdInput, setRegIdInput] = useState("");
+  const [regPwdInput, setRegPwdInput] = useState("");
+  const [regDisplayName, setRegDisplayName] = useState("");
+
+  const handleCredentialLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await signInWithCredentials(idInput, pwdInput);
+  };
+
+  const handleCredentialRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await registerWithCredentials(regIdInput, regPwdInput, regDisplayName);
+  };
 
   // 1. Loading State
   if (loading) {
@@ -40,8 +57,8 @@ function AppContent() {
     return (
       <div className="h-screen w-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ fontFamily: '"Roboto", sans-serif' }}>
         <div className="uiverse-container" />
-        <div className="relative bg-card/60 backdrop-blur-2xl border border-border w-full max-w-md rounded-3xl p-8 shadow-2xl space-y-6 text-center">
-          <div className="w-20 h-20 rounded-3xl overflow-hidden mx-auto shadow-2xl shadow-blue-500/10 hover:scale-105 transition-transform duration-300">
+        <div className="relative bg-card/60 backdrop-blur-2xl border border-border w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl space-y-6 text-center">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden mx-auto shadow-2xl shadow-blue-500/10 hover:scale-105 transition-transform duration-300">
             <BrandLogo className="w-full h-full" />
           </div>
 
@@ -70,62 +87,151 @@ function AppContent() {
           </div>
           
           {loginMode === 'login' ? (
-            <div className="space-y-4 animate-fade-in">
-              <div className="space-y-2">
+            <div className="space-y-4 animate-fade-in text-left">
+              <div className="space-y-1.5 text-center">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary border border-primary/20 text-[10px] font-black tracking-widest uppercase rounded-full leading-none">
                   <Sparkles className="w-3.5 h-3.5" /> SYSTEM ACCESS
                 </span>
-                <h2 className="text-2xl font-black tracking-tight font-heading text-foreground pt-1">Hệ thống quản lý khách hàng thân thiết</h2>
-                <p className="text-muted-foreground text-xs leading-relaxed max-w-sm mx-auto">
-                  Vui lòng đăng nhập bằng địa chỉ Gmail của bạn để sử dụng.
+                <h2 className="text-xl font-black tracking-tight font-heading text-foreground pt-1">Hệ thống quản lý khách hàng thân thiết</h2>
+                <p className="text-muted-foreground text-[11px] leading-relaxed max-w-sm mx-auto">
+                  Đăng nhập bằng tài khoản nội bộ (User ID) hoặc email Google.
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 pt-2">
+              {/* Credential login form */}
+              <form onSubmit={handleCredentialLogin} className="space-y-3.5 pt-2">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tài khoản (User ID)</label>
+                  <input
+                    type="text"
+                    required
+                    value={idInput}
+                    onChange={(e) => setIdInput(e.target.value)}
+                    placeholder="Nhập User ID (ví dụ: hungthai84, nhanvien...)"
+                    className="w-full px-3.5 py-2.5 bg-background border border-border rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Mật khẩu</label>
+                  <input
+                    type="password"
+                    required
+                    value={pwdInput}
+                    onChange={(e) => setPwdInput(e.target.value)}
+                    placeholder="Mật khẩu của bạn"
+                    className="w-full px-3.5 py-2.5 bg-background border border-border rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all outline-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-2.5 bg-[#2f6cf5] hover:bg-[#1e52db] text-white font-extrabold rounded-xl text-xs shadow-md shadow-blue-500/10 cursor-pointer active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                >
+                  <LogIn className="w-3.5 h-3.5" /> Đăng nhập hệ thống
+                </button>
+              </form>
+
+              {/* Separator */}
+              <div className="relative flex py-2 items-center">
+                <div className="flex-grow border-t border-border/60"></div>
+                <span className="flex-shrink mx-3 text-muted-foreground/60 text-[9px] font-black uppercase tracking-wider">Hoặc đăng nhập bằng</span>
+                <div className="flex-grow border-t border-border/60"></div>
+              </div>
+
+              <div className="flex flex-col gap-3">
                 <button 
                   onClick={signIn}
-                  className="w-full py-3.5 bg-zinc-900 border border-zinc-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 active:scale-[0.99] transition-all shadow-xl shadow-black/10 cursor-pointer text-sm"
+                  className="w-full py-2.5 bg-zinc-900 border border-zinc-800 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 active:scale-[0.99] transition-all shadow-lg cursor-pointer text-xs"
                 >
-                  <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.57h3.3c1.93,-1.78 3.04,-4.4 3.04,-7.48c0,-0.61 -0.05,-1.2 -0.16,-1.79z" fill="#4285F4" />
                     <path d="M12,20.6c2.4,0 4.41,-0.8 5.88,-2.16l-3.3,-2.57c-0.91,0.61 -2.08,0.98 -3.29,0.98 -2.31,0 -4.26,-1.56 -4.96,-3.66H2.9V15.7c1.47,2.93 4.51,4.9 8.04,4.9z" fill="#34A853" />
                     <path d="M7.04,13.15c-0.18,-0.53 -0.28,-1.1 -0.28,-1.68s0.1,-1.14 0.28,-1.68V7.22H2.9C2.29,8.44 1.95,9.83 1.95,11.3s0.34,2.86 0.95,4.08l4.14,-3.23z" fill="#FBBC05" />
                     <path d="M12,5.2c1.3,0 2.48,0.45 3.4,1.32l2.55,-2.55C16.4,2.54 14.41,1.7 12,1.7c-3.53,0 -6.57,1.97 -8.04,4.9l4.14,3.23c0.7,-2.11 2.65,-3.66 4.96,-3.66z" fill="#EA4335" />
                   </svg>
-                  Đăng nhập bằng Gmail (Google Account)
+                  Tài khoản Gmail (Google)
                 </button>
               </div>
             </div>
           ) : (
-            <div className="space-y-4 animate-fade-in">
-              <div className="space-y-2">
+            <div className="space-y-4 animate-fade-in text-left">
+              <div className="space-y-1.5 text-center">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-black tracking-widest uppercase rounded-full leading-none">
-                  <ShieldAlert className="w-3.5 h-3.5 animate-pulse" /> NEW ACCOUNT WAITLIST
+                  <ShieldAlert className="w-3.5 h-3.5 animate-pulse" /> CUSTOM ACCOUNT WAITLIST
                 </span>
-                <h2 className="text-2xl font-black tracking-tight font-heading text-foreground pt-1">Đăng Ký Thành Viên Mới</h2>
-                <p className="text-muted-foreground text-xs leading-relaxed max-w-sm mx-auto">
-                  Tài khoản đăng ký cần được xét duyệt & phân quyền cụ thể bởi Quản trị viên (Admin) trước khi có thể truy cập đầy đủ các chức năng nội bộ.
+                <h2 className="text-xl font-black tracking-tight font-heading text-foreground pt-1">Đăng Ký Thành Viên Mới</h2>
+                <p className="text-muted-foreground text-[11px] leading-relaxed max-w-sm mx-auto">
+                  Tạo tài khoản và mật khẩu của riêng bạn hoặc kết nối trực tiếp qua Google Auth.
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 pt-2">
+              {/* Credential registration form */}
+              <form onSubmit={handleCredentialRegister} className="space-y-3.5 pt-1">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tài khoản (User ID)</label>
+                  <input
+                    type="text"
+                    required
+                    value={regIdInput}
+                    onChange={(e) => setRegIdInput(e.target.value)}
+                    placeholder="Viết liền không dấu (vd: hungthai84, oanhcrm...)"
+                    className="w-full px-3.5 py-2.5 bg-background border border-border rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all outline-none font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Mật khẩu bảo mật</label>
+                  <input
+                    type="password"
+                    required
+                    value={regPwdInput}
+                    onChange={(e) => setRegPwdInput(e.target.value)}
+                    placeholder="Mật khẩu của bạn"
+                    className="w-full px-3.5 py-2.5 bg-background border border-border rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all outline-none font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Họ và tên hiển thị</label>
+                  <input
+                    type="text"
+                    required
+                    value={regDisplayName}
+                    onChange={(e) => setRegDisplayName(e.target.value)}
+                    placeholder="Ví dụ: Thái Hồng Hưng"
+                    className="w-full px-3.5 py-2.5 bg-background border border-border rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all outline-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl text-xs shadow-md shadow-amber-500/10 cursor-pointer active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                >
+                  Gửi yêu cầu đăng ký tài khoản
+                </button>
+              </form>
+
+              {/* Separator */}
+              <div className="relative flex py-2 items-center">
+                <div className="flex-grow border-t border-border/60"></div>
+                <span className="flex-shrink mx-3 text-muted-foreground/60 text-[9px] font-black uppercase tracking-wider">Hoặc đăng ký nhanh</span>
+                <div className="flex-grow border-t border-border/60"></div>
+              </div>
+
+              <div className="flex flex-col gap-3">
                 <button 
                   onClick={signIn}
-                  className="w-full py-3.5 bg-zinc-900 border border-zinc-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 active:scale-[0.99] transition-all shadow-xl shadow-black/10 cursor-pointer text-sm"
+                  className="w-full py-2.5 bg-zinc-900 border border-zinc-800 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 active:scale-[0.99] transition-all shadow-lg cursor-pointer text-xs"
                 >
-                  <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.57h3.3c1.93,-1.78 3.04,-4.4 3.04,-7.48c0,-0.61 -0.05,-1.2 -0.16,-1.79z" fill="#4285F4" />
                     <path d="M12,20.6c2.4,0 4.41,-0.8 5.88,-2.16l-3.3,-2.57c-0.91,0.61 -2.08,0.98 -3.29,0.98 -2.31,0 -4.26,-1.56 -4.96,-3.66H2.9V15.7c1.47,2.93 4.51,4.9 8.04,4.9z" fill="#34A853" />
                     <path d="M7.04,13.15c-0.18,-0.53 -0.28,-1.1 -0.28,-1.68s0.1,-1.14 0.28,-1.68V7.22H2.9C2.29,8.44 1.95,9.83 1.95,11.3s0.34,2.86 0.95,4.08l4.14,-3.23z" fill="#FBBC05" />
                     <path d="M12,5.2c1.3,0 2.48,0.45 3.4,1.32l2.55,-2.55C16.4,2.54 14.41,1.7 12,1.7c-3.53,0 -6.57,1.97 -8.04,4.9l4.14,3.23c0.7,-2.11 2.65,-3.66 4.96,-3.66z" fill="#EA4335" />
                   </svg>
-                  Đăng ký bằng tài khoản Gmail
+                  Kết nối trực tiếp nhanh bằng Gmail
                 </button>
               </div>
             </div>
           )}
           
-          <div className="pt-2 text-[10px] text-muted-foreground/60 flex items-center justify-center gap-1">
+          <div className="pt-1 text-[10px] text-muted-foreground/60 flex items-center justify-center gap-1">
             <Lock className="w-3 h-3" /> Đường truyền kết nối hoàn toàn SSL mã hóa bảo mật
           </div>
         </div>
