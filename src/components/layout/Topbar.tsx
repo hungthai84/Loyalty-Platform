@@ -1,4 +1,4 @@
-import { Bell, Search, Menu, Sun, Moon, Monitor, Check, X, AlertTriangle, Sparkles, CheckCircle2, LogOut } from "lucide-react";
+import { Bell, Search, Menu, Sun, Moon, Monitor, Check, X, AlertTriangle, Sparkles, CheckCircle2, LogOut, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFirebase } from "@/components/FirebaseProvider";
@@ -21,7 +21,11 @@ interface SystemNotification {
   read: boolean;
 }
 
-export function Topbar() {
+interface TopbarProps {
+  setActiveView: (view: string) => void;
+}
+
+export function Topbar({ setActiveView }: TopbarProps) {
   const { user, logout } = useFirebase();
   const { setTheme, theme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -198,6 +202,11 @@ export function Topbar() {
                 </p>
               </div>
             </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="flex flex-row items-center gap-2 cursor-pointer focus:bg-primary/10 focus:text-primary font-semibold" onClick={() => setActiveView("settings")}>
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span>Hồ sơ cá nhân</span>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="flex flex-row items-center gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10" onClick={logout}>
               <LogOut className="h-4 w-4" />

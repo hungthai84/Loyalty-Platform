@@ -377,7 +377,7 @@ function AppContent() {
       />
       
       <div className="flex-1 flex flex-col w-full min-w-0 transition-all duration-300">
-        <Topbar />
+        <Topbar setActiveView={setActiveView} />
         
         <main className="flex-1 overflow-auto bg-background/60">
           {activeView === "dashboard" && <DashboardView />}

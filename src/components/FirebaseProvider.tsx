@@ -26,6 +26,7 @@ interface FirebaseContextType {
   refreshStatus: () => Promise<void>;
   signInWithCredentials: (userId: string, password: string) => Promise<boolean>;
   registerWithCredentials: (userId: string, password: string, displayName: string) => Promise<boolean>;
+  updateProfileData: (displayName: string, password?: string, linkedLocalUserId?: string) => Promise<boolean>;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
@@ -523,8 +524,136 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfileData = async (displayName: string, password?: string, linkedLocalUserId?: string): Promise<boolean> => {
+    if (!displayName.trim()) {
+      toast.error("Vui lòng điền tên hiển thị.");
+      return false;
+    }
+    
+    setLoading(true);
+    try {
+      const isLocal = !!user?.isLocal;
+      const uid = user?.uid;
+      
+      if (!uid) {
+        toast.error("Không xác định được phiên đăng nhập.");
+        setLoading(false);
+        return false;
+      }
+      
+      if (isLocal) {
+        // Local user flow
+        const userDocRef = doc(db, 'system_users', uid);
+        const updates: any = {
+          displayName: displayName,
+          updatedAt: serverTimestamp()
+        };
+        if (password) {
+          updates.password = password;
+        }
+        
+        await setDoc(userDocRef, updates, { merge: true });
+        
+        // Refresh local cache & states
+        const newUserObj = {
+          ...user,
+          displayName: displayName
+        };
+        const newSystemUserObj = systemUser ? {
+          ...systemUser,
+          displayName: displayName,
+          updatedAt: new Date()
+        } : null;
+        
+        localStorage.setItem('crm_sys_local_user', JSON.stringify({
+          user: newUserObj,
+          systemUser: newSystemUserObj
+        }));
+        
+        setUser(newUserObj);
+        setSystemUser(newSystemUserObj);
+        toast.success("Cập nhật thông tin tài khoản thành công!");
+      } else {
+        // Google auth user flow
+        const userDocRef = doc(db, 'system_users', uid);
+        const updates: any = {
+          displayName: displayName,
+          updatedAt: serverTimestamp()
+        };
+        
+        await setDoc(userDocRef, updates, { merge: true });
+        
+        // Update user state and cache
+        const newUserObj = {
+          ...user,
+          displayName: displayName
+        };
+        const newSystemUserObj = systemUser ? {
+          ...systemUser,
+          displayName: displayName,
+          updatedAt: new Date()
+        } : null;
+        
+        localStorage.setItem(`crm_sys_user_${uid}`, JSON.stringify(newSystemUserObj));
+        setUser(newUserObj);
+        setSystemUser(newSystemUserObj);
+        
+        // If linkedLocalUserId is supplied, register/update the local credential record so they map together!
+        if (linkedLocalUserId && linkedLocalUserId.trim()) {
+          const userIdClean = linkedLocalUserId.trim().toLowerCase();
+          
+          if (!/^[a-zA-Z0-9_.-]+$/.test(userIdClean)) {
+            toast.error("Tên tài khoản viết liền không dấu, có thể bao gồm chữ số, số, dấu gạch dưới, gạch ngang.");
+            setLoading(false);
+            return false;
+          }
+          
+          if (!password) {
+            toast.error("Vui lòng nhập mật khẩu khi thiết lập liên kết User ID.");
+            setLoading(false);
+            return false;
+          }
+          
+          const localUserRef = doc(db, 'system_users', `local_${userIdClean}`);
+          const checkDoc = await getDoc(localUserRef);
+          
+          if (checkDoc.exists() && checkDoc.data()?.email && checkDoc.data()?.email.toLowerCase() !== user.email?.toLowerCase()) {
+            toast.error("Tên tài khoản này đã được sử dụng bởi một email khác.");
+            setLoading(false);
+            return false;
+          }
+          
+          await setDoc(localUserRef, {
+            uid: `local_${userIdClean}`,
+            email: user.email,
+            displayName: displayName,
+            photoURL: user.photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
+            role: systemUser?.role || "Support",
+            status: systemUser?.status || "approved",
+            password: password,
+            isLocal: true,
+            createdAt: checkDoc.exists() ? (checkDoc.data()?.createdAt || serverTimestamp()) : serverTimestamp(),
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+          
+          toast.success(`Đã liên kết thành công với tài khoản nội bộ User ID: ${userIdClean}`);
+        } else {
+          toast.success("Cập nhật thông tin tài khoản thành công!");
+        }
+      }
+      
+      setLoading(false);
+      return true;
+    } catch (e: any) {
+      console.error("Update profile failed: ", e);
+      toast.error(`Cập nhật thất bại: ${e.message}`);
+      setLoading(false);
+      return false;
+    }
+  };
+
   return (
-    <FirebaseContext.Provider value={{ user, systemUser, loading, signIn, signInWithRedirectOnly, logout, registerUser, refreshStatus, signInWithCredentials, registerWithCredentials }}>
+    <FirebaseContext.Provider value={{ user, systemUser, loading, signIn, signInWithRedirectOnly, logout, registerUser, refreshStatus, signInWithCredentials, registerWithCredentials, updateProfileData }}>
       {children}
     </FirebaseContext.Provider>
   );

@@ -15,7 +15,8 @@ import {
   Key as KeyIcon,
   Activity,
   GitCompare,
-  Gift
+  Gift,
+  User
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
@@ -28,14 +29,16 @@ import { PointRedemptionConfigView } from "@/components/loyalty/PointRedemptionC
 import { SystemStatusMonitor } from "@/components/layout/SystemStatusMonitor";
 import { SeedDemoData } from "@/components/layout/SeedDemoData";
 import { RoleManager } from "@/components/settings/RoleManager";
+import { ProfileTab } from "@/components/settings/ProfileTab";
 import { cn } from "@/lib/utils";
 
-type SettingsTab = 'company' | 'tiers' | 'redemption' | 'retention' | 'transitions' | 'portal' | 'api' | 'monitor' | 'demo' | 'roles';
+type SettingsTab = 'profile' | 'company' | 'tiers' | 'redemption' | 'retention' | 'transitions' | 'portal' | 'api' | 'monitor' | 'demo' | 'roles';
 
 export function SettingsView() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('company');
+  const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
 
   const tabs = [
+    { id: 'profile', label: 'Hồ sơ cá nhân', icon: User },
     { id: 'company', label: 'Công ty & Chi nhánh', icon: Building2 },
     { id: 'tiers', label: 'Cấp bậc khách hàng', icon: Star },
     { id: 'redemption', label: 'Đổi quà ưu đãi', icon: Gift },
@@ -119,6 +122,11 @@ export function SettingsView() {
               transition={{ duration: 0.15 }}
               className="h-full"
             >
+              {activeTab === 'profile' && (
+                <div className="max-w-6xl mx-auto pb-12">
+                  <ProfileTab />
+                </div>
+              )}
               {activeTab === 'company' && (
                 <div className="max-w-6xl mx-auto">
                    <CompaniesView embedded />
