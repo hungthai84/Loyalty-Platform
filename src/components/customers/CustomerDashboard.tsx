@@ -94,8 +94,31 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value);
   };
 
-  const parseVietnameseDate = (dateStr?: string) => {
-    if (!dateStr) return 0;
+  const parseVietnameseDate = (dateVal?: any) => {
+    if (!dateVal) return 0;
+    
+    // 1. Check if it's already a Date object
+    if (dateVal instanceof Date) {
+      return dateVal.getTime();
+    }
+    
+    // 2. Check if it's a Firestore Timestamp or similar object with toDate
+    if (dateVal && typeof dateVal.toDate === 'function') {
+      return dateVal.toDate().getTime();
+    }
+    
+    // 3. Check if it's a Firestore Timestamp object with _seconds
+    if (dateVal && typeof dateVal.seconds === 'number') {
+      return dateVal.seconds * 1000;
+    }
+
+    // 4. If it's a number, assume it's a timestamp
+    if (typeof dateVal === 'number') {
+      return dateVal;
+    }
+    
+    // Convert to string and clean/parse
+    const dateStr = String(dateVal);
     
     // Check "Hôm qua" format
     if (dateStr.includes("Hôm qua")) {
@@ -115,13 +138,53 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
       const timePart = dateTimeParts[1] || "00:00";
       
       const [day, month, year] = datePart.split("/").map(Number);
+      if (isNaN(day) || isNaN(month) || isNaN(year)) {
+        // Fallback standard JS date string parsing
+        const sec = Date.parse(dateStr);
+        if (!isNaN(sec)) return sec;
+        return 0;
+      }
       const [hour, minute] = timePart.split(":").map(Number);
       
       const parsedDate = new Date(year, month - 1, day, hour || 0, minute || 0, 0, 0);
       return parsedDate.getTime() || 0;
     } catch (e) {
+      // Fallback standard JS date string parsing
+      const sec = Date.parse(dateStr);
+      if (!isNaN(sec)) return sec;
       return 0;
     }
+  };
+
+  const formatVietnameseDate = (dateVal: any): string => {
+    if (!dateVal) return "N/A";
+    let d: Date;
+    if (dateVal instanceof Date) {
+      d = dateVal;
+    } else if (typeof dateVal.toDate === 'function') {
+      d = dateVal.toDate();
+    } else if (typeof dateVal.seconds === 'number') {
+      d = new Date(dateVal.seconds * 1000);
+    } else if (typeof dateVal === 'number') {
+      d = new Date(dateVal);
+    } else {
+      // Try to parse string
+      const ts = parseVietnameseDate(dateVal);
+      if (ts > 0) {
+        d = new Date(ts);
+      } else {
+        const fall = Date.parse(String(dateVal));
+        if (!isNaN(fall)) {
+          d = new Date(fall);
+        } else {
+          return String(dateVal);
+        }
+      }
+    }
+    
+    // Format to "DD/MM/YYYY HH:MM" or similar
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
   };
 
   // Convert orders, tickets, statusHistory, and creation events into a unified chronological log
@@ -129,12 +192,12 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
     id: o.id,
     type: 'purchase' as const,
     title: `Giao dịch mua sắm: ${o.id}`,
-    description: `Mua: ${o.items}`,
-    valueStr: o.total,
-    pointsStr: '+50 pts',
+    description: `Mua: ${o.items || o.description || 'Sản phẩm trang sức'}`,
+    valueStr: o.total ? formatVND(o.total) : (o.amount ? formatVND(o.amount) : 'N/A'),
+    pointsStr: o.points ? `+${o.points} pts` : '+50 pts',
     badgeText: o.status || 'Hoàn thành',
     badgeStyle: o.statusClasses || 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    dateStr: o.date,
+    dateStr: formatVietnameseDate(o.date),
     timestamp: parseVietnameseDate(o.date) || Date.now() - 3600000,
     icon: '🛒',
     iconColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
@@ -144,15 +207,15 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
     id: t.id,
     type: 'ticket' as const,
     title: `Lịch sử hỗ trợ: ${t.id}`,
-    description: `Chủ đề: ${t.subject}`,
-    valueStr: `Mức độ: ${t.severity}`,
+    description: t.subject ? `Chủ đề: ${t.subject}` : `Nội dung: ${t.summary || 'Hỗ trợ'}`,
+    valueStr: t.severity ? `Mức độ: ${t.severity}` : 'Yêu cầu',
     pointsStr: '',
-    badgeText: t.status,
-    badgeStyle: t.status === 'Đang xử lý' 
+    badgeText: t.status === 'closed' ? 'Đã đóng' : (t.status === 'open' ? 'Đang mở' : t.status),
+    badgeStyle: t.status === 'Đang xử lý' || t.status === 'open'
       ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' 
       : 'bg-slate-500/10 text-slate-500 border-slate-500/20',
-    dateStr: t.date,
-    timestamp: parseVietnameseDate(t.date) || Date.now() - 7200000,
+    dateStr: formatVietnameseDate(t.date || t.createdAt),
+    timestamp: parseVietnameseDate(t.date || t.createdAt) || Date.now() - 7200000,
     icon: '🎫',
     iconColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
   }));
@@ -169,7 +232,7 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
       pointsStr: '',
       badgeText: 'Cập nhật',
       badgeStyle: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
-      dateStr: s.date,
+      dateStr: formatVietnameseDate(s.date || s.timestamp),
       timestamp: s.timestamp || parseVietnameseDate(s.date) || Date.now(),
       icon: '🔄',
       iconColor: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
@@ -188,7 +251,7 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
     badgeText: 'Thành công',
     badgeStyle: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     dateStr: createdDateStr,
-    timestamp: customer.createdAt?.toDate?.()?.getTime() || 0,
+    timestamp: parseVietnameseDate(customer.createdAt) || 0,
     icon: '👤',
     iconColor: 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
   };
@@ -1110,7 +1173,7 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                       <span className="truncate max-w-[200px]">{order.items}</span>
-                      <span>{order.date}</span>
+                      <span>{formatVietnameseDate(order.date)}</span>
                     </div>
                   </div>
                 ))
@@ -1188,7 +1251,7 @@ export function CustomerDashboard({ customer, userId, companies, attributes, onB
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                       <span className="truncate max-w-[250px] font-medium text-foreground">{ticket.subject}</span>
-                      <span>{ticket.date}</span>
+                      <span>{formatVietnameseDate(ticket.date || ticket.createdAt)}</span>
                     </div>
                   </div>
                 ))
