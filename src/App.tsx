@@ -18,7 +18,31 @@ import { ShieldAlert, LogIn, LogOut, Lock, Trophy, Sparkles, UserCheck } from "l
 
 function AppContent() {
   const [activeView, setActiveView] = useState("dashboard");
-  const { user, systemUser, loading, signIn, logout, registerUser, refreshStatus, signInWithCredentials, registerWithCredentials } = useFirebase();
+  const { user: firebaseUser, systemUser: firebaseSystemUser, loading: firebaseLoading, signIn, logout, registerUser, refreshStatus, signInWithCredentials, registerWithCredentials } = useFirebase();
+
+  // Bỏ tính năng login tạm thời: tự động giả lập tài khoản đã đăng nhập
+  const user = firebaseUser || {
+    uid: "local_hungthai84",
+    email: "hungthai84@gmail.com",
+    displayName: "Thái Hồng Hưng",
+    photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
+    isLocal: true,
+  };
+
+  const systemUser = {
+    ...(firebaseSystemUser || {
+      uid: "local_hungthai84",
+      email: "hungthai84@gmail.com",
+      displayName: "Thái Hồng Hưng",
+      photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }),
+    role: (firebaseSystemUser?.role || "Admin") as any,
+    status: "approved" as const, // luôn luôn được phê duyệt
+  };
+
+  const loading = false; // Bỏ qua trạng thái chờ quay tròn xoay loading ban đầu
   const [regName, setRegName] = useState("");
   const [loginMode, setLoginMode] = useState<'login' | 'register'>('login');
 
