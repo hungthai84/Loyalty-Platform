@@ -29,7 +29,6 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
  const menuItems = [
  { name: "Tổng quan", view: "dashboard", icon: LayoutDashboard },
  { name: "Khách hàng", view: "customers", icon: Users },
- { name: "Công ty", view: "companies", icon: Building2 },
  { name: "Ưu đãi", view: "loyalty", icon: Award },
  { name: "Tiếp thị", view: "marketing", icon: Bell },
  { name: "Phân tích", view: "analysis", icon: Sparkles },

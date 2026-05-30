@@ -5,7 +5,6 @@ import { DashboardView } from "@/views/DashboardView";
 import { CustomersView } from "@/views/CustomersView";
 import { LoyaltyView } from "@/views/LoyaltyView";
 import { MarketingView } from "@/views/MarketingView";
-import { CompaniesView } from "@/views/CompaniesView";
 import { SettingsView } from "@/views/SettingsView";
 import { CustomerPortalView } from "@/views/CustomerPortalView";
 import { Toaster } from "@/components/ui/sonner";
@@ -78,7 +77,6 @@ function AppContent() {
  <main className="flex-1 overflow-auto bg-background/60">
  {activeView === "dashboard" && <DashboardView />}
  {activeView === "customers" && <CustomersView />}
- {activeView === "companies" && <CompaniesView />}
  {activeView === "loyalty" && <LoyaltyView />}
  {activeView === "marketing" && <MarketingView />}
  {activeView === "analytics" && <AnalyticsView />}

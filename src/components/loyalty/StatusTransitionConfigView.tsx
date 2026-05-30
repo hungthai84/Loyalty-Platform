@@ -336,14 +336,27 @@ export function StatusTransitionConfigView() {
  });
 
  if (updatedCount > 0) {
- toast.success(`Đã tự động chuyển đổi trạng thái thành công cho ${updatedCount} khách hàng!`);
+ toast.success(`Đã tự động chuyển đổi trạng thái thành công cho ${updatedCount} khách hàng!`, {
+        description: changedLogs.length > 0 ? (
+          <div className="mt-2 space-y-1 text-left">
+            {changedLogs.slice(0, 3).map((log, idx) => (
+              <div key={idx} className="text-[11px] leading-tight">
+                <span className="font-semibold">{log.customerName}</span>: {log.fromStatus} ➝ {log.toStatus}
+              </div>
+            ))}
+            {changedLogs.length > 3 && (
+              <div className="text-[10px] italic text-muted-foreground mt-1">...và {changedLogs.length - 3} chi tiết khác.</div>
+            )}
+          </div>
+        ) : undefined
+      });
  } else {
  toast.info("Tất cả khách hàng đã phù hợp với trạng thái hiện tại, không có cập nhật nào cần thực hiện.");
  }
 
  } catch (err: any) {
  console.error(err);
- toast.error(`Lỗi thực thi: ${err.message || err}`);
+ toast.error(`Lỗi thực thi: ${err.message || err}`, { description: "Có lỗi khi đồng bộ trạng thái, vui lòng kiểm tra cấu hình." });
  } finally {
  setExecuting(false);
  }

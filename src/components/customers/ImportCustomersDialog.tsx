@@ -1,13 +1,16 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { 
  X, Upload, AlertCircle, CheckCircle2, ArrowRight, ArrowLeft, 
- ChevronRight, Play, Loader2, Table as TableIcon, RefreshCw, BarChart 
+ ChevronRight, Play, Loader2, Table as TableIcon, RefreshCw, BarChart,
+ Users, LogOut, Search, User, ShieldAlert
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { db } from "@/lib/firebase";
 import { collection, doc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { AttributeDefinition, Company } from "@/types";
 import { toast } from "sonner";
+import { GoogleDrivePicker } from "../drive/GoogleDrivePicker";
+import { downloadDriveFile, googleSignIn, initAuth, logout, fetchGoogleContacts, GoogleContact } from "../../lib/workspace";
 
 interface ImportCustomersDialogProps {
  onClose: () => void;
@@ -72,10 +75,159 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  const [fileName, setFileName] = useState("");
  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
  const [csvRows, setCsvRows] = useState<string[][]>([]);
+
+ // Source selection & Contacts states
+ const [sourceMode, setSourceMode] = useState<"csv" | "contacts">("csv");
+ const [googleContacts, setGoogleContacts] = useState<GoogleContact[]>([]);
+ const [filteredContacts, setFilteredContacts] = useState<GoogleContact[]>([]);
+ const [selectedContactIds, setSelectedContactIds] = useState<Record<string, boolean>>({});
+ const [contactsLoading, setContactsLoading] = useState(false);
+ const [contactsSearch, setContactsSearch] = useState("");
+ const [contactsNeedsAuth, setContactsNeedsAuth] = useState(true);
+ const [isContactsAuthLoading, setIsContactsAuthLoading] = useState(false);
+
+ const loadContacts = async () => {
+   setContactsLoading(true);
+   try {
+     const data = await fetchGoogleContacts();
+     setGoogleContacts(data);
+     setFilteredContacts(data);
+     // Select all by default
+     const initialSelected: Record<string, boolean> = {};
+     data.forEach(item => {
+       initialSelected[item.resourceName] = true;
+     });
+     setSelectedContactIds(initialSelected);
+   } catch (err: any) {
+     toast.error(err.message || "Không thể tải danh bạ Google.");
+   } finally {
+     setContactsLoading(false);
+   }
+ };
+
+ useEffect(() => {
+   if (sourceMode === "contacts") {
+     const unsubscribe = initAuth(
+       async (user, token) => {
+         setContactsNeedsAuth(false);
+         loadContacts();
+       },
+       () => setContactsNeedsAuth(true)
+     );
+     return () => unsubscribe();
+   }
+ }, [sourceMode]);
+
+ const handleContactsLogin = async () => {
+   setIsContactsAuthLoading(true);
+   try {
+     const result = await googleSignIn();
+     if (result) {
+       setContactsNeedsAuth(false);
+       loadContacts();
+     }
+   } catch (err: any) {
+     toast.error("Đăng nhập Google thất bại: " + err.message);
+   } finally {
+     setIsContactsAuthLoading(false);
+   }
+ };
+
+ const handleContactsLogout = async () => {
+   await logout();
+   setContactsNeedsAuth(true);
+   setGoogleContacts([]);
+   setFilteredContacts([]);
+ };
+
+ const handleContactsSearchChange = (val: string) => {
+   setContactsSearch(val);
+   const lower = val.toLowerCase();
+   const filtered = googleContacts.filter(c => 
+     c.name.toLowerCase().includes(lower) || 
+     c.email.toLowerCase().includes(lower) || 
+     c.phone.toLowerCase().includes(lower)
+   );
+   setFilteredContacts(filtered);
+ };
+
+ const toggleSelectAllContacts = () => {
+   const allSelected = filteredContacts.every(c => selectedContactIds[c.resourceName]);
+   const newState = { ...selectedContactIds };
+   filteredContacts.forEach(c => {
+     newState[c.resourceName] = !allSelected;
+   });
+   setSelectedContactIds(newState);
+ };
+
+ const toggleContactSelected = (id: string) => {
+   setSelectedContactIds(prev => ({
+     ...prev,
+     [id]: !prev[id]
+   }));
+ };
+
+ const executeContactsImport = async () => {
+   const selectedList = filteredContacts.filter(c => selectedContactIds[c.resourceName]);
+   if (selectedList.length === 0) {
+     toast.error("Vui lòng chọn ít nhất 1 liên hệ để nhập!");
+     return;
+   }
+
+   setStep(4);
+   setImporting(true);
+   setImportProgress(0);
+
+   const customersToImport = selectedList.map(item => {
+     const randHex = Math.random().toString(36).substring(2, 8).toUpperCase();
+     const cleanPhone = item.phone.trim();
+     return {
+       id: `KH-GCON-${randHex}`,
+       userId,
+       name: item.name,
+       email: item.email || "",
+       phone: cleanPhone || "",
+       points: 0,
+       activityStatus: "NEW_MEMBER",
+       createdAt: serverTimestamp(),
+       updatedAt: serverTimestamp(),
+       customFields: {}
+     };
+   });
+
+   try {
+     const batchSize = 100;
+     let loaded = 0;
+
+     for (let i = 0; i < customersToImport.length; i += batchSize) {
+       const chunk = customersToImport.slice(i, i + batchSize);
+       const batch = writeBatch(db);
+
+       chunk.forEach(cust => {
+         const docRef = doc(db, `users/${userId}/customers`, cust.id);
+         batch.set(docRef, cust);
+       });
+
+       await batch.commit();
+       loaded += chunk.length;
+       setImportProgress(Math.round((loaded / customersToImport.length) * 100));
+       setImportedCount(loaded);
+     }
+
+     toast.success(`Đã đồng bộ thành công ${loaded} liên hệ vào CRM!`);
+   } catch (err: any) {
+     console.error(err);
+     toast.error(`Có lỗi xảy ra khi nhập danh bạ: ${err.message || err}`);
+   } finally {
+     setImporting(false);
+   }
+ };
  
  // Mapping of [Database Field Key] -> [CSV Column Index]
  const [mappings, setMappings] = useState<Record<string, number>>({});
  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showDrivePicker, setShowDrivePicker] = useState(false);
+  const [isDownloadingDriveFile, setIsDownloadingDriveFile] = useState(false);
 
  // Firestore execution states
  const [importing, setImporting] = useState(false);
@@ -125,7 +277,22 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  }
  };
 
- const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+ const handleDriveFilePicked = async (file: any) => {
+    setShowDrivePicker(false);
+    setIsDownloadingDriveFile(true);
+    setFileName(file.name);
+    try {
+      const text = await downloadDriveFile(file.id);
+      processTextContent(text);
+    } catch (error: any) {
+      toast.error("Lỗi khi tải tệp từ Google Drive: " + error.message);
+      setFileName("");
+    } finally {
+      setIsDownloadingDriveFile(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
  if (e.target.files && e.target.files[0]) {
  processFile(e.target.files[0]);
  }
@@ -143,40 +310,43 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  const text = e.target?.result as string;
  if (!text) return;
 
- const parsed = parseCSV(text);
- if (parsed.length === 0) {
- toast.error("Tệp CSV không có dữ liệu!");
- return;
- }
-
- const headers = parsed[0];
- const rows = parsed.slice(1);
-
- setCsvHeaders(headers);
- setCsvRows(rows);
-
- // Perform auto-mapping based on field label approximations
- const initialMappings: Record<string, number> = {};
- allFields.forEach(field => {
- const fieldNorm = field.label.toLowerCase().replace(/\s+/g, "");
- const keyNorm = field.key.toLowerCase();
- 
- const foundIndex = headers.findIndex(h => {
- const hNorm = h.toLowerCase().replace(/\s+/g, "");
- return hNorm.includes(fieldNorm) || fieldNorm.includes(hNorm) || 
- hNorm.includes(keyNorm) || keyNorm.includes(hNorm);
- });
-
- if (foundIndex !== -1) {
- initialMappings[field.key] = foundIndex;
- }
- });
-
- setMappings(initialMappings);
- setStep(2);
+ processTextContent(text);
  };
  reader.readAsText(file, "UTF-8");
- };
+  };
+
+  const processTextContent = (text: string) => {
+    const parsed = parseCSV(text);
+    if (parsed.length === 0) {
+      toast.error("Tệp CSV không có dữ liệu!");
+      return;
+    }
+
+    const headers = parsed[0];
+    const rows = parsed.slice(1);
+
+    setCsvHeaders(headers);
+    setCsvRows(rows);
+
+    const initialMappings: Record<string, number> = {};
+    allFields.forEach(field => {
+      const fieldNorm = field.label.toLowerCase().replace(/\s+/g, "");
+      const keyNorm = field.key.toLowerCase();
+      
+      const foundIndex = headers.findIndex(h => {
+        const hNorm = h.toLowerCase().replace(/\s+/g, "");
+        return hNorm.includes(fieldNorm) || fieldNorm.includes(hNorm) || 
+               hNorm.includes(keyNorm) || keyNorm.includes(hNorm);
+      });
+
+      if (foundIndex !== -1) {
+        initialMappings[field.key] = foundIndex;
+      }
+    });
+
+    setMappings(initialMappings);
+    setStep(2);
+  };
 
  // Convert mapped values & preview details
  const getMappedPreviewData = () => {
@@ -350,52 +520,246 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  {/* Form panel bodies */}
  <div className="flex-1 overflow-y-auto p-6 space-y-4">
  
- {/* STEP 1: UPLOAD FILE DRAG AND DROP */}
- {step === 1 && (
- <div className="space-y-4 py-4">
- <div 
- onDragEnter={handleDrag}
- onDragOver={handleDrag}
- onDragLeave={handleDrag}
- onDrop={handleDrop}
- onClick={() => fileInputRef.current?.click()}
- className={`border-2 border-dashed rounded-3xl p-10 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-4 ${
- dragActive 
- ? "border-primary bg-primary/5 scale-[0.99] shadow-inner" 
- : "border-border/80 hover:border-primary/50 hover:bg-muted/30"
- }`}
- >
- <input 
- type="file" 
- ref={fileInputRef} 
- onChange={handleFileChange} 
- accept=".csv" 
- className="hidden" 
- />
- <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
- <Upload className="w-8 h-8" />
- </div>
- <div className="space-y-1">
- <p className="text-sm font-bold text-foreground">Kéo thả tệp thư mục CSV vào đây</p>
- <p className="text-xs text-muted-foreground">Hoặc nhấp để chọn tệp tin từ máy tính định dạng .CSV</p>
- </div>
- <div className="text-xs text-muted-foreground bg-muted hover:bg-muted/80 py-1.5 px-3.5 rounded-full border border-border/40">
- Hỗ trợ tối đa 5,000 khách hàng mỗi lượt tải lên
- </div>
- </div>
+ {/* STEP 1: SELECT SOURCE METHOD (CSV vs GOOGLE CONTACTS) */}
 
- {/* Sample standard template help */}
- <div className="bg-muted/40 p-4 rounded-2xl border border-border/40 text-left space-y-2">
- <span className="text-xs font-black uppercase text-muted-foreground tracking-widest block">Mẫu tệp CSV tiêu chuẩn gợi ý</span>
- <p className="text-xs text-muted-foreground">Hệ thống phân tích thông minh sẽ tự động liên kết các cột dựa trên tên tiêu đề. Bạn có thể xây dựng CSV với các dòng tương ứng:</p>
- <div className="text-xs p-3 bg-card border border-border/80 rounded-xl text-foreground overflow-x-auto whitespace-nowrap">
- Họ tên, Email, Số điện thoại, Điểm số, Link FB, Zalo, Mã chi nhánh, v.v.
- </div>
- </div>
- </div>
- )}
+  {step === 1 && (
+  <div className="space-y-5 py-2 font-sans">
+    {/* Tabs for source selection */}
+    <div className="grid grid-cols-2 gap-4 border-b border-border/40 pb-4">
+      <button
+        type="button"
+        onClick={() => setSourceMode("csv")}
+        className={`py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 font-bold text-xs border transition-all cursor-pointer ${
+          sourceMode === "csv"
+            ? "bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5] shadow-xs"
+            : "bg-background border-border hover:bg-muted text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        <TableIcon className="w-5 h-5" />
+        Nhập từ tệp CSV / Google Drive
+      </button>
+      <button
+        type="button"
+        onClick={() => setSourceMode("contacts")}
+        className={`py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 font-bold text-xs border transition-all cursor-pointer ${
+          sourceMode === "contacts"
+            ? "bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5] shadow-xs"
+            : "bg-background border-border hover:bg-muted text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        <Users className="w-5 h-5" />
+        Nhập từ Danh bạ Google (Contacts)
+      </button>
+    </div>
 
- {/* STEP 2: COLUMN MAPPING DIALOG PANEL */}
+    {sourceMode === "csv" ? (
+      <div className="space-y-4">
+        <div 
+        onDragEnter={handleDrag}
+        onDragOver={handleDrag}
+        onDragLeave={handleDrag}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+        className={`border-2 border-dashed rounded-3xl p-10 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-4 ${
+        dragActive 
+        ? "border-primary bg-primary/5 scale-[0.99] shadow-inner" 
+        : "border-border/80 hover:border-primary/50 hover:bg-muted/30"
+        }`}
+        >
+        <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileChange} 
+        accept=".csv" 
+        className="hidden" 
+        />
+        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+        <Upload className="w-8 h-8" />
+        </div>
+        <div className="space-y-1">
+        <p className="text-sm font-bold text-foreground">Kéo thả tệp thư mục CSV vào đây</p>
+        <p className="text-xs text-muted-foreground">Hoặc nhấp để chọn tệp tin từ máy tính định dạng .CSV</p>
+        </div>
+        <div className="text-xs text-muted-foreground bg-muted hover:bg-muted/80 py-1.5 px-3.5 rounded-full border border-border/40">
+        Hỗ trợ tối đa 5,000 khách hàng mỗi lượt tải lên
+        </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 mt-2">
+          <span className="text-xs text-muted-foreground/80">Bạn cũng có thể duyệt tìm tệp CSV từ lưu trữ đám mây:</span>
+          <button
+            type="button"
+            onClick={() => setShowDrivePicker(true)}
+            className="flex items-center gap-1.5 text-xs font-bold bg-muted hover:bg-muted/85 text-foreground px-4 py-2.5 rounded-xl border border-border/60 transition-all cursor-pointer shadow-xs"
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> Thêm tệp từ Google Drive
+          </button>
+        </div>
+
+        {/* Sample standard template help */}
+        <div className="bg-muted/40 p-4 rounded-2xl border border-border/40 text-left space-y-2">
+        <span className="text-xs font-black uppercase text-muted-foreground tracking-widest block">Mẫu tệp CSV tiêu chuẩn gợi ý</span>
+        <p className="text-xs text-muted-foreground">Hệ thống phân tích thông minh sẽ tự động liên kết các cột dựa trên tên tiêu đề. Bạn có thể xây dựng CSV với các dòng tương ứng:</p>
+        <div className="text-xs p-3 bg-card border border-border/80 rounded-xl text-foreground overflow-x-auto whitespace-nowrap">
+        Họ tên, Email, Số điện thoại, Điểm số, Link FB, Zalo, Mã chi nhánh, v.v.
+        </div>
+        </div>
+      </div>
+    ) : (
+      /* GOOGLE CONTACTS FLOW */
+      <div className="space-y-4">
+        {contactsNeedsAuth ? (
+          <div className="border border-border/60 rounded-3xl p-8 bg-muted/20 text-center flex flex-col items-center justify-center space-y-4">
+            <div className="w-16 h-16 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center border border-blue-500/15">
+              <Users className="w-8 h-8" />
+            </div>
+            <div className="space-y-1.5 max-w-sm font-sans">
+              <h5 className="font-heading font-black text-sm text-foreground">Kết nối Danh bạ Google Contacts</h5>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Ủy quyền quyền truy cập danh bạ an toàn qua Google People API để hiển thị, lọc danh sách cá nhân và thêm trực tiếp vào CRM.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleContactsLogin}
+              disabled={isContactsAuthLoading}
+              className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold px-6 py-3 rounded-2xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {isContactsAuthLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Đang khởi tạo oauth...
+                </>
+              ) : (
+                <>
+                  Kết nối tài khoản Google
+                </>
+              )}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4 font-sans">
+            {/* Search, metrics and logout */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-muted/45 p-3.5 rounded-2xl border border-border/50">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Lọc liên hệ theo tên, SĐT hoặc email..."
+                  value={contactsSearch}
+                  onChange={(e) => handleContactsSearchChange(e.target.value)}
+                  className="pl-9 pr-4 py-2 w-full text-xs border border-border/80 bg-background rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 animate-none"
+                />
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs text-muted-foreground font-mono">
+                  Phát hiện: <strong>{filteredContacts.length}</strong> / {googleContacts.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleContactsLogout}
+                  className="text-xs font-bold text-rose-500 hover:text-rose-600 bg-rose-500/10 border border-rose-500/15 py-1.5 px-3 rounded-xl transition-all flex items-center gap-1.5 shrink-0"
+                >
+                  <LogOut className="w-3.5 h-3.5" /> Đăng xuất
+                </button>
+              </div>
+            </div>
+
+            {/* Contacts Table / Checklist view */}
+            <div className="border border-border/80 rounded-2xl overflow-hidden max-h-[250px] overflow-y-auto shadow-xs bg-card">
+              {contactsLoading ? (
+                <div className="flex flex-col items-center justify-center p-12 space-y-3">
+                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  <p className="text-xs text-muted-foreground">Đang lấy dữ liệu từ Google Contacts API...</p>
+                </div>
+              ) : filteredContacts.length === 0 ? (
+                <div className="text-center p-12 text-muted-foreground text-xs space-y-1">
+                  <AlertCircle className="w-8 h-8 mx-auto text-muted-foreground/55 mb-2" />
+                  <p className="font-bold">Không tìm thấy liên hệ nào</p>
+                  <p>Vui lòng thử tìm kiếm với từ khóa khác.</p>
+                </div>
+              ) : (
+                <table className="w-full text-left text-xs whitespace-nowrap">
+                  <thead className="bg-muted text-muted-foreground font-bold tracking-wider uppercase text-[10px] border-b border-border sticky top-0 z-10">
+                    <tr>
+                      <th className="p-3 w-10">
+                        <input
+                          type="checkbox"
+                          checked={filteredContacts.length > 0 && filteredContacts.every(c => selectedContactIds[c.resourceName])}
+                          onChange={toggleSelectAllContacts}
+                          className="w-4 h-4 rounded text-primary focus:ring-primary/30 outline-none cursor-pointer"
+                        />
+                      </th>
+                      <th className="p-3">Liên hệ</th>
+                      <th className="p-3">Email</th>
+                      <th className="p-3">Số điện thoại</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {filteredContacts.map(c => {
+                      const isSelected = !!selectedContactIds[c.resourceName];
+                      return (
+                        <tr
+                          key={c.resourceName}
+                          onClick={() => toggleContactSelected(c.resourceName)}
+                          className={`hover:bg-muted/20 cursor-pointer ${isSelected ? 'bg-[#2f6cf5]/5' : ''}`}
+                        >
+                          <td className="p-3 w-10" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleContactSelected(c.resourceName)}
+                              className="w-4 h-4 rounded text-primary focus:ring-primary/30 outline-none cursor-pointer"
+                            />
+                          </td>
+                          <td className="p-3 flex items-center gap-2.5 font-sans">
+                            {c.photoUrl ? (
+                              <img
+                                src={c.photoUrl}
+                                alt={c.name}
+                                referrerPolicy="no-referrer"
+                                className="w-8 h-8 rounded-full object-cover border border-border"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-black flex items-center justify-center text-[10px] border border-primary/20">
+                                {c.name.substring(0, 2).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="font-extrabold text-foreground truncate max-w-[150px]">{c.name}</div>
+                          </td>
+                          <td className="p-3 text-muted-foreground/85 font-sans">{c.email || "—"}</td>
+                          <td className="p-3 text-muted-foreground/85 font-sans">{c.phone || "—"}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Actions for google contacts sync */}
+            {!contactsLoading && filteredContacts.length > 0 && (
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-xs text-muted-foreground">
+                  Đã chọn: <strong>{filteredContacts.filter(c => selectedContactIds[c.resourceName]).length}</strong> liên hệ
+                </span>
+                <button
+                  type="button"
+                  onClick={executeContactsImport}
+                  className="bg-primary hover:bg-primary/95 text-primary-foreground font-black px-5 py-2.5 rounded-xl text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" /> Tiến hành nhập vào CRM
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+  )}
+
+{/* STEP 2: COLUMN MAPPING DIALOG PANEL */}
  {step === 2 && (
  <div className="space-y-4">
  <div className="bg-amber-500/10 text-amber-800 dark:text-amber-400 p-3.5 rounded-2xl border border-amber-500/20 text-xs flex items-start gap-2.5">
@@ -662,7 +1026,13 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  )}
 
  </div>
- </motion.div>
- </div>
- );
+       </motion.div>
+      {showDrivePicker && (
+        <GoogleDrivePicker 
+          onPick={handleDriveFilePicked}
+          onCancel={() => setShowDrivePicker(false)}
+        />
+      )}
+    </div>
+  );
 }

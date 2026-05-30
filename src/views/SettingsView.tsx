@@ -1,26 +1,8 @@
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { 
- Building2, 
- Settings as SettingsIcon, 
- Star, 
- Clock, 
- ChevronRight, 
- Plus,
- Shield,
- Layers,
- Database,
- Fingerprint,
- Webhook,
- Key as KeyIcon,
- Activity,
- GitCompare,
- Gift,
- User
-} from "lucide-react";
+import { Building2, Plus, Settings as SettingsIcon, Star, Clock, ChevronRight, Shield, Layers, Database, Fingerprint, Webhook, Key as KeyIcon, Activity, GitCompare, Gift, User } from "lucide-react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
-import { CompaniesView } from "@/views/CompaniesView";
 import { CustomerPortalView } from "@/views/CustomerPortalView";
 import { LoyaltySettingsView } from "@/components/loyalty/LoyaltySettingsView";
 import { TierManagementView } from "@/components/loyalty/TierManagementView";
@@ -30,26 +12,27 @@ import { SystemStatusMonitor } from "@/components/layout/SystemStatusMonitor";
 import { SeedDemoData } from "@/components/layout/SeedDemoData";
 import { RoleManager } from "@/components/settings/RoleManager";
 import { ProfileTab } from "@/components/settings/ProfileTab";
+import { CompanyManager } from "@/components/settings/CompanyManager";
 import { cn } from "@/lib/utils";
 
-type SettingsTab = 'profile' | 'company' | 'tiers' | 'redemption' | 'retention' | 'transitions' | 'portal' | 'api' | 'monitor' | 'demo' | 'roles';
+type SettingsTab = 'profile' | 'companies' | 'tiers' | 'redemption' | 'retention' | 'transitions' | 'portal' | 'api' | 'monitor' | 'demo' | 'roles';
 
 export function SettingsView() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
 
   const tabs = [
     { id: 'profile', label: 'Hồ sơ cá nhân', icon: User },
-    { id: 'company', label: 'Công ty & Chi nhánh', icon: Building2 },
+    { id: 'companies', label: 'Công ty & Chi nhánh', icon: Building2 },
     { id: 'tiers', label: 'Cấp bậc khách hàng', icon: Star },
- { id: 'redemption', label: 'Đổi quà ưu đãi', icon: Gift },
- { id: 'retention', label: 'Trạng thái & Rủi ro', icon: Clock },
- { id: 'transitions', label: 'Luật chuyển trạng thái', icon: GitCompare },
- { id: 'api', label: 'Kết nối API', icon: Webhook },
- { id: 'portal', label: 'Tùy chỉnh Cổng Loyalty', icon: Fingerprint },
- { id: 'monitor', label: 'Giám sát Hệ thống', icon: Activity },
- { id: 'demo', label: 'Sandbox Dữ liệu', icon: Database },
- { id: 'roles', label: 'Vai trò & Phân quyền', icon: Shield },
- ];
+    { id: 'redemption', label: 'Đổi quà ưu đãi', icon: Gift },
+    { id: 'retention', label: 'Trạng thái & Rủi ro', icon: Clock },
+    { id: 'transitions', label: 'Luật chuyển trạng thái', icon: GitCompare },
+    { id: 'api', label: 'Kết nối API', icon: Webhook },
+    { id: 'portal', label: 'Tùy chỉnh Cổng Loyalty', icon: Fingerprint },
+    { id: 'monitor', label: 'Giám sát Hệ thống', icon: Activity },
+    { id: 'demo', label: 'Sandbox Dữ liệu', icon: Database },
+    { id: 'roles', label: 'Vai trò & Phân quyền', icon: Shield },
+  ];
 
  return (
  <div className="flex-1 space-y-6 p-8 pt-6">
@@ -127,9 +110,9 @@ export function SettingsView() {
  <ProfileTab />
  </div>
  )}
- {activeTab === 'company' && (
+ {activeTab === 'companies' && (
  <div className="max-w-6xl mx-auto pb-12">
- <CompaniesView embedded />
+ <CompanyManager />
  </div>
  )}
  {activeTab === 'tiers' && (

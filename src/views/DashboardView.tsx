@@ -4,8 +4,17 @@ import { kpiData, revenueData, recentCustomers } from "@/data/mockData";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowUpRight, ArrowDownRight, Gem, Wifi, WifiOff, Calendar, ChevronDown, Filter, ArrowRight, Award, RotateCcw, LayoutDashboard } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Gem, Wifi, WifiOff, Calendar, ChevronDown, Filter, ArrowRight, Award, RotateCcw, LayoutDashboard, Database } from "lucide-react";
 import * as motion from "motion/react-client";
+import { SeedDemoData } from "@/components/layout/SeedDemoData";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export function DashboardView() {
  const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -250,7 +259,19 @@ export function DashboardView() {
  </motion.div>
  </div>
  <div>
+ <div className="flex items-center gap-3">
  <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">Tổng quan</h2>
+ <Dialog>
+ <DialogTrigger className="flex items-center gap-1.5 px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-[10px] font-bold shadow-sm cursor-pointer animate-fade-in uppercase tracking-wider">
+ <Database className="w-3 h-3" />
+ <span>Nạp mẫu</span>
+ </DialogTrigger>
+ <DialogContent className="max-w-4xl p-0 border-none bg-transparent shadow-none" aria-describedby="dialog-description">
+ <div id="dialog-description" className="sr-only">Nạp dữ liệu mẫu vào hệ thống</div>
+ <SeedDemoData />
+ </DialogContent>
+ </Dialog>
+ </div>
  <p className="text-sm text-muted-foreground mt-1">Số liệu thống kê và thông tin tổng quan hệ thống.</p>
  </div>
  </div>

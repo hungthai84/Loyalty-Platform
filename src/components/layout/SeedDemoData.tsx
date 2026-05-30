@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { doc, writeBatch, collection, getDocs, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
  Database, 
  Sparkles, 
@@ -22,6 +24,7 @@ export function SeedDemoData() {
  const [cleanupLoading, setCleanupLoading] = useState(false);
  const [progress, setProgress] = useState(0);
  const [statusText, setStatusText] = useState("");
+ const [numCustomers, setNumCustomers] = useState(200);
 
  const VIETNAMESE_NAMES = [
  "Nguyễn Thị Hương", "Trần Anh Tuấn", "Lê Minh Triết", "Phạm Minh Thư", "Hoàng Kim Oanh",
@@ -122,31 +125,48 @@ export function SeedDemoData() {
  setStatusText("Bước 1/6: Đang thiết lập 2 Chi nhánh chính...");
  setProgress(5);
  
- const compB1Ref = doc(collection(db, `${userRefPath}/companies`));
- const compB2Ref = doc(collection(db, `${userRefPath}/companies`));
+ const compMainRef = doc(collection(db, `${userRefPath}/companies`));
+  const compB1Ref = doc(collection(db, `${userRefPath}/companies`));
+  const compB2Ref = doc(collection(db, `${userRefPath}/companies`));
 
- const b1Id = compB1Ref.id;
- const b2Id = compB2Ref.id;
+  const mainId = compMainRef.id;
+  const b1Id = compB1Ref.id;
+  const b2Id = compB2Ref.id;
 
- const batchComp = writeBatch(db);
- batchComp.set(compB1Ref, {
- id: b1Id,
- name: "Chi nhánh B1 - Showroom Sài Gòn Cao Thắng",
- logoUrl: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=150&auto=format&fit=crop&q=60",
- address: "15-17 Cao Thắng, Phường 2, Quận 3, TP. Hồ Chí Minh",
- userId: user.uid,
- createdAt: serverTimestamp()
- });
+  const batchComp = writeBatch(db);
+  
+  batchComp.set(compMainRef, {
+  id: mainId,
+  name: "SEVA Group - Trụ sở chính",
+  type: "company",
+  logoUrl: "https://images.unsplash.com/photo-1599643478524-fb66f70d00de?w=150&auto=format&fit=crop&q=60",
+  address: "Level 20, Bitexco, TP. HCM",
+  userId: user.uid,
+  createdAt: serverTimestamp()
+  });
 
- batchComp.set(compB2Ref, {
- id: b2Id,
- name: "Chi nhánh B2 - Luxury Salon Tràng Tiền",
- logoUrl: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=150&auto=format&fit=crop&q=60",
- address: "86 Tràng Tiền, Hoàn Kiếm, Hà Nội",
- userId: user.uid,
- createdAt: serverTimestamp()
- });
- await batchComp.commit();
+  batchComp.set(compB1Ref, {
+  id: b1Id,
+  name: "Chi nhánh B1 - Showroom Sài Gòn Cao Thắng",
+  type: "branch",
+  parentId: mainId,
+  logoUrl: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=150&auto=format&fit=crop&q=60",
+  address: "15-17 Cao Thắng, Phường 2, Quận 3, TP. Hồ Chí Minh",
+  userId: user.uid,
+  createdAt: serverTimestamp()
+  });
+
+  batchComp.set(compB2Ref, {
+  id: b2Id,
+  name: "Chi nhánh B2 - Luxury Salon Tràng Tiền",
+  type: "branch",
+  parentId: mainId,
+  logoUrl: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=150&auto=format&fit=crop&q=60",
+  address: "86 Tràng Tiền, Hoàn Kiếm, Hà Nội",
+  userId: user.uid,
+  createdAt: serverTimestamp()
+  });
+  await batchComp.commit();
 
  // Step 2: Add Tiers (configs)
  setStatusText("Bước 2/6: Đang thiết lập 4 thứ hạng thành viên đặc quyền...");
@@ -248,11 +268,10 @@ export function SeedDemoData() {
 
  await batchRules.commit();
 
- // Step 4: Generates 200 customers (Batch-by-batch writing)
- setStatusText("Bước 4/6: Đang chế tác danh sách 200 Khách hàng trang sức đẳng cấp...");
+ // Step 4: Generates customers (Batch-by-batch writing)
+ setStatusText(`Bước 4/6: Đang chế tác danh sách ${numCustomers} Khách hàng trang sức đẳng cấp...`);
  setProgress(40);
 
- const numCustomers = 200;
  let batch = writeBatch(db);
  let opCount = 0;
 
@@ -270,15 +289,19 @@ export function SeedDemoData() {
  { tierId: "tier-atelier", minPts: 10500, maxPts: 45000, status: "active" }
  ];
 
+ let atkThreshold = Math.floor(0.15 * numCustomers);
+ let iconThreshold = Math.floor(0.40 * numCustomers);
+ let essThreshold = Math.floor(0.75 * numCustomers);
+
  let chosenTier;
- if (i < 30) {
- chosenTier = tierWeights[3]; // Atelier (30 VIPs!)
- } else if (i < 80) {
- chosenTier = tierWeights[2]; // Icon (50 VIPs!)
- } else if (i < 150) {
- chosenTier = tierWeights[1]; // Essential (70 VIPs!)
+ if (i < atkThreshold) {
+ chosenTier = tierWeights[3]; // Atelier (15%)
+ } else if (i < iconThreshold) {
+ chosenTier = tierWeights[2]; // Icon (25%)
+ } else if (i < essThreshold) {
+ chosenTier = tierWeights[1]; // Essential (35%)
  } else {
- chosenTier = tierWeights[0]; // Member (50 Regular members)
+ chosenTier = tierWeights[0]; // Member (25%)
  }
 
  const pts = Math.floor(chosenTier.minPts + Math.random() * (chosenTier.maxPts - chosenTier.minPts));
@@ -349,7 +372,7 @@ export function SeedDemoData() {
 
  setStatusText("Nạp hoàn chỉnh cơ sở dữ liệu demo thành công!");
  setProgress(100);
- toast.success("Đã hoàn tấy bổ sung dữ liệu 200 khách hàng, chi nhánh & hạng đặc quyền!");
+ toast.success(`Đã hoàn tất bổ sung dữ liệu ${numCustomers} khách hàng, chi nhánh & hạng đặc quyền!`);
  } catch (err: any) {
  console.error(err);
  toast.error(`Gặp lỗi trong tiến trình: ${err.message}`);
@@ -366,7 +389,7 @@ export function SeedDemoData() {
  <Database className="w-5 h-5 text-primary" /> BỘ NẠP DỮ LIỆU DEMO DOANH NGHIỆP TRANG SỨC
  </h3>
  <p className="text-xs text-muted-foreground">
- Bản nạp một chạm (1-click seed) tạo tức thời 200 khách hàng hoàn chỉnh, với 4 hạng thành viên cao cấp (Atelier, Icon, Essential, Member), luật tích điểm, đổi thưởng và 2 Showroom địa lý chính thức.
+ Bản nạp một chạm (1-click seed) tạo tức thời {numCustomers} khách hàng hoàn chỉnh, với 4 hạng thành viên cao cấp (Atelier, Icon, Essential, Member), luật tích điểm, đổi thưởng và 2 Showroom địa lý chính thức.
  </p>
  </div>
  <div className="p-1 px-3 bg-primary/10 text-primary text-xs font-black uppercase rounded-full tracking-wider shrink-0">
@@ -387,7 +410,7 @@ export function SeedDemoData() {
  <Star className="w-4 h-4 text-amber-500" /> <strong>4 Hạng thành viên</strong>: Member, Essential, Icon, Atelier (thăng hạng tự động)
  </li>
  <li className="flex items-center gap-2">
- <Users className="w-4 h-4 text-blue-500" /> <strong>200 Khách hàng trang sức mẫu</strong> với hồ sơ đa liên kết, thói quen mua sắm, CLV lớn
+ <Users className="w-4 h-4 text-blue-500" /> <strong>{numCustomers} Khách hàng trang sức mẫu</strong> với hồ sơ đa liên kết, thói quen mua sắm, CLV lớn
  </li>
  <li className="flex items-center gap-2">
  <Gift className="w-4 h-4 text-emerald-500" /> <strong>4 Luật Tích Điểm</strong> (Earning) & <strong>4 Đặc Quyền Đồng Giá</strong> (Redemption)
@@ -399,6 +422,18 @@ export function SeedDemoData() {
  </div>
 
  <div className="flex flex-col justify-center space-y-4 border-t md:border-t-0 md:border-l border-border/50 pt-4 md:pt-0 md:pl-5">
+ <div className="space-y-2">
+ <Label className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">SỐ LƯỢNG KHÁCH HÀNG (TÙY CHỈNH)</Label>
+ <Input 
+ type="number" 
+ min={1} 
+ max={2000} 
+ value={numCustomers} 
+ onChange={(e) => setNumCustomers(Number(e.target.value) || 200)} 
+ disabled={loading || cleanupLoading}
+ className="h-9 text-sm"
+ />
+ </div>
  <div className="space-y-2">
  <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">TIẾN TRÌNH THỰC HIỆN</span>
  <div className="w-full bg-muted-foreground/10 rounded-full h-2 overflow-hidden border">

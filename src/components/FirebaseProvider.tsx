@@ -215,9 +215,80 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
  };
 
  useEffect(() => {
- // Mocking user permanently 
- return () => {};
- }, []);
+		// Automatically seed/ensure the Admin account exists in Firestore
+		const ensureAdminExistsInFirestore = async () => {
+			try {
+				const localUserRef = doc(db, 'system_users', 'local_hungthai84');
+				await setDoc(localUserRef, {
+					uid: 'local_hungthai84',
+					email: 'hungthai84@gmail.com',
+					displayName: "Thái Hồng Hưng",
+					photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
+					role: "Admin",
+					status: "approved",
+					password: 'HungTh@i22061984',
+					isLocal: true,
+					createdAt: serverTimestamp(),
+					updatedAt: serverTimestamp()
+				}, { merge: true });
+				console.log("Successfully seeded local hungthai84 Admin user in system_users!");
+			} catch (err) {
+				console.warn("Seeding initial local admin failed:", err);
+			}
+		};
+		ensureAdminExistsInFirestore();
+
+		// Subscribe to real Firebase authentication state changes
+		const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+			setLoading(true);
+			if (authUser) {
+				setUser(authUser);
+				await checkSystemUserStatus(authUser);
+			} else {
+				// Fall back to stored local credentials if available
+				const localUserStr = localStorage.getItem('crm_sys_local_user');
+				if (localUserStr) {
+					try {
+						const parsed = JSON.parse(localUserStr);
+						if (parsed && parsed.user) {
+							setUser(parsed.user);
+							setSystemUser(parsed.systemUser || null);
+							setLoading(false);
+							return;
+						}
+					} catch (e) {}
+				}
+
+				// Set default mock user state so the workspace is immediately fully functional
+				const defaultMockUser = {
+					uid: "local_hungthai84",
+					email: "hungthai84@gmail.com",
+					displayName: "Thái Hồng Hưng",
+					photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
+					isLocal: true,
+				};
+				const defaultSystemUser: SystemUser = {
+					uid: "local_hungthai84",
+					email: "hungthai84@gmail.com",
+					displayName: "Thái Hồng Hưng",
+					photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
+					role: "Admin",
+					status: "approved",
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				};
+
+				setUser(defaultMockUser);
+				setSystemUser(defaultSystemUser);
+			}
+			setLoading(false);
+		});
+
+		return () => unsubscribe();
+	}, []);
+
+
+
 
  const refreshStatus = async () => {
  if (auth.currentUser) {

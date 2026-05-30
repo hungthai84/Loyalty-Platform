@@ -57,7 +57,7 @@ import {
 } from 'recharts';
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
-import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
+import { collection, query, onSnapshot, orderBy, doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Customer, LoyaltyCampaign, Company, AttributeDefinition } from "@/types";
 import { OfferAnalysis } from "@/components/loyalty/OfferAnalysis";
 import { CrossBranchAnalysis } from "@/components/customers/CrossBranchAnalysis";
@@ -169,31 +169,45 @@ export function AnalysisView() {
  return unsub;
  }, [user]);
 
- // Merge Firebase customers and mock customers for a complete dashboard list
- const customers = useMemo(() => {
- const merged = [...INITIAL_CUSTOMERS];
- dbCustomers.forEach(dbCust => {
- // Avoid duplicate IDs
- if (!merged.some(m => m.id === dbCust.id)) {
- // Map fields safely
- merged.push({
- id: dbCust.id || `SVG-${Math.floor(1000 + Math.random() * 9000)}`,
- name: dbCust.name || 'Hội viên ẩn danh',
- phone: dbCust.phone || '090***',
- email: dbCust.email || '',
- tier: dbCust.points && dbCust.points >= 150000 ? 'Atelier' : dbCust.points && dbCust.points >= 50000 ? 'Icon' : 'Essential',
- status: dbCust.activityStatus === 'active' ? 'Active' : dbCust.activityStatus === 'churn_risk' ? 'Dormant' : 'Active',
- clv: (dbCust.points || 0) * 1000, // proportional mock clv
- repeat_rate: 65,
- last_purchase: '2026-05-20',
- risk_score: dbCust.activityStatus === 'churn_risk' ? 82 : 21,
- region: 'Hà Nội',
- collection: 'Heritage'
- });
- }
- });
- return merged;
- }, [dbCustomers]);
+   // Merge Firebase customers and mock customers for a complete dashboard list
+  const customers = useMemo(() => {
+    const merged = INITIAL_CUSTOMERS.map(c => {
+      const initialPoints = c.tier === 'Atelier' ? 185000 : c.tier === 'Icon' ? 62000 : c.tier === 'Essential' ? 18000 : 5000;
+      return { ...c, points: initialPoints };
+    });
+
+    dbCustomers.forEach(dbCust => {
+      const matchIndex = merged.findIndex(m => m.id === dbCust.id);
+      if (matchIndex !== -1) {
+        const livePoints = typeof dbCust.points === 'number' ? dbCust.points : merged[matchIndex].points;
+        merged[matchIndex] = {
+          ...merged[matchIndex],
+          points: livePoints,
+          tier: livePoints >= 150000 ? 'Atelier' : livePoints >= 50000 ? 'Icon' : livePoints >= 15000 ? 'Essential' : 'Member',
+          clv: livePoints * 1000,
+          last_purchase: dbCust.last_purchase || merged[matchIndex].last_purchase
+        };
+      } else {
+        const livePoints = dbCust.points || 0;
+        merged.push({
+          id: dbCust.id || `SVG-${Math.floor(1000 + Math.random() * 9000)}`,
+          name: dbCust.name || 'Hội viên ẩn danh',
+          phone: dbCust.phone || '090***',
+          email: dbCust.email || '',
+          points: livePoints,
+          tier: livePoints >= 150000 ? 'Atelier' : livePoints >= 50000 ? 'Icon' : livePoints >= 15000 ? 'Essential' : 'Member',
+          status: dbCust.activityStatus === 'active' ? 'Active' : dbCust.activityStatus === 'churn_risk' ? 'Dormant' : 'Active',
+          clv: Math.max(livePoints * 1000, 100000),
+          repeat_rate: 65,
+          last_purchase: dbCust.last_purchase || '2026-05-30',
+          risk_score: dbCust.activityStatus === 'churn_risk' ? 82 : 21,
+          region: 'Hà Nội',
+          collection: 'Heritage'
+        });
+      }
+    });
+    return merged as Customer[];
+  }, [dbCustomers]);
 
  // Financial inputs for Loyalty Cost Module
  const [revenue, setRevenue] = useState(10000000000); // 10 Billions VND
@@ -237,6 +251,85 @@ export function AnalysisView() {
  const [aiCustomPrompt, setAiCustomPrompt] = useState('Phân tích rủi ro rời bỏ và gợi ý bộ sưu tập trang sức Heritage độc quyền phù hợp.');
  const [aiLoading, setAiLoading] = useState(false);
  const [aiResponse, setAiResponse] = useState<any>(null);
+
+  // POS Invoice Simulation states
+  const [simInvoiceId, setSimInvoiceId] = useState(`POS-${Math.floor(100000 + Math.random() * 900000)}`);
+  const [simCustomerId, setSimCustomerId] = useState('SVG-9081');
+  const [simAmount, setSimAmount] = useState(15000000); // default 15 Millions VND
+  const [simLoading, setSimLoading] = useState(false);
+  const [simLogs, setSimLogs] = useState<{ time: string; type: 'info' | 'success' | 'warning' | 'error'; text: string }[]>([
+    { time: new Date().toLocaleTimeString(), type: 'info', text: 'Hệ thống giả lập POS Webhook API Gate v1.2.4 đã khởi động.' },
+    { time: new Date().toLocaleTimeString(), type: 'info', text: 'Chờ nhận payload kết toán hóa đơn từ Sevago POS Terminal...' }
+  ]);
+
+  const handleSimulatePOSInvoice = async () => {
+    if (!user) {
+      triggerToast('Vui lòng đồng bộ tài khoản quản trị viên trước khi dùng giả lập POS!', 'error');
+      return;
+    }
+    if (!simInvoiceId.trim()) {
+      triggerToast('Mã hóa đơn POS không được rỗng!', 'error');
+      return;
+    }
+    if (simAmount <= 0) {
+      triggerToast('Doanh số thanh toán POS phải lớn hơn 0!', 'error');
+      return;
+    }
+
+    const customer = customers.find(c => c.id === simCustomerId);
+    if (!customer) {
+      triggerToast('Không tìm thấy hội viên tương ứng!', 'error');
+      return;
+    }
+
+    setSimLoading(true);
+    const nowStr = () => new Date().toLocaleTimeString();
+
+    setSimLogs(prev => [
+      ...prev,
+      { time: nowStr(), type: 'info', text: `📡 [API CALL] POST /api/v1/pos/invoice/accrual` },
+      { time: nowStr(), type: 'info', text: `📦 Payload: { invoiceId: "${simInvoiceId}", customerId: "${simCustomerId}", amount: ${simAmount} }` }
+    ]);
+
+    setTimeout(async () => {
+      try {
+        const pointRate = rules.pointEarningRate || 1000000;
+        const earnedPoints = Math.floor(simAmount / pointRate);
+        const currentPoints = customer.points || 0;
+        const newPoints = currentPoints + earnedPoints;
+
+        const customerRef = doc(db, `users/${user.uid}/customers`, simCustomerId);
+        await setDoc(customerRef, {
+          name: customer.name,
+          email: customer.email || '',
+          phone: customer.phone || '',
+          points: newPoints,
+          clv: newPoints * 1000,
+          last_purchase: new Date().toISOString().split('T')[0],
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+
+        setSimLogs(prev => [
+          ...prev,
+          { time: nowStr(), type: 'success', text: `✅ [HTTP 200] Tìm thấy Hội viên: ${customer.name}` },
+          { time: nowStr(), type: 'success', text: `🪙 +${earnedPoints} điểm Loyalty cộng thêm thành công.` },
+          { time: nowStr(), type: 'success', text: `📈 Điểm tích lũy mới: ${newPoints.toLocaleString()} pts` },
+          { time: nowStr(), type: 'success', text: `🎉 Đã đồng bộ trực tiếp lên Firestore. Toàn bộ bảng biểu cập nhật thời gian thực.` }
+        ]);
+
+        triggerToast(`Tích lũy thành công +${earnedPoints} điểm cho ${customer.name}!`);
+        setSimInvoiceId(`POS-${Math.floor(100000 + Math.random() * 900000)}`);
+      } catch (err) {
+        setSimLogs(prev => [
+          ...prev,
+          { time: nowStr(), type: 'error', text: `❌ [ERROR] Lỗi ghi dữ liệu Firestore: ${err.message}` }
+        ]);
+        triggerToast(`Lỗi giả lập POS: ${err.message}`, 'error');
+      } finally {
+        setSimLoading(false);
+      }
+    }, 1000);
+  };
 
  const grossProfit = useMemo(() => revenue - cogs, [revenue, cogs]);
  const loyaltyBudget = useMemo(() => grossProfit * (loyaltyRatio / 100), [grossProfit, loyaltyRatio]);
@@ -632,21 +725,201 @@ export function AnalysisView() {
  </div>
  </div>
 
- <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40">
- {tierDistributionData.map((tier, idx) => (
- <div key={idx} className="flex items-center gap-1.5 text-xs">
- <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: tier.color }}></span>
- <span className="text-muted-foreground font-medium">{tier.name}: <strong className="text-foreground">{tier.value}</strong></span>
- </div>
- ))}
- </div>
- </div>
+  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40">
+  {tierDistributionData.map((tier, idx) => (
+  <div key={idx} className="flex items-center gap-1.5 text-xs">
+  <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: tier.color }}></span>
+  <span className="text-muted-foreground font-medium">{tier.name}: <strong className="text-foreground">{tier.value}</strong></span>
+  </div>
+  ))}
+  </div>
+  </div>
 
- </div>
- </div>
- )}
+  </div>
 
- {/* 2. TAB: LOYALTY COST & ROI */}
+  {/* POS API AND REAL-TIME ACCRUAL SIMULATOR */}
+  <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-6 mt-6">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-4 border-border/40">
+      <div>
+        <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+          <Smartphone className="w-5 h-5 text-[#2f6cf5]" />
+          BẢNG ĐIỀU KHIỂN GIẢ LẬP NHẬP HÓA ĐƠN POS (API WEBHOOK)
+        </h3>
+        <p className="text-xs text-muted-foreground mt-0.5 font-sans">
+          Giả lập thiết bị bán hàng tại Showroom truyền payload kết toán giao dịch về API Loyalty để tự động tích điểm theo thời gian thực.
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="flex h-2.5 w-2.5 relative">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        </span>
+        <span className="text-xs font-bold text-emerald-500 font-mono uppercase">API Gateway: Online</span>
+      </div>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Simulation form controls */}
+      <div className="lg:col-span-5 space-y-4 text-left">
+        <h4 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-wider">Thông S Có Giao Dịch POS</h4>
+        
+        <div className="space-y-4">
+          {/* Invoice ID */}
+          <div>
+            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5 flex justify-between items-center">
+              <span>Mã Hóa Đơn POS</span>
+              <button 
+                type="button"
+                onClick={() => setSimInvoiceId(`POS-${Math.floor(100000 + Math.random() * 900000)}`)}
+                className="text-[10px] text-[#2f6cf5] font-bold hover:underline py-0 cursor-pointer"
+              >
+                Tạo mã ngẫu nhiên
+              </button>
+            </label>
+            <input 
+              type="text" 
+              value={simInvoiceId}
+              onChange={(e) => setSimInvoiceId(e.target.value)}
+              className="w-full bg-muted/50 border border-border/60 hover:border-primary/20 focus:border-primary rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none transition-all"
+              placeholder="e.g. POS-INV-10928"
+            />
+          </div>
+
+          {/* Customer Selection */}
+          <div>
+            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Hội viên thụ hưởng (VIP Member)</label>
+            <select
+              value={simCustomerId}
+              onChange={(e) => setSimCustomerId(e.target.value)}
+              className="w-full bg-muted/50 border border-border/60 hover:border-primary/20 focus:border-primary rounded-xl px-3 py-2 text-xs text-zinc-300 focus:outline-none transition-all cursor-pointer font-medium"
+            >
+              {customers.map((c) => (
+                <option key={c.id} value={c.id} className="bg-card">
+                  {c.name} ({c.id}) — {c.points?.toLocaleString() || 0} pts [{c.tier}]
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Amount and preset buttons */}
+          <div>
+            <label className="block text-xs font-zinc-400 uppercase mb-1.5 flex justify-between">
+              <span>Giá trị đơn hàng (VND)</span>
+              <span className="text-[#2f6cf5] font-mono font-bold text-xs">
+                {formatVND(simAmount)}
+              </span>
+            </label>
+            <input 
+              type="number"
+              value={simAmount}
+              onChange={(e) => setSimAmount(Math.max(0, parseInt(e.target.value, 10) || 0))}
+              className="w-full bg-muted/50 border border-border/60 hover:border-primary/20 focus:border-primary rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none transition-all"
+              placeholder="Nhập số tiền..."
+            />
+            {/* Quick preset chips */}
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {[5000000, 15000000, 50000000, 150000000].map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setSimAmount(val)}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                    simAmount === val 
+                      ? 'bg-[#2f6cf5]/15 border-[#2f6cf5] text-[#2f6cf5]' 
+                      : 'bg-muted/30 border-border/50 hover:bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {formatMillionVND(val)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Accrued calculation read-only indicator */}
+          <div className="bg-muted/30 border border-border/40 p-3 rounded-xl flex items-center justify-between">
+            <div className="text-left font-sans">
+              <div className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">Điểm tích lũy dự kiến (Loyalty Points)</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">Tỷ lệ: {formatMillionVND(rules.pointEarningRate)} = 1 điểm</div>
+            </div>
+            <div className="text-right">
+              <span className="text-base font-mono font-black text-emerald-500">
+                +{Math.floor(simAmount / (rules.pointEarningRate || 1000000))} pts
+              </span>
+            </div>
+          </div>
+
+          {/* CTA Simulate Webhook Trigger */}
+          <button
+            type="button"
+            onClick={handleSimulatePOSInvoice}
+            disabled={simLoading}
+            className={`w-full relative overflow-hidden flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold tracking-wider uppercase transition-all shadow-md cursor-pointer text-white font-sans bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 hover:shadow-lg active:scale-[0.98]`}
+          >
+            {simLoading ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Đang truyền dữ liệu API...
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4" />
+                Gửi mã từ POS (Simulate Webhook)
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Terminal and payload stream log */}
+      <div className="lg:col-span-7 flex flex-col h-full min-h-[320px] bg-[#121214] border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl relative text-left">
+        {/* Terminal Header */}
+        <div className="bg-[#18181b] border-b border-zinc-800 px-4 py-3 flex items-center justify-between shrink-0 font-sans">
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block"></span>
+            </div>
+            <span className="text-zinc-500 text-[10px] font-mono leading-none ml-2">Console API Telemetry & Payload Streams</span>
+          </div>
+          <button 
+            type="button"
+            onClick={() => setSimLogs([{ time: new Date().toLocaleTimeString(), type: 'info', text: 'Telemetry logs cleared. Listening for API calls...' }])}
+            className="text-[10px] uppercase tracking-wider text-zinc-500 hover:text-zinc-300 font-bold font-mono transition-colors cursor-pointer"
+          >
+            Clear logs
+          </button>
+        </div>
+
+        {/* Scrollable logs area with monospace */}
+        <div className="p-4 font-mono text-[11px] space-y-2 overflow-y-auto max-h-[320px] text-zinc-300 antialiased min-h-[220px]">
+          {simLogs.map((log, index) => (
+            <div key={index} className="leading-relaxed flex items-start gap-2">
+              <span className="text-zinc-600 select-none shrink-0 border-r border-zinc-800 pr-1">{log.time}</span>
+              <span className={`break-all ${
+                log.type === 'success' ? 'text-emerald-400 font-medium' :
+                log.type === 'error' ? 'text-red-400 font-medium' :
+                log.type === 'warning' ? 'text-amber-400 font-medium' : 'text-sky-400'
+              }`}>
+                {log.text}
+              </span>
+            </div>
+          ))}
+          {simLoading && (
+            <div className="flex items-center gap-2 mt-2 select-none animate-pulse text-[#2f6cf5]">
+              <span className="w-1.5 h-3 bg-[#2f6cf5] inline-block animate-[bounce_1.2s_infinite]"></span>
+              <span>📡 WAITING FOR WEBHOOK ACKNOWLEDGEMENT (HTTP 100 CONTINUE)...</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+  )}
+
+{/* 2. TAB: LOYALTY COST & ROI */}
  {activeTab === 'loyalty_cost' && (
  <div className="space-y-6">
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

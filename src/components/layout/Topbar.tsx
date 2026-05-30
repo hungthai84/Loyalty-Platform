@@ -189,7 +189,7 @@ export function Topbar({ setActiveView }: TopbarProps) {
  <DropdownMenu>
  <DropdownMenuTrigger className="focus:outline-none">
  <Avatar className="h-8 w-8 border cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all">
- <AvatarImage src={user?.photoURL || ""} alt={user?.displayName || "User"} />
+ <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "User"} />
  <AvatarFallback>{user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}</AvatarFallback>
  </Avatar>
  </DropdownMenuTrigger>

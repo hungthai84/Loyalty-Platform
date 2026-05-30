@@ -1,4 +1,12 @@
 export interface Customer {
+  tier?: string;
+  status?: string;
+  clv?: number;
+  repeat_rate?: number;
+  last_purchase?: string;
+  risk_score?: number;
+  region?: string;
+  collection?: string;
  id: string;
  name: string;
  email: string;
@@ -56,8 +64,10 @@ export interface TierConfig {
 export interface RedemptionRule {
  id: string;
  name: string;
+ description?: string;
  pointsRequired: number;
  rewardValue: number;
+ value?: number;
  rewardType: 'discount' | 'voucher' | 'item';
  userId: string;
  createdAt: any;

@@ -50,109 +50,171 @@ export const GUEST_ATTRIBUTES: AttributeDefinition[] = [
  isRequired: false,
  options: ["Diamond", "Ruby", "Sapphire", "Emerald", "Jade", "Pearl"],
  },
- {
- id: "attr_anniversary",
- label: "Ngày kỷ niệm cưới",
- key: "anniversaryDate",
- type: "date",
- userId: "guest",
- createdAt: daysAgo(75),
- isRequired: false,
- }
+   {
+    id: "attr_anniversary",
+    label: "Ngày kỷ niệm cưới",
+    key: "anniversaryDate",
+    type: "date",
+    userId: "guest",
+    createdAt: daysAgo(75),
+    isRequired: false,
+  }
 ];
 
-export const GUEST_CUSTOMERS: Customer[] = [
- {
- id: "cust_1",
- name: "Trần Anh Tuấn",
- email: "tuan.tran@sevago.vip",
- phone: "0908123456",
- points: 1540,
- activityStatus: "active",
- companyId: "comp_saigon",
- userId: "guest",
- createdAt: daysAgo(50),
- updatedAt: daysAgo(2),
- customFields: {
- spend: 78000000,
- favoriteGem: "Diamond",
- autoTags: [{ tag: "BIG SPENDER", color: "gold" }, { tag: "ELITE VIP", color: "emerald" }]
- },
- orders: [
- { id: "ord_1", date: daysAgo(10), amount: 45000000, points: 900, status: "completed", description: "Nhẫn Kim Cương Solitaire 18K" },
- { id: "ord_2", date: daysAgo(2), amount: 33000000, points: 640, status: "completed", description: "Bông tai White Gold Diamond" }
- ],
- tickets: [
- { id: "tick_1", summary: "Đặt lịch đánh bóng định kỳ", status: "closed", createdAt: daysAgo(12) }
- ]
- },
- {
- id: "cust_2",
- name: "Nguyễn Thị Hương",
- email: "huong.nguyen@sevago.vip",
- phone: "0915654321",
- points: 240,
- activityStatus: "inactive",
- companyId: "comp_hanoi",
- userId: "guest",
- createdAt: daysAgo(120),
- updatedAt: daysAgo(35),
- customFields: {
- spend: 12500000,
- favoriteGem: "Pearl",
- autoTags: [{ tag: "INACTIVE", color: "slate" }]
- },
- orders: [
- { id: "ord_3", date: daysAgo(35), amount: 12500000, points: 240, status: "completed", description: "Chuỗi Ngọc Trai Cầm Tay Phú Quốc" }
- ],
- tickets: []
- },
- {
- id: "cust_3",
- name: "Hoàng Kim Oanh",
- email: "oanh.hoang@gmail.com",
- phone: "0987654321",
- points: 8200,
- activityStatus: "active",
- companyId: "comp_saigon",
- userId: "guest",
- createdAt: daysAgo(200),
- updatedAt: daysAgo(5),
- customFields: {
- spend: 420000000,
- favoriteGem: "Emerald",
- autoTags: [{ tag: "BIG SPENDER", color: "gold" }, { tag: "ELITE VIP", color: "emerald" }]
- },
- orders: [
- { id: "ord_4", date: daysAgo(42), amount: 210000000, points: 4200, status: "completed", description: "Vòng cổ Emerald Hoàng Gia" },
- { id: "ord_5", date: daysAgo(5), amount: 210000000, points: 4000, status: "completed", description: "Kiềng Vàng Ý 24K Chạm Khắc" }
- ],
- tickets: [
- { id: "tick_2", summary: "Tư vấn chế tác riêng cho dạ tiệc", status: "open", createdAt: daysAgo(1) }
- ]
- },
- {
- id: "cust_4",
- name: "Lê Minh Triết",
- email: "triet.le@outlook.com",
- phone: "0932112233",
- points: 50,
- activityStatus: "churn_risk",
- companyId: "comp_hanoi",
- userId: "guest",
- createdAt: daysAgo(15),
- updatedAt: daysAgo(15),
- customFields: {
- spend: 2500000,
- favoriteGem: "Ruby",
- autoTags: [{ tag: "CHURN RISK", color: "rose" }]
- },
- orders: [
- { id: "ord_6", date: daysAgo(15), amount: 2500000, points: 50, status: "completed", description: "Lắc tay bạc đính đá Ruby nhỏ" }
- ],
- tickets: []
- }
-];
+// Programmatic generator for 200 premium jewelry guest customers
+const generateGuestCustomers = (): Customer[] => {
+  const list: Customer[] = [];
+  const VIET_FIRST_NAMES = [
+    "Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ", "Võ", "Đặng", "Bùi", "Đỗ", "Hồ", "Ngô", "Dương", "Lý"
+  ];
+  const VIET_MIDDLE_NAMES = [
+    "Thị", "Văn", "Anh", "Minh", "Hồng", "Tuấn", "Hải", "Khánh", "Thanh", "Ngọc", "Bảo", "Xuân", "Thúy", "Kim", "Quốc", "Gia"
+  ];
+  const VIET_LAST_NAMES = [
+    "Hương", "Tuấn", "Triết", "Thư", "Oanh", "Ngọc", "Đức", "Dương", "Thịnh", "Linh",
+    "Tài", "Nhung", "Bảo", "An", "Hải", "Nhã", "Duyên", "Nam", "Dung", "Giang",
+    "Anh", "Trang", "Phước", "Tú", "Điệp", "Phong", "Minh", "Chi", "Vy", "Khang",
+    "Hạnh", "Trà", "Yến", "Kiệt", "Đăng", "Khánh", "Mai", "Quỳnh", "Hà", "Bách"
+  ];
+
+  const GEMS = ["Diamond", "Ruby", "Sapphire", "Emerald", "Jade", "Pearl"];
+  const JEWELRIES = [
+    "Nhẫn Kim Cương Solitaire 18K", "Nhẫn Cưới Bridal Diamond Luxury", 
+    "Vòng Cổ Bạch Kim Premium", "Mặt Dây Chuyền Emerald Hoàng Gia", 
+    "Khuyên Tai Ruby Luxury", "Vòng Tay Ngọc Bích Signature", 
+    "Khuyên Tai Ngọc Trai South Sea", "Vòng Tay Vàng Ý Eternity"
+  ];
+
+  // Helper for generating stable pseudo-random values so list doesn't shift on every compile
+  const pseudoRandom = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+
+  for (let i = 1; i <= 200; i++) {
+    const r1 = Math.floor(pseudoRandom(i * 13.7) * VIET_FIRST_NAMES.length);
+    const r2 = Math.floor(pseudoRandom(i * 17.3) * VIET_MIDDLE_NAMES.length);
+    const r3 = Math.floor(pseudoRandom(i * 21.1) * VIET_LAST_NAMES.length);
+    const name = `${VIET_FIRST_NAMES[r1]} ${VIET_MIDDLE_NAMES[r2]} ${VIET_LAST_NAMES[r3]}`;
+
+    // Clean English name for email
+    const cleanEng = name.toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/\s+/g, ".");
+    const email = `${cleanEng}${i}@sevago.vip`;
+
+    // Generate phone
+    const prefixes = ["090", "091", "098", "096", "097", "093", "086", "089"];
+    const prefIdx = Math.floor(pseudoRandom(i * 27.5) * prefixes.length);
+    const phoneSuffix = Math.floor(1000000 + pseudoRandom(i * 31.9) * 8999999);
+    const phone = `${prefixes[prefIdx]}${phoneSuffix}`;
+
+    // Setup Points and Tiers: some Atelier, some Icon, some Essential, some Member
+    let points = 0;
+    if (i <= 25) {
+      // Atelier (Member >= 10k pts)
+      points = Math.floor(10200 + pseudoRandom(i * 35.1) * 12000);
+    } else if (i <= 70) {
+      // Icon (Member 2500 - 9999 pts)
+      points = Math.floor(2600 + pseudoRandom(i * 39.3) * 6000);
+    } else if (i <= 145) {
+      // Essential (Member 500 - 2499 pts)
+      points = Math.floor(550 + pseudoRandom(i * 43.7) * 1600);
+    } else {
+      // Ordinary Member (0 - 499 pts)
+      points = Math.floor(15 + pseudoRandom(i * 47.9) * 450);
+    }
+
+    const spend = points * 100000; // Customer Lifetime Value
+
+    // Setup Recency & Risk Status
+    const daysSinceLastPurchase = Math.floor(pseudoRandom(i * 51.5) * 160);
+    let activityStatus: 'active' | 'inactive' | 'churn_risk' = 'active';
+    let riskScore = 5;
+    if (daysSinceLastPurchase > 90) {
+      activityStatus = 'churn_risk';
+      riskScore = Math.floor(75 + pseudoRandom(i * 55.7) * 21);
+    } else if (daysSinceLastPurchase > 45) {
+      activityStatus = 'inactive';
+      riskScore = Math.floor(35 + pseudoRandom(i * 59.9) * 28);
+    } else {
+      riskScore = Math.floor(5 + pseudoRandom(i * 63.3) * 22);
+    }
+
+    const companyId = pseudoRandom(i * 67.1) > 0.5 ? "comp_saigon" : "comp_hanoi";
+    const region = companyId === "comp_saigon" ? "TP.HCM" : "Hà Nội";
+    const favoriteGem = GEMS[Math.floor(pseudoRandom(i * 71.9) * GEMS.length)];
+
+    // Seed realistic order items
+    const ordersCount = Math.floor(1 + pseudoRandom(i * 75.3) * 4);
+    const orders = [];
+    for (let o = 0; o < ordersCount; o++) {
+      const orderAmount = Math.floor(4000000 + pseudoRandom(i * 79.1 + o) * 45000000);
+      const orderPts = Math.floor(orderAmount / 100000);
+      const orderDaysAgo = daysSinceLastPurchase + o * 18;
+      orders.push({
+        id: `ord_${i}_${o}`,
+        date: daysAgo(orderDaysAgo),
+        amount: orderAmount,
+        points: orderPts,
+        status: "completed",
+        description: JEWELRIES[Math.floor(pseudoRandom(i * 83.7 + o) * JEWELRIES.length)]
+      });
+    }
+
+    // Seed active service requests (tickets) for a subset of them
+    const tickets = [];
+    if (pseudoRandom(i * 87.5) > 0.7) {
+      tickets.push({
+        id: `tick_${i}`,
+        summary: pseudoRandom(i * 91.1) > 0.5 ? "Yêu cầu bảo dưỡng spa sản phẩm đính kim cương" : "Hồ trợ chỉnh size nhẫn đính hôn khẩn cấp",
+        status: pseudoRandom(i * 94.3) > 0.4 ? "closed" : "open",
+        createdAt: daysAgo(Math.floor(pseudoRandom(i * 97.9) * 25))
+      });
+    }
+
+    // Custom tag styling based on loyalty metrics
+    const tags = [];
+    if (points >= 10000) {
+      tags.push({ tag: "ATELIER PREMIUM", color: "blue" }, { tag: "ELITE VIP", color: "emerald" });
+    } else if (points >= 2500) {
+      tags.push({ tag: "BIG SPENDER", color: "gold" });
+    } else if (activityStatus === 'churn_risk') {
+      tags.push({ tag: "CHURN RISK", color: "rose" });
+    } else {
+      tags.push({ tag: "MEMBER", color: "slate" });
+    }
+
+    list.push({
+      id: `cust_${i}`,
+      name,
+      email,
+      phone,
+      points,
+      activityStatus,
+      companyId,
+      userId: "guest",
+      createdAt: daysAgo(110 + daysSinceLastPurchase),
+      updatedAt: daysAgo(daysSinceLastPurchase),
+      customFields: {
+        spend,
+        favoriteGem,
+        autoTags: tags,
+        region,
+        risk_score: riskScore,
+        last_purchase: daysAgo(daysSinceLastPurchase).toISOString().split('T')[0]
+      },
+      orders,
+      tickets
+    });
+  }
+
+  return list;
+};
+
+export const GUEST_CUSTOMERS: Customer[] = generateGuestCustomers();
 
 export const GUEST_TIERS: TierConfig[] = [
  { id: "tier-member", name: "Member", threshold: 0, multiplier: 1.0, color: "#94a3b8", userId: "guest", createdAt: daysAgo(100) },
@@ -197,7 +259,14 @@ export const setLocalStorageData = <T>(key: string, value: T) => {
 };
 
 // 1. Customers
-export const getGuestCustomers = (): Customer[] => getLocalStorageData("crm_guest_customers", GUEST_CUSTOMERS);
+export const getGuestCustomers = (): Customer[] => {
+  const current = getLocalStorageData("crm_guest_customers", GUEST_CUSTOMERS);
+  if (current.length < 10 && GUEST_CUSTOMERS.length >= 200) {
+    setLocalStorageData("crm_guest_customers", GUEST_CUSTOMERS);
+    return GUEST_CUSTOMERS;
+  }
+  return current;
+};
 export const saveGuestCustomer = (cust: Customer) => {
  const current = getGuestCustomers();
  const existingIndex = current.findIndex(c => c.id === cust.id);

@@ -47,6 +47,17 @@ const tierData = [
  { name: "Kim cương", value: 45, color: "#f472b6" },
 ];
 
+const heatmapHours = ["8h", "9h", "10h", "11h", "12h", "13h", "14h", "15h", "16h", "17h", "18h", "19h", "20h", "21h"];
+const heatmapData = [
+  { day: 'T2', values: [1, 2, 5, 8, 4, 3, 2, 7, 15, 12, 10, 5, 2, 1] },
+  { day: 'T3', values: [0, 1, 3, 5, 4, 2, 1, 6, 12, 10, 8, 4, 1, 0] },
+  { day: 'T4', values: [2, 3, 6, 7, 5, 4, 3, 8, 16, 14, 12, 6, 3, 1] },
+  { day: 'T5', values: [1, 2, 4, 6, 4, 3, 2, 5, 14, 11, 9, 3, 2, 1] },
+  { day: 'T6', values: [3, 4, 8, 12, 8, 5, 4, 10, 20, 18, 15, 8, 5, 2] },
+  { day: 'T7', values: [5, 8, 12, 18, 15, 12, 10, 15, 25, 22, 18, 10, 6, 3] },
+  { day: 'CN', values: [4, 6, 10, 15, 12, 10, 8, 12, 22, 18, 14, 8, 4, 2] },
+];
+
 export function AnalyticsView() {
  return (
  <div className="flex-1 p-8 pt-6 space-y-8 overflow-y-auto max-h-[calc(100vh-64px)]">
@@ -299,6 +310,66 @@ export function AnalyticsView() {
  </Bar>
  </BarChart>
  </ResponsiveContainer>
+ </CardContent>
+ </Card>
+ </motion.div>
+
+ {/* Heatmap Section */}
+ <motion.div
+ initial={{ opacity: 0, y: 20 }}
+ animate={{ opacity: 1, y: 0 }}
+ transition={{ delay: 0.4 }}
+ >
+ <Card className="border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm">
+ <CardHeader>
+ <CardTitle className="font-heading">Khung giờ vàng mua sắm (Khách VIP)</CardTitle>
+ <CardDescription>
+ Mật độ giao dịch thành công theo các khung giờ trong tuần thông qua hệ thống POS.
+ </CardDescription>
+ </CardHeader>
+ <CardContent>
+ <div className="w-full overflow-x-auto pb-4">
+ <div className="min-w-[600px]">
+ <div className="flex mb-2">
+ <div className="w-10 shrink-0"></div>
+ {heatmapHours.map(hour => (
+ <div key={hour} className="flex-1 text-center text-[10px] text-muted-foreground font-semibold">
+ {hour}
+ </div>
+ ))}
+ </div>
+ <div className="space-y-1">
+ {heatmapData.map((row, i) => (
+ <div key={row.day} className="flex items-center gap-1.5">
+ <div className="w-10 shrink-0 text-xs font-bold text-muted-foreground">{row.day}</div>
+ {row.values.map((val, j) => {
+ const opacity = val === 0 ? 0.05 : Math.min(1, Math.max(0.1, val / 25));
+ return (
+ <div 
+ key={j} 
+ className="flex-1 aspect-square rounded-sm transition-all hover:scale-125 hover:z-10 cursor-pointer group relative" 
+ style={{ backgroundColor: `rgba(47, 108, 245, ${opacity})` }}
+ >
+ <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none shadow-md border border-border/10 whitespace-nowrap font-bold">
+ {val > 0 ? `${val} giao dịch` : 'Không có GD'}
+ </span>
+ </div>
+ );
+ })}
+ </div>
+ ))}
+ </div>
+ </div>
+ </div>
+ <div className="mt-2 flex items-center justify-end gap-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+ <span>Thấp</span>
+ <div className="flex gap-1 h-2.5">
+ {[0.05, 0.2, 0.4, 0.6, 0.8, 1].map((op, i) => (
+ <div key={i} className="w-4 h-full rounded-[2px]" style={{ backgroundColor: `rgba(47, 108, 245, ${op})` }} />
+ ))}
+ </div>
+ <span>Cao</span>
+ </div>
  </CardContent>
  </Card>
  </motion.div>
