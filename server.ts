@@ -2,6 +2,10 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
+import { AuthRequest, requireAuth } from "./src/middleware/auth.ts";
+import { getOrCreateUser } from "./src/db/users.ts";
+import { db } from "./src/db/index.ts";
+import { sql } from "drizzle-orm";
 
 dotenv.config();
 
@@ -10,6 +14,52 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+
+  // Database Health Check
+  app.get("/api/sql/status", async (req, res) => {
+    try {
+      // Simple query to verify connection
+      await db.execute(sql`SELECT 1`);
+      return res.json({ 
+        success: true, 
+        status: "connected",
+        message: "Cloud SQL is online and responding." 
+      });
+    } catch (err: any) {
+      console.error("Database status check failed:", err);
+      return res.status(503).json({ 
+        success: false, 
+        status: "disconnected",
+        error: err.message,
+        message: "Could not connect to Cloud SQL instance. Please ensure the instance is provisioned and SQL_* environment variables are set."
+      });
+    }
+  });
+
+  // User Sync Endpoint
+  app.post("/api/auth/sync", requireAuth, async (req: AuthRequest, res) => {
+    try {
+      const user = req.user!;
+      const dbUser = await getOrCreateUser(
+        user.uid, 
+        user.email || "", 
+        user.name, 
+        user.picture
+      );
+      
+      return res.json({
+        success: true,
+        message: "User synchronized successfully.",
+        user: dbUser
+      });
+    } catch (err: any) {
+      console.error("User sync error:", err);
+      return res.status(500).json({
+        success: false,
+        error: err.message
+      });
+    }
+  });
 
   // Secure Proxy API for SendGrid Actions
   app.post("/api/sendgrid/test", async (req, res) => {

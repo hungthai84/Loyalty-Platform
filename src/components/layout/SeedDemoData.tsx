@@ -78,12 +78,12 @@ export function SeedDemoData() {
  setProgress(10);
 
  try {
- const collectionsToClean = ["customers", "companies", "tierConfigs", "redemptionRules", "earnRules", "campaigns", "segmentationRules"];
+ const collectionsToClean = ["customers", "companies", "tier_configs", "redemption_rules", "earn_rules", "loyalty_campaigns", "segmentation_rules"];
  
  for (let i = 0; i < collectionsToClean.length; i++) {
  const colName = collectionsToClean[i];
  setStatusText(`Đang xóa bộ dữ liệu '${colName}'...`);
- const colRef = collection(db, `users/${user.uid}/${colName}`);
+ const colRef = collection(db, colName);
  const snapshot = await getDocs(colRef);
  
  if (!snapshot.empty) {
@@ -125,9 +125,9 @@ export function SeedDemoData() {
  setStatusText("Bước 1/6: Đang thiết lập 2 Chi nhánh chính...");
  setProgress(5);
  
- const compMainRef = doc(collection(db, `${userRefPath}/companies`));
-  const compB1Ref = doc(collection(db, `${userRefPath}/companies`));
-  const compB2Ref = doc(collection(db, `${userRefPath}/companies`));
+ const compMainRef = doc(collection(db, "companies"));
+ const compB1Ref = doc(collection(db, "companies"));
+ const compB2Ref = doc(collection(db, "companies"));
 
   const mainId = compMainRef.id;
   const b1Id = compB1Ref.id;
@@ -181,7 +181,7 @@ export function SeedDemoData() {
 
  const batchTiers = writeBatch(db);
  tiers.forEach((t) => {
- const docRef = doc(db, `${userRefPath}/tierConfigs`, t.id);
+ const docRef = doc(db, "tier_configs", t.id);
  batchTiers.set(docRef, {
  id: t.id,
  name: t.name,
@@ -210,7 +210,7 @@ export function SeedDemoData() {
 
  const batchRules = writeBatch(db);
  earnRules.forEach((rule) => {
- const docRef = doc(db, `${userRefPath}/earnRules`, rule.id);
+ const docRef = doc(db, "earn_rules", rule.id);
  batchRules.set(docRef, {
  ...rule,
  userId: user.uid,
@@ -226,7 +226,7 @@ export function SeedDemoData() {
  ];
 
  redemptionRules.forEach((rule) => {
- const docRef = doc(db, `${userRefPath}/redemptionRules`, rule.id);
+ const docRef = doc(db, "redemption_rules", rule.id);
  batchRules.set(docRef, {
  ...rule,
  userId: user.uid,
@@ -242,7 +242,7 @@ export function SeedDemoData() {
  ];
 
  campaigns.forEach((camp) => {
- const docRef = doc(db, `${userRefPath}/campaigns`, camp.id);
+ const docRef = doc(db, "loyalty_campaigns", camp.id);
  batchRules.set(docRef, {
  ...camp,
  description: `Chiến dịch demo ưu đãi trang sức tự động dành cho khách hàng thân thiết.`,
@@ -258,7 +258,7 @@ export function SeedDemoData() {
  ];
 
  segmentationRules.forEach((seg) => {
- const docRef = doc(db, `${userRefPath}/segmentationRules`, seg.id);
+ const docRef = doc(db, "segmentation_rules", seg.id);
  batchRules.set(docRef, {
  ...seg,
  userId: user.uid,
@@ -330,7 +330,7 @@ export function SeedDemoData() {
  const region = compId === b1Id ? "TP.HCM" : "Hà Nội";
  const collectionSelected = randomSelection(JEWELRY_COLLECTIONS);
 
- const customerRef = doc(collection(db, `${userRefPath}/customers`));
+ const customerRef = doc(collection(db, "customers"));
  
  batch.set(customerRef, {
  id: customerRef.id,

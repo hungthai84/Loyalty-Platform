@@ -32,10 +32,8 @@ export function LoyaltySettingsView() {
 
  const activeSelectedStatus = CUSTOMER_STATUSES.find(s => s.code === selectedStatusId) || CUSTOMER_STATUSES[0];
 
- useEffect(() => {
- if (!user) return;
- 
- const docRef = doc(db, `users/${user.uid}/loyaltySettings`, 'main');
+  useEffect(() => {
+    const docRef = doc(db, `loyalty_settings`, 'main');
  
  // Using onSnapshot instead of getDoc to be more resilient to offline states 
  // and provide better real-time updates
@@ -55,11 +53,11 @@ export function LoyaltySettingsView() {
  });
 
  return () => unsubscribe();
- }, [user]);
+ }, []);
 
  const handleSubmit = async (e: React.FormEvent) => {
  e.preventDefault();
- if (!user) return;
+
  setSubmitting(true);
  try {
  const data: LoyaltySettings = {
@@ -70,7 +68,7 @@ export function LoyaltySettingsView() {
  userId: user.uid,
  updatedAt: serverTimestamp(),
  };
- await setDoc(doc(db, `users/${user.uid}/loyaltySettings`, 'main'), data);
+  await setDoc(doc(db, `loyalty_settings`, 'main'), data);
  toast.success("Đã cập nhật cấu hình giữ chân khách hàng");
  } catch (error) {
  console.error(error);

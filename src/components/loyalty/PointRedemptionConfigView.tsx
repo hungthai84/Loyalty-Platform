@@ -128,9 +128,9 @@ export function PointRedemptionConfigView() {
 
  // Load rules from Firestore
  useEffect(() => {
- if (!user) return;
 
- const path = `users/${user.uid}/redemptionRules`;
+
+ const path = `redemption_rules`;
  const q = query(collection(db, path), orderBy("pointsRequired", "asc"));
 
  const unsub = onSnapshot(q, (snapshot) => {
@@ -177,7 +177,7 @@ export function PointRedemptionConfigView() {
  useEffect(() => {
  if (!user) return;
 
- const path = `users/${user.uid}/customers`;
+ const path = `customers`;
  const q = query(collection(db, path));
 
  const unsub = onSnapshot(q, (snapshot) => {
@@ -199,7 +199,7 @@ export function PointRedemptionConfigView() {
  useEffect(() => {
  if (!user) return;
 
- const path = `users/${user.uid}/redemptions`;
+ const path = `redemptions`;
  const q = query(collection(db, path), orderBy("createdAt", "desc"));
 
  const unsub = onSnapshot(q, (snapshot) => {
@@ -333,7 +333,7 @@ export function PointRedemptionConfigView() {
  const finalPoints = Math.max(0, currentPoints + amount);
 
  try {
- const custRef = doc(db, `users/${user.uid}/customers/${customer.id}`);
+ const custRef = doc(db, `customers/${customer.id}`);
  await updateDoc(custRef, {
  points: finalPoints,
  updatedAt: serverTimestamp()
@@ -370,7 +370,7 @@ export function PointRedemptionConfigView() {
 
  // 2. Log transaction to `users/${uid}/redemptions`
  const redemptionId = `REDEEM-${Date.now()}`;
- const logRef = doc(db, `users/${user.uid}/redemptions/${redemptionId}`);
+ const logRef = doc(db, `redemptions/${redemptionId}`);
  await setDoc(logRef, {
  id: redemptionId,
  customerId: customer.id,

@@ -95,7 +95,7 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
  return;
  }
 
- await setDoc(doc(db, `users/${user.uid}/segmentationRules`, id), {
+ await setDoc(doc(db, `segmentation_rules`, id), {
  ...ruleData,
  createdAt: rule?.createdAt || serverTimestamp(),
  });
@@ -122,7 +122,7 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
  return;
  }
 
- await deleteDoc(doc(db, `users/${user.uid}/segmentationRules`, rule.id));
+ await deleteDoc(doc(db, `segmentation_rules`, rule.id));
  toast.success("Đã xóa quy tắc phân khúc");
  onClose();
  } catch (error) {

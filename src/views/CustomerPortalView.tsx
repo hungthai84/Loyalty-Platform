@@ -41,7 +41,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
 
  useEffect(() => {
  if (!user) return;
- const q = query(collection(db, `users/${user.uid}/redemptionRules`), orderBy("pointsRequired", "asc"));
+ const q = query(collection(db, "redemption_rules"), orderBy("pointsRequired", "asc"));
  return onSnapshot(q, (snapshot) => {
  setRules(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RedemptionRule)));
  });

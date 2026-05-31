@@ -109,6 +109,13 @@ service cloud.firestore {
         && data.createdAt == request.time;
     }
 
+    function isValidSystemMetadata(data) {
+      return (data.get('lastPingAt', null) == null || data.lastPingAt == request.time)
+        && (data.get('timestamp', null) == null || data.timestamp == request.time)
+        && (data.get('pingBy', '').size() <= 200)
+        && (data.get('text', '').size() <= 1000);
+    }
+
     // 3. Resource Matches
     match /system_users/{userId} {
       allow get: if isSignedIn() && (request.auth.uid == userId || isSystemAdmin());
@@ -121,73 +128,54 @@ service cloud.firestore {
       allow delete: if isSignedIn() && isSystemAdmin();
     }
 
-    match /users/{userId}/customers/{customerId} {
-      allow list, get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidId(customerId) && isValidCustomer(incoming());
-      allow update: if isOwner(userId) && (
-        // Action: Standard Update
-        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'email', 'phone', 'customFields', 'updatedAt'])
-        && incoming().updatedAt == request.time
-        && (incoming().name is string && incoming().name.size() <= 200)
-        && (incoming().get('customFields', {}) is map)
-      );
-      allow delete: if isOwner(userId);
+    match /customers/{customerId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(customerId);
     }
 
-    match /users/{userId}/attributeDefinitions/{attributeId} {
-      allow list, get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidId(attributeId) && isValidAttributeDefinition(incoming());
-      allow delete: if isOwner(userId);
+    match /attribute_definitions/{attributeId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(attributeId);
     }
 
-    match /users/{userId}/tierConfigs/{tierId} {
-      allow list, get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidId(tierId) && isValidTier(incoming());
-      allow update: if isOwner(userId) && incoming().userId == request.auth.uid;
-      allow delete: if isOwner(userId);
+    match /tier_configs/{tierId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(tierId);
     }
 
-    match /users/{userId}/redemptionRules/{ruleId} {
-      allow list, get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidId(ruleId) && isValidRedemptionRule(incoming());
-      allow update: if isOwner(userId) && incoming().userId == request.auth.uid;
-      allow delete: if isOwner(userId);
+    match /redemption_rules/{ruleId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(ruleId);
     }
 
-    match /users/{userId}/earnRules/{ruleId} {
-      allow list, get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidId(ruleId) && isValidEarnRule(incoming());
-      allow update: if isOwner(userId) && incoming().userId == request.auth.uid;
-      allow delete: if isOwner(userId);
+    match /earn_rules/{ruleId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(ruleId);
     }
 
-    match /users/{userId}/loyaltyCampaigns/{campaignId} {
-      allow list, get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidId(campaignId) && isValidLoyaltyCampaign(incoming());
-      allow update: if isOwner(userId) && incoming().userId == request.auth.uid;
-      allow delete: if isOwner(userId);
+    match /loyalty_campaigns/{campaignId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(campaignId);
     }
 
-    match /users/{userId}/loyaltySettings/{settingsId} {
-      allow list, get: if isOwner(userId);
-      allow create, update: if isOwner(userId) && isValidId(settingsId) && isValidLoyaltySettings(incoming());
-      allow delete: if isOwner(userId);
+    match /loyalty_settings/{settingsId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(settingsId);
     }
 
-    match /users/{userId}/companies/{companyId} {
-      allow list, get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidId(companyId) && isValidCompany(incoming());
-      allow update: if isOwner(userId) && incoming().userId == request.auth.uid;
-      allow delete: if isOwner(userId);
+    match /companies/{companyId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(companyId);
     }
 
-    match /users/{userId}/segmentationRules/{ruleId} {
-      allow list, get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidId(ruleId) && isValidSegmentationRule(incoming());
-      allow update: if isOwner(userId) && incoming().userId == request.auth.uid && (
-        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'tag', 'color', 'criteriaType', 'operator', 'value', 'isActive'])
-      );
-      allow delete: if isOwner(userId);
+    match /segmentation_rules/{ruleId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(ruleId);
+    }
+
+    match /system_metadata/{metadataId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidId(metadataId);
     }
   }
 }

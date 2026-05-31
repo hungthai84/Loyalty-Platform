@@ -48,7 +48,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  return;
  }
  
- const q = query(collection(db, `users/${user.uid}/companies`), orderBy("name", "asc"));
+ const q = query(collection(db, "companies"), orderBy("name", "asc"));
  const unsubscribe = onSnapshot(q, (snap) => {
  setCompanies(snap.docs.map(d => d.data() as Company));
  }, (error) => {
@@ -117,7 +117,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  return;
  }
 
- const path = `users/${user.uid}/customers/${customerId}`;
+ const path = `customers/${customerId}`;
  await setDoc(doc(db, path), {
  ...newCustomer,
  createdAt: serverTimestamp(),

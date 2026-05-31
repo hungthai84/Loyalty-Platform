@@ -47,7 +47,7 @@ export function RedemptionRuleDialog({ onClose, rule }: RedemptionRuleDialogProp
  return;
  }
 
- const path = `users/${user.uid}/redemptionRules/${id}`;
+ const path = `redemption_rules/${id}`;
  await setDoc(doc(db, path), {
  ...newRule,
  createdAt: rule?.createdAt || serverTimestamp(),
@@ -55,7 +55,7 @@ export function RedemptionRuleDialog({ onClose, rule }: RedemptionRuleDialogProp
  toast.success(rule ? "Đã cập nhật quy tắc" : "Đã tạo quy tắc mới");
  onClose();
  } catch (error) {
- handleFirestoreError(error, OperationType.WRITE, `users/${user?.uid || "guest"}/redemptionRules/${id}`);
+ handleFirestoreError(error, OperationType.WRITE, `redemption_rules/${id}`);
  toast.error("Không thể lưu quy tắc");
  } finally {
  setSubmitting(false);
@@ -74,12 +74,12 @@ export function RedemptionRuleDialog({ onClose, rule }: RedemptionRuleDialogProp
  return;
  }
 
- const path = `users/${user.uid}/redemptionRules/${rule.id}`;
+ const path = `redemption_rules/${rule.id}`;
  await deleteDoc(doc(db, path));
  toast.success("Đã xóa quy tắc");
  onClose();
  } catch (error) {
- handleFirestoreError(error, OperationType.DELETE, `users/${user?.uid || "guest"}/redemptionRules/${rule.id}`);
+ handleFirestoreError(error, OperationType.DELETE, `redemption_rules/${rule.id}`);
  }
  };
 

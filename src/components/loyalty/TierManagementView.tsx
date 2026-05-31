@@ -16,18 +16,17 @@ export function TierManagementView() {
  const [selectedTier, setSelectedTier] = useState<TierConfig | undefined>(undefined);
  const [showDialog, setShowDialog] = useState(false);
 
- useEffect(() => {
- if (!user) return;
- const path = `users/${user.uid}/tierConfigs`;
+  useEffect(() => {
+    const path = `tier_configs`;
  const q = query(collection(db, path), orderBy("threshold", "asc"));
  const unsub = onSnapshot(q, (snapshot) => {
  setTiers(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as TierConfig)));
  setLoading(false);
  });
  return unsub;
- }, [user]);
+ }, []);
 
- if (!user) return null;
+ /* if (!user) return null; */
 
  return (
  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

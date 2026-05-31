@@ -4,8 +4,10 @@ import { collection, query, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp,
 import { db } from "@/lib/firebase";
 import { Company } from "@/types";
 import { toast } from "sonner";
+import { useFirebase } from "@/components/FirebaseProvider";
 
 export function CompanyManager() {
+  const { user } = useFirebase();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -27,7 +29,13 @@ export function CompanyManager() {
   });
 
   useEffect(() => {
-    const q = query(collection(db, "companies"));
+    if (!user?.uid || user?.isLocal) {
+      setLoading(false);
+      return;
+    }
+
+    const companiesPath = "companies";
+    const q = query(collection(db, companiesPath));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const list: Company[] = [];
       snapshot.forEach(doc => {
@@ -43,7 +51,7 @@ export function CompanyManager() {
       toast.error("Không thể tải danh sách công ty");
     });
     return unsubscribe;
-  }, []);
+  }, [user]);
 
   const handleOpenForm = (company?: Company, isBranchOf?: string) => {
     if (company) {
@@ -75,25 +83,29 @@ export function CompanyManager() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return toast.error("Vui lòng nhập tên");
+    if (!user?.uid || user?.isLocal) return toast.error("Vui lòng đăng nhập bằng Google để thực hiện thao tác này");
     
     try {
+      const companiesPath = "companies";
       if (isEditing && editId) {
-        await updateDoc(doc(db, "companies", editId), {
+        await updateDoc(doc(db, companiesPath, editId), {
           name: formData.name,
           address: formData.address,
           type: formData.type,
           parentId: formData.type === 'branch' ? formData.parentId : null,
+          updatedAt: serverTimestamp(),
         });
         toast.success("Cập nhật thành công");
       } else {
-        const newRef = doc(collection(db, "companies"));
+        const newRef = doc(collection(db, companiesPath));
         await setDoc(newRef, {
           name: formData.name,
           address: formData.address,
           type: formData.type,
           parentId: formData.type === 'branch' ? formData.parentId : null,
           createdAt: serverTimestamp(),
-          userId: "admin" // Replace with real auth user later if needed
+          updatedAt: serverTimestamp(),
+          userId: user.uid
         });
         toast.success("Thêm mới thành công");
       }
@@ -104,9 +116,11 @@ export function CompanyManager() {
   };
 
   const handleDelete = async (id: string, name: string) => {
+    if (!user?.uid || user?.isLocal) return toast.error("Vui lòng đăng nhập bằng Google để thực hiện thao tác này");
     if (confirm(`Bạn có chắc chắn muốn xóa "${name}"? Các chi nhánh con (nếu có) sẽ không bị xóa tự động.`)) {
       try {
-        await deleteDoc(doc(db, "companies", id));
+        const companiesPath = "companies";
+        await deleteDoc(doc(db, companiesPath, id));
         toast.success("Xóa thành công");
       } catch (error: any) {
         toast.error(error.message);

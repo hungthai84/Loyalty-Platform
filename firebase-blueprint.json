@@ -153,6 +153,17 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "tag", "criteriaType", "operator", "value", "isActive", "userId", "createdAt"]
+    },
+    "SystemMetadata": {
+      "title": "System Metadata",
+      "description": "System-level metadata and diagnostic logs",
+      "type": "object",
+      "properties": {
+        "lastPingAt": { "type": "string", "format": "date-time" },
+        "pingBy": { "type": "string" },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "firestore": {
@@ -195,6 +206,10 @@
     "/users/{userId}/segmentationRules/{ruleId}": {
       "schema": "SegmentationRule",
       "description": "User's automated customer segmentation tagging rules"
+    },
+    "/users/{userId}/systemMetadata/{metadataId}": {
+      "schema": "SystemMetadata",
+      "description": "User-specific system diagnostic and metadata records"
     }
   }
 }

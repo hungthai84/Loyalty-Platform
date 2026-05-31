@@ -60,7 +60,7 @@ export function LoyaltyCampaignDialog({ onClose, campaign }: LoyaltyCampaignDial
  return;
  }
 
- await setDoc(doc(db, `users/${user.uid}/loyaltyCampaigns`, id), {
+ await setDoc(doc(db, `loyalty_campaigns`, id), {
  ...data,
  createdAt: campaign?.createdAt || serverTimestamp(),
  });
@@ -86,7 +86,7 @@ export function LoyaltyCampaignDialog({ onClose, campaign }: LoyaltyCampaignDial
  return;
  }
 
- await deleteDoc(doc(db, `users/${user.uid}/loyaltyCampaigns`, campaign.id));
+ await deleteDoc(doc(db, `loyalty_campaigns`, campaign.id));
  toast.success("Đã xóa chiến dịch");
  onClose();
  } catch (error) {

@@ -48,7 +48,7 @@ export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
  useEffect(() => {
  if (!user) return;
  
- const q = query(collection(db, `users/${user.uid}/attributeDefinitions`));
+ const q = query(collection(db, "attribute_definitions"));
  const unsubscribe = onSnapshot(q, (snap) => {
  setAttributes(snap.docs.map(d => d.data() as AttributeDefinition));
  }, (error) => {
@@ -77,7 +77,7 @@ export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
 
  setSubmitting(true);
  const id = tier?.id || `TIER-${Date.now()}`;
- const path = `users/${user.uid}/tierConfigs/${id}`;
+ const path = `tier_configs/${id}`;
 
  try {
  await setDoc(doc(db, path), {
@@ -104,7 +104,7 @@ export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
  if (!user || !tier) return;
  if (!confirm("Bạn có chắc chắn muốn xóa hạng này không?")) return;
 
- const path = `users/${user.uid}/tierConfigs/${tier.id}`;
+ const path = `tier_configs/${tier.id}`;
  try {
  await deleteDoc(doc(db, path));
  toast.success("Đã xóa hạng");

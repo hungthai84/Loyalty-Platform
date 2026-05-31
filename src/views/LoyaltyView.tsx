@@ -147,12 +147,12 @@ export function LoyaltyView() {
  };
  }
 
- const tPath = `users/${user.uid}/tierConfigs`;
- const rPath = `users/${user.uid}/redemptionRules`;
- const ePath = `users/${user.uid}/earnRules`;
- const cPath = `users/${user.uid}/loyaltyCampaigns`;
- const sPath = `users/${user.uid}/segmentationRules`;
- const custPath = `users/${user.uid}/customers`;
+ const tPath = "tier_configs";
+ const rPath = "redemption_rules";
+ const ePath = "earn_rules";
+ const cPath = "loyalty_campaigns";
+ const sPath = "segmentation_rules";
+ const custPath = "customers";
 
  const unsubTiers = onSnapshot(query(collection(db, tPath), orderBy("threshold", "asc")), (s) => {
  setTiers(s.docs.map(doc => ({ ...doc.data(), id: doc.id } as TierConfig)));
@@ -255,7 +255,7 @@ export function LoyaltyView() {
  userId: user.uid,
  createdAt: serverTimestamp(),
  };
- await setDoc(doc(db, `users/${user.uid}/segmentationRules`, id), ruleData);
+ await setDoc(doc(db, "segmentation_rules", id), ruleData);
  }
  toast.success("Đã đồng bộ trọn bộ phân khúc mẫu thành công!", { id: toastId });
  } catch (e) {
@@ -304,7 +304,7 @@ export function LoyaltyView() {
  .filter(r => r.isActive && evaluateCustomerSegment(customer, r))
  .map(r => ({ tag: r.tag, color: r.color }));
 
- const custRef = doc(db, `users/${user.uid}/customers/${customer.id}`);
+ const custRef = doc(db, `customers/${customer.id}`);
  const updatedFields = {
  ...customer.customFields,
  autoTags: matchedTags

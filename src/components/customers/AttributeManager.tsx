@@ -59,8 +59,8 @@ export function AttributeManager({ onClose, attributes }: AttributeManagerProps)
  if (attributes.some(a => a.key === key)) return toast.error("Thuộc tính với tên này đã tồn tại");
 
  setSubmitting(true);
- const id = `ATTR-${Date.now()}`;
- const path = `users/${user.uid}/attributeDefinitions/${id}`;
+  const id = `ATTR-${Date.now()}`;
+  const path = `attribute_definitions/${id}`;
 
  try {
  await setDoc(doc(db, path), {
@@ -99,7 +99,7 @@ export function AttributeManager({ onClose, attributes }: AttributeManagerProps)
  if (!user) return;
  if (!confirm("Bạn có chắc chắn muốn xóa không?")) return;
 
- const path = `users/${user.uid}/attributeDefinitions/${id}`;
+ const path = `attribute_definitions/${id}`;
  try {
  await deleteDoc(doc(db, path));
  toast.success("Đã xóa thuộc tính");

@@ -195,12 +195,12 @@ export function StatusTransitionConfigView() {
  } | null>(null);
 
  const handleExecuteLiveTransitions = async () => {
- if (!user) return;
+
  setExecuting(true);
  setExecutionReport(null);
  try {
  // 1. Fetch live customers from Firestore
- const customersRef = collection(db, `users/${user.uid}/customers`);
+ const customersRef = collection(db, "customers");
  const custSnap = await getDocs(customersRef);
  const liveCustomers = custSnap.docs.map(d => ({ ...d.data(), id: d.id } as any));
 
@@ -366,7 +366,7 @@ export function StatusTransitionConfigView() {
  useEffect(() => {
  if (!user) return;
 
- const path = `users/${user.uid}/statusTransitions`;
+ const path = `status_transitions`;
  const q = query(collection(db, path));
  
  const unsub = onSnapshot(q, (snapshot) => {

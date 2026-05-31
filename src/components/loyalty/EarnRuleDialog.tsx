@@ -72,7 +72,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
  return;
  }
 
- await setDoc(doc(db, `users/${user.uid}/earnRules`, id), {
+ await setDoc(doc(db, `earn_rules`, id), {
  ...ruleData,
  createdAt: rule?.createdAt || serverTimestamp(),
  });
@@ -99,7 +99,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
  return;
  }
 
- await deleteDoc(doc(db, `users/${user.uid}/earnRules`, rule.id));
+ await deleteDoc(doc(db, `earn_rules`, rule.id));
  toast.success("Đã xóa quy tắc");
  onClose();
  } catch (error) {

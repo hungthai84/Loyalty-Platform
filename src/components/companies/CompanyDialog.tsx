@@ -24,7 +24,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
 
  useEffect(() => {
  if (!user) return;
- const q = query(collection(db, `users/${user.uid}/companies`), orderBy("createdAt", "desc"));
+ const q = query(collection(db, "companies"), orderBy("createdAt", "desc"));
  const unsub = onSnapshot(q, snap => {
  setCompanies(snap.docs.map(d => ({ ...d.data(), id: d.id } as Company)));
  });
@@ -57,7 +57,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  createdAt: company?.createdAt || serverTimestamp(),
  };
 
- await setDoc(doc(db, `users/${user.uid}/companies`, id), data);
+ await setDoc(doc(db, "companies", id), data);
  toast.success(company ? "Đã cập nhật thông tin" : "Đã tạo thành công");
  onClose();
  } catch (error) {
@@ -74,7 +74,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
 
  setSubmitting(true);
  try {
- await deleteDoc(doc(db, `users/${user.uid}/companies`, company.id));
+ await deleteDoc(doc(db, "companies", company.id));
  toast.success("Đã xóa thành công");
  onClose();
  } catch (error) {

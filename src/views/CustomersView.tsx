@@ -94,8 +94,8 @@ export function CustomersView() {
  };
  }
 
- const customersPath = `users/${user.uid}/customers`;
- const attrsPath = `users/${user.uid}/attributeDefinitions`;
+ const customersPath = "customers";
+ const attrsPath = "attribute_definitions";
 
  const qCustomers = query(collection(db, customersPath), orderBy("createdAt", "desc"));
  const unsubCustomers = onSnapshot(qCustomers, (snapshot) => {
@@ -108,7 +108,7 @@ export function CustomersView() {
  setAttributes(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AttributeDefinition)));
  }, (error) => handleFirestoreError(error, OperationType.LIST, attrsPath));
 
- const qCompanies = query(collection(db, `users/${user.uid}/companies`), orderBy("name", "asc"));
+ const qCompanies = query(collection(db, "companies"), orderBy("name", "asc"));
  const unsubCompanies = onSnapshot(qCompanies, (snapshot) => {
  setCompanies(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Company)));
  }, (error) => console.error(error));
