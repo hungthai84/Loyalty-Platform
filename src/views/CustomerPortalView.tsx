@@ -43,8 +43,8 @@ export function CustomerPortalView({ onBack }: PortalProps) {
  if (!user) return;
  const q = query(collection(db, "redemption_rules"), orderBy("pointsRequired", "asc"));
  return onSnapshot(q, (snapshot) => {
- setRules(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RedemptionRule)));
- });
+  setRules(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RedemptionRule)));
+ }, (error) => console.error("Redemption rules error:", error));
  }, [user]);
 
  // System preferred theme detector
@@ -181,7 +181,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
  Chào bạn, <br/>
  <span className="text-[#2f6cf5] italic text-4xl">Eleanor.</span>
  </h2>
- <p className={`${textSecondary} mt-2 text-sm`}>Thành viên Kim cương</p>
+ <p className={`${textSecondary} mt-2 text-sm`}>Hội viên Atelier</p>
  </div>
 
  {/* Loyalty Card Element */}

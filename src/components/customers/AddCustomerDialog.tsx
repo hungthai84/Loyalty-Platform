@@ -52,7 +52,8 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  const unsubscribe = onSnapshot(q, (snap) => {
  setCompanies(snap.docs.map(d => d.data() as Company));
  }, (error) => {
- console.error("Error loading companies:", error);
+  console.error("Error loading companies:", error);
+  handleFirestoreError(error, OperationType.LIST, "companies");
  });
 
  return () => unsubscribe();

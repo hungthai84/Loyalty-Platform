@@ -56,7 +56,7 @@ export function MarketingView() {
 
   const getHtmlPreview = () => {
     return `
-      <div style="font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f3f4f6; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 1px solid #334155;">
+      <div style="font-family: 'Roboto', sans-serif; background-color: #0b0f19; color: #f3f4f6; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 1px solid #334155;">
         <div style="text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 25px; margin-bottom: 30px;">
           <h1 style="color: #60a5fa; font-size: 24px; letter-spacing: 2px; margin: 0 0 10px 0; text-transform: uppercase;">ATELIER LUXURY</h1>
           <p style="color: #9ca3af; font-size: 12px; letter-spacing: 1px; margin: 0; text-transform: uppercase;">The Elite Loyalty Circle</p>

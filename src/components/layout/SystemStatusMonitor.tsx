@@ -224,11 +224,22 @@ export function SystemStatusMonitor() {
  setDiagnosticSteps(prev => prev.map(s => s.id === "crm-api" ? { ...s, status: "success", details: "Kết nối Endpoint /api/crm/v1 phản hồi tốt" } : s));
  addLog("CRM Gateway API đã kích hoạt giao diện lập lịch & gán nhãn hàng loạt.", "success");
 
- // Step 6: Memory DB Pool
+ // Step 6: Cloud SQL Instance Connection
  setDiagnosticSteps(prev => prev.map(s => s.id === "db-pool" ? { ...s, status: "running" } : s));
- await wait(800);
- setDiagnosticSteps(prev => prev.map(s => s.id === "db-pool" ? { ...s, status: "success", details: "Tải tiêu hao: 3.4% CPU / 450MB Memory Heap" } : s));
- addLog("Vùng đệm kết nối DB Pool: 50 open connections sẵn sàng phục vụ.", "success");
+ try {
+  const response = await fetch("/api/sql/status");
+  const data = await response.json();
+  if (data.success) {
+   setDiagnosticSteps(prev => prev.map(s => s.id === "db-pool" ? { ...s, status: "success", details: `Cloud SQL: ${data.message}` } : s));
+   addLog(`Cơ sở dữ liệu Cloud SQL phản hồi: ${data.status}`, "success");
+  } else {
+   setDiagnosticSteps(prev => prev.map(s => s.id === "db-pool" ? { ...s, status: "error", details: data.message } : s));
+   addLog(`Cloud SQL Status Check Fail: ${data.error || data.message}`, "error");
+  }
+ } catch (err: any) {
+  setDiagnosticSteps(prev => prev.map(s => s.id === "db-pool" ? { ...s, status: "error", details: "Lỗi kết nối API kiểm tra DB Pool" } : s));
+  addLog(`Lỗi fetch SQL status: ${err.message}`, "error");
+ }
 
  setRunningDiagnostics(false);
  addLog("=== HỆ THỐNG HOÀN THÀNH CHẨN ĐOÁN. KẾT QUẢ: KHỎE MẠNH (HEALTHY) ===", "success");

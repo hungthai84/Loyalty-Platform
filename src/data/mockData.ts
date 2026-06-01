@@ -15,16 +15,16 @@ export const revenueData = [
 ];
 
 export const recentCustomers = [
- { id: "CUS-8921", name: "Nguyễn Thảo Chi", tier: "Kim cương", spent: "612.500.000 ₫", joined: "2023-01-15", points: 125000 },
- { id: "CUS-8922", name: "Trần Thế Phong", tier: "Bạch kim", spent: "305.000.000 ₫", joined: "2023-04-20", points: 45000 },
- { id: "CUS-8923", name: "Phan Ánh Dương", tier: "Vàng", spent: "120.000.000 ₫", joined: "2023-08-10", points: 12000 },
- { id: "CUS-8924", name: "Hoàng Minh Tuấn", tier: "Bạc", spent: "30.000.000 ₫", joined: "2024-01-05", points: 3000 },
- { id: "CUS-8925", name: "Lâm Mỹ Dung", tier: "Kim cương", spent: "1.320.000.000 ₫", joined: "2022-11-30", points: 320000 },
+  { id: "CUS-8921", name: "Nguyễn Thảo Chi", tier: "Atelier", spent: "612.500.000 ₫", joined: "2023-01-15", points: 15000 },
+  { id: "CUS-8922", name: "Trần Thế Phong", tier: "Icon", spent: "305.000.000 ₫", joined: "2023-04-20", points: 4500 },
+  { id: "CUS-8923", name: "Phan Ánh Dương", tier: "Essential", spent: "120.000.000 ₫", joined: "2023-08-10", points: 1200 },
+  { id: "CUS-8924", name: "Hoàng Minh Tuấn", tier: "Member", spent: "30.000.000 ₫", joined: "2024-01-05", points: 300 },
+  { id: "CUS-8925", name: "Lâm Mỹ Dung", tier: "Atelier", spent: "1.320.000.000 ₫", joined: "2022-11-30", points: 32000 },
 ];
 
 export const loyaltyTiers = [
- { name: "Bạc", threshold: 0, spendThreshold: 0, orderThreshold: 0, multiplier: "1x", benefits: ["Quà tặng sinh nhật", "Ưu đãi đặc biệt"] },
- { name: "Vàng", threshold: 5000, spendThreshold: 50000000, orderThreshold: 10, multiplier: "1.25x", benefits: ["Truy cập sớm", "Miễn phí giao hàng", "Quà tặng sinh nhật"] },
- { name: "Bạch kim", threshold: 15000, spendThreshold: 150000000, orderThreshold: 25, multiplier: "1.5x", benefits: ["Quản lý riêng", "Sự kiện VIP", "Quà tặng năm"] },
- { name: "Kim cương", threshold: 50000, spendThreshold: 500000000, orderThreshold: 50, multiplier: "2x", benefits: ["Thiết kế trang sức riêng", "Nghỉ dưỡng cao cấp", "Hỗ trợ ưu tiên"] },
+ { name: "Member", threshold: 0, spendThreshold: 0, orderThreshold: 0, multiplier: "1x", benefits: ["Quà tặng sinh nhật", "Ưu đãi đặc biệt"] },
+ { name: "Essential", threshold: 500, spendThreshold: 50000000, orderThreshold: 10, multiplier: "1.25x", benefits: ["Truy cập sớm", "Miễn phí giao hàng", "Quà tặng sinh nhật"] },
+ { name: "Icon", threshold: 2500, spendThreshold: 250000000, orderThreshold: 25, multiplier: "1.5x", benefits: ["Quản lý riêng", "Sự kiện VIP", "Quà tặng năm"] },
+ { name: "Atelier", threshold: 10000, spendThreshold: 1000000000, orderThreshold: 50, multiplier: "2x", benefits: ["Thiết kế trang sức riêng", "Nghỉ dưỡng cao cấp", "Hỗ trợ ưu tiên"] },
 ];

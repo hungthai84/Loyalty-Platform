@@ -1,181 +1,153 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 0. Default Deny
+    
+    // --- GLOBAL HELPERS ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+    
+    function isPrimaryAdmin() {
+      return isSignedIn() && request.auth.token.email == 'hungthai84@gmail.com';
+    }
+    
+    // Check if the user is an Admin in the system_users collection
+    function isAdmin() {
+      return isPrimaryAdmin() || (isSignedIn() && get(/databases/$(database)/documents/system_users/$(request.auth.uid)).data.role == 'Admin');
+    }
+    
+    // Check if the user is approved
+    function isApproved() {
+      return isAdmin() || (isSignedIn() && get(/databases/$(database)/documents/system_users/$(request.auth.uid)).data.status == 'approved');
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function incoming() {
+      return request.resource.data;
+    }
+    
+    function existing() {
+      return resource.data;
+    }
+
+    // --- SCHEMA VALIDATORS ---
+
+    function isValidSystemUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role', 'status']) &&
+             data.uid is string && data.uid.size() <= 128 &&
+             data.email is string && data.email.size() <= 128 &&
+             data.role in ['Admin', 'Manager', 'Support'] &&
+             data.status in ['pending', 'approved', 'rejected'] &&
+             (!('password' in data) || (data.password is string && data.password.size() <= 128)) &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 128));
+    }
+
+    function isValidCustomer(data) {
+      return data.keys().hasAll(['name', 'email', 'userId']) &&
+             data.name is string && data.name.size() <= 128 &&
+             data.email is string && data.email.size() <= 128 &&
+             data.userId == request.auth.uid &&
+             (!('points' in data) || (data.points is number && data.points >= 0)) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 20));
+    }
+
+    function isValidCompany(data) {
+      return data.keys().hasAll(['name', 'userId']) &&
+             data.name is string && data.name.size() <= 256 &&
+             data.userId == request.auth.uid;
+    }
+
+    // --- DEFAULT DENY ---
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // 1. Primitive Definitions
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-    function incoming() { return request.resource.data; }
-    function existing() { return resource.data; }
-    function isSignedIn() { return request.auth != null; }
-    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    function isSystemAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email == 'hungthai84@gmail.com' ||
-        (exists(/databases/$(database)/documents/system_users/$(request.auth.uid)) && get(/databases/$(database)/documents/system_users/$(request.auth.uid)).data.role == 'Admin')
-      );
-    }
+    // --- COLLECTION RULES ---
 
-    // 2. Validation Blueprints
-    function isValidCustomer(data) {
-      return data.keys().hasAll(['name', 'userId', 'createdAt', 'updatedAt'])
-        && data.keys().size() >= 4
-        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
-        && (data.get('email', null) == null || (data.email is string && data.email.size() <= 200))
-        && (data.get('phone', null) == null || (data.phone is string && data.phone.size() <= 50))
-        && data.userId == request.auth.uid
-        && data.createdAt == request.time
-        && data.updatedAt == request.time
-        && (data.get('customFields', {}) is map);
-    }
-
-    function isValidAttributeDefinition(data) {
-      return data.keys().hasAll(['label', 'key', 'type', 'userId', 'createdAt'])
-        && data.keys().size() == 5
-        && data.label is string && data.label.size() > 0 && data.label.size() <= 100
-        && data.key is string && data.key.size() > 0 && data.key.size() <= 100
-        && data.type in ['text', 'number', 'date', 'boolean']
-        && data.userId == request.auth.uid
-        && data.createdAt == request.time;
-    }
-
-    function isValidTier(data) {
-      return data.keys().hasAll(['name', 'threshold', 'userId', 'createdAt'])
-        && data.name is string && data.name.size() > 0
-        && data.threshold is number
-        && (data.get('spendThreshold', 0) is number)
-        && (data.get('orderThreshold', 0) is number)
-        && data.userId == request.auth.uid
-        && data.createdAt == request.time;
-    }
-
-    function isValidRedemptionRule(data) {
-      return data.keys().hasAll(['name', 'pointsRequired', 'rewardValue', 'rewardType', 'userId', 'createdAt'])
-        && data.name is string && data.name.size() > 0
-        && data.pointsRequired is number
-        && data.rewardValue is number
-        && data.rewardType in ['discount', 'voucher', 'item']
-        && data.userId == request.auth.uid
-        && data.createdAt == request.time;
-    }
-
-    function isValidEarnRule(data) {
-      return data.keys().hasAll(['name', 'type', 'points', 'userId', 'createdAt'])
-        && data.name is string && data.name.size() > 0
-        && data.type is string
-        && data.points is number
-        && data.userId == request.auth.uid
-        && data.createdAt == request.time;
-    }
-
-    function isValidLoyaltyCampaign(data) {
-      return data.keys().hasAll(['name', 'type', 'rewardType', 'userId', 'createdAt'])
-        && data.name is string && data.name.size() > 0
-        && data.type is string
-        && data.rewardType is string
-        && data.userId == request.auth.uid
-        && data.createdAt == request.time;
-    }
-
-    function isValidLoyaltySettings(data) {
-      return data.keys().hasAll(['inactiveThresholdDays', 'churnThresholdDays', 'userId', 'updatedAt'])
-        && data.inactiveThresholdDays is number
-        && data.churnThresholdDays is number
-        && data.userId == request.auth.uid
-        && data.updatedAt == request.time;
-    }
-
-    function isValidCompany(data) {
-      return data.keys().hasAll(['name', 'userId', 'createdAt'])
-        && data.name is string && data.name.size() > 0
-        && data.userId == request.auth.uid
-        && data.createdAt == request.time;
-    }
-
-    function isValidSegmentationRule(data) {
-      return data.keys().hasAll(['name', 'tag', 'criteriaType', 'operator', 'value', 'isActive', 'userId', 'createdAt'])
-        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
-        && data.tag is string && data.tag.size() > 0 && data.tag.size() <= 100
-        && data.criteriaType in ['total_spend', 'time_since_last_purchase', 'points_balance']
-        && data.operator in ['gte', 'lte', 'gt', 'lt', 'eq']
-        && data.value is number
-        && data.isActive is bool
-        && data.userId == request.auth.uid
-        && data.createdAt == request.time;
-    }
-
-    function isValidSystemMetadata(data) {
-      return (data.get('lastPingAt', null) == null || data.lastPingAt == request.time)
-        && (data.get('timestamp', null) == null || data.timestamp == request.time)
-        && (data.get('pingBy', '').size() <= 200)
-        && (data.get('text', '').size() <= 1000);
-    }
-
-    // 3. Resource Matches
     match /system_users/{userId} {
-      allow get: if isSignedIn() && (request.auth.uid == userId || isSystemAdmin());
-      allow list: if isSignedIn() && isSystemAdmin();
-      allow create: if isSignedIn() && request.auth.uid == userId && incoming().status == 'pending' && incoming().email == request.auth.token.email;
-      allow update: if isSignedIn() && (
-        isSystemAdmin() || 
-        (request.auth.uid == userId && incoming().status == 'pending' && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'updatedAt']))
-      );
-      allow delete: if isSignedIn() && isSystemAdmin();
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      
+      // Allow initial registration if no doc exists
+      allow create: if isSignedIn() && userId == request.auth.uid && isValidSystemUser(incoming()) && 
+                    incoming().role == 'Support' && incoming().status == 'pending';
+      
+      // Only Admin or Primary Admin can approve or change roles
+      allow update: if (isAdmin() || isPrimaryAdmin()) && isValidSystemUser(incoming());
+      
+      // Users can update their own profile info but NOT role/status/uid/email
+      allow update: if isSignedIn() && userId == request.auth.uid && 
+                    isValidSystemUser(incoming()) &&
+                    incoming().role == existing().role &&
+                    incoming().status == existing().status &&
+                    incoming().uid == existing().uid &&
+                    incoming().email == existing().email &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'password', 'updatedAt']);
     }
 
     match /customers/{customerId} {
-      allow read: if true;
-      allow write: if isSignedIn() && isValidId(customerId);
-    }
-
-    match /attribute_definitions/{attributeId} {
-      allow read: if true;
-      allow write: if isSignedIn() && isValidId(attributeId);
-    }
-
-    match /tier_configs/{tierId} {
-      allow read: if true;
-      allow write: if isSignedIn() && isValidId(tierId);
-    }
-
-    match /redemption_rules/{ruleId} {
-      allow read: if true;
-      allow write: if isSignedIn() && isValidId(ruleId);
-    }
-
-    match /earn_rules/{ruleId} {
-      allow read: if true;
-      allow write: if isSignedIn() && isValidId(ruleId);
-    }
-
-    match /loyalty_campaigns/{campaignId} {
-      allow read: if true;
-      allow write: if isSignedIn() && isValidId(campaignId);
-    }
-
-    match /loyalty_settings/{settingsId} {
-      allow read: if true;
-      allow write: if isSignedIn() && isValidId(settingsId);
+      allow read: if isApproved();
+      allow create: if isApproved() && isValidCustomer(incoming()) && isValidId(customerId);
+      allow update: if isApproved() && isValidCustomer(incoming()) &&
+                    incoming().userId == existing().userId &&
+                    incoming().createdAt == existing().createdAt;
+      allow delete: if isAdmin();
     }
 
     match /companies/{companyId} {
-      allow read: if true;
-      allow write: if isSignedIn() && isValidId(companyId);
+      allow read: if isApproved();
+      allow create: if isApproved() && isValidCompany(incoming()) && isValidId(companyId);
+      allow update: if isApproved() && isValidCompany(incoming()) &&
+                    incoming().userId == existing().userId;
+      allow delete: if isAdmin();
+    }
+
+    match /attribute_definitions/{attrId} {
+      allow read: if isApproved();
+      allow write: if isAdmin() && isValidId(attrId);
+    }
+
+    match /tier_configs/{tierId} {
+      allow read: if isApproved();
+      allow write: if isAdmin() && isValidId(tierId);
+    }
+
+    match /redemption_rules/{ruleId} {
+      allow read: if isApproved();
+      allow write: if isAdmin() && isValidId(ruleId);
+    }
+
+    match /earn_rules/{ruleId} {
+      allow read: if isApproved();
+      allow write: if isAdmin() && isValidId(ruleId);
+    }
+
+    match /loyalty_campaigns/{campId} {
+      allow read: if isApproved();
+      allow write: if isAdmin() && isValidId(campId);
     }
 
     match /segmentation_rules/{ruleId} {
-      allow read: if true;
-      allow write: if isSignedIn() && isValidId(ruleId);
+      allow read: if isApproved();
+      allow write: if isAdmin() && isValidId(ruleId);
     }
 
-    match /system_metadata/{metadataId} {
-      allow read: if true;
-      allow write: if isSignedIn() && isValidId(metadataId);
+    match /settings/role_permissions {
+      allow read: if isApproved();
+      allow write: if isPrimaryAdmin();
+    }
+
+    match /loyalty_settings/main {
+      allow read: if isApproved();
+      allow write: if isAdmin();
     }
   }
 }

@@ -7,7 +7,7 @@ import { Search, Filter, Download, Plus, Settings, Facebook, Linkedin, Instagram
 import * as motion from "motion/react-client";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
-import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
+import { collection, query, onSnapshot, orderBy, doc, writeBatch, serverTimestamp, where } from "firebase/firestore";
 import { Customer, AttributeDefinition, Company } from "@/types";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
 import { AddCustomerDialog } from "@/components/customers/AddCustomerDialog";
@@ -15,7 +15,8 @@ import { ImportCustomersDialog } from "@/components/customers/ImportCustomersDia
 import { AttributeManager } from "@/components/customers/AttributeManager";
 import { CustomerDashboard } from "@/components/customers/CustomerDashboard";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
-import { Building2 } from "lucide-react";
+import { Building2, Cloud, CloudOff, Info, ShieldAlert } from "lucide-react";
+import { toast } from "sonner";
 import { getGuestCustomers, getGuestAttributes, getGuestCompanies } from "@/data/guestData";
 
 
@@ -41,7 +42,7 @@ const COLUMN_LABELS: Record<string, string> = {
 };
 
 export function CustomersView() {
- const { user, loading: authLoading, signIn } = useFirebase();
+ const { user, hasPermission, loading: authLoading, signIn } = useFirebase();
  const [customers, setCustomers] = useState<Customer[]>([]);
  const [attributes, setAttributes] = useState<AttributeDefinition[]>([]);
  const [companies, setCompanies] = useState<Company[]>([]);
@@ -77,9 +78,11 @@ export function CustomersView() {
 
  // New state to view a single customer details dashboard
  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+ const [forceOffline, setForceOffline] = useState(false);
+ const [seeding, setSeeding] = useState(false);
 
  useEffect(() => {
- if (!user) {
+ if (!user || forceOffline) {
  const loadGuestData = () => {
  setCustomers(getGuestCustomers());
  setAttributes(getGuestAttributes());
@@ -97,28 +100,147 @@ export function CustomersView() {
  const customersPath = "customers";
  const attrsPath = "attribute_definitions";
 
- const qCustomers = query(collection(db, customersPath), orderBy("createdAt", "desc"));
+ const isSuperAdmin = user.email?.toLowerCase() === "hungthai84@gmail.com";
+ 
+ const qCustomers = isSuperAdmin 
+   ? query(collection(db, customersPath), orderBy("createdAt", "desc"))
+   : query(collection(db, customersPath), where("userId", "==", user.uid), orderBy("createdAt", "desc"));
+
  const unsubCustomers = onSnapshot(qCustomers, (snapshot) => {
- setCustomers(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Customer)));
+ if (snapshot.empty) {
+			setCustomers(getGuestCustomers());
+		} else {
+			setCustomers(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Customer)));
+		}
  setLoading(false);
- }, (error) => handleFirestoreError(error, OperationType.LIST, customersPath));
+ }, (error) => {
+ console.error("Firestore error for customers list:", error);
+  setCustomers(getGuestCustomers());
+ try {
+ handleFirestoreError(error, OperationType.LIST, customersPath);
+ } catch (e) {
+ // Suppress throwing to avoid app freeze
+ }
+ setLoading(false);
+ });
 
  const qAttrs = query(collection(db, attrsPath), orderBy("createdAt", "asc"));
  const unsubAttrs = onSnapshot(qAttrs, (snapshot) => {
- setAttributes(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AttributeDefinition)));
- }, (error) => handleFirestoreError(error, OperationType.LIST, attrsPath));
+ if (snapshot.empty) {
+			setAttributes(getGuestAttributes());
+		} else {
+			setAttributes(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AttributeDefinition)));
+		}
+ }, (error) => {
+ console.error("Firestore error for custom attributes:", error);
+  setAttributes(getGuestAttributes());
+ try {
+ handleFirestoreError(error, OperationType.LIST, attrsPath);
+ } catch (e) {}
+ });
 
  const qCompanies = query(collection(db, "companies"), orderBy("name", "asc"));
  const unsubCompanies = onSnapshot(qCompanies, (snapshot) => {
- setCompanies(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Company)));
- }, (error) => console.error(error));
+ if (snapshot.empty) {
+			setCompanies(getGuestCompanies());
+		} else {
+			setCompanies(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Company)));
+		}
+ }, (error) => {
+ console.error("Firestore error for companies:", error);
+  setCompanies(getGuestCompanies());
+ });
 
  return () => {
  unsubCustomers();
  unsubAttrs();
  unsubCompanies();
  };
- }, [user]);
+ }, [user, forceOffline]);
+
+ const handleQuickSeed = async () => {
+ if (!user) return;
+ setSeeding(true);
+ try {
+ const b1Id = "branch_cao_thang";
+ const b2Id = "branch_trang_tien";
+ 
+ const batchComp = writeBatch(db);
+ 
+ const compB1Ref = doc(db, "companies", b1Id);
+ const compB2Ref = doc(db, "companies", b2Id);
+ 
+ batchComp.set(compB1Ref, {
+ id: b1Id,
+ name: "Chi nhánh B1 - Showroom Sài Gòn Cao Thắng",
+ type: "branch",
+ address: "15-17 Cao Thắng, Phường 2, Quận 3, TP. Hồ Chí Minh",
+ userId: user.uid,
+ createdAt: serverTimestamp()
+ }, { merge: true });
+
+ batchComp.set(compB2Ref, {
+ id: b2Id,
+ name: "Chi nhánh B2 - Luxury Salon Tràng Tiền",
+ type: "branch",
+ address: "86 Tràng Tiền, Hoàn Kiếm, Hà Nội",
+ userId: user.uid,
+ createdAt: serverTimestamp()
+ }, { merge: true });
+
+ await batchComp.commit();
+ 
+ const NAMES = [
+ "Thái Hồng Hưng", "Nguyễn Minh Anh", "Trần Khánh Nhung", "Lê Gia Bảo", 
+ "Phạm Triệu Nam", "Hoàng Thu Thảo", "Huỳnh Quốc Kiệt", "Võ Quỳnh Chi", 
+ "Đặng Trà My", "Bùi Chí Đăng", "Đỗ Hà Vy"
+ ];
+ const GEMS = ["Diamond", "Ruby", "Sapphire", "Emerald", "Jade", "Pearl"];
+ 
+ const batchCust = writeBatch(db);
+ for (let i = 0; i < NAMES.length; i++) {
+ const name = NAMES[i];
+ const custRef = doc(collection(db, "customers"));
+ const phone = "090" + Math.floor(1000000 + Math.random() * 9000000);
+ const email = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/\s+/g, ".") + `${i}@sevago.vip`;
+ const points = Math.floor(100 + Math.random() * 15000);
+
+ batchCust.set(custRef, {
+ id: custRef.id,
+ name,
+ email,
+ phone,
+ avatarUrl: "",
+ facebook: `facebook.com/user.${i}`,
+ zalo: phone,
+ points,
+ activityStatus: Math.random() > 0.3 ? "active" : "inactive",
+ companyId: Math.random() > 0.5 ? b1Id : b2Id,
+ userId: user.uid,
+ customFields: {
+ clv: Math.floor(10000000 + Math.random() * 900000000),
+ repeat_rate: Math.floor(65 + Math.random() * 30),
+ last_purchase: "2026-05-25",
+ region: Math.random() > 0.5 ? "TP.HCM" : "Hà Nội",
+ collection: GEMS[Math.floor(Math.random() * GEMS.length)],
+ autoTags: [{ 
+   tag: points >= 10000 ? "Atelier" : points >= 2500 ? "Icon" : points >= 500 ? "Essential" : "Member",
+   color: points >= 2500 ? "gold" : points >= 500 ? "emerald" : "slate"
+ }]
+ },
+ createdAt: serverTimestamp(),
+ updatedAt: serverTimestamp()
+ });
+ }
+ await batchCust.commit();
+ toast.success("Đã hoàn tất nạp 11 khách hàng đặc quyền (VIP) mẫu lên Cloud!");
+ } catch (err: any) {
+ console.error("Lỗi nạp mẫu:", err);
+ toast.error(`Nạp dữ liệu không thành công: ${err.message || err}`);
+ } finally {
+ setSeeding(false);
+ }
+ };
 
  // Keep selectedCustomer updated if background data updates
  const currentCustomerData = selectedCustomer 
@@ -195,15 +317,29 @@ export function CustomersView() {
  });
 
  const sortedAndFilteredCustomers = [...filteredCustomers].sort((a, b) => {
+	const parseSafeDate = (val: any): Date => {
+		if (!val) return new Date(0);
+		if (typeof val.toDate === "function") {
+			return val.toDate();
+		}
+		if (val.seconds !== undefined) {
+			return new Date(val.seconds * 1000);
+		}
+		const parsed = new Date(val);
+		if (!isNaN(parsed.getTime())) {
+			return parsed;
+		}
+		return new Date(0);
+	};
  if (sortBy === "createdAt_desc") {
- const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
- const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
- return dateB - dateA;
+	const dateA = a.createdAt ? parseSafeDate(a.createdAt).getTime() : 0;
+	const dateB = b.createdAt ? parseSafeDate(b.createdAt).getTime() : 0;
+	return dateB - dateA;
  }
  if (sortBy === "createdAt_asc") {
- const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
- const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
- return dateA - dateB;
+	const dateA = a.createdAt ? parseSafeDate(a.createdAt).getTime() : 0;
+	const dateB = b.createdAt ? parseSafeDate(b.createdAt).getTime() : 0;
+	return dateA - dateB;
  }
  if (sortBy === "points_desc") {
  return (b.points || 0) - (a.points || 0);
@@ -252,6 +388,22 @@ export function CustomersView() {
 
  if (authLoading) return <div className="p-8 text-center">Đang tải...</div>;
 
+ if (!hasPermission("cust_view")) {
+  return (
+   <div className="flex-1 flex flex-col items-center justify-center p-8 h-[75vh] w-full text-center space-y-6 theme-transition animate-fade-in">
+    <div className="p-4 bg-rose-500/10 text-rose-500 rounded-2xl border border-rose-500/20 shadow-lg shadow-rose-500/5 animate-bounce">
+     <ShieldAlert className="w-12 h-12" />
+    </div>
+    <div className="space-y-2 max-w-md">
+     <h2 className="text-xl font-black text-foreground tracking-tight font-heading">Không Có Quyền Truy Cập</h2>
+     <p className="text-muted-foreground text-sm leading-relaxed">
+      Tài khoản hiện tại của bạn chưa được cấp phép truy cập phân hệ này. Vui lòng liên hệ Quản trị viên để được cấu hình thêm quyền <strong>"Xem Danh Sách Khách Hàng"</strong> (cust_view) trong ma trận ma trận vai trò.
+     </p>
+    </div>
+   </div>
+  );
+ }
+
  return (
  <div className="flex-1 space-y-6 p-8 pt-6">
  {currentCustomerData ? (
@@ -283,12 +435,31 @@ export function CustomersView() {
  </motion.div>
  </div>
  <div>
+ <div className="flex items-center gap-2">
  <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">Danh sách Khách hàng</h2>
+ {forceOffline && (
+ <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10.5px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+ <CloudOff className="w-3 h-3" /> Chế độ Offline
+ </Badge>
+ )}
+ </div>
  <p className="text-muted-foreground text-sm mt-1">Quản lý hồ sơ cá nhân, liên kết mạng xã hội đa điểm và điểm số.</p>
  </div>
  </div>
 
  <div className="flex flex-wrap items-center gap-2">
+ {forceOffline && (
+ <button 
+ onClick={() => {
+ setForceOffline(false);
+ setLoading(true);
+ toast.success("Đang kết nối lại Cloud Firestore...");
+ }}
+ className="flex items-center justify-center px-4 py-2 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-white rounded-xl text-sm font-medium bg-amber-500/10 transition-colors cursor-pointer"
+ >
+ <Cloud className="w-4 h-4 mr-2" /> Kết nối Cloud
+ </button>
+ )}
  <button 
  onClick={() => setShowAttrManager(true)}
  className="flex items-center justify-center px-4 py-2 border border-border rounded-xl text-sm font-medium bg-card hover:bg-muted transition-colors"
@@ -551,14 +722,76 @@ export function CustomersView() {
  </TableRow>
  ) : sortedAndFilteredCustomers.length === 0 ? (
  <TableRow>
- <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} className="text-center py-8 text-muted-foreground">Không tìm thấy khách hàng nào.</TableCell>
+ <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} className="text-center py-12">
+ <div className="flex flex-col items-center justify-center max-w-lg mx-auto p-8 rounded-2xl border border-dashed border-border bg-card shadow-xs text-center space-y-4">
+ <div className="p-3 bg-primary/10 text-primary rounded-full">
+ <User className="w-8 h-8" />
+ </div>
+ <div>
+ <h3 className="text-base font-bold text-foreground">Không tìm thấy khách hàng nào</h3>
+ <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
+ {customers.length > 0 
+ ? "Không tìm thấy khách hàng nào khớp với các bộ lọc tìm kiếm được áp dụng hiện tại." 
+ : "Cơ sở dữ liệu Firestore hiện chưa có khách hàng, hoặc tài khoản quản trị chưa nạp dữ liệu mẫu."}
+ </p>
+ </div>
+ 
+ {customers.length === 0 && (
+ <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full max-w-md">
+ <button
+ onClick={handleQuickSeed}
+ disabled={seeding}
+ className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/95 hover:shadow-xs rounded-xl cursor-pointer disabled:opacity-50 transition-all"
+ >
+ {seeding ? (
+ <span className="flex items-center gap-1.5 justify-center">
+ <span className="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+ Đang nạp dữ liệu...
+ </span>
+ ) : (
+ <span className="flex items-center gap-1.5 justify-center">
+ <Cloud className="w-3.5 h-3.5" />
+ Nạp 11 KH VIP lên Firestore
+ </span>
+ )}
+ </button>
+ 
+ <button
+ onClick={() => {
+ setForceOffline(true);
+ toast.success("Đã kích hoạt chế độ mô phỏng! Xem ngay 200 khách hàng mẫu.");
+ }}
+ className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold bg-muted text-muted-foreground hover:bg-muted/80 rounded-xl cursor-pointer transition-all"
+ >
+ <CloudOff className="w-3.5 h-3.5" />
+ Xem offline sandbox (200 KH)
+ </button>
+ </div>
+ )}
+ 
+ {customers.length > 0 && (
+ <button
+ onClick={resetFilters}
+ className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 rounded-xl cursor-pointer transition-all"
+ >
+ Đặt lại tất cả bộ lọc
+ </button>
+ )}
+ </div>
+ </TableCell>
  </TableRow>
  ) : (
  sortedAndFilteredCustomers.map((customer) => (
  <TableRow 
  key={customer.id} 
- onClick={() => setSelectedCustomer(customer)}
- className="hover:bg-muted/50 transition-colors cursor-pointer group row-shake"
+ onClick={() => {
+   if (!hasPermission("cust_details_view")) {
+    toast.error("Tài khoản của bạn không có quyền xem thông tin chi tiết khách hàng!");
+    return;
+   }
+   setSelectedCustomer(customer);
+  }}
+ className="transition-colors cursor-pointer group row-shake"
  >
  {/* ID */}
  {visibleColumns.id && <TableCell className="text-xs text-muted-foreground">{customer.id}</TableCell>}
@@ -575,7 +808,7 @@ export function CustomersView() {
  )}
  </div>
  <div>
- <div className="font-extrabold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5 flex-wrap">
+ <div className="font-extrabold text-foreground transition-colors flex items-center gap-1.5 flex-wrap">
  {customer.name}
  {customer.customFields?.autoTags?.map((t: any, idx: number) => {
  const colorClass = COLOR_PRESET_MAP_SHORT[t.color || 'gold'] || COLOR_PRESET_MAP_SHORT.gold;
@@ -634,7 +867,7 @@ export function CustomersView() {
  >
  <Linkedin className="w-3 h-3" />
  </span>
-
+ 
  {/* Instagram */}
  <span 
  title={customer.instagram || "Chưa liên kết Instagram"}

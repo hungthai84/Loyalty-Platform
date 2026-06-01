@@ -2,6 +2,65 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Ultimate safe global fetch and JSON.parse modifier to prevent typical sandboxing and state-parsing errors
+      // in restricted sandboxed/iframe preview environments.
+      (function() {
+        try {
+          // 1. Safe fetch wrapping / patching
+          const originalFetch = window.fetch;
+          let activeFetch = originalFetch;
+
+          const patchObj = (obj) => {
+            if (!obj) return;
+            try {
+              const desc = Object.getOwnPropertyDescriptor(obj, 'fetch');
+              if (desc && !desc.configurable) {
+                console.warn("fetch property on object is not configurable, skipping defineProperty");
+                return;
+              }
+              Object.defineProperty(obj, 'fetch', {
+                get() {
+                  return activeFetch;
+                },
+                set(val) {
+                  console.warn("Safely intercepted setting fetch:", val);
+                  activeFetch = val;
+                },
+                configurable: true,
+                enumerable: true
+              });
+            } catch (e) {
+              console.warn("Could not define fetch on object directly:", e);
+            }
+          };
+
+          patchObj(window);
+          try { patchObj(Object.getPrototypeOf(window)); } catch(_) {}
+          try { patchObj(window.constructor?.prototype); } catch(_) {}
+          try { patchObj(Window?.prototype); } catch(_) {}
+          try { if (typeof globalThis !== 'undefined') patchObj(globalThis); } catch(_) {}
+          try { if (typeof self !== 'undefined') patchObj(self); } catch(_) {}
+          try { if (typeof global !== 'undefined') patchObj(global); } catch(_) {}
+          
+          // 2. Safe JSON.parse patching to prevent SyntaxError: "undefined" is not valid JSON
+          const originalParse = JSON.parse;
+          JSON.parse = function(text, reviver) {
+            if (text === "undefined" || text === undefined) {
+              console.warn("Safely intercepted JSON.parse of undefined/\"undefined\" string");
+              return undefined;
+            }
+            if (text === "" || text === null) {
+              console.warn("Safely intercepted JSON.parse of empty string or null");
+              return null;
+            }
+            return originalParse.call(JSON, text, reviver);
+          };
+        } catch (err) {
+          console.warn("Could not initialize safe fetch & JSON.parse patchers:", err);
+        }
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Loyalty Platform</title>

@@ -186,35 +186,11 @@ export function Topbar({ setActiveView }: TopbarProps) {
  )}
  </div>
 
- <DropdownMenu>
- <DropdownMenuTrigger className="focus:outline-none">
- <Avatar className="h-8 w-8 border cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all">
- <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "User"} />
- <AvatarFallback>{user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}</AvatarFallback>
- </Avatar>
- </DropdownMenuTrigger>
- <DropdownMenuContent align="end" className="w-56 glass">
- <div className="px-1.5 py-1 text-xs font-medium text-muted-foreground font-normal">
- <div className="flex flex-col space-y-1">
- <p className="text-sm font-medium leading-none">{user?.displayName || 'Người dùng'}</p>
- <p className="text-xs leading-none text-muted-foreground">
- {user?.email}
- </p>
- </div>
- </div>
- <DropdownMenuSeparator />
- <DropdownMenuItem className="flex flex-row items-center gap-2 cursor-pointer focus:bg-primary/10 focus:text-primary font-semibold" onClick={() => setActiveView("settings")}>
- <User className="h-4 w-4 text-muted-foreground" />
- <span>Hồ sơ cá nhân</span>
- </DropdownMenuItem>
- <DropdownMenuSeparator />
- <DropdownMenuItem className="flex flex-row items-center gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10" onClick={logout}>
- <LogOut className="h-4 w-4" />
- <span>Đăng xuất</span>
- </DropdownMenuItem>
- </DropdownMenuContent>
- </DropdownMenu>
- </div>
- </header>
+  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20">
+    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+    <span className="text-[11px] font-black uppercase tracking-tighter text-primary">System Admin</span>
+  </div>
+  </div>
+  </header>
  );
 }

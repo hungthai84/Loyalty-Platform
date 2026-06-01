@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User, signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, onSnapshot, getDocFromServer } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { toast } from 'sonner';
 
@@ -18,6 +18,7 @@ export interface SystemUser {
 interface FirebaseContextType {
  user: any | null;
  systemUser: SystemUser | null;
+ isApproved: boolean;
  loading: boolean;
  signIn: () => Promise<void>;
  signInWithRedirectOnly: () => Promise<void>;
@@ -27,31 +28,77 @@ interface FirebaseContextType {
  signInWithCredentials: (userId: string, password: string) => Promise<boolean>;
  registerWithCredentials: (userId: string, password: string, displayName: string) => Promise<boolean>;
  updateProfileData: (displayName: string, password?: string, linkedLocalUserId?: string) => Promise<boolean>;
+ hasPermission: (permissionId: string) => boolean;
+ rolePermissions: any[];
+ updateRolePermissions: (newPerms: any[]) => Promise<void>;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
 
 export function FirebaseProvider({ children }: { children: React.ReactNode }) {
- const [user, setUser] = useState<any | null>({
- uid: "local_hungthai84",
- email: "hungthai84@gmail.com",
- displayName: "Thái Hồng Hưng",
- photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
- isLocal: true,
- });
+  const [user, setUser] = useState<any | null>(null);
+  const [systemUser, setSystemUser] = useState<SystemUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
- const [systemUser, setSystemUser] = useState<SystemUser | null>({
- uid: "local_hungthai84",
- email: "hungthai84@gmail.com",
- displayName: "Thái Hồng Hưng",
- photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
- role: "Admin",
- status: "approved",
- createdAt: new Date(),
- updatedAt: new Date(),
- });
+ const [rolePermissions, setRolePermissions] = useState<any[]>([
+  { id: "cust_view", name: "Xem Danh Sách Khách Hàng", description: "Có quyền tra cứu thông tin cơ bản khách hàng VIP", admin: true, manager: true, support: true },
+  { id: "cust_details_view", name: "Xem Chi Tiết Khách Hàng", description: "Xem hồ sơ chi tiết, lịch sử tương tác và điểm số khách hàng VIP", admin: true, manager: true, support: true },
+  { id: "cust_edit", name: "Sửa Thông Tin & Đổi Điểm", description: "Thay đổi thông tin liên lạc, cộng/trừ điểm tích lũy", admin: true, manager: true, support: true },
+  { id: "tier_config", name: "Cấu Hình Hạng Hội Viên", description: "Chỉnh sửa ngưỡng thăng hạng (Essential, Icon, Atelier)", admin: true, manager: true, support: false },
+  { id: "marketing_publish", name: "Kích Hoạt Chiến Dịch", description: "Bật/tắt tự động hóa tiếp thị, gửi SMS/Zalo/Email mẫu", admin: true, manager: true, support: false },
+  { id: "financial_edit", name: "Tham Số Tài Chính", description: "Quyết định quỹ chi phí VIP, ngân sách loyalty showroom", admin: true, manager: false, support: false },
+  { id: "api_write", name: "Quản Trị Hệ Thống & Keys", description: "Tạo API Keys, sửa đổi cài đặt SendGrid & Firebase Rules", admin: true, manager: false, support: false },
+ ]);
 
- const [loading, setLoading] = useState(false);
+ useEffect(() => {
+  const unsubPerms = onSnapshot(doc(db, "settings", "role_permissions"), (snapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.data();
+      if (data.permissions && Array.isArray(data.permissions)) {
+        const defaults = [
+          { id: "cust_view", name: "Xem Danh Sách Khách Hàng", description: "Có quyền tra cứu thông tin cơ bản khách hàng VIP", admin: true, manager: true, support: true },
+          { id: "cust_details_view", name: "Xem Chi Tiết Khách Hàng", description: "Xem hồ sơ chi tiết, lịch sử tương tác và điểm số khách hàng VIP", admin: true, manager: true, support: true },
+          { id: "cust_edit", name: "Sửa Thông Tin & Đổi Điểm", description: "Thay đổi thông tin liên lạc, cộng/trừ điểm tích lũy", admin: true, manager: true, support: true },
+          { id: "tier_config", name: "Cấu Hình Hạng Hội Viên", description: "Chỉnh sửa ngưỡng thăng hạng (Essential, Icon, Atelier)", admin: true, manager: true, support: false },
+          { id: "marketing_publish", name: "Kích Hoạt Chiến Dịch", description: "Bật/tắt tự động hóa tiếp thị, gửi SMS/Zalo/Email mẫu", admin: true, manager: true, support: false },
+          { id: "financial_edit", name: "Tham Số Tài Chính", description: "Quyết định quỹ chi phí VIP, ngân sách loyalty showroom", admin: true, manager: false, support: false },
+          { id: "api_write", name: "Quản Trị Hệ Thống & Keys", description: "Tạo API Keys, sửa đổi cài đặt SendGrid & Firebase Rules", admin: true, manager: false, support: false },
+        ];
+        const merged = defaults.map(defaultPerm => {
+          const matched = data.permissions.find((p: any) => p.id === defaultPerm.id);
+          return matched ? { ...defaultPerm, ...matched } : defaultPerm;
+        });
+        setRolePermissions(merged);
+      }
+    }
+  }, (error) => {
+    console.warn("Could not load database role permissions:", error);
+  });
+  return () => unsubPerms();
+ }, []);
+
+ const updateRolePermissions = async (newPerms: any[]) => {
+  try {
+    await setDoc(doc(db, "settings", "role_permissions"), {
+      permissions: newPerms,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    setRolePermissions(newPerms);
+  } catch (error: any) {
+    console.error("Failed to update role permissions in Firestore:", error);
+    throw error;
+  }
+ };
+
+ const hasPermission = (permissionId: string): boolean => {
+  if (user?.email?.toLowerCase() === "hungthai84@gmail.com" || systemUser?.role === "Admin") {
+    return true;
+  }
+  const role = systemUser?.role ? systemUser.role.toLowerCase() : "support";
+  const permission = rolePermissions.find(p => p.id === permissionId);
+  if (!permission) return false;
+  return !!permission[role as "admin" | "manager" | "support"];
+ };
 
  const checkSystemUserStatus = async (authUser: User) => {
  try {
@@ -214,206 +261,94 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
  }
  };
 
- useEffect(() => {
-		// Automatically seed/ensure the Admin account exists in Firestore
-		const ensureAdminExistsInFirestore = async () => {
-			try {
-				const localUserRef = doc(db, 'system_users', 'local_hungthai84');
-				await setDoc(localUserRef, {
-					uid: 'local_hungthai84',
-					email: 'hungthai84@gmail.com',
-					displayName: "Thái Hồng Hưng",
-					photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
-					role: "Admin",
-					status: "approved",
-					password: 'HungTh@i22061984',
-					isLocal: true,
-					createdAt: serverTimestamp(),
-					updatedAt: serverTimestamp()
-				}, { merge: true });
-				console.log("Successfully seeded local hungthai84 Admin user in system_users!");
-			} catch (err) {
-				console.warn("Seeding initial local admin failed:", err);
-			}
-		};
-		ensureAdminExistsInFirestore();
+  useEffect(() => {
+    async function testConnection() {
+      try {
+        await getDocFromServer(doc(db, '_connection_test', 'init'));
+      } catch (error: any) {
+        if (error.message?.includes('offline') || error.message?.includes('permission-denied')) {
+          console.warn("Firebase connection test notice (expected if rules are strict):", error.message);
+        }
+      }
+    }
+    testConnection();
 
-		// Subscribe to real Firebase authentication state changes
-		const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
-			setLoading(true);
-			if (authUser) {
-				setUser(authUser);
-				await checkSystemUserStatus(authUser);
-			} else {
-				// Fall back to stored local credentials if available
-				const localUserStr = localStorage.getItem('crm_sys_local_user');
-				if (localUserStr) {
-					try {
-						const parsed = JSON.parse(localUserStr);
-						if (parsed && parsed.user) {
-							setUser(parsed.user);
-							setSystemUser(parsed.systemUser || null);
-							setLoading(false);
-							return;
-						}
-					} catch (e) {}
-				}
+    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+      setLoading(true);
+      if (authUser) {
+        setUser(authUser);
+        await checkSystemUserStatus(authUser);
+      } else {
+        // Check if there is a local session
+        const localSession = localStorage.getItem('crm_sys_local_user');
+        if (localSession) {
+          try {
+            const { user: lUser, systemUser: lSysUser } = JSON.parse(localSession);
+            setUser(lUser);
+            setSystemUser(lSysUser);
+          } catch (e) {
+            setUser(null);
+            setSystemUser(null);
+          }
+        } else {
+          setUser(null);
+          setSystemUser(null);
+        }
+      }
+      setLoading(false);
+    });
 
-				// Set default mock user state so the workspace is immediately fully functional
-				const defaultMockUser = {
-					uid: "local_hungthai84",
-					email: "hungthai84@gmail.com",
-					displayName: "Thái Hồng Hưng",
-					photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
-					isLocal: true,
-				};
-				const defaultSystemUser: SystemUser = {
-					uid: "local_hungthai84",
-					email: "hungthai84@gmail.com",
-					displayName: "Thái Hồng Hưng",
-					photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
-					role: "Admin",
-					status: "approved",
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				};
-
-				setUser(defaultMockUser);
-				setSystemUser(defaultSystemUser);
-			}
-			setLoading(false);
-		});
-
-		return () => unsubscribe();
-	}, []);
-
-
-
+    return () => unsubscribe();
+  }, []);
 
  const refreshStatus = async () => {
- if (auth.currentUser) {
- setLoading(true);
- await checkSystemUserStatus(auth.currentUser);
- setLoading(false);
- } else {
- const localUserStr = localStorage.getItem('crm_sys_local_user');
- if (localUserStr) {
- try {
- const parsed = JSON.parse(localUserStr);
- if (parsed && parsed.user && parsed.user.uid) {
- setLoading(true);
- const userDocRef = doc(db, 'system_users', parsed.user.uid);
- const userDoc = await getDoc(userDocRef);
- if (userDoc.exists()) {
- const data = userDoc.data();
- const refreshedSystemUser = {
- uid: data.uid,
- email: data.email,
- displayName: data.displayName,
- photoURL: data.photoURL,
- role: data.role,
- status: data.status,
- createdAt: data.createdAt,
- updatedAt: data.updatedAt
- } as SystemUser;
- 
- localStorage.setItem('crm_sys_local_user', JSON.stringify({
- user: parsed.user,
- systemUser: refreshedSystemUser
- }));
- setSystemUser(refreshedSystemUser);
- }
- setLoading(false);
- }
- } catch (e) {
- setLoading(false);
- }
- }
- }
+  // No-op in no-account mode
  };
 
  const signIn = async () => {
- const provider = new GoogleAuthProvider();
- provider.setCustomParameters({ prompt: 'select_account' });
- try {
- await signInWithPopup(auth, provider);
- toast.success("Xác thực Google thành công!");
- } catch (error: any) {
- console.warn("Popup sign-in failed, trying redirect fallback...", error);
- if (error?.code === 'auth/popup-blocked') {
- toast.info("Cửa sổ Popup bị chặn. Đang tự chuyển tiếp sang Google login...");
- }
- try {
- await signInWithRedirect(auth, provider);
- } catch (redirectError) {
- console.error("Sign in with redirect fallback failed", redirectError);
- toast.error("Không thể khởi tạo đăng nhập Google.");
- }
- }
+  setLoading(true);
+  try {
+   const provider = new GoogleAuthProvider();
+   await signInWithPopup(auth, provider);
+  } catch (error: any) {
+   console.error("Sign in failed:", error);
+   toast.error(`Đăng nhập thất bại: ${error.message}`);
+  } finally {
+   setLoading(false);
+  }
  };
 
  const signInWithRedirectOnly = async () => {
- const provider = new GoogleAuthProvider();
- provider.setCustomParameters({ prompt: 'select_account' });
- try {
- await signInWithRedirect(auth, provider);
- } catch (error) {
- console.error("Redirect login failed", error);
- }
+  setLoading(true);
+  try {
+   const provider = new GoogleAuthProvider();
+   await signInWithRedirect(auth, provider);
+  } catch (error: any) {
+   console.error("Sign in redirect failed:", error);
+   toast.error(`Đăng nhập thất bại: ${error.message}`);
+   setLoading(false);
+  }
  };
 
  const registerUser = async (displayName?: string) => {
- if (!auth.currentUser) {
- toast.error("Không tìm thấy thông tin từ Google Auth.");
- return;
- }
- setLoading(true);
- try {
- const u = auth.currentUser;
- const userDocRef = doc(db, 'system_users', u.uid);
- const isSuperAdminEmail = u.email?.toLowerCase() === 'hungthai84@gmail.com';
- 
- const systemUserData = {
- uid: u.uid,
- email: u.email,
- displayName: displayName || u.displayName || (isSuperAdminEmail ? "Thái Hồng Hưng" : "Thành viên mới"),
- photoURL: u.photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256",
- role: (isSuperAdminEmail ? "Admin" : "Support") as "Admin" | "Manager" | "Support",
- status: (isSuperAdminEmail ? "approved" : "pending") as "pending" | "approved" | "rejected",
- createdAt: serverTimestamp(),
- updatedAt: serverTimestamp()
- };
- await setDoc(userDocRef, systemUserData);
- 
- setSystemUser({
- ...systemUserData,
- createdAt: new Date(),
- updatedAt: new Date()
- } as any);
-
- if (isSuperAdminEmail) {
- toast.success("Hệ thống nhận diện Super Admin! Tài khoản của bạn đã được phê duyệt trực tiếp.");
- } else {
- toast.success("Đăng ký thành công! Đang chờ Admin duyệt.");
- }
- } catch (e: any) {
- console.error("Registration write failed: ", e);
- toast.error(`Không thể thực hiện đăng ký: ${e.message}`);
- } finally {
- setLoading(false);
- }
+  // Registration is usually handled by auto-creation in checkSystemUserStatus
+  await signIn();
  };
 
  const logout = async () => {
- try {
- await signOut(auth);
- setUser(null);
- setSystemUser(null);
- localStorage.removeItem('crm_sys_local_user');
- toast.success("Đã đăng xuất.");
- } catch (error) {
- console.error("Sign out failed", error);
- }
+  setLoading(true);
+  try {
+   await signOut(auth);
+   localStorage.removeItem('crm_sys_local_user');
+   setUser(null);
+   setSystemUser(null);
+   toast.success("Đã đăng xuất.");
+  } catch (error: any) {
+   console.error("Logout failed:", error);
+   toast.error("Lỗi khi đăng xuất.");
+  } finally {
+   setLoading(false);
+  }
  };
 
  const signInWithCredentials = async (userId: string, password: string): Promise<boolean> => {
@@ -710,7 +645,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
  };
 
  return (
- <FirebaseContext.Provider value={{ user, systemUser, loading, signIn, signInWithRedirectOnly, logout, registerUser, refreshStatus, signInWithCredentials, registerWithCredentials, updateProfileData }}>
+ <FirebaseContext.Provider value={{ user, systemUser, isApproved: systemUser?.status === "approved", loading, signIn, signInWithRedirectOnly, logout, registerUser, refreshStatus, signInWithCredentials, registerWithCredentials, updateProfileData, hasPermission, rolePermissions, updateRolePermissions }}>
  {children}
  </FirebaseContext.Provider>
  );

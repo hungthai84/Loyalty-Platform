@@ -41,10 +41,10 @@ const trendData = [
 ];
 
 const tierData = [
- { name: "Bạc", value: 450, color: "#94a3b8" },
- { name: "Vàng", value: 300, color: "#facc15" },
- { name: "Bạch kim", value: 120, color: "#38bdf8" },
- { name: "Kim cương", value: 45, color: "#f472b6" },
+ { name: "Member", value: 450, color: "#94a3b8" },
+ { name: "Essential", value: 300, color: "#10b981" },
+ { name: "Icon", value: 120, color: "#f59e0b" },
+ { name: "Atelier", value: 45, color: "#2f6cf5" },
 ];
 
 const heatmapHours = ["8h", "9h", "10h", "11h", "12h", "13h", "14h", "15h", "16h", "17h", "18h", "19h", "20h", "21h"];
@@ -414,10 +414,10 @@ export function AnalyticsView() {
  <CardContent>
  <div className="space-y-4">
  {[
- { name: "Eleanor Pena", tier: "Kim cương", points: "45,200", avatar: "EP" },
- { name: "Albert Flores", tier: "Bạch kim", points: "32,850", avatar: "AF" },
- { name: "Arlene McCoy", tier: "Bạch kim", points: "28,400", avatar: "AM" },
- { name: "Jane Cooper", tier: "Vàng", points: "21,150", avatar: "JC" },
+ { name: "Eleanor Pena", tier: "Atelier", points: "45,200", avatar: "EP" },
+ { name: "Albert Flores", tier: "Icon", points: "32,850", avatar: "AF" },
+ { name: "Arlene McCoy", tier: "Icon", points: "28,400", avatar: "AM" },
+ { name: "Jane Cooper", tier: "Essential", points: "21,150", avatar: "JC" },
  ].map((customer) => (
  <div key={customer.name} className="flex items-center justify-between">
  <div className="flex items-center gap-3">

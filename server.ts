@@ -18,6 +18,15 @@ async function startServer() {
   // Database Health Check
   app.get("/api/sql/status", async (req, res) => {
     try {
+      const host = process.env.SQL_HOST;
+      if (!host) {
+        return res.status(503).json({
+          success: false,
+          status: "disconnected",
+          message: "Cloud SQL instance not provisioned. Please enable Cloud SQL integration and configure environment variables."
+        });
+      }
+
       // Simple query to verify connection
       await db.execute(sql`SELECT 1`);
       return res.json({ 
@@ -31,7 +40,9 @@ async function startServer() {
         success: false, 
         status: "disconnected",
         error: err.message,
-        message: "Could not connect to Cloud SQL instance. Please ensure the instance is provisioned and SQL_* environment variables are set."
+        message: err.message.includes("ECONNREFUSED") 
+          ? "Could not connect to database host. Ensure the SQL_HOST is correct and the instance is accessible."
+          : "Database connection error. Please verify your credentials and instance state."
       });
     }
   });

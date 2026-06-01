@@ -11,7 +11,12 @@ export const createPool = () => {
   const database = process.env.SQL_DB_NAME;
 
   if (!host || !user || !password || !database) {
-    console.warn("Database connection parameters (SQL_*) are missing. Database functionality will be unavailable until provisioned.");
+    const missing = [];
+    if (!host) missing.push("SQL_HOST");
+    if (!user) missing.push("SQL_USER");
+    if (!password) missing.push("SQL_PASSWORD");
+    if (!database) missing.push("SQL_DB_NAME");
+    console.warn(`Database connection parameters are missing: ${missing.join(", ")}. Database functionality will be unavailable until provisioned.`);
   }
 
   return new Pool({

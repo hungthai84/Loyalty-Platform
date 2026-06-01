@@ -62,6 +62,7 @@ import { Customer, LoyaltyCampaign, Company, AttributeDefinition } from "@/types
 import { OfferAnalysis } from "@/components/loyalty/OfferAnalysis";
 import { CrossBranchAnalysis } from "@/components/customers/CrossBranchAnalysis";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
+import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 
 const CLV_TREND_BY_TIER_DATA = [
  { month: 'T6/25', Member: 5.2, Essential: 15.6, Icon: 52.0, Atelier: 120.5 },
@@ -134,8 +135,8 @@ export function AnalysisView() {
 
  const q = query(collection(db, "customers"), orderBy("createdAt", "desc"));
  const unsub = onSnapshot(q, (snapshot) => {
- setDbCustomers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer)));
- });
+  setDbCustomers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer)));
+ }, (error) => handleFirestoreError(error, OperationType.LIST, "customers"));
  return unsub;
  }, [user]);
 
@@ -144,8 +145,8 @@ export function AnalysisView() {
  if (!user) return;
  const q = query(collection(db, "loyalty_campaigns"), orderBy("createdAt", "desc"));
  const unsub = onSnapshot(q, (snapshot) => {
- setCampaigns(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as LoyaltyCampaign)));
- });
+  setCampaigns(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as LoyaltyCampaign)));
+ }, (error) => handleFirestoreError(error, OperationType.LIST, "loyalty_campaigns"));
  return unsub;
  }, [user]);
 
@@ -154,8 +155,8 @@ export function AnalysisView() {
  if (!user) return;
  const q = query(collection(db, "companies"), orderBy("name", "asc"));
  const unsub = onSnapshot(q, (snapshot) => {
- setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
- });
+  setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
+ }, (error) => handleFirestoreError(error, OperationType.LIST, "companies"));
  return unsub;
  }, [user]);
 
@@ -164,8 +165,8 @@ export function AnalysisView() {
  if (!user) return;
  const q = query(collection(db, "attribute_definitions"), orderBy("createdAt", "asc"));
  const unsub = onSnapshot(q, (snapshot) => {
- setAttributes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AttributeDefinition)));
- });
+  setAttributes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AttributeDefinition)));
+ }, (error) => handleFirestoreError(error, OperationType.LIST, "attribute_definitions"));
  return unsub;
  }, [user]);
 
@@ -298,7 +299,7 @@ export function AnalysisView() {
         const currentPoints = customer.points || 0;
         const newPoints = currentPoints + earnedPoints;
 
-        const customerRef = doc(db, `users/${user.uid}/customers`, simCustomerId);
+        const customerRef = doc(db, `customers`, simCustomerId);
         await setDoc(customerRef, {
           name: customer.name,
           email: customer.email || '',
@@ -319,12 +320,12 @@ export function AnalysisView() {
 
         triggerToast(`Tích lũy thành công +${earnedPoints} điểm cho ${customer.name}!`);
         setSimInvoiceId(`POS-${Math.floor(100000 + Math.random() * 900000)}`);
-      } catch (err) {
+      } catch (err: any) {
         setSimLogs(prev => [
           ...prev,
           { time: nowStr(), type: 'error', text: `❌ [ERROR] Lỗi ghi dữ liệu Firestore: ${err.message}` }
         ]);
-        triggerToast(`Lỗi giả lập POS: ${err.message}`, 'error');
+        handleFirestoreError(err, OperationType.UPDATE, "customers");
       } finally {
         setSimLoading(false);
       }
@@ -499,6 +500,19 @@ export function AnalysisView() {
  { name: 'Essential (≥15M)', value: counts.Essential || 1, color: '#0e3ec5' },
  { name: 'Member (Mặc định)', value: counts.Member || 1, color: '#7E600F' }
  ];
+ }, [customers]);
+
+ const branchRevenueData = useMemo(() => {
+ const branchMap: Record<string, number> = {};
+ customers.forEach(c => {
+ const region = c.region || 'Other';
+ if (!branchMap[region]) branchMap[region] = 0;
+ branchMap[region] += (c.clv || 0);
+ });
+ return Object.keys(branchMap).map(region => ({
+ name: region,
+ revenue: branchMap[region] / 1000000 // Convert to millions
+ })).sort((a, b) => b.revenue - a.revenue);
  }, [customers]);
 
  return (
@@ -732,6 +746,44 @@ export function AnalysisView() {
   <span className="text-muted-foreground font-medium">{tier.name}: <strong className="text-foreground">{tier.value}</strong></span>
   </div>
   ))}
+  </div>
+  </div>
+
+  <div className="bg-card border border-border/50 rounded-2xl p-6 lg:col-span-3 space-y-4">
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 border-border/40">
+  <div>
+  <h3 className="text-sm font-bold text-foreground uppercase">TỔNG DOANH THU THEO CHI NHÁNH</h3>
+  <p className="text-xs text-muted-foreground">So sánh hiệu quả hoạt động và định danh chi nhánh đóng góp tốt nhất (Đơn vị: Triệu VNĐ).</p>
+  </div>
+  </div>
+  
+  <div className="h-64 mt-2">
+  <ResponsiveContainer width="100%" height="100%">
+  <BarChart
+  data={branchRevenueData}
+  margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+  >
+  <defs>
+  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="5%" stopColor="#2f6cf5" stopOpacity={0.8}/>
+  <stop offset="95%" stopColor="#2f6cf5" stopOpacity={0.4}/>
+  </linearGradient>
+  </defs>
+  <CartesianGrid stroke="rgba(120, 120, 120, 0.1)" strokeDasharray="3 3" vertical={false} />
+  <XAxis dataKey="name" stroke="#71717A" fontSize={11} tickMargin={10} />
+  <YAxis stroke="#71717A" fontSize={11} unit="M" />
+  <Tooltip 
+    cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+    contentStyle={{ backgroundColor: 'rgba(20, 20, 22, 0.85)', backdropFilter: 'blur(16px)', color: '#fff', fontSize: '11px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }} 
+    formatter={(value: number) => [`${value.toLocaleString('vi-VN')} Tr ₫`, 'Doanh Thu']}
+  />
+  <Bar dataKey="revenue" fill="url(#colorRevenue)" name="Doanh thu (Tr ₫)" radius={[6, 6, 0, 0]} maxBarSize={60}>
+    {branchRevenueData.map((entry, index) => (
+      <Cell key={`cell-${index}`} fill={index === 0 ? '#2f6cf5' : 'rgba(47, 108, 245, 0.5)'} />
+    ))}
+  </Bar>
+  </BarChart>
+  </ResponsiveContainer>
   </div>
   </div>
 
