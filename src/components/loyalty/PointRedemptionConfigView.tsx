@@ -659,7 +659,7 @@ export function PointRedemptionConfigView() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
                 {filteredRules.map((rule: any) => {
                   const typeInfo =
                     REWARD_TYPE_OPTIONS.find(
@@ -670,9 +670,9 @@ export function PointRedemptionConfigView() {
                   return (
                     <Card
                       key={rule.id}
-                      className={`border-none ${rule.isEnabled !== false ? "bg-card" : "bg-muted/10 opacity-70"} hover:shadow-md transition-all duration-300 rounded-[1.5rem] border border-border/40 overflow-hidden text-left`}
+                      className={`border-none ${rule.isEnabled !== false ? "bg-card" : "bg-muted/10 opacity-70"} hover:shadow-md transition-all duration-300 rounded-[1.5rem] border border-border/40 overflow-hidden text-left flex flex-col h-full`}
                     >
-                      <CardContent className="p-5 space-y-4">
+                      <CardContent className="flex-1 flex flex-col p-5 gap-4">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex items-start gap-4">
                             <div
@@ -736,7 +736,7 @@ export function PointRedemptionConfigView() {
                         </div>
 
                         {/* Specs grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1 border-t border-border/10">
+                        <div className="grid grid-cols-2 mt-auto gap-2 pt-1 border-t border-border/10">
                           <div className="p-2 bg-primary/5 rounded-xl border border-primary/10 flex flex-col justify-between">
                             <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block">
                               Yêu cầu đổi

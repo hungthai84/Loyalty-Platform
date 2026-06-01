@@ -47,7 +47,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
   { id: "tier_config", name: "Cấu Hình Hạng Hội Viên", description: "Chỉnh sửa ngưỡng thăng hạng (Essential, Icon, Atelier)", admin: true, manager: true, support: false },
   { id: "marketing_publish", name: "Kích Hoạt Chiến Dịch", description: "Bật/tắt tự động hóa tiếp thị, gửi SMS/Zalo/Email mẫu", admin: true, manager: true, support: false },
   { id: "financial_edit", name: "Tham Số Tài Chính", description: "Quyết định quỹ chi phí VIP, ngân sách loyalty showroom", admin: true, manager: false, support: false },
-  { id: "api_write", name: "Quản Trị Hệ Thống & Keys", description: "Tạo API Keys, sửa đổi cài đặt SendGrid & Firebase Rules", admin: true, manager: false, support: false },
+  { id: "api_write", name: "Quản Trị Hệ Thống & Keys", description: "Tạo API Keys, sửa đổi cài đặt Zimbra & Firebase Rules", admin: true, manager: false, support: false },
  ]);
 
  useEffect(() => {
@@ -62,7 +62,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
           { id: "tier_config", name: "Cấu Hình Hạng Hội Viên", description: "Chỉnh sửa ngưỡng thăng hạng (Essential, Icon, Atelier)", admin: true, manager: true, support: false },
           { id: "marketing_publish", name: "Kích Hoạt Chiến Dịch", description: "Bật/tắt tự động hóa tiếp thị, gửi SMS/Zalo/Email mẫu", admin: true, manager: true, support: false },
           { id: "financial_edit", name: "Tham Số Tài Chính", description: "Quyết định quỹ chi phí VIP, ngân sách loyalty showroom", admin: true, manager: false, support: false },
-          { id: "api_write", name: "Quản Trị Hệ Thống & Keys", description: "Tạo API Keys, sửa đổi cài đặt SendGrid & Firebase Rules", admin: true, manager: false, support: false },
+          { id: "api_write", name: "Quản Trị Hệ Thống & Keys", description: "Tạo API Keys, sửa đổi cài đặt Zimbra & Firebase Rules", admin: true, manager: false, support: false },
         ];
         const merged = defaults.map(defaultPerm => {
           const matched = data.permissions.find((p: any) => p.id === defaultPerm.id);

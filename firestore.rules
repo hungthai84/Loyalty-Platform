@@ -70,6 +70,22 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /users/{userId}/{document=**} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+    
+    match /system/{document=**} {
+      allow read, write: if isSignedIn();
+    }
+    
+    match /_connection_test/{document=**} {
+      allow read, write: if isSignedIn();
+    }
+    
+    match /redemptions/{redemptionId} {
+      allow read, write: if isApproved();
+    }
+
     // --- COLLECTION RULES ---
 
     match /system_users/{userId} {

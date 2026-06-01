@@ -61,6 +61,9 @@ export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
   const [conditions, setConditions] = useState<TierCondition[]>(
     tier?.conditions || [],
   );
+  const [benefits, setBenefits] = useState<{name: string, value: string}[]>(
+    tier?.benefits || []
+  );
   const [attributes, setAttributes] = useState<AttributeDefinition[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -98,6 +101,20 @@ export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
     );
   };
 
+  const addBenefit = () => {
+    setBenefits([...benefits, { name: "", value: "" }]);
+  };
+
+  const removeBenefit = (index: number) => {
+    setBenefits(benefits.filter((_, i) => i !== index));
+  };
+
+  const updateBenefit = (index: number, name: string, value: string) => {
+    setBenefits(
+      benefits.map((b, i) => (i === index ? { name, value } : b))
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -115,6 +132,7 @@ export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
         multiplier: Number(multiplier),
         color,
         conditions,
+        benefits: benefits.filter(b => b.name.trim() !== ""),
         userId: user.uid,
         createdAt: tier?.createdAt || serverTimestamp(),
       });
@@ -338,6 +356,55 @@ export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
               {conditions.length === 0 && (
                 <div className="py-8 text-center border-2 border-dashed border-border rounded-2xl text-muted-foreground text-sm">
                   Chỉ sử dụng ngưỡng điểm cơ bản để thăng hạng.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Zap className="w-4 h-4" /> Tuyến ưu đãi (Benefits)
+              </label>
+              <button
+                type="button"
+                onClick={addBenefit}
+                className="text-xs font-bold text-primary flex items-center gap-1 hover:underline"
+              >
+                <Plus className="w-3 h-3" /> Thêm ưu đãi
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              {benefits.map((benefit, idx) => (
+                <div key={idx} className="flex gap-2 p-3 bg-background border border-border rounded-2xl relative group items-center">
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input
+                      className="w-full px-3 py-2 bg-muted rounded-lg text-sm outline-none font-bold"
+                      placeholder="Tên chương trình (VD: Welcome Voucher)"
+                      value={benefit.name}
+                      onChange={(e) => updateBenefit(idx, e.target.value, benefit.value)}
+                    />
+                    <input
+                      className="w-full px-3 py-2 bg-muted rounded-lg text-sm outline-none"
+                      placeholder="Nội dung ưu đãi (VD: Giảm 5%)"
+                      value={benefit.value}
+                      onChange={(e) => updateBenefit(idx, benefit.name, e.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeBenefit(idx)}
+                    className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              
+              {benefits.length === 0 && (
+                <div className="py-8 text-center border-2 border-dashed border-border rounded-2xl text-muted-foreground text-sm">
+                  Cấp bậc này chưa có cấu hình ưu đãi cụ thể.
                 </div>
               )}
             </div>

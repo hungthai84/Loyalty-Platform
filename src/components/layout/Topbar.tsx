@@ -51,8 +51,8 @@ export function Topbar({ setActiveView }: TopbarProps) {
  {
  id: "alert-3",
  type: "info",
- title: "Giao diện SendGrid kích hoạt",
- description: "Cấu hình gửi email tự động mừng sinh nhật qua SendGrid đã sẵn sàng.",
+ title: "Giao diện Zimbra kích hoạt",
+ description: "Cấu hình gửi email tự động mừng sinh nhật đã sẵn sàng.",
  time: "1 ngày trước",
  read: true
  }

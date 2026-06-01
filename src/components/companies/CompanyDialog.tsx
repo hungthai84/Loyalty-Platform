@@ -19,6 +19,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  const [type, setType] = useState<'company'|'branch'>(company?.type || 'company');
  const [parentId, setParentId] = useState(company?.parentId || '');
  const [submitting, setSubmitting] = useState(false);
+ const [deleteConfirm, setDeleteConfirm] = useState(false);
  
  const [companies, setCompanies] = useState<Company[]>([]);
 
@@ -70,8 +71,12 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
 
  const handleDelete = async () => {
  if (!user || !company) return;
- if (!confirm("Xóa công ty/chi nhánh này? Dữ liệu khách hàng liên quan sẽ không bị xóa nhưng sẽ mất liên kết.")) return;
+ setDeleteConfirm(true);
+ };
 
+ const executeDelete = async () => {
+ if (!user || !company) return;
+ setDeleteConfirm(false);
  setSubmitting(true);
  try {
  await deleteDoc(doc(db, "companies", company.id));
@@ -225,6 +230,35 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  </div>
  </form>
  </div>
+
+ {deleteConfirm && (
+ <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+ <div className="bg-card w-full max-w-sm rounded-[24px] shadow-2xl overflow-hidden border border-border animate-in fade-in zoom-in-95 duration-200 p-6 flex flex-col items-center text-center">
+ <div className="w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 mb-4">
+ <Trash2 className="w-6 h-6" />
+ </div>
+ <h3 className="text-lg font-bold mb-2">Xác nhận xóa</h3>
+ <p className="text-sm text-muted-foreground mb-6">
+ Bạn có chắc chắn muốn xóa <strong>"{company?.name}"</strong>? Dữ liệu liên quan không bị xóa nhưng sẽ mất liên kết.
+ </p>
+ <div className="flex gap-3 w-full">
+ <button
+ onClick={() => setDeleteConfirm(false)}
+ className="flex-1 py-2.5 text-sm font-bold bg-muted text-foreground rounded-xl hover:bg-muted/80 transition-colors"
+ >
+ Hủy
+ </button>
+ <button
+ onClick={executeDelete}
+ disabled={submitting}
+ className="flex-1 py-2.5 text-sm font-bold bg-rose-500 text-white rounded-xl shadow-md hover:bg-rose-600 hover:shadow-lg transition-all disabled:opacity-50"
+ >
+ Xóa ngay
+ </button>
+ </div>
+ </div>
+ </div>
+ )}
  </div>
  );
 }

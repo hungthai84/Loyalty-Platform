@@ -57,14 +57,14 @@ export function CustomersView() {
  // Custom column toggle configuration
  const [showColumnSettings, setShowColumnSettings] = useState(false);
  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
- id: true,
- nameEmail: true,
- social: true,
- company: true,
- status: true,
- points: true,
- customAttributes: true,
- actions: true,
+  id: true,
+  nameEmail: true,
+  social: false,
+  company: true,
+  status: true,
+  points: false,
+  customAttributes: false,
+  actions: true,
  });
 
  // Advanced filters toggle state & custom criteria values
@@ -255,15 +255,25 @@ export function CustomersView() {
  ) as string[];
 
  const resetFilters = () => {
- setSearch("");
- setSelectedCompanyId("all");
- setSelectedStatus("all");
- setMinPoints("");
- setMaxPoints("");
- setSelectedSocialType("all");
- setSelectedHasCompany("all");
- setSelectedTag("all");
- setSortBy("createdAt_desc");
+  setSearch("");
+  setSelectedCompanyId("all");
+  setSelectedStatus("all");
+  setMinPoints("");
+  setMaxPoints("");
+  setSelectedSocialType("all");
+  setSelectedHasCompany("all");
+  setSelectedTag("all");
+  setSortBy("createdAt_desc");
+  setVisibleColumns({
+    id: true,
+    nameEmail: true,
+    social: false,
+    company: true,
+    status: true,
+    points: false,
+    customAttributes: false,
+    actions: true,
+  });
  };
 
  const hasActiveFilters = search !== "" || 
@@ -557,14 +567,14 @@ export function CustomersView() {
  <div className="border-t border-border mt-3 pt-2.5 flex justify-between gap-1">
  <button 
  onClick={() => setVisibleColumns({
- id: true,
- nameEmail: true,
- social: true,
- company: true,
- status: true,
- points: true,
- customAttributes: true,
- actions: true,
+  id: true,
+  nameEmail: true,
+  social: false,
+  company: true,
+  status: true,
+  points: false,
+  customAttributes: false,
+  actions: true,
  })}
  className="text-xs text-[#2f6cf5] hover:underline font-extrabold"
  >
@@ -791,7 +801,7 @@ export function CustomersView() {
    }
    setSelectedCustomer(customer);
   }}
- className="transition-colors cursor-pointer group row-shake"
+ className="hover:bg-transparent!"
  >
  {/* ID */}
  {visibleColumns.id && <TableCell className="text-xs text-muted-foreground">{customer.id}</TableCell>}

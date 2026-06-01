@@ -18,6 +18,7 @@ import {
   Gift,
   User,
   Check,
+  Mail,
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
@@ -31,6 +32,7 @@ import { SeedDemoData } from "@/components/layout/SeedDemoData";
 import { RoleManager } from "@/components/settings/RoleManager";
 import { ProfileTab } from "@/components/settings/ProfileTab";
 import { CompanyManager } from "@/components/settings/CompanyManager";
+import { ZimbraConfig } from "@/components/settings/ZimbraConfig";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -43,6 +45,7 @@ type SettingsTab =
   | "transitions"
   | "portal"
   | "api"
+  | "email"
   | "monitor"
   | "demo"
   | "roles";
@@ -92,6 +95,7 @@ export function SettingsView() {
     { id: "redemption", label: "Đổi quà ưu đãi", icon: Gift },
     { id: "retention", label: "Trạng thái & Rủi ro", icon: Clock },
     { id: "transitions", label: "Luật chuyển trạng thái", icon: GitCompare },
+    { id: "email", label: "Cấu hình Zimbra Email", icon: Mail },
     { id: "api", label: "Kết nối API", icon: Webhook },
     { id: "portal", label: "Tùy chỉnh Cổng Loyalty", icon: Fingerprint },
     { id: "monitor", label: "Giám sát Hệ thống", icon: Activity },
@@ -216,6 +220,11 @@ export function SettingsView() {
               {activeTab === "transitions" && (
                 <div className="max-w-6xl mx-auto pb-12">
                   <StatusTransitionConfigView />
+                </div>
+              )}
+              {activeTab === "email" && (
+                <div className="max-w-6xl mx-auto pb-12">
+                  <ZimbraConfig />
                 </div>
               )}
               {activeTab === "api" && (

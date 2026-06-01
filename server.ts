@@ -6,6 +6,7 @@ import { AuthRequest, requireAuth } from "./src/middleware/auth.ts";
 import { getOrCreateUser } from "./src/db/users.ts";
 import { db } from "./src/db/index.ts";
 import { sql } from "drizzle-orm";
+import nodemailer from "nodemailer";
 
 dotenv.config();
 
@@ -72,48 +73,49 @@ async function startServer() {
     }
   });
 
-  // Secure Proxy API for SendGrid Actions
-  app.post("/api/sendgrid/test", async (req, res) => {
+  // Secure Proxy API for Zimbra SMTP Email Actions
+  app.post("/api/zimbra/test", async (req, res) => {
     try {
-      const { apiKey, fromEmail, fromName, toEmail, subject, htmlContent } = req.body;
-      const keyToUse = apiKey || process.env.SENDGRID_API_KEY;
+      const { smtpHost, smtpPort, smtpUser, smtpPass, fromEmail, fromName, toEmail, subject, htmlContent } = req.body;
+      
+      const host = smtpHost || process.env.ZIMBRA_SMTP_HOST;
+      const port = Number(smtpPort || process.env.ZIMBRA_SMTP_PORT || 587);
+      const user = smtpUser || process.env.ZIMBRA_SMTP_USER;
+      const pass = smtpPass || process.env.ZIMBRA_SMTP_PASSWORD;
+      const from = fromEmail || process.env.ZIMBRA_SMTP_FROM || user;
 
-      if (!keyToUse) {
+      if (!host || !user || !pass) {
         return res.status(400).json({
           success: false,
-          message: "API Key chưa được cấu hình. Vui lòng cung cấp trong Settings hoặc file .env; hoặc nhập trực tiếp phía trên để kiểm tra thử nghiệm."
+          message: "Cấu hình Zimbra SMTP chưa đầy đủ. Vui lòng cung cấp Host, User và Password trong Settings hoặc file .env."
         });
       }
 
-      const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${keyToUse}`,
-          "Content-Type": "application/json"
+      const transporter = nodemailer.createTransport({
+        host: host,
+        port: port,
+        secure: port === 465, // true for 465, false for other ports
+        auth: {
+          user: user,
+          pass: pass,
         },
-        body: JSON.stringify({
-          personalizations: [{ to: [{ email: toEmail }] }],
-          from: { email: fromEmail, name: fromName || "SEVA CRM Premium" },
-          subject: subject,
-          content: [{ type: "text/html", value: htmlContent }]
-        })
       });
 
-      if (response.ok || response.status === 202) {
-        return res.json({ success: true, message: "Đã gửi email kiểm tra thành công qua SendGrid API!" });
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        const detailedError = errorData.errors?.[0]?.message || "Gặp phản hồi không hợp lệ từ SendGrid (kiểm tra lại API key hoặc email gửi đi đã được xác thực chưa).";
-        return res.status(response.status).json({
-          success: false,
-          message: `SendGrid API Error: ${detailedError}`
-        });
-      }
+      const mailOptions = {
+        from: `"${fromName || "SEVA CRM Premium"}" <${from}>`,
+        to: toEmail,
+        subject: subject,
+        html: htmlContent,
+      };
+
+      await transporter.sendMail(mailOptions);
+      
+      return res.json({ success: true, message: "Đã gửi email kiểm tra thành công qua máy chủ Zimbra SMTP!" });
     } catch (err: any) {
-      console.error("Express SendGrid Proxy error:", err);
+      console.error("Zimbra SMTP Error:", err);
       return res.status(500).json({
         success: false,
-        message: `Lỗi kết nối máy chủ tới SendGrid: ${err.message}`
+        message: `Lỗi kết nối máy chủ Zimbra SMTP: ${err.message}`
       });
     }
   });

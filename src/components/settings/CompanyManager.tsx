@@ -34,6 +34,8 @@ export function CompanyManager() {
 
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+
   const toggleExpand = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -145,26 +147,27 @@ export function CompanyManager() {
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
+  const handleDelete = (id: string, name: string) => {
     if (!user?.uid || user?.isLocal)
-      return toast.error(
-        "Vui lòng đăng nhập bằng Google để thực hiện thao tác này",
+      return toast.error("Vui lòng đăng nhập bằng Google để thực hiện thao tác này");
+    
+    setDeleteConfirm({ id, name });
+  };
+
+  const executeDelete = async () => {
+    if (!deleteConfirm) return;
+    
+    try {
+      const companiesPath = "companies";
+      await deleteDoc(doc(db, companiesPath, deleteConfirm.id));
+      toast.success("Xóa thành công");
+      window.dispatchEvent(
+        new CustomEvent("crm-config-saved", { detail: { tab: "companies" } }),
       );
-    if (
-      confirm(
-        `Bạn có chắc chắn muốn xóa "${name}"? Các chi nhánh con (nếu có) sẽ không bị xóa tự động.`,
-      )
-    ) {
-      try {
-        const companiesPath = "companies";
-        await deleteDoc(doc(db, companiesPath, id));
-        toast.success("Xóa thành công");
-        window.dispatchEvent(
-          new CustomEvent("crm-config-saved", { detail: { tab: "companies" } }),
-        );
-      } catch (error: any) {
-        toast.error(error.message);
-      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setDeleteConfirm(null);
     }
   };
 
@@ -510,6 +513,35 @@ export function CompanyManager() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Delete Confirmation Dialog */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card w-full max-w-sm rounded-[24px] shadow-2xl overflow-hidden border border-border animate-in fade-in zoom-in-95 duration-200 p-6 flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 mb-4">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold mb-2">Xác nhận xóa</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Bạn có chắc chắn muốn xóa <strong>"{deleteConfirm.name}"</strong>? Các chi nhánh con (nếu có) sẽ không bị xóa tự động, bạn sẽ phải tự xóa chúng sau.
+            </p>
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 py-2.5 text-sm font-bold bg-muted text-foreground rounded-xl hover:bg-muted/80 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={executeDelete}
+                className="flex-1 py-2.5 text-sm font-bold bg-rose-500 text-white rounded-xl shadow-md hover:bg-rose-600 hover:shadow-lg transition-all"
+              >
+                Xóa ngay
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -169,14 +169,70 @@ export function SeedDemoData() {
   await batchComp.commit();
 
  // Step 2: Add Tiers (configs)
- setStatusText("Bước 2/6: Đang thiết lập 4 thứ hạng thành viên đặc quyền...");
+ setStatusText("Bước 2/6: Đang thiết lập 4 thứ hạng thành viên đặc quyền và ưu đãi...");
  setProgress(15);
 
  const tiers = [
- { id: "tier-member", name: "Member", threshold: 0, multiplier: 1, color: "#94a3b8" },
- { id: "tier-essential", name: "Essential", threshold: 500, multiplier: 1.25, color: "#10b981" },
- { id: "tier-icon", name: "Icon", threshold: 2500, multiplier: 1.5, color: "#f59e0b" },
- { id: "tier-atelier", name: "Atelier", threshold: 10000, multiplier: 2.0, color: "#2f6cf5" }
+ { 
+ id: "tier-member", name: "Member", threshold: 0, multiplier: 1, color: "#94a3b8",
+ benefits: [
+ { name: "Welcome Voucher", value: "5%" },
+ { name: "Matching Collection", value: "5% SP thứ 2" },
+ { name: "Birthday Reward", value: "Voucher 200k" },
+ { name: "Point Multiplier", value: "x1" },
+ { name: "Jewelry Spa/Cleaning", value: "1 lần/năm" },
+ { name: "Early Access BST", value: "❌" },
+ { name: "Upgrade Program", value: "Basic" },
+ { name: "VIP Event", value: "❌" },
+ { name: "AI Styling", value: "Basic" },
+ { name: "Complete The Look", value: "Basic Suggestion" }
+ ]
+ },
+ { 
+ id: "tier-essential", name: "Essential", threshold: 500, multiplier: 1.25, color: "#10b981",
+ benefits: [
+ { name: "Welcome Voucher", value: "7%" },
+ { name: "Matching Collection", value: "10%" },
+ { name: "Birthday Reward", value: "5% + quà" },
+ { name: "Point Multiplier", value: "x1.2" },
+ { name: "Jewelry Spa/Cleaning", value: "2 lần/năm" },
+ { name: "Early Access BST", value: "24h" },
+ { name: "Upgrade Program", value: "Silver Upgrade" },
+ { name: "VIP Event", value: "Mini Event" },
+ { name: "AI Styling", value: "Enhanced" },
+ { name: "Complete The Look", value: "Combo Suggestion" }
+ ]
+ },
+ { 
+ id: "tier-icon", name: "Icon", threshold: 2500, multiplier: 1.5, color: "#f59e0b",
+ benefits: [
+ { name: "Welcome Voucher", value: "10% VIP" },
+ { name: "Matching Collection", value: "15%" },
+ { name: "Birthday Reward", value: "Luxury Gift" },
+ { name: "Point Multiplier", value: "x1.5" },
+ { name: "Jewelry Spa/Cleaning", value: "Unlimited" },
+ { name: "Early Access BST", value: "72h" },
+ { name: "Upgrade Program", value: "VIP Upgrade" },
+ { name: "VIP Event", value: "VIP Event" },
+ { name: "AI Styling", value: "VIP AI" },
+ { name: "Complete The Look", value: "VIP Matching" }
+ ]
+ },
+ { 
+ id: "tier-atelier", name: "Atelier", threshold: 10000, multiplier: 2.0, color: "#2f6cf5",
+ benefits: [
+ { name: "Welcome Voucher", value: "Private Offer" },
+ { name: "Matching Collection", value: "Private Collection" },
+ { name: "Birthday Reward", value: "Private Gift" },
+ { name: "Point Multiplier", value: "x2" },
+ { name: "Jewelry Spa/Cleaning", value: "VIP Priority" },
+ { name: "Early Access BST", value: "Private Preview" },
+ { name: "Upgrade Program", value: "Premium Upgrade" },
+ { name: "VIP Event", value: "Private Event" },
+ { name: "AI Styling", value: "Personal Stylist" },
+ { name: "Complete The Look", value: "Private Styling" }
+ ]
+ }
  ];
 
  const batchTiers = writeBatch(db);
@@ -188,6 +244,7 @@ export function SeedDemoData() {
  threshold: t.threshold,
  multiplier: t.multiplier,
  color: t.color,
+ benefits: t.benefits,
  userId: user.uid,
  createdAt: serverTimestamp(),
  conditions: [

@@ -106,6 +106,22 @@ export function TierManagementView() {
  </div>
  ))}
  </div>
+ 
+ {tier.benefits && tier.benefits.length > 0 && (
+ <div className="mt-4 pt-4 border-t border-border">
+ <h5 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+ <Star className="w-4 h-4 text-amber-500" /> Đặc quyền ưu đãi
+ </h5>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ {tier.benefits.map((benefit, i) => (
+ <div key={i} className="flex justify-between items-center bg-muted/20 p-2.5 rounded-lg border border-border/50">
+ <span className="text-xs font-bold text-foreground">{benefit.name}</span>
+ <span className="text-xs text-muted-foreground font-medium text-right ml-2">{benefit.value}</span>
+ </div>
+ ))}
+ </div>
+ </div>
+ )}
  </div>
 
  <div className="p-8 md:w-64 bg-primary/5 flex flex-col justify-center items-center text-center">

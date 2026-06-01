@@ -57,6 +57,7 @@ export interface TierConfig {
  multiplier?: number;
  conditions?: TierCondition[];
  color?: string;
+ benefits?: { name: string; value: string }[];
  userId: string;
  createdAt: any;
 }
@@ -127,4 +128,16 @@ export interface Company {
  parentId?: string;
  userId: string;
  createdAt: any;
+}
+
+export interface ZimbraSettings {
+ id: string;
+ smtpHost: string;
+ smtpPort: number;
+ smtpUser: string;
+ smtpPass: string;
+ fromEmail: string;
+ fromName: string;
+ userId: string;
+ updatedAt: any;
 }
