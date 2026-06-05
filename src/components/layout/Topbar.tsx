@@ -1,6 +1,5 @@
-import { Bell, Search, Menu, Sun, Moon, Monitor, Check, X, AlertTriangle, Sparkles, CheckCircle2, LogOut, User } from "lucide-react";
+import { Bell, Search, Menu, Sun, Moon, Monitor, X, AlertTriangle, Sparkles, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { useTheme } from "next-themes";
 import React, { useState, useRef, useEffect } from "react";
@@ -9,7 +8,6 @@ import {
  DropdownMenuContent,
  DropdownMenuItem,
  DropdownMenuTrigger,
- DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 interface SystemNotification {

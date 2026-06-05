@@ -7,19 +7,11 @@ import {
   Play,
   ToggleLeft,
   ToggleRight,
-  HelpCircle,
-  FileCode2,
   Save,
-  Sparkles,
-  ChevronRight,
   AlertCircle,
-  CheckCircle2,
-  Clock,
-  UserCheck,
   Zap,
   ArrowRight,
   RefreshCw,
-  Info,
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -36,7 +28,6 @@ import {
 } from "firebase/firestore";
 import {
   CUSTOMER_STATUSES,
-  CustomerStatusConfig,
 } from "@/data/customerStatuses";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -404,7 +395,7 @@ export function StatusTransitionConfigView() {
 
         if (matchedRule) {
           // Perform state transition update in Firestore
-          const docRef = doc(db, `users/${user.uid}/customers/${cust.id}`);
+          const docRef = doc(db, `customers/${cust.id}`);
           await updateDoc(docRef, {
             activityStatus: matchedRule.toStatus,
             updatedAt: serverTimestamp(),
@@ -507,7 +498,7 @@ export function StatusTransitionConfigView() {
   // Handler to toggle rule enabled/disabled
   const handleToggleRule = async (rule: TransitionRule) => {
     if (!user) return;
-    const path = `users/${user.uid}/statusTransitions/${rule.id}`;
+    const path = `status_transitions/${rule.id}`;
     try {
       await setDoc(
         doc(db, path),
@@ -533,7 +524,7 @@ export function StatusTransitionConfigView() {
   // Handler to delete rule
   const handleDeleteRule = async (id: string) => {
     if (!user) return;
-    const path = `users/${user.uid}/statusTransitions/${id}`;
+    const path = `status_transitions/${id}`;
     if (
       !window.confirm(
         "Bạn có chắc chắn muốn xóa quy tắc chuyển trạng thái này?",
@@ -629,7 +620,7 @@ export function StatusTransitionConfigView() {
       return;
     }
 
-    const path = `users/${user.uid}/statusTransitions/${editingRule.id}`;
+    const path = `status_transitions/${editingRule.id}`;
     try {
       await setDoc(doc(db, path), {
         ...editingRule,

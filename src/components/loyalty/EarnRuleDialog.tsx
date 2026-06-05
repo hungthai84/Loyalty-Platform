@@ -9,7 +9,6 @@ import {
  Gift, 
  Camera, 
  Heart,
- TrendingUp,
  Scissors
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";

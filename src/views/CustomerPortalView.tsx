@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { 
  QrCode, 
  Gift, 
@@ -12,8 +11,7 @@ import {
  Scissors, 
  Monitor, 
  Moon, 
- Palette, 
- Laptop 
+ Palette 
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { useFirebase } from "@/components/FirebaseProvider";

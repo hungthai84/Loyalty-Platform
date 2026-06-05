@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Database, Server, Timer, Terminal, ShieldCheck, AlertCircle, RefreshCw } from "lucide-react";
+import { Database, Server, Timer, Terminal, ShieldCheck, RefreshCw } from "lucide-react";
 import * as motion from "motion/react-client";
 
 interface SQLStatus {

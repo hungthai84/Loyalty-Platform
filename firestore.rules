@@ -151,6 +151,11 @@ service cloud.firestore {
       allow write: if isAdmin() && isValidId(campId);
     }
 
+    match /status_transitions/{ruleId} {
+      allow read: if isApproved();
+      allow write: if isAdmin() && isValidId(ruleId);
+    }
+
     match /segmentation_rules/{ruleId} {
       allow read: if isApproved();
       allow write: if isAdmin() && isValidId(ruleId);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Plus,
@@ -8,24 +8,16 @@ import {
   ChevronRight,
   Zap,
   Trophy,
-  Users,
   Scissors,
-  Smartphone,
   Calendar,
   Camera,
   Share2,
   Gem,
-  ArrowUpRight,
   TrendingUp,
-  History,
   Tag,
   AlertCircle,
   Sparkles,
-  Check,
   CheckCircle2,
-  Trash2,
-  Award,
-  Coins,
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
@@ -38,7 +30,6 @@ import {
   orderBy,
   doc,
   setDoc,
-  updateDoc,
   writeBatch,
   serverTimestamp,
 } from "firebase/firestore";
@@ -64,15 +55,7 @@ import {
   getGuestCampaigns,
   getGuestSegmentationRules,
   getGuestCustomers,
-  saveGuestTier,
-  saveGuestRedemptionRule,
-  deleteGuestRedemptionRule,
-  saveGuestEarnRule,
-  deleteGuestEarnRule,
-  saveGuestCampaign,
-  deleteGuestCampaign,
   saveGuestSegmentationRule,
-  deleteGuestSegmentationRule,
   saveGuestCustomer,
 } from "@/data/guestData";
 

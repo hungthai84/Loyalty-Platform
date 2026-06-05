@@ -6,9 +6,7 @@ import {
   Settings as SettingsIcon,
   Star,
   Clock,
-  ChevronRight,
   Shield,
-  Layers,
   Database,
   Fingerprint,
   Webhook,
@@ -16,13 +14,11 @@ import {
   Activity,
   GitCompare,
   Gift,
-  User,
   Check,
   Mail,
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
-import { CustomerPortalView } from "@/views/CustomerPortalView";
 import { LoyaltySettingsView } from "@/components/loyalty/LoyaltySettingsView";
 import { TierManagementView } from "@/components/loyalty/TierManagementView";
 import { StatusTransitionConfigView } from "@/components/loyalty/StatusTransitionConfigView";

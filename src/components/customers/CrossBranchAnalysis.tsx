@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { Customer, Company, AttributeDefinition } from '@/types';
-import { X, Users, RefreshCw, Check } from 'lucide-react';
+import { Users, RefreshCw, Check } from 'lucide-react';
 
 interface Props {
  customers: Customer[];

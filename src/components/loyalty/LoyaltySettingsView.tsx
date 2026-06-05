@@ -3,7 +3,6 @@ import {
   AlertTriangle,
   Zap,
   Save,
-  Clock,
   Info,
   Search,
   Check,
@@ -11,7 +10,6 @@ import {
   AlertCircle,
   ShieldAlert,
   Sparkles,
-  Filter,
   ShieldCheck,
   HeartPulse,
 } from "lucide-react";
@@ -20,7 +18,6 @@ import { db } from "@/lib/firebase";
 import {
   doc,
   setDoc,
-  getDoc,
   serverTimestamp,
   onSnapshot,
 } from "firebase/firestore";
@@ -30,7 +27,6 @@ import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   CUSTOMER_STATUSES,
-  CustomerStatusConfig,
 } from "@/data/customerStatuses";
 import { Badge } from "@/components/ui/badge";
 

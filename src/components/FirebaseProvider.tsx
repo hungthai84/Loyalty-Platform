@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User, signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithRedirect, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot, getDocFromServer } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { toast } from 'sonner';
@@ -23,7 +23,7 @@ interface FirebaseContextType {
  signIn: () => Promise<void>;
  signInWithRedirectOnly: () => Promise<void>;
  logout: () => Promise<void>;
- registerUser: (displayName?: string) => Promise<void>;
+ registerUser: () => Promise<void>;
  refreshStatus: () => Promise<void>;
  signInWithCredentials: (userId: string, password: string) => Promise<boolean>;
  registerWithCredentials: (userId: string, password: string, displayName: string) => Promise<boolean>;
@@ -330,7 +330,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
   }
  };
 
- const registerUser = async (displayName?: string) => {
+ const registerUser = async () => {
   // Registration is usually handled by auto-creation in checkSystemUserStatus
   await signIn();
  };

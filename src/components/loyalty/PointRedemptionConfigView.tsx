@@ -6,23 +6,18 @@ import {
   Edit2,
   Sliders,
   Sparkles,
-  CheckCircle2,
   Coins,
   Save,
   Info,
-  AlertCircle,
   Search,
   Ticket,
   Package,
   Percent,
-  TrendingUp,
   RefreshCw,
   ArrowRight,
-  Check,
   Power,
   Calendar,
   Layers,
-  HelpCircle,
   User,
   History,
   UserCheck,
@@ -262,7 +257,7 @@ export function PointRedemptionConfigView() {
       return;
 
     try {
-      const path = `users/${user.uid}/redemptionRules`;
+      const path = `redemption_rules`;
       for (let i = 0; i < PRESET_RULES.length; i++) {
         const id = `RULE-BOOTSTRAP-${Date.now()}-${i}`;
         await setDoc(doc(db, `${path}/${id}`), {
@@ -285,7 +280,7 @@ export function PointRedemptionConfigView() {
   // Toggle active status
   const handleToggleRuleStatus = async (rule: any) => {
     if (!user) return;
-    const path = `users/${user.uid}/redemptionRules/${rule.id}`;
+    const path = `redemption_rules/${rule.id}`;
     const nextState = !rule.isEnabled;
     try {
       await setDoc(
@@ -333,7 +328,7 @@ export function PointRedemptionConfigView() {
     if (!confirm(`Bạn có chắc muốn xóa cấu hình quà tặng "${name}" không?`))
       return;
 
-    const path = `users/${user.uid}/redemptionRules/${id}`;
+    const path = `redemption_rules/${id}`;
     try {
       await deleteDoc(doc(db, path));
       toast.success("Đã xóa quy tắc đổi quà thành công");
@@ -360,7 +355,7 @@ export function PointRedemptionConfigView() {
       return;
     }
 
-    const path = `users/${user.uid}/redemptionRules/${editingRule.id}`;
+    const path = `redemption_rules/${editingRule.id}`;
     try {
       await setDoc(
         doc(db, path),
@@ -431,7 +426,7 @@ export function PointRedemptionConfigView() {
 
     try {
       // 1. Deduct points in Firestore for this Customer
-      const custRef = doc(db, `users/${user.uid}/customers/${customer.id}`);
+      const custRef = doc(db, `customers/${customer.id}`);
       const newPoints = currentPoints - rule.pointsRequired;
       await updateDoc(custRef, {
         points: newPoints,

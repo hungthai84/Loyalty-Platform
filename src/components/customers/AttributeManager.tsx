@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { useFirebase } from '@/components/FirebaseProvider';
 import { handleFirestoreError, OperationType } from '@/lib/firestore-errors';
 import { toast } from 'sonner';

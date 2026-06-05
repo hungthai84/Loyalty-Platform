@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
-import { doc, writeBatch, collection, getDocs, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { doc, writeBatch, collection, getDocs, serverTimestamp } from "firebase/firestore";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
  Database, 
  Sparkles, 
  Trash2, 
- CheckCircle2, 
  AlertTriangle, 
  Users, 
  Building2, 
@@ -119,7 +118,6 @@ export function SeedDemoData() {
  setStatusText("Bắt đầu tạo cơ sở dữ liệu trang sức sang trọng...");
 
  try {
- const userRefPath = `users/${user.uid}`;
  
  // Step 1: Add Branch Locations (Companies)
  setStatusText("Bước 1/6: Đang thiết lập 2 Chi nhánh chính...");

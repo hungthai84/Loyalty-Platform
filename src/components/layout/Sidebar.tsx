@@ -11,8 +11,6 @@ import {
   Settings,
   Bell,
   Fingerprint,
-  ChevronRight,
-  Building2,
   Sparkles
 } from "lucide-react";
 
@@ -46,7 +44,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
       onMouseLeave={() => setIsHovered(false)}
       initial={false}
       animate={{ 
-        width: isHovered ? 280 : 80,
+        width: isHovered ? "auto" : 80,
       }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className={cn(

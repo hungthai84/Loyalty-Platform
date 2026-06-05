@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Mail, Save, Activity, ShieldCheck, AlertCircle, Send } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
-import { doc, setDoc, getDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { ZimbraSettings } from "@/types";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { toast } from "sonner";

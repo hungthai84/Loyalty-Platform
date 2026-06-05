@@ -7,7 +7,6 @@ import {
   deleteDoc,
   collection,
   query,
-  getDocs,
   onSnapshot,
 } from "firebase/firestore";
 import { useFirebase } from "@/components/FirebaseProvider";

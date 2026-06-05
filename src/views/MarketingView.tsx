@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Zap, Smartphone, CheckCircle2, Activity, Sparkles, Send, Laptop } from "lucide-react";
+import { Mail, Zap, CheckCircle2, Activity, Send, Laptop } from "lucide-react";
 import { toast } from "sonner";
 
 export function MarketingView() {

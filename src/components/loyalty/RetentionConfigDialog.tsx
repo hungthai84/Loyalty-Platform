@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Save, Clock, AlertTriangle, CheckCircle2, Zap } from "lucide-react";
+import { X, Save, Clock, AlertTriangle, Zap } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
@@ -22,7 +22,7 @@ export function RetentionConfigDialog({ onClose }: RetentionConfigDialogProps) {
  async function loadSettings() {
  if (!user) return;
  try {
- const docRef = doc(db, `users/${user.uid}/loyaltySettings`, 'main');
+ const docRef = doc(db, `loyalty_settings`, 'main');
  const docSnap = await getDoc(docRef);
  if (docSnap.exists()) {
  const data = docSnap.data() as LoyaltySettings;
@@ -52,7 +52,7 @@ export function RetentionConfigDialog({ onClose }: RetentionConfigDialogProps) {
  userId: user.uid,
  updatedAt: serverTimestamp(),
  };
- await setDoc(doc(db, `users/${user.uid}/loyaltySettings`, 'main'), data);
+ await setDoc(doc(db, `loyalty_settings`, 'main'), data);
  toast.success("Đã cập nhật cấu hình giữ chân khách hàng");
  onClose();
  } catch (error) {

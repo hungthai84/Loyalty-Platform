@@ -3,18 +3,8 @@ import {
  Activity, 
  Database, 
  Server, 
- CheckCircle2, 
- AlertTriangle, 
- XOctagon, 
- RefreshCw, 
  Terminal, 
- Wifi, 
- Clock, 
- Zap, 
- HardDrive,
- Users,
- ShieldAlert,
- HelpCircle,
+ Wifi,
  Play
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
@@ -161,8 +151,6 @@ export function SystemStatusMonitor() {
  // Reset step states
  setDiagnosticSteps(prev => prev.map(step => ({ ...step, status: "idle", details: undefined })));
 
- const steps = [...diagnosticSteps];
- 
  // Helper to sleep
  const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
 

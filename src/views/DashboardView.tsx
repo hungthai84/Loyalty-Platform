@@ -8,8 +8,6 @@ import {
 } from "@/components/ui/card";
 import { kpiData, revenueData, recentCustomers } from "@/data/mockData";
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   Tooltip,
@@ -36,7 +34,6 @@ import {
   Calendar,
   ChevronDown,
   Filter,
-  ArrowRight,
   Award,
   RotateCcw,
   LayoutDashboard,
@@ -48,9 +45,6 @@ import { DatabaseStatus } from "@/components/layout/DatabaseStatus";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 
@@ -778,7 +772,7 @@ export function DashboardView() {
               <TableBody>
                 {filteredRecentCustomers.length > 0 ? (
                   filteredRecentCustomers.map((customer) => (
-                    <TableRow key={customer.id}>
+                    <TableRow key={customer.id} className="hover:bg-muted/40 transition-colors duration-200">
                       <TableCell className="font-medium text-left">
                         {customer.name}
                       </TableCell>

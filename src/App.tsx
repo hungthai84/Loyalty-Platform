@@ -12,12 +12,10 @@ import { AnalyticsView } from "./views/AnalyticsView";
 import { AnalysisView } from "./views/AnalysisView";
 import { FirebaseProvider, useFirebase } from "@/components/FirebaseProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { BrandLogo } from "@/components/layout/BrandLogo";
-import { ShieldAlert, LogIn } from "lucide-react";
 
 function AppContent() {
   const [activeView, setActiveView] = useState("dashboard");
-  const { user: firebaseUser, systemUser, loading, signIn } = useFirebase();
+  const { loading } = useFirebase();
 
   if (loading) {
     return (
@@ -27,7 +25,6 @@ function AppContent() {
     );
   }
 
-  const isAdmin = true;
   const safeActiveView = activeView;
 
   return (

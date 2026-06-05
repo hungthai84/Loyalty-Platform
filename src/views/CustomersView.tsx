@@ -15,7 +15,7 @@ import { ImportCustomersDialog } from "@/components/customers/ImportCustomersDia
 import { AttributeManager } from "@/components/customers/AttributeManager";
 import { CustomerDashboard } from "@/components/customers/CustomerDashboard";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
-import { Building2, Cloud, CloudOff, Info, ShieldAlert } from "lucide-react";
+import { Building2, Cloud, CloudOff, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { getGuestCustomers, getGuestAttributes, getGuestCompanies } from "@/data/guestData";
 
@@ -384,13 +384,13 @@ export function CustomersView() {
  
  // Fallbacks for existing standard values
  if (status === 'active') {
- return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-none text-xs font-bold">Hoạt động</Badge>;
+ return <Badge className="bg-emerald-500 text-white border-none text-xs font-bold">Hoạt động</Badge>;
  }
  if (status === 'inactive') {
- return <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-none text-xs font-bold">Ít tương tác</Badge>;
+ return <Badge className="bg-amber-500 text-white border-none text-xs font-bold">Ít tương tác</Badge>;
  }
  if (status === 'churn_risk') {
- return <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none text-xs font-bold">Rủi ro rời bỏ</Badge>;
+ return <Badge className="bg-rose-500 text-white border-none text-xs font-bold">Rủi ro rời bỏ</Badge>;
  }
  
  return <Badge variant="secondary" className="text-xs font-medium">{status}</Badge>;
@@ -426,23 +426,11 @@ export function CustomersView() {
  />
  ) : (
  <>
- <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full">
+ <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col gap-5 relative z-30 backdrop-blur-md w-full">
+		<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 w-full">
  <div className="flex items-center gap-4 text-left">
- <div className="p-3 bg-primary/10 rounded-2xl text-primary flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
- <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
- <motion.div
- animate={{ 
- scale: [1, 1.15, 0.95, 1.05, 1],
- y: [0, -3, 3, -1, 0]
- }}
- transition={{ 
- repeat: Infinity,
- duration: 5,
- ease: "easeInOut"
- }}
- >
+ <div className="p-3 bg-primary/10 rounded-2xl text-primary flex items-center justify-center relative bg-primary/10 shadow-xs shrink-0">
  <User className="w-8 h-8 text-[#2f6cf5]" />
- </motion.div>
  </div>
  <div>
  <div className="flex items-center gap-2">
@@ -490,12 +478,230 @@ export function CustomersView() {
  className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors flex items-center shadow-lg shadow-primary/25 font-bold cursor-pointer"
  >
  <Plus className="w-4 h-4 mr-2" /> Thêm khách hàng
- </button>
- </div>
- </div>
+							</button>
+						</div>
+					</div>
+					{/* Divider line separating upper actions and filters inside the banner */}
+					<div className="border-t border-border/50 w-full mt-2" />
 
- <Card>
- <CardHeader className="pb-3">
+					{/* Row 2: Deep nested search and query filters inside the banner */}
+					<div className="flex flex-col md:flex-row gap-4 w-full justify-between items-start md:items-center mt-2">
+						<div className="flex flex-wrap gap-2.5 items-center w-full md:w-auto">
+							<div className="relative w-full md:w-64">
+								<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+								<Input
+									type="search"
+									placeholder="Tìm kiếm khách hàng..."
+									className="pl-8 bg-background h-9 text-xs font-semibold"
+									value={search}
+									onChange={e => setSearch(e.target.value)}
+								/>
+							</div>
+							
+							<div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+								<Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+								<select
+									className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
+									value={selectedCompanyId}
+									onChange={e => setSelectedCompanyId(e.target.value)}
+								>
+									<option value="all">Tất cả chi nhánh</option>
+									{companies.map(c => (
+										<option key={c.id} value={c.id}>{c.name}</option>
+									))}
+								</select>
+							</div>
+
+							<div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+								<Filter className="w-3.5 h-3.5 text-muted-foreground" />
+								<select
+									className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
+									value={selectedStatus}
+									onChange={e => setSelectedStatus(e.target.value)}
+								>
+									<option value="all">Tất cả trạng thái</option>
+									{CUSTOMER_STATUSES.map(s => (
+										<option key={s.code} value={s.code}>{s.classification}</option>
+									))}
+								</select>
+							</div>
+						</div>
+
+						<div className="flex items-center gap-2 shrink-0">
+							{/* Column Visibility Configuration dropdown */}
+							<div className="relative">
+								<button 
+									onClick={() => setShowColumnSettings(!showColumnSettings)}
+									className="flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold bg-card hover:bg-muted/70 cursor-pointer text-foreground select-none transition-colors"
+								>
+									<SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" /> 
+									<span>Cột hiển thị</span>
+								</button>
+								{showColumnSettings && (
+									<div className="absolute right-0 mt-2 w-56 bg-card border border-border hover:border-primary/20 shadow-xl rounded-xl p-3.5 z-50 text-left backdrop-blur-xl">
+										<div className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-2">Ẩn/hiện cột bảng</div>
+										<div className="space-y-1.5 max-h-[190px] overflow-y-auto pr-1">
+											{Object.keys(visibleColumns).map((colKey) => (
+												<label key={colKey} className="flex items-center gap-2 px-2 py-1 hover:bg-muted rounded-md cursor-pointer text-xs font-semibold select-none">
+													<input
+														type="checkbox"
+														className="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5"
+														checked={visibleColumns[colKey]}
+														onChange={() => setVisibleColumns(prev => ({ ...prev, [colKey]: !prev[colKey] }))}
+													/>
+													<span>{COLUMN_LABELS[colKey]}</span>
+												</label>
+											))}
+										</div>
+										<div className="border-t border-border mt-3 pt-2.5 flex justify-between gap-1">
+											<button 
+												onClick={() => setVisibleColumns({
+													id: true,
+													nameEmail: true,
+													social: false,
+													company: true,
+													status: true,
+													points: false,
+													customAttributes: false,
+													actions: true,
+												})}
+												className="text-xs text-[#2f6cf5] hover:underline font-extrabold"
+											>
+												Mặc định
+											</button>
+											<button 
+												onClick={() => setShowColumnSettings(false)}
+												className="text-xs text-muted-foreground hover:text-foreground font-extrabold"
+											>
+												Đóng
+											</button>
+										</div>
+									</div>
+								)}
+							</div>
+
+							{/* Toggle Advanced Filters */}
+							<button
+								onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+								className="flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold bg-card hover:bg-muted/70 cursor-pointer text-foreground select-none transition-colors"
+							>
+								<Filter className="w-3.5 h-3.5 text-[#2f6cf5]" />
+								<span>Bộ lọc nâng cao</span>
+								{hasActiveFilters && (
+									<span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse inline-block" />
+								)}
+							</button>
+						</div>
+					</div>
+
+					{/* Advanced Filters Panel */}
+					{showAdvancedFilters && (
+						<motion.div 
+							initial={{ opacity: 0, scale: 0.95 }}
+							animate={{ opacity: 1, scale: 1 }}
+							className="border border-dashed border-border p-4 rounded-xl mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-left w-full h-full"
+						>
+							<div className="space-y-1">
+								<label className="text-xs uppercase font-black text-muted-foreground tracking-wider">Phân khúc khách hàng</label>
+								<select
+									className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
+									value={selectedTag}
+									onChange={e => setSelectedTag(e.target.value)}
+								>
+									<option value="all">Tất cả phân khúc</option>
+									{allTags.map(tag => (
+										<option key={tag} value={tag}>{tag}</option>
+									))}
+								</select>
+							</div>
+
+							<div className="space-y-1">
+								<label className="text-xs uppercase font-black text-muted-foreground tracking-wider">Khoảng điểm CRM</label>
+								<div className="flex items-center gap-1.5">
+									<Input
+										type="number"
+										placeholder="Từ"
+										className="bg-background h-8 text-xs font-semibold"
+										value={minPoints}
+										onChange={e => setMinPoints(e.target.value)}
+									/>
+									<span className="text-xs text-muted-foreground font-bold">-</span>
+									<Input
+										type="number"
+										placeholder="Đến"
+										className="bg-background h-8 text-xs font-semibold"
+										value={maxPoints}
+										onChange={e => setMaxPoints(e.target.value)}
+									/>
+								</div>
+							</div>
+
+							<div className="space-y-1">
+								<label className="text-xs uppercase font-black text-muted-foreground tracking-wider">Liên kết Mạng xã hội</label>
+								<select
+									className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
+									value={selectedSocialType}
+									onChange={e => setSelectedSocialType(e.target.value)}
+								>
+									<option value="all">Tất cả liên kết</option>
+									<option value="facebook">Đã kết nối Facebook</option>
+									<option value="zalo">Đã kết nối Zalo</option>
+									<option value="linkedin">Đã kết nối LinkedIn</option>
+									<option value="instagram">Đã kết nối Instagram</option>
+									<option value="tiktok">Đã kết nối TikTok</option>
+								</select>
+							</div>
+
+							<div className="space-y-1">
+								<label className="text-xs uppercase font-black text-muted-foreground tracking-wider">Loại khách hàng</label>
+								<select
+									className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
+									value={selectedHasCompany}
+									onChange={e => setSelectedHasCompany(e.target.value)}
+								>
+									<option value="all">Toàn bộ</option>
+									<option value="yes">Thuộc doanh nghiệp / Công ty</option>
+									<option value="no">Cá nhân tự do</option>
+								</select>
+							</div>
+
+							<div className="space-y-1 sm:col-span-2 md:col-span-3">
+								<label className="text-xs uppercase font-black text-muted-foreground tracking-wider">Thứ tự sắp xếp</label>
+								<div className="flex flex-wrap items-center gap-1.5">
+									{[
+										{ id: "createdAt_desc", label: "Mới nhất" },
+										{ id: "createdAt_asc", label: "Cũ nhất" },
+										{ id: "points_desc", label: "Điểm CRM: Cao → Thấp" },
+										{ id: "points_asc", label: "Điểm CRM: Thấp → Cao" },
+										{ id: "name_asc", label: "Họ tên (A-Z)" },
+										{ id: "name_desc", label: "Họ tên (Z-A)" },
+									].map((opt) => (
+										<button
+											key={opt.id}
+											onClick={() => setSortBy(opt.id)}
+											className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${sortBy === opt.id ? 'bg-primary/10 text-primary border-primary/30' : 'bg-background hover:bg-muted border-border'}`}
+										>
+											{opt.label}
+										</button>
+									))}
+								</div>
+							</div>
+
+							<div className="flex items-end justify-end">
+								<button
+									onClick={resetFilters}
+									className="flex items-center gap-1 px-3 py-1.5 text-xs text-rose-500 hover:text-white hover:bg-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-lg font-bold transition-all shrink-0 cursor-pointer"
+								>
+									<RotateCcw className="w-3 h-3" /> Đặt lại tất cả
+								</button>
+							</div>
+						</motion.div>
+					)}
+
+				</div>
+
+	<Card className="border border-border/50 bg-background/55 shadow-xs">
+ <CardHeader className="pb-3 hidden">
  <div className="flex flex-col md:flex-row gap-4 w-full justify-between items-start md:items-center">
  <div className="flex flex-wrap gap-2.5 items-center w-full md:w-auto">
  <div className="relative w-full md:w-64">
@@ -801,7 +1007,7 @@ export function CustomersView() {
    }
    setSelectedCustomer(customer);
   }}
- className="hover:bg-transparent!"
+ className="cursor-pointer hover:bg-muted/40 active:bg-muted/60 transition-all duration-200 group/row border-b border-border/50"
  >
  {/* ID */}
  {visibleColumns.id && <TableCell className="text-xs text-muted-foreground">{customer.id}</TableCell>}
@@ -937,8 +1143,8 @@ export function CustomersView() {
  {/* ACTION */}
  {visibleColumns.actions && (
  <TableCell>
- <button className="p-1 px-2.5 bg-primary/10 hover:bg-primary hover:text-white rounded-lg text-xs font-bold text-primary flex items-center gap-1 transition-all">
- Xem Dashboard <ArrowRight className="w-2.5 h-2.5" />
+ <button className="p-1 px-2.5 bg-primary/10 group-hover/row:bg-primary group-hover/row:text-primary-foreground rounded-lg text-xs font-bold text-primary flex items-center gap-1 transition-all duration-200">
+ Xem Dashboard <ArrowRight className="w-2.5 h-2.5 transition-transform duration-200 group-hover/row:translate-x-0.5" />
  </button>
  </TableCell>
  )}

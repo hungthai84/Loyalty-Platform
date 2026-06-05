@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import { GoogleGenAI } from "@google/genai";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import { AuthRequest, requireAuth } from "./src/middleware/auth.ts";
@@ -177,6 +178,95 @@ async function startServer() {
       return res.status(500).json({
         success: false,
         message: `Lỗi đồng bộ từ CRM: ${err.message}`
+      });
+    }
+  });
+
+  // Lazy Gemini Client initialization helper
+  let aiClient: any = null;
+  function getGeminiClient() {
+    if (!aiClient) {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("GEMINI_API_KEY is not defined in system environment. Please add it via Settings > Secrets.");
+      }
+      aiClient = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+    }
+    return aiClient;
+  }
+
+  // API Route for Jewelry & Fashion Style AI Analytics
+  app.post("/api/gemini/analyze-fashion", async (req, res) => {
+    try {
+      const { customerName, attributes } = req.body;
+      const { fashionStyle, colorPalette, materials, occasions, brandReference, additionalNotes, gender, points } = attributes || {};
+
+      const gemini = getGeminiClient();
+
+      const prompt = `
+      Hãy phân tích gu thời trang và phong cách trang sức của khách hàng cao cấp dựa trên các đặc điểm sau:
+      - Tên khách hàng: ${customerName || "Khách VIP"}
+      - Giới tính/Đối tượng: ${gender || "Chưa xác định"}
+      - Gu thời trang tổng thể: ${fashionStyle || "Phong cách thanh lịch tự nhiên"}
+      - Tông màu ưa thích: ${colorPalette || "Tông trung tính (Neutral)"}
+      - Chất liệu trang sức muốn hướng tới: ${materials || "Bạch kim, Vàng trắng, Bạc cao cấp"}
+      - Dịp hoặc Hoàn cảnh sử dụng: ${occasions || "Hàng ngày, Gặp gỡ đối tác"}
+      - Thương hiệu/Phong cách tham chiếu: ${brandReference || "Cartier, Tiffany & Co."}
+      - Ghi chú thêm: ${additionalNotes || "Không có thêm ghi chú"}
+      - Điểm Loyalty tích lũy (Cột mốc chi tiêu): ${points || 0} pts
+
+      YÊU CẦU:
+      1. Đóng vai Giám đốc Sáng tạo và Chuyên gia Phong cách Trang sức cao cấp (Creative Director & High Jewelry Stylist).
+      2. Đưa ra 1 nhận định chuyên sâu (khoảng 3-4 câu luận giải) về gout thẩm mỹ hiện tại của khách hàng.
+      3. Đưa ra 1 dự đoán chi tiết và thuyết phục (kết luận) về dòng/loại trang sức, kiểu dáng, đá gắn, hoặc bộ sưu tập trang sức mà khách hàng có khả năng cao sẽ lựa chọn sử dụng trong thời gian tới (thể hiện sự tinh tế của thương hiệu).
+      4. Tạo 1 khẩu hiệu miêu tả phong thái của họ ("vibe").
+      5. Đề xuất 3 món trang sức cụ thể (tên tinh tế, xa xỉ) phù hợp nhất với phong thái này.
+
+      Hãy trả về kết quả dưới định dạng JSON thuần túy theo mẫu cấu trúc dưới đây (KHÔNG bao gồm các khối mã markdown khác, chỉ trả về JSON có cấu trúc):
+      {
+        "analysis": "Lời nhận định phân tích gu thẩm mỹ của khách hàng ở đây...",
+        "prediction": "Kết luận dự đoán cụ thể về trang sức khách hàng sẽ dùng trong thời gian tới và lý do tại sao...",
+        "vibe": "Mô tả phong thái cốt lõi của khách hàng (VD: 'Thanh lịch vượt thời gian với nét cá tính ngầm')",
+        "recommendedItems": [
+          "Món thứ 1 (Mô tả ngắn gọn chất liệu/thiết kế)",
+          "Món thứ 2 (Mô tả ngắn gọn chất liệu/thiết kế)",
+          "Món thứ 3 (Mô tả ngắn gọn chất liệu/thiết kế)"
+        ],
+        "autoTags": ["Tag1", "Tag2", "Tag3"]
+      }
+      `;
+
+      const response = await gemini.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          temperature: 0.7,
+        }
+      });
+
+      const responseText = response.text || "{}";
+      const cleanedJson = responseText.trim().replace(/^```json/, "").replace(/```$/, "").trim();
+      const resultObj = JSON.parse(cleanedJson);
+
+      return res.json({
+        success: true,
+        data: resultObj,
+      });
+
+    } catch (err: any) {
+      console.error("Gemini API Error in analyze-fashion:", err);
+      return res.status(500).json({
+        success: false,
+        message: err.message || "Lỗi xử lý AI phân tích thời trang. Hãy đảm bảo khóa API Gemini của bạn được đặt chính xác.",
+        isMissingKey: err.message?.includes("GEMINI_API_KEY") || err.message?.includes("API_KEY")
       });
     }
   });

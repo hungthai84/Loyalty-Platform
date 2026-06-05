@@ -8,7 +8,6 @@ import {
   Mail,
   Lock,
   Save,
-  UserCheck,
   Sparkles,
   RefreshCw,
   AlertCircle,
@@ -19,8 +18,6 @@ import {
   query,
   where,
   getDocs,
-  doc,
-  getDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 

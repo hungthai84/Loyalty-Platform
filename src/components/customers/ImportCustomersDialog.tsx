@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { 
- X, Upload, AlertCircle, CheckCircle2, ArrowRight, ArrowLeft, 
- ChevronRight, Play, Loader2, Table as TableIcon, RefreshCw, BarChart,
- Users, LogOut, Search, User, ShieldAlert
+ X, Upload, AlertCircle, CheckCircle2, ArrowLeft, 
+ ChevronRight, Play, Loader2, Table as TableIcon, RefreshCw,
+ Users, LogOut, Search
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { db } from "@/lib/firebase";
-import { collection, doc, writeBatch, serverTimestamp } from "firebase/firestore";
+import { doc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { AttributeDefinition, Company } from "@/types";
 import { toast } from "sonner";
 import { GoogleDrivePicker } from "../drive/GoogleDrivePicker";
@@ -204,7 +204,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
        const batch = writeBatch(db);
 
        chunk.forEach(cust => {
-         const docRef = doc(db, `users/${userId}/customers`, cust.id);
+         const docRef = doc(db, `customers`, cust.id);
          batch.set(docRef, cust);
        });
 
@@ -448,7 +448,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  const batch = writeBatch(db);
 
  chunk.forEach(cust => {
- const docRef = doc(db, `users/${userId}/customers`, cust.id);
+ const docRef = doc(db, `customers`, cust.id);
  batch.set(docRef, cust);
  });
 

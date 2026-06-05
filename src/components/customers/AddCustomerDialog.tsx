@@ -4,7 +4,7 @@ import { collection, doc, setDoc, serverTimestamp, query, orderBy, onSnapshot } 
 import { useFirebase } from '@/components/FirebaseProvider';
 import { handleFirestoreError, OperationType } from '@/lib/firestore-errors';
 import { toast } from 'sonner';
-import { X, Building2, Facebook, Link2, Linkedin, Instagram, Play, Upload } from 'lucide-react';
+import { X, Building2, Facebook, Linkedin, Instagram, Upload } from 'lucide-react';
 import * as motion from 'motion/react-client';
 import { AttributeDefinition, Company, Customer } from '@/types';
 import { CUSTOMER_STATUSES } from '@/data/customerStatuses';
@@ -127,7 +127,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  toast.success("Thêm khách hàng thành công");
  onClose();
  } catch (error) {
- handleFirestoreError(error, OperationType.WRITE, `users/${user?.uid || "guest"}/customers/${customerId}`);
+ handleFirestoreError(error, OperationType.WRITE, `customers/${customerId}`);
  toast.error("Không thể thêm khách hàng");
  } finally {
  setSubmitting(false);

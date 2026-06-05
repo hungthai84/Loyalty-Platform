@@ -10,32 +10,14 @@ import {
  Layers, 
  Award, 
  Calendar, 
- TrendingDown, 
- Filter, 
- Download, 
- UserCheck, 
  Smartphone, 
  Search, 
- Plus, 
- Play, 
  RefreshCw, 
- AlertTriangle, 
- ChevronRight,
- BookOpen,
- PieChart as PieIcon,
+ AlertTriangle,
  ShieldAlert,
  Send,
  CheckCircle,
- HelpCircle,
  Briefcase,
- Sun,
- Moon,
- Laptop,
- Check,
- X,
- AlertCircle,
- ShieldCheck,
- HeartPulse,
  Network
 } from 'lucide-react';
 import { 
@@ -55,14 +37,93 @@ import {
  LineChart,
  Line
 } from 'recharts';
+import { Calculator } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy, doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Customer, LoyaltyCampaign, Company, AttributeDefinition } from "@/types";
 import { OfferAnalysis } from "@/components/loyalty/OfferAnalysis";
 import { CrossBranchAnalysis } from "@/components/customers/CrossBranchAnalysis";
-import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
+
+const CustomCLVTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const formattedDate = (() => {
+      if (!label) return "";
+      const parts = label.split("/");
+      if (parts.length === 2) {
+        const m = parts[0].replace("T", "");
+        const y = "20" + parts[1];
+        return `Tháng ${m} năm ${y}`;
+      }
+      return label;
+    })();
+
+    return (
+      <div className="bg-slate-950/95 border border-slate-800 p-3.5 rounded-xl shadow-2xl backdrop-blur-md text-left text-xs min-w-[220px]">
+        <p className="font-bold text-slate-400 mb-2 border-b border-white/10 pb-1.5 flex items-center justify-between">
+          <span>📅 {formattedDate}</span>
+          <span className="text-[9px] text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded uppercase font-extrabold tracking-wider">Mức CLV</span>
+        </p>
+        <div className="space-y-1.5">
+          {payload.map((item: any, index: number) => {
+            const rawVal = item.value;
+            const fullVND = rawVal * 1000000;
+            const name = item.name;
+            const color = item.stroke || item.color;
+            return (
+              <div key={index} className="flex items-center justify-between gap-4">
+                <span className="flex items-center gap-1.5 text-slate-300 font-medium">
+                  <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: color }} />
+                  {name}:
+                </span>
+                <span className="font-extrabold text-white">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(fullVND)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+const CustomSimulatedCLVTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-950/95 border border-slate-800 p-3.5 rounded-xl shadow-2xl backdrop-blur-md text-left text-xs min-w-[220px]">
+        <p className="font-bold text-slate-400 mb-2 border-b border-white/10 pb-1.5 flex items-center justify-between">
+          <span>⏳ Năm Gắn Kết {label}</span>
+          <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded uppercase font-extrabold tracking-wider">Mô Phỏng</span>
+        </p>
+        <div className="space-y-1.5">
+          {payload.map((item: any, index: number) => {
+            const rawVal = item.value;
+            const isCLV = item.dataKey === "CLV";
+            const formattedVal = isCLV 
+              ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(rawVal * 1000000)
+              : `${rawVal} đơn hàng`;
+            const color = item.stroke || item.color;
+            return (
+              <div key={index} className="flex items-center justify-between gap-4">
+                <span className="flex items-center gap-1.5 text-slate-300 font-medium">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                  {item.name}:
+                </span>
+                <span className={isCLV ? "font-extrabold text-blue-400" : "font-extrabold text-emerald-400"}>
+                  {formattedVal}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 const CLV_TREND_BY_TIER_DATA = [
  { month: 'T6/25', Member: 5.2, Essential: 15.6, Icon: 52.0, Atelier: 120.5 },
@@ -228,6 +289,11 @@ export function AnalysisView() {
  // ROI specific inputs
  const [clvIncrease, setClvIncrease] = useState(500000000); // 500 Millions VND generated increase
 
+ // Allocation ratio optimizer states
+ const [industrySector, setIndustrySector] = useState<'luxury' | 'retail' | 'services'>('luxury');
+ const [retentionTarget, setRetentionTarget] = useState<number>(85);
+ const [competitionLevel, setCompetitionLevel] = useState<'low' | 'medium' | 'high'>('medium');
+
  // Search & Filters inside customers sub-tab
  const [searchQuery, setSearchQuery] = useState('');
  const [selectedTierFilter, setSelectedTierFilter] = useState('All');
@@ -339,10 +405,98 @@ export function AnalysisView() {
  const costRatioOfRevenue = useMemo(() => (actualCost / revenue) * 100, [actualCost, revenue]);
 
  const calculatedCLV = useMemo(() => aov * purchaseFrequency * customerLifespan, [aov, purchaseFrequency, customerLifespan]);
+ const simulatedClvGraphData = useMemo(() => {
+  const data = [];
+  const freq = Number(purchaseFrequency) || 0;
+  const lifespan = Number(customerLifespan) || 0;
+  const singleAov = Number(aov) || 0;
+  
+  const maxYears = Math.min(Math.max(1, lifespan), 15);
+  for (let year = 1; year <= maxYears; year++) {
+   const cumulativeClv = singleAov * freq * year;
+   data.push({
+    year: `Năm ${year}`,
+    "CLV": cumulativeClv / 1000000, // in Millions
+    "Orders": freq * year
+   });
+  }
+  return data;
+ }, [aov, purchaseFrequency, customerLifespan]);
  const calculatedROI = useMemo(() => {
  if (actualCost === 0) return 0;
  return ((clvIncrease - actualCost) / actualCost) * 100;
  }, [clvIncrease, actualCost]);
+
+ // Derived calculations for percentage allocation optimizer
+ const recommendedRatio = useMemo(() => {
+  let base = 5.0;
+  if (industrySector === 'luxury') base = 6.5;
+  if (industrySector === 'retail') base = 4.2;
+  if (industrySector === 'services') base = 8.0;
+
+  // Adjust based on target retention
+  base += (retentionTarget - 85) * 0.12;
+
+  // Adjust based on competition level
+  if (competitionLevel === 'high') base += 1.8;
+  if (competitionLevel === 'low') base -= 1.2;
+
+  return Math.max(1.0, Math.min(20.0, Number(base.toFixed(1))));
+ }, [industrySector, retentionTarget, competitionLevel]);
+
+ const budgetDistribution = useMemo(() => {
+  let pointsPct = 25;
+  let vouchersPct = 35;
+  let eventsPct = 25;
+  let giftsPct = 15;
+
+  if (industrySector === 'retail') {
+   pointsPct = 40;
+   vouchersPct = 35;
+   eventsPct = 15;
+   giftsPct = 10;
+  } else if (industrySector === 'services') {
+   pointsPct = 30;
+   vouchersPct = 45;
+   eventsPct = 15;
+   giftsPct = 10;
+  }
+
+  return [
+   { name: 'Tích Lũy Điểm (Points System)', percentage: pointsPct, color: '#2f6cf5' },
+   { name: 'Chiến Dịch Voucher Thúc Đẩy (Tactical)', percentage: vouchersPct, color: '#10b981' },
+   { name: 'Sự Kiện Tri Ân & Private Lounge (VIP Events)', percentage: eventsPct, color: '#f59e0b' },
+   { name: 'Quà Tặng Đặc Bản (Exclusive Gifts)', percentage: giftsPct, color: '#ec4899' }
+  ];
+ }, [industrySector]);
+
+ const budgetSensitivityData = useMemo(() => {
+  const ratios = [2, 4, 6, 8, 10, 12, 15];
+  const baseRevenue = revenue || 10000000000;
+  const baseGrossProfit = grossProfit || 4000000000;
+  
+  return ratios.map(r => {
+   const budgetAmount = baseGrossProfit * (r / 100);
+   
+   // S-curve representing plateauing retention effect
+   const retentionSimulated = 50 + (45 * (1 - Math.exp(-0.18 * r)));
+   
+   // Secondary revenue bump reaches diminishing returns
+   const multiplier = industrySector === 'luxury' ? 1.55 : industrySector === 'retail' ? 1.05 : 1.25;
+   const extraRevenueLift = baseRevenue * 0.082 * (1 - Math.exp(-0.21 * r)) * multiplier * (retentionTarget / 85);
+   const extraProfitLift = extraRevenueLift * (baseGrossProfit / baseRevenue);
+   const netBenefit = extraProfitLift - budgetAmount;
+   const roi = budgetAmount > 0 ? (netBenefit / budgetAmount) * 100 : 0;
+
+   return {
+    ratio: `${r}%`,
+    "Ngân quỹ trích lập": Math.round(budgetAmount / 1000000),
+    "Doanh số bồi đắp": Math.round(extraRevenueLift / 1000000),
+    "Lợi ích ròng": Math.round(netBenefit / 1000000),
+    "Tỷ suất ROI (%)": Math.round(roi)
+   };
+  });
+ }, [revenue, grossProfit, industrySector, retentionTarget]);
 
  const loyaltyVsRevenueChartData = useMemo(() => {
  const baseRevenue = revenue || 10000000000;
@@ -390,6 +544,13 @@ export function AnalysisView() {
 
  const formatBillionVND = (value: number) => {
  return `${(value / 1000000000).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} Tỷ ₫`;
+ };
+
+ const formatShortVND = (value: number) => {
+  if (Math.abs(value) >= 1000000000) {
+   return formatBillionVND(value);
+  }
+  return formatMillionVND(value);
  };
 
  const formatInputValue = (num: number | string) => {
@@ -1225,11 +1386,197 @@ export function AnalysisView() {
  );
  })}
  </tbody>
- </table>
- </div>
- </div>
- </div>
- )}
+  </table>
+  </div>
+  </div>
+
+  {/* NEW DYNAMIC OPTIMIZER SECTION FOR '% GIÀNH RA' */}
+  <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-6">
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4 border-border/45">
+      <div className="text-left">
+        <h3 className="text-sm font-extrabold text-[#2f6cf5] flex items-center gap-2 uppercase tracking-wide">
+          <Calculator className="w-5 h-5 text-[#2f6cf5]" />
+          Phân Tích & Hoạch Định Tỷ Lệ Trích Lập Quỹ Ưu Đãi VIP (% Giành Ra)
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1">
+          Thiết kế đặc biệt để tính toán tỷ lệ trích quỹ lý tưởng từ biên lợi nhuận gộp nhằm thu hút và giữ chân khách VIP mà không bào mòn giá trị thương hiệu.
+        </p>
+      </div>
+      <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-500/20">
+        <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+        Phân Tích Động Chuyên Sâu
+      </div>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Target parameters inputs */}
+      <div className="lg:col-span-5 bg-muted/20 border border-border/40 p-5 rounded-2xl space-y-4 text-left">
+        <h4 className="text-[10px] font-bold text-foreground bg-primary/10 px-2 py-1 rounded inline-block tracking-wider uppercase">THAM SỐ HOẠCH ĐỊNH DOANH NGHIỆP</h4>
+        
+        {/* Dropdown Industry */}
+        <div>
+          <label className="block text-xs font-bold text-muted-foreground uppercase mb-1.5">Mô hình Ngành hàng kinh doanh</label>
+          <select 
+            value={industrySector}
+            onChange={(e) => setIndustrySector(e.target.value as any)}
+            className="w-full p-2 bg-background border border-border/60 rounded-xl text-xs font-semibold text-zinc-300 outline-none cursor-pointer"
+          >
+            <option value="luxury">Thời trang Thiết Kế & Kim Cương Cao Cấp (Sevago Style)</option>
+            <option value="retail">Bán lẻ Cao Cấp & Nhập khẩu (Repeat Rate Vừa)</option>
+            <option value="services">Dịch vụ Thượng lưu / Private Club (High Frequency)</option>
+          </select>
+        </div>
+
+        {/* Competition dropdown */}
+        <div>
+          <label className="block text-xs font-bold text-muted-foreground uppercase mb-1.5">Mức độ cạnh tranh thị trường</label>
+          <select 
+            value={competitionLevel}
+            onChange={(e) => setCompetitionLevel(e.target.value as any)}
+            className="w-full p-2 bg-background border border-border/60 rounded-xl text-xs font-semibold text-zinc-300 outline-none cursor-pointer"
+          >
+            <option value="low">Thấp (Đặc quyền thương hiệu độc quyền cao)</option>
+            <option value="medium">Bình thường (Cạnh tranh dịch vụ cùng dòng)</option>
+            <option value="high">Khốc liệt (Cần liên tục làm chiến dịch bứt phá)</option>
+          </select>
+        </div>
+
+        {/* Slider target retention */}
+        <div className="space-y-1">
+          <div className="flex justify-between items-center text-xs font-semibold">
+            <span className="text-muted-foreground">Mục tiêu Giữ chân VIP mong muốn</span>
+            <span className="text-[#2f6cf5] font-bold">{retentionTarget}%</span>
+          </div>
+          <input 
+            type="range" 
+            min="50" 
+            max="98" 
+            value={retentionTarget} 
+            onChange={(e) => setRetentionTarget(Number(e.target.value))} 
+            className="w-full accent-[#2f6cf5]"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground">
+            <span>50% (Tự nhiên)</span>
+            <span>98% (Kịch độc quyền)</span>
+          </div>
+        </div>
+
+        {/* Apply Recommended Button */}
+        <button
+          onClick={() => {
+            setLoyaltyRatio(recommendedRatio);
+            triggerToast(`Đã áp dụng tỷ lệ trích quỹ tối ưu ${recommendedRatio}% vào bảng tính Loyalty từ AI!`);
+          }}
+          className="w-full py-2.5 bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 text-white text-xs font-bold uppercase rounded-xl tracking-wider transition-all shadow-md hover:shadow-lg focus:outline-none flex items-center justify-center gap-2 cursor-pointer border-none"
+        >
+          <CheckCircle className="w-4 h-4" />
+          Áp dụng Tỷ lệ khuyến nghị AI ({recommendedRatio}%)
+        </button>
+      </div>
+
+      {/* AI Recommendation display */}
+      <div className="lg:col-span-7 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 bg-[#2f6cf5]/5 border border-[#2f6cf5]/20 rounded-2xl flex flex-col justify-between text-left">
+            <span className="text-xs text-muted-foreground font-bold uppercase block leading-none">Tỷ lệ trích quỹ tối ưu khuyên dùng</span>
+            <div className="mt-2 flex items-baseline gap-1.5">
+              <span className="text-3xl font-black text-[#2f6cf5]">{recommendedRatio}%</span>
+              <span className="text-xs text-muted-foreground font-semibold">Lợi nhuận gộp</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2 border-t border-[#2f6cf5]/10 pt-1.5">
+              Tương đương <strong className="text-foreground">{(recommendedRatio * (grossProfit / revenue)).toFixed(2)}%</strong> Doanh thu kì vọng.
+            </p>
+          </div>
+
+          <div className="p-4 bg-muted/30 border border-border/50 rounded-2xl flex flex-col justify-between text-left">
+            <span className="text-xs text-zinc-400 font-bold uppercase block leading-none">Hạn mức ngân sách tối ưu tương ứng</span>
+            <div className="mt-2 flex items-baseline gap-1.5">
+              <span className="text-2xl font-extrabold text-foreground">{formatShortVND(grossProfit * (recommendedRatio / 100))}</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2 border-t border-border/30 pt-1.5">
+              Tính trên mức lợi nhuận gộp hiện hành {formatShortVND(grossProfit)}.
+            </p>
+          </div>
+        </div>
+
+        {/* Recommended allocation share */}
+        <div className="bg-muted/10 border border-border/40 p-5 rounded-2xl text-left space-y-3">
+          <h5 className="text-xs font-black text-foreground uppercase tracking-widest flex items-center gap-1.5">
+            <Layers className="w-4 h-4 text-[#2f6cf5]" />
+            Khung phân bổ đề xuất nguồn chi ngân sách ({recommendedRatio}%)
+          </h5>
+          <span className="text-[10px] text-zinc-400 leading-relaxed block mt-0.5 animate-pulse">
+            Đề xuất chia nhỏ nguồn quỹ trích lập thành 4 nhánh chiến dịch để bổ trợ toàn vẹn hành trình khách hàng:
+          </span>
+
+          <div className="space-y-2.5 mt-2">
+            {budgetDistribution.map((item, idx) => {
+              const shareValue = (grossProfit * (recommendedRatio / 100)) * (item.percentage / 100);
+              return (
+                <div key={idx} className="space-y-1">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-semibold text-zinc-300 flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full block" style={{ backgroundColor: item.color }} />
+                      {item.name}
+                    </span>
+                    <span className="font-bold text-foreground">
+                      {item.percentage}% <span className="text-muted-foreground font-mono font-medium ml-1.5">({formatShortVND(shareValue)})</span>
+                    </span>
+                  </div>
+                  <div className="w-full bg-zinc-800/80 h-1.5 rounded-full overflow-hidden border border-zinc-700/30">
+                    <div 
+                      className="h-full rounded-full transition-all duration-500" 
+                      style={{ backgroundColor: item.color, width: `${item.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Sensitivity analysis chart */}
+    <div className="bg-muted/10 border border-border/40 p-5 rounded-2xl text-left">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-border/30 pb-3 mb-4">
+        <div>
+          <h4 className="text-xs font-black text-foreground uppercase tracking-wider">PHÂN TÍCH ĐỘ NHẠY LỢI ÍCH THEO PHẦN TRĂM TRÍCH LẬP</h4>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Mô hình đường cong biểu thị điểm bão hòa hiệu quả và ROI tối ưu dự kiến dựa trên tỷ lệ trích quỹ thiết đặt.</p>
+        </div>
+        <span className="text-[10px] px-2 py-0.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded font-bold uppercase">
+          Khuyến nghị: Vùng tối ưu 5% - 8%
+        </span>
+      </div>
+
+      <div className="h-56 w-full text-xs">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={budgetSensitivityData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorBenefit" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.25}/>
+                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+              </linearGradient>
+              <linearGradient id="colorRoi" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#2f6cf5" stopOpacity={0.2}/>
+                <stop offset="95%" stopColor="#2f6cf5" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(128,128,128,0.1)" />
+            <XAxis dataKey="ratio" stroke="#888" fontSize={9} tickLine={false} />
+            <YAxis yAxisId="left" stroke="#10b981" fontSize={9} tickLine={false} axisLine={false} unit="M" />
+            <YAxis yAxisId="right" orientation="right" stroke="#2f6cf5" fontSize={9} tickLine={false} axisLine={false} unit="%" />
+            <Tooltip contentStyle={{ backgroundColor: "rgba(9, 9, 11, 0.95)", borderRadius: "12px", border: "1px solid rgba(128,128,128,0.2)", color: "#fff" }} />
+            <Area yAxisId="left" type="monotone" name="Doanh số bồi đắp (Tr ₫)" dataKey="Doanh số bồi đắp" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorBenefit)" />
+            <Area yAxisId="right" type="monotone" name="Tỷ suất ROI (%)" dataKey="Tỷ suất ROI (%)" stroke="#2f6cf5" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRoi)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  </div>
+
+  </div>
+  )}
 
  {/* 3. TAB: CLV & REPEAT PURCHASE */}
  {activeTab === 'clv_repeat' && (
@@ -1288,6 +1635,7 @@ export function AnalysisView() {
 
  </div>
 
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
  <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 border-border/40">
  <div>
@@ -1302,7 +1650,7 @@ export function AnalysisView() {
  <CartesianGrid strokeDasharray="3 3" stroke="rgba(120, 120, 120, 0.1)" />
  <XAxis dataKey="month" stroke="#71717A" fontSize={10} />
  <YAxis stroke="#71717A" fontSize={10} unit="M" />
- <Tooltip contentStyle={{ backgroundColor: 'rgba(20, 20, 22, 0.85)', backdropFilter: 'blur(16px)', color: '#fff', fontSize: '11px', borderRadius: '12px' }} />
+ <Tooltip content={<CustomCLVTooltip />} />
  <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
  <Line type="monotone" dataKey="Atelier" stroke="#2f6cf5" strokeWidth={3} activeDot={{ r: 6 }} name="Atelier (Cao cấp)" />
  <Line type="monotone" dataKey="Icon" stroke="#f59e0b" strokeWidth={2.5} name="Icon (Vàng VIP)" />
@@ -1310,6 +1658,30 @@ export function AnalysisView() {
  <Line type="monotone" dataKey="Member" stroke="#94a3b8" strokeWidth={1.5} name="Member (Thành viên)" />
  </LineChart>
  </ResponsiveContainer>
+ </div>
+ </div>
+
+ <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 border-border/40">
+ <div>
+ <h3 className="text-sm font-bold text-foreground font-heading">DỰ PHÓNG XU HƯỚNG TĂNG TRƯỞNG CLV MÔ PHỎNG THEO THỜI GIAN</h3>
+ <p className="text-xs text-muted-foreground">Đường biểu diễn tích lũy giá trị vòng đời qua số năm gắn kết (Dựa theo AOV & Tần suất mua hàng).</p>
+ </div>
+ </div>
+
+ <div className="h-72">
+ <ResponsiveContainer width="100%" height="100%">
+ <LineChart data={simulatedClvGraphData} margin={{ top: 15, right: 20, left: -10, bottom: 0 }}>
+ <CartesianGrid strokeDasharray="3 3" stroke="rgba(120, 120, 120, 0.1)" />
+ <XAxis dataKey="year" stroke="#71717A" fontSize={10} />
+ <YAxis stroke="#71717A" fontSize={10} />
+ <Tooltip content={<CustomSimulatedCLVTooltip />} />
+ <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
+ <Line type="monotone" dataKey="CLV" stroke="#2f6cf5" strokeWidth={3} activeDot={{ r: 6 }} name="CLV lũy kế (Tr ₫)" />
+ <Line type="monotone" dataKey="Orders" stroke="#10b981" strokeWidth={2} name="Số đơn lũy kế" />
+ </LineChart>
+ </ResponsiveContainer>
+ </div>
  </div>
  </div>
  </div>

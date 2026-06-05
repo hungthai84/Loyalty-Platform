@@ -4,20 +4,12 @@ import {
  Coins, 
  Users, 
  Percent, 
- Briefcase, 
  Calculator, 
  Sparkles, 
- Award, 
- ShieldAlert, 
- HelpCircle,
+ ShieldAlert,
  Gem,
- DollarSign,
- Play,
- ArrowUpRight,
- Info,
  Layers,
- CheckCircle2,
- Bookmark
+ CheckCircle2
 } from "lucide-react";
 import { 
  AreaChart, 
@@ -28,12 +20,10 @@ import {
  Tooltip, 
  ResponsiveContainer, 
  BarChart, 
- Bar, 
- Legend 
+ Bar 
 } from "recharts";
 import { LoyaltyCampaign, Customer } from "@/types";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 interface OfferAnalysisProps {
  campaigns?: LoyaltyCampaign[];

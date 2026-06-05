@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Save, Trash2, Calendar, Clock, Trophy, Mail, Zap, Gift } from "lucide-react";
+import { X, Trash2, Calendar, Clock, Trophy, Zap, Gift } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { doc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";

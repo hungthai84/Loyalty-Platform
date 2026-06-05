@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Plus, Settings, TrendingUp, Users, ChevronRight, Zap } from "lucide-react";
+import { Star, Plus, Settings, TrendingUp, Zap } from "lucide-react";
 import * as motion from "motion/react-client";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
 import { TierConfig } from "@/types";
 import { TierConfigDialog } from "@/components/loyalty/TierConfigDialog";
-import { cn } from "@/lib/utils";
 
 export function TierManagementView() {
  const { user } = useFirebase();

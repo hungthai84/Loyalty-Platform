@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
  Card, 
  CardContent, 
@@ -27,9 +27,93 @@ import {
  Gift, 
  Activity,
  ArrowUpRight,
- ArrowDownRight
+ ArrowDownRight,
+ Sparkles,
+ Compass,
+ HelpCircle,
+ Gem,
+ Award,
+ Zap,
+ Trophy,
+ CheckCircle2
 } from "lucide-react";
 import * as motion from "motion/react-client";
+import { useFirebase } from "@/components/FirebaseProvider";
+import { db } from "@/lib/firebase";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { Customer, TierConfig } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import { getGuestTiers, getGuestCustomers } from "@/data/guestData";
+
+const SUGGESTIONS_MAP: Record<string, {
+  vibe: string;
+  items: string[];
+  conversion: string;
+  projectedValue: string;
+  insight: string;
+  color: string;
+}> = {
+  classic: {
+    vibe: "Classic Elegant (Cổ điển & Thanh lịch)",
+    items: [
+      "Kiềng vàng di sản khắc vân mây (Heritage Gold Choker)",
+      "Nhẫn vàng phượng hoàng đính Ruby (Phoenix Ruby Gold Ring)",
+      "Khuyên tai ngọc trai hạt tròn quý phái (Classic Round Pearl Drop)"
+    ],
+    conversion: "85%",
+    projectedValue: "120.000.000 ₫",
+    insight: "Khách hàng đặc biệt ưu chuộng thiết kế đối xứng, mang âm hưởng di sản văn hóa Việt cổ kết hợp chất vàng tinh khiết 18K/24K vững bền.",
+    color: "from-amber-500/10 to-amber-600/5 text-amber-500 border-amber-500/20"
+  },
+  minimalist: {
+    vibe: "Minimalist Sophistication (Tối giản & Tinh tế)",
+    items: [
+      "Vòng tay Platinum mảnh thanh lịch (Minimalist Platinum Bangle)",
+      "Nhẫn kim cương Solitaire giác cắt tròn (Brilliant Cut Solitaire Diamond Ring)",
+      "Dây chuyền hạt cườm bạc ý tinh giản (Simple Elegant Italian Beads Chain)"
+    ],
+    conversion: "72%",
+    projectedValue: "45.000.000 ₫",
+    insight: "Phong cách tối giản chú trọng đường nét hình học sắc sảo, chất liệu Bạch kim hoặc Vàng trắng thanh khiết, không rườm rà hoa mỹ.",
+    color: "from-slate-400/15 to-slate-500/5 text-slate-400 border-slate-400/20"
+  },
+  glamorous: {
+    vibe: "Luxury Glamour (Sang trọng & Quý phái)",
+    items: [
+      "Vòng cổ kim cương đại công nương (Grand Duchess Multi-Tier Diamond Necklace)",
+      "Nhẫn kim cương Emerald xanh ngọc lục bảo hoàng gia (Royal Emerald-Cut Ring)",
+      "Lắc tay kim cương đính đá Sapphire đại dương (Blue Ocean Sapphire & Diamond Bracelet)"
+    ],
+    conversion: "90%",
+    projectedValue: "350.000.000 ₫",
+    insight: "Tệp quý cô thượng lưu đặc biệt yêu thích các điểm nhấn hào quang lộng lẫy từ Kim cương nước D giác cắt lớn kết hợp Ngọc lục bảo, Lam ngọc.",
+    color: "from-purple-500/10 to-purple-600/5 text-purple-400 border-purple-500/20"
+  },
+  "avant-garde": {
+    vibe: "Avant-Garde/Experimental (Phá cách & Cá tính)",
+    items: [
+      "Khuyên tai Gothic chạm khắc đầu rồng vàng trắng (Gothic Dragon Head White Gold Drop)",
+      "Nhẫn Signet bạc dập lửa gai góc (Alternative Thorns Signet Sterling Silver)",
+      "Vòng cổ luồn dây xích thô phá cách (Brutalist Industrial Metal Bold Chain)"
+    ],
+    conversion: "65%",
+    projectedValue: "85.000.000 ₫",
+    insight: "Phong cách độc bản đề cao cấu trực bất đối xứng, chạm khắc phong sương, các họa tiết trừu tượng thô mộc đầy gai góc, nghệ thuật.",
+    color: "from-emerald-500/10 to-emerald-600/5 text-emerald-400 border-emerald-500/20"
+  },
+  romantic: {
+    vibe: "Romantic & Gentle (Lãng mạn & Dịu dàng)",
+    items: [
+      "Mặt dây chuyền hoa anh đào vàng hồng đính thạch anh (Cherry Blossom Rose Gold Pendant)",
+      "Nhẫn đính hôn kết vòng dây leo hoa cỏ mộng mơ (Whimsical Botanical Vine Ring)",
+      "Khuyên tai giọt nước ngọc trai hồng biển cả (Pink Akoya Pearl Drop Earring)"
+    ],
+    conversion: "78%",
+    projectedValue: "60.000.000 ₫",
+    insight: "Ưa chuộng cấu hình uốn lượn thướt tha mềm mại của Vàng hồng ấm áp, đính ngọc trai hồng Akoya hoặc thạch anh tóc đỏ đầy thơ mộng.",
+    color: "from-pink-500/10 to-pink-600/5 text-pink-400 border-pink-500/20"
+  }
+};
 
 const trendData = [
  { month: "T1", tích: 4500, đổi: 2100 },
@@ -59,6 +143,58 @@ const heatmapData = [
 ];
 
 export function AnalyticsView() {
+ const { user } = useFirebase();
+ const [dbCustomers, setDbCustomers] = useState<Customer[]>([]);
+ const [selectedSegment, setSelectedSegment] = useState<string>("classic");
+ const [tiers, setTiers] = useState<TierConfig[]>([]);
+ const [progressionCustomerId, setProgressionCustomerId] = useState<string>("");
+
+ useEffect(() => {
+  if (!user) {
+   setTiers(getGuestTiers());
+   setDbCustomers(getGuestCustomers());
+   return;
+  }
+
+  // Load tiers from Firestore
+  const unsubTiers = onSnapshot(
+   query(collection(db, "tier_configs"), orderBy("threshold", "asc")),
+   (snapshot) => {
+    setTiers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TierConfig)));
+   }
+  );
+
+  // Load customers from Firestore
+  const qCustomers = query(collection(db, "customers"));
+  const unsubCustomers = onSnapshot(qCustomers, (snapshot) => {
+   setDbCustomers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer)));
+  });
+
+  return () => {
+   unsubTiers();
+   unsubCustomers();
+  };
+ }, [user]);
+
+ useEffect(() => {
+  if (dbCustomers.length > 0 && !progressionCustomerId) {
+   setProgressionCustomerId(dbCustomers[0].id);
+  }
+ }, [dbCustomers, progressionCustomerId]);
+
+ // Filter segment size
+ const matchingCustomersCount = useMemo(() => {
+  const liveMatch = dbCustomers.filter((c) => c.customFields?.fashionStyle === selectedSegment);
+  const baseOffsets: Record<string, number> = {
+   classic: 142,
+   minimalist: 98,
+   glamorous: 64,
+   "avant-garde": 33,
+   romantic: 78
+  };
+  return (baseOffsets[selectedSegment] || 25) + liveMatch.length;
+ }, [dbCustomers, selectedSegment]);
+
  return (
  <div className="flex-1 p-8 pt-6 space-y-8 overflow-y-auto max-h-[calc(100vh-64px)]">
  <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full text-left">
@@ -374,7 +510,381 @@ export function AnalyticsView() {
  </Card>
  </motion.div>
 
- {/* Grid for Bottom Sections */}
+  {/* NEW PREDICTIVE SUGGESTIONS CARD */}
+  <motion.div
+   initial={{ opacity: 0, y: 20 }}
+   animate={{ opacity: 1, y: 0 }}
+   transition={{ delay: 0.45 }}
+  >
+   <Card className="border border-border/50 bg-[#1e2330]/40 backdrop-blur-md shadow-lg overflow-hidden relative">
+    <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-[#2f6cf5]/10 to-indigo-500/0 rounded-full blur-3xl pointer-events-none" />
+    
+    <CardHeader className="border-b border-border/40 pb-5">
+     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="text-left">
+       <span className="text-[10px] font-bold text-[#2f6cf5] border border-[#2f6cf5]/30 bg-[#2f6cf5]/10 py-1 px-2.5 rounded-full uppercase tracking-widest inline-block mb-2">
+        Dự đoán Hành Vi & Thẩm mỹ VIP (Aesthetic Intelligence)
+       </span>
+       <CardTitle className="font-heading text-lg text-foreground flex items-center gap-2">
+        <Sparkles className="w-5 h-5 text-[#2f6cf5] animate-pulse" /> Đề Xuất Sản Phẩm Trang Sức Theo Phân Khúc Thẩm Mỹ
+       </CardTitle>
+       <CardDescription className="text-xs text-muted-foreground mt-0.5">
+        Tính toán tự động dựa trên các chỉ số hành vi, gu thời trang cá nhân và dữ liệu lưu vết sở thích chất liệu của khách hàng.
+       </CardDescription>
+      </div>
+      
+      {/* Segment Selector Dropdown */}
+      <div className="flex items-center gap-2 self-start md:self-center">
+       <span className="text-xs text-muted-foreground font-bold whitespace-nowrap">Phân khúc:</span>
+       <select
+        value={selectedSegment}
+        onChange={(e) => setSelectedSegment(e.target.value)}
+        className="bg-background border border-border/80 text-xs font-semibold rounded-xl px-3 py-1.5 focus:outline-none focus:border-[#2f6cf5] text-foreground transition-all shrink-0 cursor-pointer shadow-sm hover:border-primary/50"
+       >
+        <option value="classic">Classic Elegant (Cổ điển & Thanh lịch)</option>
+        <option value="minimalist">Minimalist Sophistication (Tối giản & Tinh tế)</option>
+        <option value="glamorous">Luxury Glamour (Sang trọng & Quý phái)</option>
+        <option value="avant-garde">Avant-Garde/Experimental (Phá cách & Độc bản)</option>
+        <option value="romantic">Romantic & Gentle (Lãng mạn & Dịu dàng)</option>
+       </select>
+      </div>
+     </div>
+    </CardHeader>
+
+    <CardContent className="pt-6 text-left">
+     {(() => {
+      const prediction = SUGGESTIONS_MAP[selectedSegment];
+      return (
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Vibe & Profile Box */}
+        <div className="space-y-4">
+         <div className={`p-4 rounded-2xl border bg-gradient-to-br ${prediction.color}`}>
+          <span className="text-[10px] uppercase font-bold tracking-widest opacity-80 block mb-1">Cảm Hứng Thần Thái (Vibe Theme)</span>
+          <p className="text-sm font-extrabold tracking-wide">{prediction.vibe}</p>
+         </div>
+         
+         <div className="space-y-1">
+          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Hồ Sơ Quy Mô Khách Hàng</span>
+          <div className="bg-background/40 border border-border/40 p-4 rounded-xl flex items-center justify-between">
+           <div>
+            <span className="text-2xl font-black text-foreground">{matchingCustomersCount}</span>
+            <span className="text-xs text-muted-foreground ml-1.5">hội viên</span>
+           </div>
+           <span className="text-[10px] bg-[#2f6cf5]/10 text-[#2f6cf5] border border-[#2f6cf5]/20 font-bold px-2 py-0.5 rounded-full">
+            Tỉ lệ: {((matchingCustomersCount / 1284) * 100).toFixed(1)}%
+           </span>
+          </div>
+         </div>
+
+         <div className="space-y-1.5">
+          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Luận Giải Đặc Tính Phân Khúc</span>
+          <p className="text-xs text-muted-foreground leading-relaxed bg-background/20 p-3 rounded-xl border border-border/30">
+           {prediction.insight}
+          </p>
+         </div>
+        </div>
+
+        {/* Top 3 Predicted Products Section */}
+        <div className="space-y-4 lg:col-span-2 flex flex-col justify-between">
+         <div>
+          <span className="text-[11px] font-extrabold text-[#2f6cf5] uppercase tracking-wider block mb-3.5 flex items-center gap-1.5">
+           <Gem className="w-4 h-4 text-[#2f6cf5]" /> Top 3 Dòng Trang Sức Chuẩn Bị Có Xu Hướng Đột Phá Điển Hình
+          </span>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+           {prediction.items.map((item, index) => {
+            const iconsList = [Award, Sparkles, Gem];
+            const IconComp = iconsList[index] || Gem;
+            return (
+             <div
+              key={index}
+              className="bg-background/40 hover:bg-[#2f6cf5]/5 border border-border/60 hover:border-[#2f6cf5]/40 p-4 rounded-2xl transition-all duration-200 hover:translate-y-[-2px] flex flex-col justify-between space-y-3 shadow-xs h-full"
+             >
+              <div className="flex items-center justify-between">
+               <span className="w-6 h-6 rounded-full bg-[#2f6cf5]/10 flex items-center justify-center text-xs font-black text-[#2f6cf5]">
+                {index + 1}
+               </span>
+               <IconComp className="w-4 h-4 text-[#2f6cf5]/70" />
+              </div>
+              
+              <p className="text-xs font-bold text-foreground leading-tight">
+               {item}
+              </p>
+              
+              <div className="pt-2 border-t border-border/30">
+               <span className="text-[9px] text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 py-0.5 px-2 rounded-full font-bold">
+                Khuyên dùng 
+               </span>
+              </div>
+             </div>
+            );
+           })}
+          </div>
+         </div>
+
+         {/* Conversion Expectations Row */}
+         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-4 border-t border-border/30">
+          <div className="space-y-1">
+           <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Xác xuất chuyển đổi</span>
+           <p className="text-base font-extrabold text-[#10b981]">{prediction.conversion}</p>
+          </div>
+          <div className="space-y-1">
+           <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Doanh số trung vị kỳ vọng</span>
+           <p className="text-base font-extrabold text-[#2f6cf5]">{prediction.projectedValue}</p>
+          </div>
+          <div className="hidden md:block space-y-1">
+           <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Chu kỳ mua sắm</span>
+           <span className="text-xs font-bold text-foreground px-2 py-0.5 rounded-lg bg-border/50 block w-max mt-1">1.5 - 2.5 đơn/năm</span>
+          </div>
+         </div>
+
+        </div>
+
+       </div>
+      );
+     })()}
+    </CardContent>
+   </Card>
+  </motion.div>
+
+  {/* DỰ PHỎNG TIẾN TRÌNH THĂNG HẠNG THÀNH VIÊN */}
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.5 }}
+  >
+    <Card className="border border-border/50 bg-[#161a24]/35 backdrop-blur-md shadow-lg overflow-hidden relative">
+      <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+        <Trophy className="w-40 h-40 text-amber-500" />
+      </div>
+
+      <CardHeader className="border-b border-border/40 pb-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="text-left">
+            <span className="text-[10px] font-bold text-amber-500 border border-amber-500/30 bg-amber-500/10 py-1 px-2.5 rounded-full uppercase tracking-widest inline-block mb-2">
+              CRM Velocity Engine (Aura Analytics)
+            </span>
+            <CardTitle className="font-heading text-lg text-foreground flex items-center gap-2">
+              <Zap className="w-5 h-5 text-amber-500 animate-pulse" /> Dự Phỏng Tiến Trình Thăng Hạng Thành Viên
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground mt-0.5">
+              Chọn hội viên để khởi chạy dự báo tốc độ thăng hạng và các cột mốc đặc quyền tiếp theo dựa trên lịch sử hoạt động.
+            </CardDescription>
+          </div>
+
+          <div className="flex items-center gap-2 self-start md:self-center">
+            <span className="text-xs text-muted-foreground font-bold whitespace-nowrap">Hội viên:</span>
+            <select
+              value={progressionCustomerId}
+              onChange={(e) => setProgressionCustomerId(e.target.value)}
+              className="bg-background border border-border/80 text-xs font-semibold rounded-xl px-4 py-2 focus:outline-none focus:border-amber-500 text-foreground transition-all shrink-0 cursor-pointer shadow-sm hover:border-primary/50 min-w-[200px]"
+            >
+              {dbCustomers.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.tier || "Member"})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="pt-6 text-left">
+        {(() => {
+          const selectedProgCustomer = dbCustomers.find((c) => c.id === progressionCustomerId);
+          if (!selectedProgCustomer) {
+            return (
+              <div className="text-center py-8 text-xs text-muted-foreground">
+                Vui lòng chọn hội viên để hiển thị tiến trình thăng hạng.
+              </div>
+            );
+          }
+
+          const activeTiers = tiers.length > 0 ? tiers : [
+            { id: "member", name: "Member", threshold: 0, color: "#94a3b8", multiplier: 1, benefits: [] },
+            { id: "essential", name: "Essential", threshold: 1000, color: "#38bdf8", multiplier: 1.5, benefits: [] },
+            { id: "icon", name: "Icon", threshold: 5000, color: "#facc15", multiplier: 2.0, benefits: [] },
+            { id: "atelier", name: "Atelier", threshold: 20000, color: "#2f6cf5", multiplier: 3.0, benefits: [] }
+          ];
+
+          const sortedTiers = [...activeTiers].sort((a, b) => a.threshold - b.threshold);
+          const currentPoints = selectedProgCustomer.points || 0;
+          
+          const currentTierObj = sortedTiers.slice().reverse().find(t => currentPoints >= t.threshold) || sortedTiers[0];
+          const nextTierObj = sortedTiers.find(t => t.threshold > currentPoints);
+          
+          const pointsNeeded = nextTierObj ? nextTierObj.threshold - currentPoints : 0;
+          
+          const currentTierThreshold = currentTierObj ? currentTierObj.threshold : 0;
+          const nextTierThreshold = nextTierObj ? nextTierObj.threshold : 0;
+          const segmentTotal = nextTierThreshold - currentTierThreshold;
+          const segmentProgress = currentPoints - currentTierThreshold;
+          const percent = segmentTotal > 0 
+            ? Math.min(100, Math.max(0, (segmentProgress / segmentTotal) * 100)) 
+            : 100;
+
+          const createdAtTime = selectedProgCustomer.createdAt;
+          let daysActive = 180;
+          if (createdAtTime) {
+            try {
+              const createdDate = typeof createdAtTime.toDate === 'function' 
+                ? createdAtTime.toDate() 
+                : new Date(createdAtTime);
+              daysActive = Math.max(15, (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+            } catch (e) {
+              daysActive = 180;
+            }
+          }
+          
+          let pointsDailyRate = currentPoints / daysActive;
+          if (pointsDailyRate <= 0.1) {
+            const fallbacks: Record<string, number> = {
+              Atelier: 250,
+              Icon: 80,
+              Essential: 15,
+              Member: 5
+            };
+            pointsDailyRate = fallbacks[selectedProgCustomer.tier || "Member"] || 5;
+          }
+
+          const pointsMonthlyRate = pointsDailyRate * 30;
+          const daysToLevelUp = pointsDailyRate > 0 ? (pointsNeeded / pointsDailyRate) : 0;
+          const monthsToLevelUp = pointsMonthlyRate > 0 ? (pointsNeeded / pointsMonthlyRate) : 0;
+          
+          const predictionDateStr = (() => {
+            const estDate = new Date(Date.now() + daysToLevelUp * 24 * 60 * 60 * 1000);
+            return estDate.toLocaleDateString("vi-VN", { year: 'numeric', month: 'long', day: 'numeric' });
+          })();
+
+          return (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 text-left">
+              
+              {/* Segment progress visual bar & tier details */}
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Tiến Trình Chặng Hiện Tại</span>
+                  <Badge 
+                    className="border-none px-2.5 py-1 text-xs text-white"
+                    style={{ backgroundColor: currentTierObj?.color || "#94a3b8" }}
+                  >
+                    {currentTierObj?.name || "Member"}
+                  </Badge>
+                </div>
+
+                {/* Horizontal Progress bar */}
+                <div className="space-y-2">
+                  <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden relative border border-slate-700/50">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${percent}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className="h-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-400 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground">
+                    <span>{currentPoints.toLocaleString()} pts (Hiện tại)</span>
+                    {nextTierObj ? (
+                      <span>{nextTierObj.threshold.toLocaleString()} pts ({nextTierObj.name})</span>
+                    ) : (
+                      <span>Đạt cấp cao nhất (Atelier)</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Remaining status card */}
+                <div className="p-4 rounded-xl bg-slate-900/50 border border-border/30">
+                  {nextTierObj ? (
+                    <>
+                      <p className="text-xs text-slate-300">
+                        Thành viên cần tích thêm <span className="text-amber-500 font-extrabold text-sm">{pointsNeeded.toLocaleString()}</span> điểm (pts) nữa để thăng hạng <span className="font-bold text-white" style={{ color: nextTierObj.color }}>{nextTierObj.name}</span>.
+                      </p>
+                      <div className="mt-3 text-[10px] text-muted-foreground flex items-center gap-1.5 uppercase font-bold">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> Tiến độ chặng này đã đạt {percent.toFixed(1)}% hoàn thành
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-sm font-semibold text-emerald-400 flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5" /> Hội viên đã đạt phân thứ cao nhất (Atelier). Đang hưởng các độc quyền thượng lưu bậc nhất Việt Nam.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Forecast velocity metrics and upcoming perks */}
+              <div className="space-y-5 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground block">Dự Báo Thăng Cấp (Aura Analytics)</span>
+                  
+                  {nextTierObj ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="bg-background/40 p-3.5 rounded-xl border border-border/40 text-left">
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block mb-1">Tốc Độ Tích Lũy</span>
+                        <h5 className="text-sm font-extrabold text-white flex items-center gap-1">
+                          <TrendingUp className="w-4 h-4 text-[#2f6cf5]" /> ~{Math.round(pointsMonthlyRate).toLocaleString()} pts/tháng
+                        </h5>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Dựa theo tần suất giao dịch thực tế.</p>
+                      </div>
+
+                      <div className="bg-background/40 p-3.5 rounded-xl border border-border/40 text-left">
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block mb-1">Thời Gian Thăng Hạng Dự Kiến</span>
+                        <h5 className="text-sm font-extrabold text-amber-400 font-heading">
+                          ~{monthsToLevelUp < 1 ? `${Math.round(daysToLevelUp)} ngày` : `${monthsToLevelUp.toFixed(1)} tháng`}
+                        </h5>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Dự kiến đạt vào: {predictionDateStr}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl text-xs text-emerald-400 text-left font-medium">
+                      Giao dịch liên tục để duy trì thời hạn Atelier vĩnh cửu. Hệ số tích lũy nhân điểm độc quyền là x3.0.
+                    </div>
+                  )}
+                </div>
+
+                {/* Next tier privileges checklist */}
+                {nextTierObj && (
+                  <div className="pt-3 border-t border-border/40 text-xs">
+                    <span className="font-extrabold text-slate-300 block mb-2 uppercase tracking-wide">Quyền lợi đặc tuyển đang chờ đón:</span>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-muted-foreground font-medium text-left">
+                      {nextTierObj.benefits && nextTierObj.benefits.length > 0 ? (
+                        nextTierObj.benefits.map((benefit: any, idx: number) => (
+                          <li key={idx} className="flex items-center gap-1.5 text-[11px]">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                            <span>{benefit.name} ({benefit.value})</span>
+                          </li>
+                        ))
+                      ) : (
+                        <>
+                          <li className="flex items-center gap-1.5 text-[11px]">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                            <span>Hệ số nhân điểm: x{nextTierObj.multiplier || 1.5}</span>
+                          </li>
+                          <li className="flex items-center gap-1.5 text-[11px]">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                            <span>Quà tặng dịp kỷ niệm đặc thù VIP</span>
+                          </li>
+                          <li className="flex items-center gap-1.5 text-[11px]">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                            <span>Dịch vụ thử đồ tại tư gia độc quyền</span>
+                          </li>
+                        </>
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+              </div>
+
+            </div>
+          );
+        })()}
+      </CardContent>
+    </Card>
+  </motion.div>
+
+  {/* Grid for Bottom Sections */}
  <div className="grid gap-6 md:grid-cols-2">
  <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
  <CardHeader>

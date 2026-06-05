@@ -5,12 +5,8 @@ import { Customer, Company, AttributeDefinition } from "@/types";
 import { toast } from "sonner";
 import {
   ArrowLeft,
-  Gift,
-  Shield,
-  User,
   Phone,
   Mail,
-  Calendar,
   Facebook,
   Linkedin,
   Instagram,
@@ -18,21 +14,19 @@ import {
   Plus,
   Minus,
   Sparkles,
-  Check,
   Edit2,
-  CheckCircle2,
   Award,
   ExternalLink,
-  MessageSquare,
-  Heart,
   RefreshCw,
-  Smartphone,
   Upload,
   TrendingUp,
-  BarChart2,
   Zap,
   Trash2,
   AlertTriangle,
+  Gem,
+  Compass,
+  Check,
+  X,
 } from "lucide-react";
 import {
   Dialog,
@@ -51,8 +45,8 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
-  Legend,
 } from "recharts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as motion from "motion/react-client";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
 
@@ -92,6 +86,126 @@ const MOCK_CRM_ACTIVITIES = [
   },
 ];
 
+// Offline fallback logic for fashion & jewelry style predictions
+const getLocalStylePrediction = (
+  style: string,
+  palette: string,
+  material: string,
+  occ: string,
+  brand: string
+) => {
+  let analysis = "";
+  let prediction = "";
+  let vibe = "";
+  let recommendedItems: string[] = [];
+  let autoTags: string[] = [];
+
+  // 1. Analyze Core Style
+  if (style === "classic") {
+    analysis = "Khách hàng mang phong thái sang trọng cổ điển, đề cao tinh hoa chế tác truyền thống và nét thanh lịch lâu đời. Họ ưa chuộng các đường nét đối xứng, cân đối và thiết kế thanh nhã vượt thời gian.";
+    vibe = "Thanh lịch vĩnh cửu & Quý tộc tinh tế";
+    autoTags.push("Classic Luxury", "Timeless Elegance");
+  } else if (style === "minimalist") {
+    analysis = "Phong cách tối giản đương đại định hình gu thẩm mỹ của khách hàng. Họ tin rằng 'less is more', ưa chuộng những đường nét hình học sắc sảo, cấu trúc mở, lược bỏ tối đa chi tiết thừa để tôn vinh chất liệu thu hút.";
+    vibe = "Tối giản hiện đại & Tinh xảo sắc nét";
+    autoTags.push("Quiet Luxury", "Simplicity");
+  } else if (style === "glamorous") {
+    analysis = "Khách hàng sở hữu phong cách lộng lẫy, quyền quý, luôn là tâm điểm của sự chú ý. Họ yêu thích sự lấp lánh, phô diễn các chi tiết cầu kỳ, giác cắt đá quý phức tạp và các chuỗi dây đính kết tinh xảo.";
+    vibe = "Quyền uy Lộng lẫy & Đẳng cấp Hoàng gia";
+    autoTags.push("High Jewelry", "Red Carpet");
+  } else if (style === "avant-garde") {
+    analysis = "Cá tính mạnh mẽ, tiên phong và độc bản là bản sắc của khách hàng. Họ không ngần ngại thử nghiệm cấu trúc phi đối xứng, chất liệu phối hợp đặc biệt và phom dáng điêu khắc phá vỡ mọi quy chuẩn truyền thống.";
+    vibe = "Độc bản Tiên phong & Phá cách Nghệ thuật";
+    autoTags.push("Avant-Garde", "Signature Piece");
+  } else {
+    analysis = "Khách hàng hướng tới phong cách lãng mạn, nhẹ nhàng, thơ mộng. Gu thẩm mỹ của họ bay bổng với các họa tiết tự nhiên như cỏ cây hoa lá, đường nét uốn lượn nữ tính mềm mại và sự kết hợp sắc màu thuần khiết.";
+    vibe = "Lãng mạn Bay bổng & Thanh thuần Ngọc ngà";
+    autoTags.push("Romantic Style", "Floral Motif");
+  }
+
+  // 2. Add Palette details
+  if (palette === "neutral") {
+    analysis += " Sự ưu ái dành cho tông màu trung tính biểu lộ một tư duy thời trang bền vững, dễ phối đồ nhưng vẫn toát lên khí chất thượng hoàng.";
+  } else if (palette === "warm") {
+    analysis += " Tông màu ấm áp giúp tôn vinh làn da châu Á rạng rỡ, biểu hiện năng lượng nhiệt huyết và sự cởi mở, ấm áp.";
+  } else if (palette === "cool") {
+    analysis += " Lựa chọn tông lạnh thể hiện sự điềm tĩnh kiêu sa, tạo cảm giác sang trọng, bí ẩn và quý phái như hoàng hôn biển sâu.";
+  } else {
+    analysis += " Gam màu Pastel dịu mát biểu thị nét thanh xuân trẻ trung, yêu kiều, tạo ra nguồn năng lượng chữa lành và cảm giác dễ chịu cho người đối diện.";
+  }
+
+  // 3. Formulate Predictions & Recommendations
+  let gemstone = "Kim cương thiên nhiên";
+  let metal = "Vàng trắng 18k";
+  if (material === "gold") {
+    gemstone = "Kim cương giác cắt Brilliant hoặc Đá Ruby đỏ";
+    metal = "Vàng vàng truyền thống 18K/24K";
+    autoTags.push("Gold Collector");
+  } else if (material === "white_gold") {
+    gemstone = "Kim cương nước D tinh khiết hoặc Sapphire xanh sâu thẳm";
+    metal = "Bạch kim (Platinum) hoặc Vàng trắng quý giá";
+    autoTags.push("Plat Pure");
+  } else if (material === "rose_gold") {
+    gemstone = "Kim cương màu Champagne hoặc Đá thạch anh tóc hồng";
+    metal = "Vàng hồng thời thượng (Rose Gold)";
+    autoTags.push("Rose Gold Muse");
+  } else if (material === "gemstones") {
+    gemstone = "Đá Emerald (Lục bảo bảo) hoàng gia hoặc Ngọc xanh biển (Aquamarine)";
+    metal = "Vàng trắng đính kết phức tạp";
+    autoTags.push("Gemstone Connoisseur");
+  } else {
+    gemstone = "Ngọc trai Akoya Nhật Bản tròn trịa hoặc Ngọc trai Nam Hải ánh vàng rực rỡ";
+    metal = "Bạch kim tinh khiết";
+    autoTags.push("Pearl Lover");
+  }
+
+  // Purpose-based predictions
+  if (occ === "daily") {
+    prediction = `Trong thời gian tới, khách hàng sẽ có xu hướng ưu tiên chọn dùng các sản phẩm trang sức tinh giản, có tính ứng dụng cao nhưng không kém phần thanh quý. Dự đoán món đồ ưa chuộng nhất sẽ là chiếc nhẫn Eternity mỏng đính một hàng kim cương tấm bằng chất liệu ${metal}, phối cùng bông tai nụ (stud earrings) giác cắt tròn để tạo điểm nhấn nhẹ nhàng khi ra ngoài hàng ngày.`;
+    recommendedItems = [
+      `Nhẫn Eternity chế tác từ ${metal} nạm Kim cương Brilliant`,
+      `Khuyên tai nụ Solitaire nạm ${gemstone}`,
+      `Lắc tay xích mảnh tối giản tinh xảo`
+    ];
+  } else if (occ === "gala") {
+    prediction = `Chuẩn bị cho các sự kiện tầm cỡ sắp tới, khách hàng chắc chắn sẽ tìm kiếm những tác phẩm trang sức trung tâm (statement accessories). Dự đoán xu hướng sẽ là một chiếc vòng cổ dáng Riviera lộng lẫy bằng chất liệu ${metal} đính nạm ${gemstone} nguyên khối, hoặc chiếc khuyên tai chandeliers rủ dài quý phái để tương thích tuyệt đối với các bộ váy dạ tiệc quyền quý.`;
+    recommendedItems = [
+      `Vòng cổ Riviera dáng hoàng gia chế tác từ ${metal} nạm ${gemstone}`,
+      `Đôi khuyên tai dáng đèn chùm (Chandeliers) lộng lẫy`,
+      `Nhẫn Statement bản lớn đính ${gemstone} giác cắt Marquise`
+    ];
+  } else if (occ === "business") {
+    prediction = `Tại không gian công sở và các cuộc hội họp ngoại giao quyền uy, khách hàng sẽ chuộng các mẫu trang sức mang đậm cấu trúc mạnh mẽ, quyền lực (power dressing). Chiếc vòng tay bản cứng (bangle) kiểu dáng hình học tinh tế bằng ${metal} nạm ẩn nương theo thiết kế của ${brand === "cartier" ? "Cartier" : "thượng hiệu cao cấp"} sẽ là vật bất ly thân giúp tăng cường sự tự tin thần thái lãnh đạo.`;
+    recommendedItems = [
+      `Vòng tay bản cứng geometric chế tác từ ${metal}`,
+      `Earcuff khuyên kẹp tai nạm kim cương cá tính công sở`,
+      `Mặt dây chuyền tối giản hình học đính ${gemstone}`
+    ];
+  } else {
+    prediction = `Khách hàng thiên hướng tích lũy và sưu tầm trang sức mang tính di sản phi thời gian để dành tặng thế hệ sau. Dự báo họ sẽ đón nhận các phiên bản Limited Edition từ các bộ sưu tập huyền thoại, kết hợp chất liệu ${metal} và ${gemstone} chất lượng cao, mang tính nghệ thuật lớn đại diện cho câu chuyện gia đình sâu sắc.`;
+    recommendedItems = [
+      `Mặt dây chuyền gia huy đúc bằng ${metal} đính kết thủ công`,
+      `Trâm cài áo (Brooch) đính kết ngọc trai & tác phẩm điêu khắc vàng cổ`,
+      `Nhẫn Signet hoàng gia nạm ${gemstone} tâm điểm`
+    ];
+  }
+
+  // Brand adaptation
+  if (brand === "cartier") {
+    prediction += ` Thiết kế sẽ mang âm hướng cá tính quyền lực, lấy cảm hứng từ biểu tượng Panther (Báo Gấm) mạnh mẽ hoặc Love/Juste un Clou kinh điển.`;
+  } else if (brand === "tiffany") {
+    prediction += ` Phom dáng tôn thờ cấu trúc hình học hiện đại hoặc biểu tượng lãng mạn lấp lánh nguyên bản từ Tiffany T, HardWear hiện đại.`;
+  } else if (brand === "chanel") {
+    prediction += ` Trang sức mượn cảm hứng hoa trà Camélia, họa tiết chần bông Coco Crush thanh quý đậm chất Pháp cổ điển.`;
+  } else if (brand === "pandora") {
+    prediction += ` Đề cao tính modular, sự kết hợp ngẫu hứng giàu tình ý của các hạt charm cá nhân hóa biểu đạt câu chuyện riêng biệt.`;
+  } else {
+    prediction += ` Đường nét mang hơi thở gothic gothic mạnh mẽ, phóng khoáng đi cùng hoa văn chữ thập hay biểu tượng gai góc đầy bản lĩnh độc nhất.`;
+  }
+
+  return { analysis, prediction, vibe, recommendedItems, autoTags };
+};
+
 interface CustomerDashboardProps {
   customer: Customer;
   userId: string;
@@ -129,6 +243,193 @@ export function CustomerDashboard({
   const [clvScenario, setClvScenario] = useState<
     "conservative" | "baseline" | "optimistic"
   >("baseline");
+
+  // Fashion style and jewelry style analytics states
+  const [fashionStyle, setFashionStyle] = useState(customer.customFields?.fashionStyle || "classic");
+  const [colorPalette, setColorPalette] = useState(customer.customFields?.colorPalette || "neutral");
+  const [materials, setMaterials] = useState(customer.customFields?.materials || "gold");
+  const [occasions, setOccasions] = useState(customer.customFields?.occasions || "daily");
+  const [brandReference, setBrandReference] = useState(customer.customFields?.brandReference || "chanel");
+  const [additionalNotes, setAdditionalNotes] = useState(customer.customFields?.additionalNotes || "");
+  const [ringSize, setRingSize] = useState(customer.customFields?.ringSize || "");
+  const [braceletSize, setBraceletSize] = useState(customer.customFields?.braceletSize || "");
+  const [necklaceLength, setNecklaceLength] = useState(customer.customFields?.necklaceLength || "");
+  const [jewelryPreference, setJewelryPreference] = useState(customer.customFields?.jewelryPreference || "");
+  const [aiReport, setAiReport] = useState<any>(customer.customFields?.aiFashionReport || null);
+  const [analyzingStyle, setAnalyzingStyle] = useState(false);
+  const [ticketSubject, setTicketSubject] = useState("Yêu cầu spa làm dưỡng đá quý");
+  const [ticketSeverity, setTicketSeverity] = useState("Trung bình");
+  const [ticketStatus, setTicketStatus] = useState("Đang xử lý");
+  const [customTicketSubject, setCustomTicketSubject] = useState("");
+
+  // States for unified extended attributes & fashion editing
+  const [isEditingAttributes, setIsEditingAttributes] = useState(false);
+  const [isSavingAttributes, setIsSavingAttributes] = useState(false);
+  const [editedCustomFields, setEditedCustomFields] = useState<Record<string, any>>(customer.customFields || {});
+
+  // Keep state synchronized when customer changes
+  React.useEffect(() => {
+    setEditedCustomFields(customer.customFields || {});
+    setFashionStyle(customer.customFields?.fashionStyle || "classic");
+    setColorPalette(customer.customFields?.colorPalette || "neutral");
+    setMaterials(customer.customFields?.materials || "gold");
+    setOccasions(customer.customFields?.occasions || "daily");
+    setBrandReference(customer.customFields?.brandReference || "chanel");
+    setAdditionalNotes(customer.customFields?.additionalNotes || "");
+    setRingSize(customer.customFields?.ringSize || "");
+    setBraceletSize(customer.customFields?.braceletSize || "");
+    setNecklaceLength(customer.customFields?.necklaceLength || "");
+    setJewelryPreference(customer.customFields?.jewelryPreference || "");
+    setAiReport(customer.customFields?.aiFashionReport || null);
+  }, [customer]);
+
+  const handleSaveFashionStyle = async (
+    newStyle = fashionStyle,
+    newPalette = colorPalette,
+    newMaterial = materials,
+    newOccasion = occasions,
+    newBrand = brandReference,
+    newNotes = additionalNotes,
+    newRingSize = ringSize,
+    newBraceletSize = braceletSize,
+    newNecklaceLength = necklaceLength,
+    newJewelryPref = jewelryPreference
+  ) => {
+    const updatedCustomFields: Record<string, any> = {
+      ...customer.customFields,
+      ...editedCustomFields,
+      fashionStyle: newStyle,
+      colorPalette: newPalette,
+      materials: newMaterial,
+      occasions: newOccasion,
+      brandReference: newBrand,
+      additionalNotes: newNotes,
+      ringSize: newRingSize,
+      braceletSize: newBraceletSize,
+      necklaceLength: newNecklaceLength,
+      jewelryPreference: newJewelryPref,
+    };
+    
+    // Auto-update tags based on local rules
+    const predictionResult = getLocalStylePrediction(newStyle, newPalette, newMaterial, newOccasion, newBrand);
+    const currentTags = customer.customFields?.autoTags || [];
+    const otherTags = currentTags.filter((t: any) => {
+      const tagStr = typeof t === 'string' ? t : (t?.tag || '');
+      return !['Classic Luxury', 'Timeless Elegance', 'Quiet Luxury', 'Simplicity', 'High Jewelry', 'Red Carpet', 'Avant-Garde', 'Signature Piece', 'Romantic Style', 'Floral Motif', 'Gold Collector', 'Plat Pure', 'Rose Gold Muse', 'Gemstone Connoisseur', 'Pearl Lover'].includes(tagStr);
+    });
+
+    const newLabelTags = predictionResult.autoTags.map(tagStr => ({
+      tag: tagStr,
+      color: "bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/20"
+    }));
+
+    updatedCustomFields.autoTags = [...otherTags, ...newLabelTags];
+
+    const success = await updateFirestore({ customFields: updatedCustomFields }, "Đã cập nhật gu thời trang thành công!");
+    return success;
+  };
+
+  const handleSaveAllAttributes = async () => {
+    setIsSavingAttributes(true);
+    const updatedCustomFields: Record<string, any> = {
+      ...customer.customFields,
+      ...editedCustomFields,
+      fashionStyle,
+      colorPalette,
+      materials,
+      occasions,
+      brandReference,
+      additionalNotes,
+      ringSize,
+      braceletSize,
+      necklaceLength,
+      jewelryPreference,
+    };
+    
+    // Auto-update tags based on local rules
+    const predictionResult = getLocalStylePrediction(
+      fashionStyle,
+      colorPalette,
+      materials,
+      occasions,
+      brandReference
+    );
+    const currentTags = customer.customFields?.autoTags || [];
+    const otherTags = currentTags.filter((t: any) => {
+      const tagStr = typeof t === 'string' ? t : (t?.tag || '');
+      return !['Classic Luxury', 'Timeless Elegance', 'Quiet Luxury', 'Simplicity', 'High Jewelry', 'Red Carpet', 'Avant-Garde', 'Signature Piece', 'Romantic Style', 'Floral Motif', 'Gold Collector', 'Plat Pure', 'Rose Gold Muse', 'Gemstone Connoisseur', 'Pearl Lover'].includes(tagStr);
+    });
+
+    const newLabelTags = predictionResult.autoTags.map(tagStr => ({
+      tag: tagStr,
+      color: "bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/20"
+    }));
+
+    updatedCustomFields.autoTags = [...otherTags, ...newLabelTags];
+
+    const success = await updateFirestore({ customFields: updatedCustomFields }, "Đã lưu tất cả thuộc tính thành công!");
+    if (success) {
+      setIsEditingAttributes(false);
+    }
+    setIsSavingAttributes(false);
+  };
+
+  const triggerAiStyleAnalysis = async () => {
+    setAnalyzingStyle(true);
+    const toastId = toast.loading("AI đang phân tích xu hướng trang sức cho " + customer.name + "...");
+    try {
+      const response = await fetch("/api/gemini/analyze-fashion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerName: customer.name,
+          attributes: {
+            fashionStyle,
+            colorPalette,
+            materials,
+            occasions,
+            brandReference,
+            additionalNotes,
+            gender: customer.region || "Chưa rõ",
+            points: points
+          }
+        }),
+      });
+
+      const resData = await response.json();
+      if (resData.success && resData.data) {
+        const report = resData.data;
+        setAiReport(report);
+        
+        // Save to Firestore
+        const updatedCustomFields = {
+          ...customer.customFields,
+          aiFashionReport: report,
+          autoTags: [
+            ...(customer.customFields?.autoTags || []).filter((t: any) => {
+              const tagStr = typeof t === "string" ? t : (t?.tag || "");
+              return !(report.autoTags || []).includes(tagStr);
+            }),
+            ...(report.autoTags || []).map((tStr: string) => ({
+              tag: tStr,
+              color: "bg-purple-500/10 text-purple-400 border-purple-500/20"
+            }))
+          ]
+        };
+        await updateFirestore({ customFields: updatedCustomFields }, "Đã đồng bộ báo cáo trang sức AI thành công!");
+      } else {
+        throw new Error(resData.message || "Máy chủ AI không phản hồi kết quả hợp lệ.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Không thể khởi động phân tích AI. Vui lòng kiểm tra API key trong Cấu hình.", { id: toastId });
+    } finally {
+      setAnalyzingStyle(false);
+      toast.dismiss(toastId);
+    }
+  };
 
   // Calculates historical spend from order history or assumes a smart tier-based starting baseline
   const getHistoricalAndPredictedCLV = () => {
@@ -458,7 +759,42 @@ export function CustomerDashboard({
     updatedData: Partial<Customer>,
     successMessage?: string,
   ) => {
-    const docRef = doc(db, `users/${userId}/customers/${customer.id}`);
+    if (userId === "guest") {
+      const toastId = toast.loading("Đang lưu thông tin cục bộ...");
+      try {
+        const localCustomersStr = localStorage.getItem("crm_guest_customers");
+        if (localCustomersStr) {
+          const list: Customer[] = JSON.parse(localCustomersStr);
+          const idx = list.findIndex(c => c.id === customer.id);
+          if (idx !== -1) {
+            const updatedCustomerFieldsCustom = {
+              ...(list[idx].customFields || {}),
+              ...(updatedData.customFields || {})
+            };
+            list[idx] = {
+              ...list[idx],
+              ...updatedData,
+              customFields: updatedCustomerFieldsCustom,
+              updatedAt: new Date() as any
+            };
+            localStorage.setItem("crm_guest_customers", JSON.stringify(list));
+            window.dispatchEvent(new Event("crm_guest_data_changed"));
+          }
+        }
+        if (successMessage) {
+          toast.success(successMessage, { id: toastId });
+        } else {
+          toast.dismiss(toastId);
+        }
+        return true;
+      } catch (err: any) {
+        console.error("Local update error: ", err);
+        toast.error("Không thể lưu cấu hình cục bộ", { id: toastId });
+        return false;
+      }
+    }
+
+    const docRef = doc(db, `customers/${customer.id}`);
     const toastId = toast.loading("Đang lưu thông tin...");
     try {
       await updateDoc(docRef, {
@@ -811,38 +1147,442 @@ export function CustomerDashboard({
             )}
           </motion.div>
 
-          {/* CUSTOM ATTRIBUTES LIST CONTAINER */}
-          {attributes.length > 0 && (
-            <div className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 space-y-3 shadow-md">
-              <h4 className="text-xs font-bold text-foreground uppercase tracking-widest border-b pb-2">
-                Thuộc tính mở rộng
+          {/* CUSTOM ATTRIBUTES & FASHION PANEL */}
+          <div className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 space-y-4 shadow-md">
+            <div className="flex items-center justify-between border-b pb-2">
+              <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Gem className="w-3.5 h-3.5 text-[#2f6cf5]" /> Thuộc tính mở rộng
               </h4>
-              <div className="space-y-2">
-                {attributes.map((attr) => (
-                  <div
-                    key={attr.id}
-                    className="flex justify-between items-center bg-background/50 p-2 rounded-xl text-xs"
+              <button
+                onClick={() => {
+                  if (isEditingAttributes) {
+                    handleSaveAllAttributes();
+                  } else {
+                    setEditedCustomFields(customer.customFields || {});
+                    setIsEditingAttributes(true);
+                  }
+                }}
+                disabled={isSavingAttributes}
+                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all flex items-center gap-1 ${
+                  isEditingAttributes
+                    ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500"
+                    : "bg-background hover:bg-muted border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {isSavingAttributes ? (
+                  <RefreshCw className="w-3 h-3 animate-spin" />
+                ) : isEditingAttributes ? (
+                  <>
+                    <Check className="w-3 h-3" /> Lưu
+                  </>
+                ) : (
+                  <>
+                    <Edit2 className="w-3 h-3" /> Sửa
+                  </>
+                )}
+              </button>
+            </div>
+
+            {isEditingAttributes ? (
+              <div className="space-y-4 text-xs animate-in fade-in-40 duration-200">
+                {/* Cancel button if editing */}
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditingAttributes(false);
+                      // reload original values
+                      setFashionStyle(customer.customFields?.fashionStyle || "classic");
+                      setColorPalette(customer.customFields?.colorPalette || "neutral");
+                      setMaterials(customer.customFields?.materials || "gold");
+                      setOccasions(customer.customFields?.occasions || "daily");
+                      setBrandReference(customer.customFields?.brandReference || "chanel");
+                      setAdditionalNotes(customer.customFields?.additionalNotes || "");
+                      setRingSize(customer.customFields?.ringSize || "");
+                      setBraceletSize(customer.customFields?.braceletSize || "");
+                      setNecklaceLength(customer.customFields?.necklaceLength || "");
+                      setJewelryPreference(customer.customFields?.jewelryPreference || "");
+                    }}
+                    className="text-[10px] font-semibold text-rose-500 hover:underline flex items-center gap-0.5"
                   >
-                    <span className="text-muted-foreground font-medium">
-                      {attr.label}
+                    <X className="w-3 h-3" /> Hủy chỉnh sửa
+                  </button>
+                </div>
+
+                {/* Section 1: Gu Thời Trang & Phụ Kiện */}
+                <div className="space-y-3 border-b border-border/30 pb-3">
+                  <span className="text-[10px] font-bold text-[#2f6cf5] uppercase tracking-widest block">
+                    Gu thời trang & Phụ kiện
+                  </span>
+
+                  <div className="space-y-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase">Gu thời trang</label>
+                      <select
+                        value={fashionStyle}
+                        onChange={(e) => setFashionStyle(e.target.value)}
+                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                      >
+                        <option value="classic">Classic Elegant (Cổ điển)</option>
+                        <option value="minimalist">Minimalist (Tối giản)</option>
+                        <option value="glamorous">Luxury Glamour (Sang trọng)</option>
+                        <option value="avant-garde">Avant-Garde (Cá tính)</option>
+                        <option value="romantic">Romantic (Lãng mạn)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase">Tông màu</label>
+                      <select
+                        value={colorPalette}
+                        onChange={(e) => setColorPalette(e.target.value)}
+                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                      >
+                        <option value="neutral">Neutral (Trung tính)</option>
+                        <option value="warm">Warm (Tông ấm)</option>
+                        <option value="cool">Cool (Tông lạnh)</option>
+                        <option value="pastel">Pastel (Vàng nhạt / Hồng)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase">Chất liệu chính</label>
+                      <select
+                        value={materials}
+                        onChange={(e) => setMaterials(e.target.value)}
+                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                      >
+                        <option value="gold">Yellow Gold (Vàng 18K/24K)</option>
+                        <option value="white_gold">White Gold & Platinum</option>
+                        <option value="rose_gold">Rose Gold (Vàng hồng)</option>
+                        <option value="gemstones">Diamonds & Gemstones</option>
+                        <option value="pearls">Natural Pearls (Ngọc trai)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase">Dịp sử dụng</label>
+                      <select
+                        value={occasions}
+                        onChange={(e) => setOccasions(e.target.value)}
+                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                      >
+                        <option value="daily">Daily Wear (Đeo hàng ngày)</option>
+                        <option value="gala">Parties & Gala (Dạ tiệc)</option>
+                        <option value="business">Business meetings (Đi làm)</option>
+                        <option value="gift">Collector & Gift (Sưu tầm)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase">Thương hiệu tham chiếu</label>
+                      <select
+                        value={brandReference}
+                        onChange={(e) => setBrandReference(e.target.value)}
+                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                      >
+                        <option value="cartier">Cartier Style</option>
+                        <option value="tiffany">Tiffany & Co Style</option>
+                        <option value="chanel">Chanel Style</option>
+                        <option value="pandora">Pandora Style</option>
+                        <option value="chrome_hearts">Alternative Style</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Size nhẫn</label>
+                        <input
+                          type="text"
+                          value={ringSize}
+                          onChange={(e) => setRingSize(e.target.value)}
+                          placeholder="v.d. 14"
+                          className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Size vòng tay</label>
+                        <input
+                          type="text"
+                          value={braceletSize}
+                          onChange={(e) => setBraceletSize(e.target.value)}
+                          placeholder="v.d. 16cm"
+                          className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Chiều dài dây</label>
+                        <input
+                          type="text"
+                          value={necklaceLength}
+                          onChange={(e) => setNecklaceLength(e.target.value)}
+                          placeholder="v.d. 45cm"
+                          className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Loại ưa thích</label>
+                        <input
+                          type="text"
+                          value={jewelryPreference}
+                          onChange={(e) => setJewelryPreference(e.target.value)}
+                          placeholder="v.d. Bông tai, Nhẫn"
+                          className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase">Ghi chú thời trang</label>
+                      <textarea
+                        value={additionalNotes}
+                        onChange={(e) => setAdditionalNotes(e.target.value)}
+                        placeholder="Nhập ghi chú style..."
+                        rows={2}
+                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none resize-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 2: Thuộc tính Tùy chỉnh hệ thống */}
+                {attributes.length > 0 && (
+                  <div className="space-y-3">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
+                      Thuộc tính tùy chỉnh
                     </span>
+                    <div className="space-y-2">
+                      {attributes.map((attr) => {
+                        const val = editedCustomFields[attr.key] ?? "";
+                        return (
+                          <div key={attr.id} className="space-y-1">
+                            <label className="text-[10px] font-bold text-muted-foreground uppercase block">
+                              {attr.label} {attr.isRequired && <span className="text-rose-500">*</span>}
+                            </label>
+                            
+                            {attr.type === "textarea" ? (
+                              <textarea
+                                value={val}
+                                onChange={(e) => setEditedCustomFields({ ...editedCustomFields, [attr.key]: e.target.value })}
+                                placeholder={attr.placeholder}
+                                className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none resize-none"
+                                rows={2}
+                              />
+                            ) : attr.type === "select" ? (
+                              <select
+                                value={val}
+                                onChange={(e) => setEditedCustomFields({ ...editedCustomFields, [attr.key]: e.target.value })}
+                                className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                              >
+                                <option value="">-- Chọn --</option>
+                                {attr.options?.map((opt) => (
+                                  <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                              </select>
+                            ) : attr.type === "radio" ? (
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                {attr.options?.map((opt) => (
+                                  <label key={opt} className="flex items-center gap-1 cursor-pointer text-xs font-medium text-foreground">
+                                    <input
+                                      type="radio" 
+                                      name={`attr_${attr.key}`} 
+                                      value={opt} 
+                                      checked={val === opt}
+                                      onChange={(e) => setEditedCustomFields({ ...editedCustomFields, [attr.key]: e.target.value })}
+                                      className="accent-[#2f6cf5] w-3.5 h-3.5"
+                                    />
+                                    <span>{opt}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            ) : attr.type === "checkbox" ? (
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                {attr.options?.map((opt) => {
+                                  const currentValues = Array.isArray(val) ? val : (val ? [val] : []);
+                                  const isChecked = currentValues.includes(opt);
+                                  return (
+                                    <label key={opt} className="flex items-center gap-1 cursor-pointer text-xs font-medium text-foreground">
+                                      <input 
+                                        type="checkbox" 
+                                        value={opt} 
+                                        checked={isChecked}
+                                        onChange={() => {
+                                          const newValues = isChecked 
+                                            ? currentValues.filter((v: any) => v !== opt)
+                                            : [...currentValues, opt];
+                                          setEditedCustomFields({ ...editedCustomFields, [attr.key]: newValues });
+                                        }}
+                                        className="accent-[#2f6cf5] w-3.5 h-3.5 rounded-sm"
+                                      />
+                                      <span>{opt}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <input
+                                type={attr.type === "number" ? "number" : attr.type === "date" ? "date" : "text"}
+                                value={val}
+                                onChange={(e) => setEditedCustomFields({ ...editedCustomFields, [attr.key]: e.target.value })}
+                                placeholder={attr.placeholder}
+                                className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleSaveAllAttributes}
+                  disabled={isSavingAttributes}
+                  className="w-full bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 text-white font-bold py-2 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                >
+                  {isSavingAttributes ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <>
+                      <Check className="w-3.5 h-3.5" /> Lưu Thay Đổi
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4 text-xs">
+                {/* View Mode Section 1: Gu Thời Trang & Thẩm Mỹ */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-xl border border-border/30">
+                    <span className="text-muted-foreground font-medium">Gu thời trang:</span>
                     <span className="font-bold text-foreground">
-                      {Array.isArray(customer.customFields?.[attr.key])
-                        ? (
-                            customer.customFields?.[attr.key] as any as string[]
-                          ).join(", ")
-                        : customer.customFields?.[attr.key]?.toString() || "—"}
+                      {fashionStyle === "classic" && "Classic Elegant"}
+                      {fashionStyle === "minimalist" && "Minimalist"}
+                      {fashionStyle === "glamorous" && "Luxury Glamour"}
+                      {fashionStyle === "avant-garde" && "Avant-Garde"}
+                      {fashionStyle === "romantic" && "Romantic"}
                     </span>
                   </div>
-                ))}
+
+                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-xl border border-border/30">
+                    <span className="text-muted-foreground font-medium">Tông màu ưa thích:</span>
+                    <span className="font-bold text-[#2f6cf5] capitalize">
+                      {colorPalette === "neutral" ? "Neutral" : colorPalette === "warm" ? "Warm" : colorPalette === "cool" ? "Cool" : "Pastel"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-xl border border-border/30">
+                    <span className="text-muted-foreground font-medium">Chất liệu tối ưu:</span>
+                    <span className="font-bold text-foreground capitalize">
+                      {materials === "gold" && "Vàng 18K/24K"}
+                      {materials === "white_gold" && "Vàng Trắng / Bạch Kim"}
+                      {materials === "rose_gold" && "Vàng Hồng"}
+                      {materials === "gemstones" && "Đá quý & Kim cương"}
+                      {materials === "pearls" && "Ngọc trai Akoya"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-xl border border-border/30">
+                    <span className="text-muted-foreground font-medium">Dịp sử dụng:</span>
+                    <span className="font-bold text-foreground">
+                      {occasions === "daily" && "Hàng ngày"}
+                      {occasions === "gala" && "Sự kiện / Dạ tiệc"}
+                      {occasions === "business" && "Công sở / Ngoại giao"}
+                      {occasions === "gift" && "Sưu tầm di sản"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-xl border border-border/30">
+                    <span className="text-muted-foreground font-medium">Thương hiệu Ref:</span>
+                    <span className="font-bold text-foreground capitalize">
+                      {brandReference} Style
+                    </span>
+                  </div>
+
+                  {/* Ring size, bracelet size, necklace length, preference fields */}
+                  {(ringSize || braceletSize || necklaceLength || jewelryPreference) && (
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      {ringSize && (
+                        <div className="bg-background/20 p-2 rounded-xl border border-border/20">
+                          <span className="text-[10px] text-muted-foreground block font-medium">Size nhẫn</span>
+                          <span className="font-extrabold text-[#2f6cf5]">{ringSize}</span>
+                        </div>
+                      )}
+                      {braceletSize && (
+                        <div className="bg-background/20 p-2 rounded-xl border border-border/20">
+                          <span className="text-[10px] text-muted-foreground block font-medium">Size vòng tay</span>
+                          <span className="font-extrabold text-[#2f6cf5]">{braceletSize}</span>
+                        </div>
+                      )}
+                      {necklaceLength && (
+                        <div className="bg-background/20 p-2 rounded-xl border border-border/20">
+                          <span className="text-[10px] text-muted-foreground block font-medium">Chiều dài dây</span>
+                          <span className="font-extrabold text-[#2f6cf5]">{necklaceLength}</span>
+                        </div>
+                      )}
+                      {jewelryPreference && (
+                        <div className="bg-background/20 p-2 rounded-xl border border-border/20">
+                          <span className="text-[10px] text-muted-foreground block font-medium">Loại ưa thích</span>
+                          <span className="font-extrabold text-[#2f6cf5] truncate block">{jewelryPreference}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {additionalNotes && (
+                    <div className="bg-[#2f6cf5]/5 p-3 rounded-xl border border-[#2f6cf5]/10 mt-1">
+                      <span className="text-[10px] text-[#2f6cf5] block font-bold uppercase tracking-wider mb-0.5">
+                        Ghi chú của tư vấn viên
+                      </span>
+                      <p className="text-xs text-muted-foreground italic leading-relaxed">
+                        "{additionalNotes}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* View Mode Section 2: Thuộc tính Tùy chỉnh (From attributes props) */}
+                {attributes.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-border/30">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">
+                      Thuộc tính tùy chỉnh
+                    </span>
+                    {attributes.map((attr) => (
+                      <div
+                        key={attr.id}
+                        className="flex justify-between items-center bg-background/50 p-2 rounded-xl text-xs border border-border/35"
+                      >
+                        <span className="text-muted-foreground font-medium">
+                          {attr.label}
+                        </span>
+                        <span className="font-bold text-foreground">
+                          {Array.isArray(customer.customFields?.[attr.key])
+                            ? (customer.customFields?.[attr.key] as string[]).join(", ")
+                            : customer.customFields?.[attr.key]?.toString() || "—"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* CỘT GIỮA & CỘT PHẢI - TOÀN CẢNH ENGAGEMENT ENGINE */}
-        <div className="space-y-6 lg:col-span-2">
-          {/* LOYALTY ENGINE DYNAMIC VISUALIZER CONTAINER */}
+        <div className="lg:col-span-2">
+          <Tabs defaultValue="overview" className="space-y-6 w-full">
+            <TabsList className="bg-muted/50 border p-1 rounded-xl">
+              <TabsTrigger value="overview" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">Tổng quan</TabsTrigger>
+              <TabsTrigger value="timeline" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">Timeline Sự kiện</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
+              {/* LOYALTY ENGINE DYNAMIC VISUALIZER CONTAINER */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Interactive Points Control Box */}
             <motion.div
@@ -1502,136 +2242,6 @@ export function CustomerDashboard({
             </div>
           </motion.div>
 
-          {/* DÒNG THỜI GIAN HOẠT ĐỘNG CHRONOLOGICAL (ACTIVITY TIMELINE) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-5"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
-              <div>
-                <h4 className="text-xs font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
-                  <span className="inline-flex w-2 h-2 rounded-full bg-primary animate-pulse" />
-                  Dòng Thời Gian Hoạt Động (Live Activity Timeline)
-                </h4>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Biên niên sử đồng bộ thời gian thực hiển thị giao dịch, khiếu
-                  nại & biến động trạng thái.
-                </p>
-              </div>
-
-              {/* Filtering Controls */}
-              <div className="flex flex-wrap gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
-                <button
-                  onClick={() => setTimelineFilter("all")}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                    timelineFilter === "all"
-                      ? "bg-primary text-primary-foreground shadow-xs"
-                      : "text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  Tất cả ({combinedTimeline.length})
-                </button>
-                <button
-                  onClick={() => setTimelineFilter("purchase")}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                    timelineFilter === "purchase"
-                      ? "bg-[#2f6cf5] text-white shadow-xs"
-                      : "text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  Giao dịch ({purchaseEvents.length})
-                </button>
-                <button
-                  onClick={() => setTimelineFilter("ticket")}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                    timelineFilter === "ticket"
-                      ? "bg-amber-500 text-white shadow-xs"
-                      : "text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  Phiếu hỗ trợ ({ticketEvents.length})
-                </button>
-                <button
-                  onClick={() => setTimelineFilter("status_change")}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                    timelineFilter === "status_change"
-                      ? "bg-indigo-500 text-white shadow-xs"
-                      : "text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  Trạng thái ({statusEvents.length + 1})
-                </button>
-              </div>
-            </div>
-
-            {/* Timeline Line View */}
-            <div className="relative pl-6 md:pl-8 space-y-6">
-              {/* Vertical timeline connector */}
-              <div className="absolute left-3 md:left-4 top-2 bottom-2 w-0.5 bg-border/50 dark:bg-border/20 z-0" />
-
-              {filteredTimeline.length === 0 ? (
-                <div className="text-center py-6 text-xs text-muted-foreground">
-                  Không tìm thấy hoạt động nào phù hợp với bộ lọc này.
-                </div>
-              ) : (
-                filteredTimeline.map((item, idx) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-3 bg-background/55 hover:bg-background/80 p-4 rounded-2xl border border-border/45 hover:border-[#2f6cf5]/30 transition-all group/item shadow-2xs"
-                  >
-                    {/* Floating timeline bubble */}
-                    <div className="absolute -left-[31px] md:-left-[35px] top-4 w-7 h-7 rounded-full bg-background border-2 border-border flex items-center justify-center text-xs shadow-sm group-hover/item:border-primary transition-colors">
-                      {item.icon}
-                    </div>
-
-                    <div className="space-y-1 max-w-full md:max-w-[70%]">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h5 className="text-xs font-extrabold text-foreground tracking-tight flex items-center gap-1.5 leading-tight">
-                          {item.title}
-                        </h5>
-                        <span
-                          className={`inline-block text-xs px-1.5 py-0.5 rounded border font-semibold ${item.badgeStyle}`}
-                        >
-                          {item.badgeText}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {item.description}
-                      </p>
-
-                      {/* Meta/Time values */}
-                      <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground/80">
-                        <span>🕒 {item.dateStr}</span>
-                        <span>•</span>
-                        <span className="text-[#2f6cf5] font-semibold uppercase">
-                          {item.type}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="text-right shrink-0 md:self-center">
-                      {item.valueStr && (
-                        <span className="text-xs font-black text-foreground block">
-                          {item.valueStr}
-                        </span>
-                      )}
-                      {item.pointsStr && (
-                        <span className="text-xs font-bold text-emerald-500">
-                          {item.pointsStr}
-                        </span>
-                      )}
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </div>
-          </motion.div>
-
           {/* API ĐƠN HÀNG ĐÃ MUA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1750,60 +2360,128 @@ export function CustomerDashboard({
             transition={{ delay: 0.5 }}
             className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-4"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-bold text-foreground uppercase tracking-widest">
-                  PHIẾU HỖ TRỢ & TICKET (CRM API)
-                </h4>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Lịch sử khiếu nại, bảo hành và yêu cầu hỗ trợ từ khách hàng.
-                </p>
+            <div className="flex flex-col gap-4 border-b border-border/40 pb-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="text-left">
+                  <h4 className="text-sm font-bold text-foreground uppercase tracking-widest flex items-center gap-1.5 font-heading">
+                    🎫 PHIẾU HỖ TRỢ & TICKET (CRM API)
+                  </h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Đồng bộ trạng thái khiếu nại, bảo dưỡng & dịch vụ khách hàng từ CRM của SEVA.
+                  </p>
+                </div>
               </div>
-              <button
-                onClick={async () => {
-                  try {
-                    const apiRes = await fetch("/api/crm/tickets", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        customerPhone: customer.phone,
-                        subject: "Tư vấn nâng cấp thiết bị POS",
-                      }),
-                    });
 
-                    const result = await apiRes.json();
+              {/* CRM Sandbox Panel */}
+              <div className="bg-background/40 p-4 rounded-2xl border border-border/50 space-y-3.5 text-left">
+                <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase text-[#2f6cf5] tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+                  Hộp Cát Giả Lập Phiếu CRM (API Sandbox)
+                </div>
 
-                    if (result.success) {
-                      const mockTickets = [
-                        result.data,
-                        {
-                          id: `SUP-${Math.floor(Math.random() * 10000)}`,
-                          date: "10/01/2026",
-                          subject: "Tư vấn nâng cấp gói bảo hành Vàng",
-                          status: "Đã đóng",
-                          severity: "Thấp",
-                        },
-                      ];
-                      await updateFirestore(
-                        {
-                          tickets: [
-                            ...(customer.tickets || []),
-                            ...mockTickets,
-                          ],
-                        },
-                        result.message,
-                      );
-                    } else {
-                      toast.error(result.message);
-                    }
-                  } catch (err: any) {
-                    toast.error(`Lỗi hệ thống: ${err.message}`);
-                  }
-                }}
-                className="px-3 py-1 rounded-xl text-xs font-bold border border-border bg-background hover:bg-muted transition-all"
-              >
-                Giả lập Ticket CRM
-              </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase">Chủ đề yêu cầu</label>
+                    <select
+                      value={ticketSubject}
+                      onChange={(e) => {
+                        setTicketSubject(e.target.value);
+                        if (e.target.value !== "custom") setCustomTicketSubject("");
+                      }}
+                      className="w-full bg-background/80 border border-border/70 rounded-xl px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:border-primary"
+                    >
+                      <option value="Yêu cầu spa làm dưỡng đá quý">Spa làm dưỡng đá quý & Kim cương</option>
+                      <option value="Hỗ trợ chỉnh cỡ (size) nhẫn Atelier">Chỉnh lại cỡ nhẫn cưới Atelier</option>
+                      <option value="Khiếu nại về việc tích điểm sai số">Đối soát và khiếu nại tích lũy điểm</option>
+                      <option value="Đăng ký gặp chuyên gia thiết kế riêng">Đặt lịch hẹn NTK Trang sức Seva</option>
+                      <option value="Yêu cầu bảo hành chuỗi ngọc trai">Bảo hành làm bóng chuỗi ngọc trai</option>
+                      <option value="custom">-- Viết chủ đề tùy chỉnh --</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase font-sans">Mức độ ưu tiên</label>
+                    <div className="grid grid-cols-3 gap-1">
+                      {["Thấp", "Trung bình", "Cao"].map((sev) => (
+                        <button
+                          key={sev}
+                          type="button"
+                          onClick={() => setTicketSeverity(sev)}
+                          className={`py-1 rounded-lg text-[10.5px] font-bold border transition-all ${
+                            ticketSeverity === sev
+                              ? "bg-primary/10 border-primary text-primary"
+                              : "bg-background border-border text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {sev}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {ticketSubject === "custom" && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase">Nội dung tùy chỉnh</label>
+                    <input
+                      type="text"
+                      placeholder="Nhập chủ đề yêu cầu hỗ trợ..."
+                      value={customTicketSubject}
+                      onChange={(e) => setCustomTicketSubject(e.target.value)}
+                      className="w-full bg-background border border-border/70 rounded-xl px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
+                    />
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground uppercase">
+                    Trạng thái: 
+                    <span className="ml-1 text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded font-black text-[9.5px]">
+                      Đang xử lý
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={async () => {
+                      const finalSubject = ticketSubject === "custom" ? (customTicketSubject || "Yêu cầu hỗ trợ mới") : ticketSubject;
+                      const toastId = toast.loading("Đang gửi yêu cầu và đồng bộ từ CRM...");
+                      try {
+                        const apiRes = await fetch("/api/crm/tickets", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            customerPhone: customer.phone,
+                            subject: finalSubject,
+                            severity: ticketSeverity,
+                            status: "Đang xử lý",
+                          }),
+                        });
+
+                        const result = await apiRes.json();
+
+                        if (result.success) {
+                          await updateFirestore(
+                            {
+                              tickets: [
+                                result.data,
+                                ...(customer.tickets || []),
+                              ],
+                            },
+                            "Đã gửi và đồng bộ phiếu hỗ trợ lên CRM hệ thống!"
+                          );
+                        } else {
+                          toast.error(result.message, { id: toastId });
+                        }
+                      } catch (err: any) {
+                        toast.error(`Lỗi hệ thống: ${err.message}`, { id: toastId });
+                      }
+                    }}
+                    className="px-4 py-1.5 rounded-xl text-xs font-black bg-[#2f6cf5] hover:bg-blue-600 text-white transition-all flex items-center justify-center gap-1 shadow-md active:scale-95"
+                  >
+                    🎫 Gửi Phiếu & Đồng Bộ
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -1816,8 +2494,7 @@ export function CustomerDashboard({
                     Chưa có phiếu hỗ trợ
                   </span>
                   <span className="text-xs text-muted-foreground mt-1 max-w-xs">
-                    Khách hàng chưa có yêu cầu hỗ trợ hoặc khiếu nại nào được
-                    ghi nhận.
+                    Khách hàng chưa có yêu cầu hỗ trợ hoặc khiếu nại nào được ghi nhận.
                   </span>
                 </div>
               ) : (
@@ -1828,26 +2505,26 @@ export function CustomerDashboard({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-foreground">
+                        <span className="text-sm font-bold text-foreground select-all">
                           {ticket.id}
                         </span>
                         <span
-                          className={`text-xs font-bold px-2 py-0.5 rounded-full border ${ticket.status === "Đang xử lý" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-slate-500/10 text-slate-500 border-slate-500/20"}`}
+                          className={`text-xs font-bold px-2 py-0.5 rounded-full border ${ticket.status === "Đang xử lý" || ticket.status === "open" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-slate-500/10 text-slate-500 border-slate-500/20"}`}
                         >
-                          {ticket.status}
+                          {ticket.status === "open" ? "Đang mở" : ticket.status === "closed" ? "Đã đóng" : ticket.status}
                         </span>
                       </div>
                       <span
-                        className={`text-xs font-bold px-2 py-0.5 rounded border ${ticket.severity === "Cao" ? "bg-rose-500/10 text-rose-500 border-rose-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"}`}
+                        className={`text-xs font-bold px-2 py-0.5 rounded border ${ticket.severity === "Cao" || ticket.severity === "High" ? "bg-rose-500/10 text-rose-500 border-rose-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"}`}
                       >
                         {ticket.severity}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span className="truncate max-w-[250px] font-medium text-foreground">
-                        {ticket.subject}
+                    <div className="flex items-center justify-between text-xs text-muted-foreground gap-3">
+                      <span className="truncate max-w-[280px] font-semibold text-foreground text-left">
+                        {ticket.subject || ticket.summary}
                       </span>
-                      <span>
+                      <span className="shrink-0 text-[10px] font-mono text-muted-foreground/85">
                         {formatVietnameseDate(ticket.date || ticket.createdAt)}
                       </span>
                     </div>
@@ -1856,6 +2533,139 @@ export function CustomerDashboard({
               )}
             </div>
           </motion.div>
+          </TabsContent>
+
+          <TabsContent value="timeline" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
+            {/* DÒNG THỜI GIAN HOẠT ĐỘNG CHRONOLOGICAL (ACTIVITY TIMELINE) */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-5"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
+                <div>
+                  <h4 className="text-xs font-bold text-foreground uppercase tracking-widest flex items-center gap-2">
+                    <span className="inline-flex w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    Dòng Thời Gian Hoạt Động (Live Activity Timeline)
+                  </h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Biên niên sử đồng bộ thời gian thực hiển thị giao dịch, khiếu
+                    nại & biến động trạng thái.
+                  </p>
+                </div>
+
+                {/* Filtering Controls */}
+                <div className="flex flex-wrap gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
+                  <button
+                    onClick={() => setTimelineFilter("all")}
+                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      timelineFilter === "all"
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Tất cả ({combinedTimeline.length})
+                  </button>
+                  <button
+                    onClick={() => setTimelineFilter("purchase")}
+                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      timelineFilter === "purchase"
+                        ? "bg-[#2f6cf5] text-white shadow-xs"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Giao dịch ({purchaseEvents.length})
+                  </button>
+                  <button
+                    onClick={() => setTimelineFilter("ticket")}
+                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      timelineFilter === "ticket"
+                        ? "bg-amber-500 text-white shadow-xs"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Phiếu hỗ trợ ({ticketEvents.length})
+                  </button>
+                  <button
+                    onClick={() => setTimelineFilter("status_change")}
+                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      timelineFilter === "status_change"
+                        ? "bg-indigo-500 text-white shadow-xs"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Trạng thái ({statusEvents.length + 1})
+                  </button>
+                </div>
+              </div>
+
+              {/* Timeline Line View */}
+              <div className="relative pl-6 md:pl-8 space-y-6">
+                {/* Vertical timeline connector */}
+                <div className="absolute left-3 md:left-4 top-2 bottom-2 w-0.5 bg-border/50 dark:bg-border/20 z-0" />
+
+                {filteredTimeline.length === 0 ? (
+                  <div className="text-center py-6 text-xs text-muted-foreground">
+                    Không tìm thấy hoạt động nào phù hợp với bộ lọc này.
+                  </div>
+                ) : (
+                  filteredTimeline.map((item, idx) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-3 bg-background/55 hover:bg-background/80 p-4 rounded-2xl border border-border/45 hover:border-[#2f6cf5]/30 transition-all group/item shadow-2xs"
+                    >
+                      {/* Floating timeline bubble */}
+                      <div className="absolute -left-[31px] md:-left-[35px] top-4 w-7 h-7 rounded-full bg-background border-2 border-border flex items-center justify-center text-xs shadow-sm group-hover/item:border-primary transition-colors">
+                        {item.icon}
+                      </div>
+
+                      <div className="space-y-1 max-w-full md:max-w-[70%]">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h5 className="text-xs font-extrabold text-foreground tracking-tight flex items-center gap-1.5 leading-tight">
+                            {item.title}
+                          </h5>
+                          <span
+                            className={`inline-block text-xs px-1.5 py-0.5 rounded border font-semibold ${item.badgeStyle}`}
+                          >
+                            {item.badgeText}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {item.description}
+                        </p>
+
+                        {/* Meta/Time values */}
+                        <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground/80">
+                          <span>🕒 {item.dateStr}</span>
+                          <span>•</span>
+                          <span className="text-[#2f6cf5] font-semibold uppercase">
+                            {item.type}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0 md:self-center">
+                        {item.valueStr && (
+                          <span className="text-xs font-black text-foreground block">
+                            {item.valueStr}
+                          </span>
+                        )}
+                        {item.pointsStr && (
+                          <span className="text-xs font-bold text-emerald-500">
+                            {item.pointsStr}
+                          </span>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
