@@ -11,7 +11,8 @@ import {
   Settings,
   Bell,
   Fingerprint,
-  Sparkles
+  Sparkles,
+  Plug
 } from "lucide-react";
 
 interface SidebarProps {
@@ -33,6 +34,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
     { name: "Tiếp thị", view: "marketing", icon: Bell },
     { name: "Phân tích", view: "analysis", icon: Sparkles },
     { name: "Báo cáo", view: "analytics", icon: BarChart },
+    { name: "Tích hợp", view: "integrations", icon: Plug },
     { name: "Cài đặt", view: "settings", icon: Settings, isSecondary: true },
   ];
 

@@ -18,7 +18,8 @@ import {
  Send,
  CheckCircle,
  Briefcase,
- Network
+ Network,
+ ShoppingBag
 } from 'lucide-react';
 import { 
  AreaChart, 
@@ -44,6 +45,7 @@ import { collection, query, onSnapshot, orderBy, doc, setDoc, serverTimestamp } 
 import { Customer, LoyaltyCampaign, Company, AttributeDefinition } from "@/types";
 import { OfferAnalysis } from "@/components/loyalty/OfferAnalysis";
 import { CrossBranchAnalysis } from "@/components/customers/CrossBranchAnalysis";
+import { ShoppingBehaviorAnalysis } from "@/components/customers/ShoppingBehaviorAnalysis";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 
 const CustomCLVTooltip = ({ active, payload, label }: any) => {
@@ -743,6 +745,7 @@ export function AnalysisView() {
  {[
  { id: 'dashboard', name: 'Tổng quan', icon: Layers },
  { id: 'cross_branch', name: 'Điểm chung chi nhánh', icon: Network },
+ { id: 'shopping_behavior', name: 'Hành vi mua sắm', icon: ShoppingBag },
  { id: 'loyalty_cost', name: 'Loyalty Cost & ROI', icon: DollarSign },
  { id: 'clv_repeat', name: 'CLV & Repeat Purchase', icon: TrendingUp },
  { id: 'vip_crm', name: 'VIP CRM & Booking', icon: Users },
@@ -781,6 +784,13 @@ export function AnalysisView() {
  companies={companies}
  attributes={attributes}
  />
+ </div>
+ )}
+
+ {/* NEW TAB: SHOPPING BEHAVIOR ANALYSIS */}
+ {activeTab === 'shopping_behavior' && (
+ <div className="space-y-6">
+ <ShoppingBehaviorAnalysis />
  </div>
  )}
 

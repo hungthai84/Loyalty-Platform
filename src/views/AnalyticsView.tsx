@@ -35,7 +35,9 @@ import {
  Award,
  Zap,
  Trophy,
- CheckCircle2
+ CheckCircle2,
+ Calendar,
+ ChevronDown
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { useFirebase } from "@/components/FirebaseProvider";
@@ -142,12 +144,41 @@ const heatmapData = [
   { day: 'CN', values: [4, 6, 10, 15, 12, 10, 8, 12, 22, 18, 14, 8, 4, 2] },
 ];
 
-export function AnalyticsView() {
- const { user } = useFirebase();
- const [dbCustomers, setDbCustomers] = useState<Customer[]>([]);
- const [selectedSegment, setSelectedSegment] = useState<string>("classic");
- const [tiers, setTiers] = useState<TierConfig[]>([]);
- const [progressionCustomerId, setProgressionCustomerId] = useState<string>("");
+ export function AnalyticsView() {
+  const { user } = useFirebase();
+  const [dbCustomers, setDbCustomers] = useState<Customer[]>([]);
+  const [selectedSegment, setSelectedSegment] = useState<string>("classic");
+  const [tiers, setTiers] = useState<TierConfig[]>([]);
+  const [progressionCustomerId, setProgressionCustomerId] = useState<string>("");
+  const [clvPeriod, setClvPeriod] = useState<"week" | "month" | "quarter">("month");
+  const [clvCompare, setClvCompare] = useState<boolean>(true);
+
+  const clvData = useMemo(() => {
+    if (clvPeriod === "week") {
+      return [
+        { label: "T2", current: 15200000, prev: 12100000 },
+        { label: "T3", current: 16500000, prev: 13500000 },
+        { label: "T4", current: 19800000, prev: 14200000 },
+        { label: "T5", current: 17600000, prev: 15400000 },
+        { label: "T6", current: 24100000, prev: 18600000 },
+        { label: "T7", current: 28500000, prev: 22000000 },
+        { label: "CN", current: 31200000, prev: 24500000 },
+      ];
+    } else if (clvPeriod === "month") {
+      return [
+        { label: "Tuần 1", current: 85000000, prev: 72000000 },
+        { label: "Tuần 2", current: 92000000, prev: 81000000 },
+        { label: "Tuần 3", current: 110000000, prev: 95000000 },
+        { label: "Tuần 4", current: 145000000, prev: 112000000 },
+      ];
+    } else {
+      return [
+        { label: "Tháng 1", current: 420000000, prev: 350000000 },
+        { label: "Tháng 2", current: 480000000, prev: 380000000 },
+        { label: "Tháng 3", current: 560000000, prev: 420000000 },
+      ];
+    }
+  }, [clvPeriod]);
 
  useEffect(() => {
   if (!user) {
@@ -246,22 +277,24 @@ export function AnalyticsView() {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: i * 0.1 }}
  >
- <Card className="border border-border/50 bg-card/50 backdrop-blur-sm">
- <CardHeader className="flex flex-row items-center justify-between pb-2">
- <CardTitle className="text-sm font-medium text-muted-foreground">
+ <Card className="border border-border/50 bg-card/50 backdrop-blur-sm relative overflow-hidden shadow-sm hover:shadow transition-shadow">
+ <CardHeader className="flex flex-row items-center justify-between pb-3">
+ <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
  {stat.title}
  </CardTitle>
- <stat.icon className="h-4 w-4 text-primary" />
+ <div className="p-2 bg-primary/10 rounded-xl text-primary">
+  <stat.icon className="h-4 w-4" />
+ </div>
  </CardHeader>
  <CardContent>
- <div className="text-2xl font-bold">{stat.value}</div>
- <p className="text-xs flex items-center mt-1">
+ <div className="text-3xl font-black font-heading tracking-tight drop-shadow-sm">{stat.value}</div>
+ <p className="text-xs flex items-center mt-2 font-medium">
  {stat.positive ? (
- <span className="text-emerald-500 flex items-center mr-1">
+ <span className="text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded flex items-center mr-2">
  <ArrowUpRight className="w-3 h-3 mr-0.5" /> {stat.trend}
  </span>
  ) : (
- <span className="text-rose-500 flex items-center mr-1">
+ <span className="text-rose-500 bg-rose-500/10 px-1.5 py-0.5 rounded flex items-center mr-2">
  <ArrowDownRight className="w-3 h-3 mr-0.5" /> {stat.trend}
  </span>
  )}
@@ -272,6 +305,117 @@ export function AnalyticsView() {
  </motion.div>
  ))}
  </div>
+
+ {/* CLV Growth Chart */}
+ <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.2 }}
+ >
+  <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
+  <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
+   <div>
+    <CardTitle className="font-heading">Biểu đồ tăng trưởng CLV</CardTitle>
+    <CardDescription>
+     Phân tích giá trị vòng đời khách hàng (Customer Lifetime Value) và xu hướng mua sắm.
+    </CardDescription>
+   </div>
+   <div className="flex flex-wrap items-center gap-3">
+    <button className="flex items-center gap-2 border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-semibold rounded-xl hover:bg-muted transition-colors shadow-xs text-foreground cursor-pointer">
+     <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+     Tháng 6, 2026 - Tùy chỉnh
+     <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-1" />
+    </button>
+    <div className="flex items-center gap-1 bg-background/60 border border-border/60 p-1 rounded-xl shadow-xs">
+     <button 
+       onClick={() => setClvPeriod("week")}
+       className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${clvPeriod === "week" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+     >
+       Tuần
+     </button>
+     <button 
+       onClick={() => setClvPeriod("month")}
+       className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${clvPeriod === "month" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+     >
+       Tháng
+     </button>
+     <button 
+       onClick={() => setClvPeriod("quarter")}
+       className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${clvPeriod === "quarter" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+     >
+       Quý
+     </button>
+    </div>
+    
+    <label className="flex items-center gap-2 cursor-pointer border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-semibold rounded-xl hover:bg-muted transition-colors shadow-xs">
+      <input 
+       type="checkbox" 
+       checked={clvCompare}
+       onChange={(e) => setClvCompare(e.target.checked)}
+       className="rounded text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer"
+      />
+      So sánh kỳ trước
+    </label>
+   </div>
+  </CardHeader>
+  <CardContent className="h-[380px] pt-6">
+   <ResponsiveContainer width="100%" height="100%">
+    <LineChart data={clvData}>
+     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
+     <XAxis 
+      dataKey="label" 
+      axisLine={false} 
+      tickLine={false} 
+      tick={{ fontSize: 12, fill: "#64748b", fontWeight: 500 }}
+      dy={10}
+     />
+     <YAxis 
+      axisLine={false} 
+      tickLine={false} 
+      tick={{ fontSize: 11, fill: "#64748b" }}
+      tickFormatter={(val) => `${val/1000000}tr`}
+      dx={-10}
+     />
+     <Tooltip 
+      contentStyle={{ 
+       backgroundColor: "var(--card)", 
+       borderColor: "var(--border)",
+       borderRadius: "12px",
+       boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+       border: "1px solid rgba(226, 232, 240, 0.5)",
+       fontWeight: 500
+      }}
+      itemStyle={{ fontSize: "13px" }}
+      labelStyle={{ fontSize: "11px", fontWeight: "bold", color: "#64748b", marginBottom: "4px" }}
+      formatter={(value: number) => [`${value.toLocaleString()} ₫`, ""]}
+     />
+     <Legend iconType="circle" wrapperStyle={{ paddingTop: "20px", fontSize: "12px", fontWeight: "bold" }} />
+     <Line 
+      type="monotone" 
+      dataKey="current" 
+      name={clvPeriod === "week" ? "Tuần này" : clvPeriod === "month" ? "Tháng này" : "Quý này"}
+      stroke="#2f6cf5" 
+      strokeWidth={3} 
+      dot={{ r: 4, fill: "#2f6cf5", strokeWidth: 0 }}
+      activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
+     />
+     {clvCompare && (
+      <Line 
+       type="monotone" 
+       dataKey="prev" 
+       name={clvPeriod === "week" ? "Tuần trước" : clvPeriod === "month" ? "Tháng trước" : "Quý trước"}
+       stroke="#94a3b8" 
+       strokeWidth={3} 
+       strokeDasharray="5 5"
+       dot={{ r: 4, fill: "#94a3b8", strokeWidth: 0 }}
+       activeDot={{ r: 5, strokeWidth: 0 }}
+      />
+     )}
+    </LineChart>
+   </ResponsiveContainer>
+  </CardContent>
+  </Card>
+ </motion.div>
 
  <div className="grid gap-6 md:grid-cols-7">
  {/* Main Chart */}
@@ -285,35 +429,41 @@ export function AnalyticsView() {
  <CardContent className="h-[350px]">
  <ResponsiveContainer width="100%" height="100%">
  <LineChart data={trendData}>
- <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+ <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
  <XAxis 
  dataKey="month" 
  axisLine={false} 
  tickLine={false} 
- tick={{ fontSize: 12, fill: "#64748b" }}
+ tick={{ fontSize: 12, fill: "#64748b", fontWeight: 500 }}
+ dy={10}
  />
  <YAxis 
  axisLine={false} 
  tickLine={false} 
- tick={{ fontSize: 12, fill: "#64748b" }}
+ tick={{ fontSize: 11, fill: "#64748b" }}
+ dx={-10}
  />
  <Tooltip 
  contentStyle={{ 
- backgroundColor: "hsl(var(--card))", 
- borderColor: "hsl(var(--border))",
- borderRadius: "8px",
- boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
- }} 
+  backgroundColor: "var(--card)", 
+  borderColor: "var(--border)",
+  borderRadius: "12px",
+  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+  border: "1px solid rgba(226, 232, 240, 0.5)",
+  fontWeight: 500
+ }}
+ itemStyle={{ fontSize: "13px" }}
+ labelStyle={{ fontSize: "11px", fontWeight: "bold", color: "#64748b", marginBottom: "4px" }}
  />
- <Legend iconType="circle" wrapperStyle={{ paddingTop: "20px" }} />
+ <Legend iconType="circle" wrapperStyle={{ paddingTop: "20px", fontSize: "12px", fontWeight: "bold" }} />
  <Line 
  type="monotone" 
  dataKey="tích" 
  name="Điểm tích lũy"
- stroke="hsl(var(--primary))" 
+ stroke="#2f6cf5" 
  strokeWidth={3} 
- dot={{ r: 4, fill: "hsl(var(--primary))", strokeWidth: 0 }}
- activeDot={{ r: 6, strokeWidth: 0 }}
+ dot={{ r: 4, fill: "#2f6cf5", strokeWidth: 0 }}
+ activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
  />
  <Line 
  type="monotone" 
@@ -323,6 +473,7 @@ export function AnalyticsView() {
  strokeWidth={3} 
  strokeDasharray="5 5"
  dot={{ r: 4, fill: "#94a3b8", strokeWidth: 0 }}
+ activeDot={{ r: 5, strokeWidth: 0 }}
  />
  </LineChart>
  </ResponsiveContainer>
@@ -330,14 +481,14 @@ export function AnalyticsView() {
  </Card>
 
  {/* Tier Distribution Chart */}
- <Card className="md:col-span-3 border-border/50 bg-card/50 backdrop-blur-sm">
- <CardHeader>
- <CardTitle className="font-heading">Phân bổ Hạng thành viên</CardTitle>
+ <Card className="md:col-span-3 border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
+ <CardHeader className="border-b border-border/40 pb-5">
+ <CardTitle className="font-heading text-lg">Phân bổ Hạng thành viên</CardTitle>
  <CardDescription>
  Tỷ lệ khách hàng theo từng cấp độ hội viên.
  </CardDescription>
  </CardHeader>
- <CardContent className="h-[350px] flex flex-col items-center justify-center">
+ <CardContent className="h-[350px] flex flex-col items-center justify-center pt-6">
  <ResponsiveContainer width="100%" height="100%">
  <PieChart>
  <Pie
@@ -345,21 +496,33 @@ export function AnalyticsView() {
  cx="50%"
  cy="50%"
  innerRadius={80}
- outerRadius={100}
- paddingAngle={5}
+ outerRadius={105}
+ paddingAngle={3}
  dataKey="value"
+ stroke="var(--card)"
+ strokeWidth={3}
  >
  {tierData.map((entry, index) => (
  <Cell key={`cell-${index}`} fill={entry.color} />
  ))}
  </Pie>
- <Tooltip />
- <Legend verticalAlign="bottom" height={36}/>
+ <Tooltip 
+ contentStyle={{ 
+  backgroundColor: "var(--card)", 
+  borderColor: "var(--border)",
+  borderRadius: "12px",
+  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+  border: "1px solid rgba(226, 232, 240, 0.5)",
+  fontWeight: 500
+ }}
+ itemStyle={{ fontSize: "13px", fontWeight: "bold" }}
+ />
+ <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: "12px", fontWeight: "bold" }} />
  </PieChart>
  </ResponsiveContainer>
- <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none mt-4">
- <p className="text-3xl font-bold font-heading">915</p>
- <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">HV Hoạt động</p>
+ <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-[45%] text-center pointer-events-none mt-4">
+ <p className="text-3xl font-black font-heading tracking-tight drop-shadow-sm">915</p>
+ <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">HV Hoạt động</p>
  </div>
  </CardContent>
  </Card>
@@ -371,14 +534,14 @@ export function AnalyticsView() {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.3 }}
  >
- <Card className="border border-border/50 bg-sidebar backdrop-blur-sm shadow-sm">
- <CardHeader>
- <CardTitle className="font-heading">Quy mô tệp khách hàng theo Hạng hội viên</CardTitle>
+ <Card className="border border-border/50 bg-sidebar backdrop-blur-sm shadow-sm relative overflow-hidden">
+ <CardHeader className="border-b border-border/40 pb-5">
+ <CardTitle className="font-heading text-lg">Quy mô tệp khách hàng theo Hạng hội viên</CardTitle>
  <CardDescription>
  Số lượng hội viên thuộc các phân tầng Atelier, Icon, Essential và Member đang hoạt động trong hệ thống.
  </CardDescription>
  </CardHeader>
- <CardContent className="h-[320px]">
+ <CardContent className="h-[320px] pt-6">
  <ResponsiveContainer width="100%" height="100%">
  <BarChart
  data={[
@@ -395,11 +558,13 @@ export function AnalyticsView() {
  axisLine={false} 
  tickLine={false} 
  tick={{ fontSize: 12, fill: "#64748b", fontWeight: "600" }}
+ dy={10}
  />
  <YAxis 
  axisLine={false} 
  tickLine={false} 
- tick={{ fontSize: 12, fill: "#64748b" }}
+ tick={{ fontSize: 11, fill: "#64748b" }}
+ dx={-10}
  />
  <Tooltip 
  cursor={{ fill: "rgba(212, 175, 55, 0.04)", radius: 10 }}
@@ -456,14 +621,14 @@ export function AnalyticsView() {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.4 }}
  >
- <Card className="border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm">
- <CardHeader>
- <CardTitle className="font-heading">Khung giờ vàng mua sắm (Khách VIP)</CardTitle>
+ <Card className="border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
+ <CardHeader className="border-b border-border/40 pb-5">
+ <CardTitle className="font-heading text-lg">Khung giờ vàng mua sắm (Khách VIP)</CardTitle>
  <CardDescription>
  Mật độ giao dịch thành công theo các khung giờ trong tuần thông qua hệ thống POS.
  </CardDescription>
  </CardHeader>
- <CardContent>
+ <CardContent className="pt-6">
  <div className="w-full overflow-x-auto pb-4">
  <div className="min-w-[600px]">
  <div className="flex mb-2">

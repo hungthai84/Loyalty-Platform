@@ -10,6 +10,7 @@ import { CustomerPortalView } from "@/views/CustomerPortalView";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsView } from "./views/AnalyticsView";
 import { AnalysisView } from "./views/AnalysisView";
+import { IntegrationsView } from "./views/IntegrationsView";
 import { FirebaseProvider, useFirebase } from "@/components/FirebaseProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -45,6 +46,7 @@ function AppContent() {
           {safeActiveView === "marketing" && <MarketingView />}
           {safeActiveView === "analytics" && <AnalyticsView />}
           {safeActiveView === "analysis" && <AnalysisView />}
+          {safeActiveView === "integrations" && <IntegrationsView />}
           {safeActiveView === "settings" && <SettingsView />}
           {safeActiveView === "portal" && <CustomerPortalView />}
           
