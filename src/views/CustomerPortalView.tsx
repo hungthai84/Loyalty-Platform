@@ -11,7 +11,8 @@ import {
  Scissors, 
  Monitor, 
  Moon, 
- Palette 
+ Palette,
+ Smartphone
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { useFirebase } from "@/components/FirebaseProvider";
@@ -35,6 +36,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
  
  // Theme settings state - default to 'system'
  const [portalThemeOption, setPortalThemeOption] = useState<'system' | 'dark'>('system');
+ const [portalDeviceOption, setPortalDeviceOption] = useState<'mobile' | 'desktop'>('mobile');
  const [systemIsDark, setSystemIsDark] = useState(false);
 
  useEffect(() => {
@@ -101,13 +103,13 @@ export function CustomerPortalView({ onBack }: PortalProps) {
  <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 min-h-screen space-y-6">
  
  {/* Dynamic Theme Settings Control Panel for Showroom Manager */}
- <div className="w-full max-w-[400px] bg-card border border-border/70 rounded-2xl p-5 shadow-lg space-y-4">
+ <div className="w-full max-w-[800px] grid grid-cols-1 md:grid-cols-2 gap-4">
+ <div className="bg-card border border-border/70 rounded-2xl p-5 shadow-lg space-y-4">
  <div className="flex items-center justify-between border-b pb-3 border-border/40">
  <div className="flex items-center gap-2">
  <Palette className="w-5 h-5 text-[#2f6cf5]" />
  <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">Định dạng hiển thị cổng VIP</span>
  </div>
- <span className="text-xs bg-[#2f6cf5]/10 text-[#2f6cf5] font-black px-2.5 py-0.5 rounded-full uppercase">Hệ Thống (Mặc định)</span>
  </div>
  
  <div className="grid grid-cols-2 gap-2.5">
@@ -136,18 +138,54 @@ export function CustomerPortalView({ onBack }: PortalProps) {
  Tối (Obsidian)
  </button>
  </div>
- <p className="text-xs text-muted-foreground leading-relaxed text-center">
- * Thiết lập mặc định tự động kế thừa bộ nhận diện tương đồng của hệ thống CRM.
- </p>
  </div>
 
- {/* Mobile Frame Simulation */}
- <div className={`w-full max-w-[400px] h-[800px] max-h-screen ${phoneBg} rounded-[3rem] shadow-2xl overflow-hidden relative border-8 border-zinc-800 transition-all duration-300 flex flex-col`}>
+ <div className="bg-card border border-border/70 rounded-2xl p-5 shadow-lg space-y-4">
+ <div className="flex items-center justify-between border-b pb-3 border-border/40">
+ <div className="flex items-center gap-2">
+ <Monitor className="w-5 h-5 text-[#2f6cf5]" />
+ <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">Thiết bị hiển thị</span>
+ </div>
+ </div>
+ 
+ <div className="grid grid-cols-2 gap-2.5">
+ <button 
+ type="button"
+ onClick={() => setPortalDeviceOption('mobile')}
+ className={`py-3 px-4 border rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+ portalDeviceOption === 'mobile' 
+ ? 'border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm' 
+ : 'border-border bg-transparent text-muted-foreground hover:border-foreground/30'
+ }`}
+ >
+ <Smartphone className="w-4 h-4" />
+ Điện thoại
+ </button>
+ <button 
+ type="button"
+ onClick={() => setPortalDeviceOption('desktop')}
+ className={`py-3 px-4 border rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+ portalDeviceOption === 'desktop' 
+ ? 'border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm' 
+ : 'border-border bg-transparent text-muted-foreground hover:border-foreground/30'
+ }`}
+ >
+ <Monitor className="w-4 h-4" />
+ Máy tính
+ </button>
+ </div>
+ </div>
+ </div>
+
+ {/* Mobile/Desktop Frame Simulation */}
+ <div className={`w-full ${portalDeviceOption === 'mobile' ? 'max-w-[400px] h-[800px] rounded-[3rem] border-8 border-zinc-800' : 'max-w-5xl h-[800px] rounded-[2rem] border border-border/50'} max-h-[85vh] ${phoneBg} shadow-2xl overflow-hidden relative transition-all duration-500 ease-in-out flex flex-col`}>
  
  {/* Dynamic Island / Notch Simulation */}
+ {portalDeviceOption === 'mobile' && (
  <div className="absolute top-0 inset-x-0 h-6 flex justify-center z-50">
  <div className="w-32 h-6 bg-zinc-800 rounded-b-xl"></div>
  </div>
+ )}
 
  {/* Portal Header */}
  <div className="pt-12 pb-4 px-6 relative z-10 flex items-center justify-between">
@@ -164,12 +202,12 @@ export function CustomerPortalView({ onBack }: PortalProps) {
  </div>
 
  {/* Scrollable Content */}
- <div className="flex-1 overflow-y-auto no-scrollbar pb-24">
+ <div className="flex-1 overflow-y-auto no-scrollbar pb-24 flex justify-center">
  <motion.div 
  key={activeTab}
  initial={{ opacity: 0, x: 10 }}
  animate={{ opacity: 1, x: 0 }}
- className="px-6 space-y-6"
+ className={`px-6 space-y-6 w-full ${portalDeviceOption === 'desktop' ? 'max-w-2xl mt-8' : ''}`}
  >
  {activeTab === 'home' && (
  <>
@@ -428,9 +466,11 @@ export function CustomerPortalView({ onBack }: PortalProps) {
  </div>
 
  {/* Home Indicator */}
+ {portalDeviceOption === 'mobile' && (
  <div className="absolute bottom-2 inset-x-0 h-1 flex justify-center z-50 pointer-events-none">
  <div className="w-1/3 bg-zinc-600/30 rounded-full"></div>
  </div>
+ )}
  </div>
  </div>
  );

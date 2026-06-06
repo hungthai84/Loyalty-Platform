@@ -8,7 +8,10 @@ import {
   Diamond, 
   Search,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Target,
+  TrendingUp,
+  ShoppingCart
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -103,6 +106,51 @@ export function ShoppingBehaviorAnalysis() {
 
     return { behavior: behavior.join(" "), recommendations };
   }, [customerOrders, customerTickets, collectionAnalysis, customerInfo]);
+
+  // Product Recommendation Algorithm (Next Best Action - Upsell/Cross-sell)
+  const productRecommendations = useMemo(() => {
+    if (!customerInfo) return [];
+    
+    let recommendations: Array<{ type: string, product: string, reason: string, confidence: number }> = [];
+    
+    // Rule 1: Cross-sell missing collection items
+    collectionAnalysis.forEach(ca => {
+      if (!ca.isComplete && ca.missing.length > 0 && ca.purchased.length > 0) {
+        ca.missing.forEach(missingItem => {
+          recommendations.push({
+            type: 'cross-sell',
+            product: `${missingItem} - ${ca.collection}`,
+            reason: `Bổ sung hoàn thiện bộ sưu tập ${ca.collection}`,
+            confidence: 85 + Math.round(Math.random() * 10)
+          });
+        });
+      }
+    });
+
+    // Rule 2: Upsell based on Customer Tier
+    if (customerInfo.tier === 'Atelier' || customerInfo.tier === 'Icon') {
+      recommendations.push({
+        type: 'upsell',
+        product: 'Trang sức VIP / High Jewelry Limited',
+        reason: `Phù hợp thói quen chi tiêu hạng ${customerInfo.tier}`,
+        confidence: 75 + Math.round(Math.random() * 10)
+      });
+    }
+
+    // Rule 3: Affinity based on ticket notes
+    const hasSensitive = customerTickets.some(t => t.notes.toLowerCase().includes('nhạy cảm') || t.notes.toLowerCase().includes('gọn gàng'));
+    if (hasSensitive) {
+      recommendations.push({
+        type: 'affinity',
+        product: 'Hoa tai nụ Platinum (Dáng ôm gọn)',
+        reason: `Dựa trên ghi chú CSKH: Cơ địa nhạy cảm, thích gọn gàng`,
+        confidence: 90 + Math.round(Math.random() * 5)
+      });
+    }
+
+    // Sort by confidence
+    return recommendations.sort((a, b) => b.confidence - a.confidence).slice(0, 3);
+  }, [customerInfo, collectionAnalysis, customerTickets]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -255,6 +303,49 @@ export function ShoppingBehaviorAnalysis() {
                   </div>
                 )) : (
                   <p className="text-xs text-muted-foreground">Chưa đủ dữ liệu để phân tích bộ sưu tập.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Next Best Action (NBA) Engine */}
+            <Card className="border-border/50 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                <Target className="w-24 h-24" />
+              </div>
+              <CardHeader>
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Target className="w-4 h-4 text-emerald-500" />
+                  Mô hình Gợi ý Sản phẩm (Next Best Action)
+                </CardTitle>
+                <CardDescription>Các sản phẩm ưu tiên cao để mời khách mua dựa trên lịch sử mua và đặc tính cá nhân.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {productRecommendations.length > 0 ? (
+                  <div className="space-y-3 relative z-10">
+                    {productRecommendations.map((rec, i) => (
+                      <div key={i} className="flex gap-4 p-4 rounded-xl border border-border/60 bg-background/50 hover:bg-muted/30 transition-colors">
+                        <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500">
+                          <ShoppingCart className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex justify-between items-start">
+                            <h4 className="text-sm font-semibold text-foreground">{rec.product}</h4>
+                            <Badge variant="outline" className="text-[10px] ml-2 shrink-0 border-emerald-500/30 text-emerald-600 bg-emerald-500/5 backdrop-blur-sm">
+                              {rec.confidence}% Phù hợp
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{rec.reason}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="secondary" className="text-[9px] uppercase font-bold tracking-wider opacity-80">
+                              {rec.type === 'cross-sell' ? 'Bán chéo' : rec.type === 'upsell' ? 'Bán thêm' : 'Phân tích thói quen'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Thuật toán đang thu thập dữ liệu để đưa ra dự đoán.</p>
                 )}
               </CardContent>
             </Card>

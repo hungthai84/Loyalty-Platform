@@ -32,6 +32,17 @@ import {
   TabsList, 
   TabsTrigger 
 } from "@/components/ui/tabs";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 export function IntegrationsView() {
   const [isSyncingOrders, setIsSyncingOrders] = useState(false);
@@ -41,6 +52,19 @@ export function IntegrationsView() {
     erp: "sk_test_erp_8f92j...",
     crm: "crm_live_992kx0...",
   });
+
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [showKeys, setShowKeys] = useState(false);
+  const [configApiKeys, setConfigApiKeys] = useState({
+    erp: "sk_test_erp_8f92j...",
+    crm: "crm_live_992kx0...",
+  });
+
+  const handleSaveApiKeys = () => {
+    setApiKeys(configApiKeys);
+    setIsConfigOpen(false);
+    toast.success("Đã lưu cấu hình API thành công");
+  };
 
   const handleSyncOrders = () => {
     setIsSyncingOrders(true);
@@ -76,9 +100,58 @@ export function IntegrationsView() {
           <Button variant="outline" className="gap-2">
             <Activity className="w-4 h-4" /> Xem Logs
           </Button>
-          <Button className="gap-2">
-            <Settings2 className="w-4 h-4" /> Cấu hình API
-          </Button>
+          
+          <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
+            <DialogTrigger render={<Button className="gap-2" />}>
+              <Settings2 className="w-4 h-4" /> Cấu hình API
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Cấu hình API Tích hợp</DialogTitle>
+                <DialogDescription>
+                  Quản lý khóa API kết nối với các hệ thống ngoại vi. Đảm bảo bảo vệ an toàn thông tin khóa này.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="erp-api-key">Hệ thống Đơn hàng (ERP) API Key</Label>
+                  <Input 
+                    id="erp-api-key"
+                    value={configApiKeys.erp} 
+                    onChange={(e) => setConfigApiKeys({...configApiKeys, erp: e.target.value})}
+                    type={showKeys ? "text" : "password"} 
+                    className="font-mono text-sm"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="crm-api-key">Hệ thống CRM Phiếu hỗ trợ API Key</Label>
+                  <Input 
+                    id="crm-api-key"
+                    value={configApiKeys.crm} 
+                    onChange={(e) => setConfigApiKeys({...configApiKeys, crm: e.target.value})}
+                    type={showKeys ? "text" : "password"} 
+                    className="font-mono text-sm"
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-2 pt-2">
+                  <Switch 
+                    id="show-keys" 
+                    checked={showKeys} 
+                    onCheckedChange={setShowKeys} 
+                  />
+                  <Label htmlFor="show-keys">Hiển thị khóa API</Label>
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsConfigOpen(false)}>Hủy</Button>
+                <Button onClick={handleSaveApiKeys}>Lưu Cấu hình</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
