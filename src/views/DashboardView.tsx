@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -38,6 +39,21 @@ import {
   RotateCcw,
   LayoutDashboard,
   Database,
+  Send,
+  Smartphone,
+  CreditCard as LucideCreditCard,
+  Plus,
+  Minus,
+  Lock,
+  ShieldCheck,
+  Check,
+  MapPin,
+  Info,
+  Coins,
+  Globe,
+  Copy,
+  CheckCircle,
+  HelpCircle
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { SeedDemoData } from "@/components/layout/SeedDemoData";
@@ -48,8 +64,43 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
+
 export function DashboardView() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Digital iuPayme Wallet dynamic states matching the design mockup layout
+  const [walletBalance, setWalletBalance] = useState(7610.00);
+  const [is2FAEnabled, setIs2FAEnabled] = useState(true);
+  const [activeWalletAction, setActiveWalletAction] = useState<"send" | "apply">("send");
+  const [payToAddress, setPayToAddress] = useState("0125-0154-0845-5047-7566-2055");
+  const [transferAmount, setTransferAmount] = useState(300);
+  const [transferReason, setTransferReason] = useState("Games");
+  const [showWalletSuccess, setShowWalletSuccess] = useState(false);
+  const [copiedWalletId, setCopiedWalletId] = useState(false);
+
+  const handleCopyWalletId = (id: string) => {
+    navigator.clipboard.writeText(id);
+    setCopiedWalletId(true);
+    toast.success("Đã sao chép mã ví thành công!");
+    setTimeout(() => setCopiedWalletId(false), 2000);
+  };
+
+  const handleWalletSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cost = transferAmount + 3; // $3 is commission fee
+    if (walletBalance < cost) {
+      toast.error("Số dư khả dụng trong ví không đủ để thực hiện giao dịch này.");
+      return;
+    }
+    setWalletBalance(prev => Number((prev - cost).toFixed(2)));
+    toast.success(`Đã gửi thành công $${transferAmount} tới địa chỉ ${payToAddress}! Phí hoa hồng: $3`, {
+      description: `Lý do thanh toán: ${transferReason}`,
+      duration: 5000,
+    });
+    setShowWalletSuccess(true);
+    setTimeout(() => setShowWalletSuccess(false), 4000);
+  };
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -654,6 +705,337 @@ export function DashboardView() {
         ))}
       </div>
 
+      {/* ================= iuPayme PREMIUM DIGITAL WALLET WORKSPACE (MOCKUP ACCURACY) ================= */}
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-12 items-start">
+        
+        {/* COLUMN 1: BALANCE, INFORMATION & SECURITY (LIME MOCKUP STYLE) */}
+        <div className="col-span-1 lg:col-span-4 flex flex-col gap-5">
+          
+          {/* Balance Card */}
+          <div className="bg-card rounded-[24px] p-6 border border-border/85 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:border-[#fa1b6c]/20 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#fa1b6c]/5 to-transparent rounded-full pointer-events-none" />
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-400 select-none tracking-wide">Balance</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">S/.</span>
+              </div>
+              <h1 className="text-3xl font-extrabold tracking-tight mt-3 text-slate-900 dark:text-white font-heading">
+                $ {walletBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              </h1>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2.5 mt-5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold">
+                <Plus className="w-3 h-3 text-emerald-500" />
+                <span>+ $ 2,319.00</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-extrabold">
+                <Minus className="w-3.5 h-3.5 text-rose-500" />
+                <span>- $ 919.00</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Information Card */}
+          <div className="bg-card rounded-[24px] p-6 border border-border/85 shadow-sm text-left relative group hover:border-[#fa1b6c]/20 transition-all duration-300">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100/60 dark:border-slate-800/60">
+              <span className="text-xs font-bold text-slate-400 tracking-wide">information</span>
+              <button 
+                onClick={() => toast.info("Tính năng chỉnh sửa thông tin vị trí sẽ sớm khả dụng.")}
+                className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 dark:text-slate-300 rounded-lg transition-all"
+              >
+                <HelpCircle className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="space-y-3.5 text-xs text-slate-500 dark:text-slate-400 font-semibold">
+              <div className="flex items-center gap-3">
+                <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                <span className="text-slate-400 font-medium">Location:</span>
+                <span className="text-slate-800 dark:text-slate-200 ml-auto font-bold">Lima</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Globe className="w-4 h-4 text-slate-400 shrink-0" />
+                <span className="text-slate-400 font-medium">Address:</span>
+                <span className="text-slate-800 dark:text-slate-200 ml-auto font-bold">Peru</span>
+              </div>
+              <div className="flex flex-col gap-1.5 pt-2 border-t border-dashed border-slate-100/50 dark:border-slate-800/50">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 font-medium">Wallet ID:</span>
+                  <button 
+                    onClick={() => handleCopyWalletId("4d2ca285e64945c7fe88772bb5fda24b")}
+                    className="p-1 text-[#fa1b6c] hover:underline flex items-center gap-1 cursor-pointer font-bold"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy</span>
+                  </button>
+                </div>
+                <p className="font-mono text-[10px] break-all bg-slate-50 dark:bg-slate-900 p-2 rounded-lg text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-800 text-left select-all">
+                  4d2ca285e64945c7fe88772bb5fda24b
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Security Card */}
+          <div className="bg-card rounded-[24px] p-6 border border-border/85 shadow-sm text-left relative group hover:border-[#fa1b6c]/20 transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-bold text-slate-400 tracking-wide">Security</span>
+              <HelpCircle className="w-4 h-4 text-slate-300" />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-[#fa1b6c]/10 text-[#fa1b6c] rounded-xl">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">2FA enabled</p>
+                    <p className="text-[10px] text-slate-400">Tăng bảo mật tài khoản</p>
+                  </div>
+                </div>
+                
+                {/* Custom Toggle Switch exactly like the mockup */}
+                <button 
+                  onClick={() => {
+                    setIs2FAEnabled(!is2FAEnabled);
+                    toast.success(`Đã ${!is2FAEnabled ? "bật" : "tắt"} chế độ bảo mật 2 lớp!`);
+                  }}
+                  className={`w-11 h-6 rounded-full p-0.5 transition-colors duration-300 ease-in-out focus:outline-none ${is2FAEnabled ? 'bg-[#131924] dark:bg-white' : 'bg-slate-200 dark:bg-slate-800'}`}
+                >
+                  <div className={`w-5 h-5 rounded-full bg-white dark:bg-slate-950 shadow-md transform duration-300 ease-in-out ${is2FAEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Key</p>
+                    <p className="text-[10px] text-slate-400">•••• •••• ••••</p>
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => toast.info("Vui lòng truy cập trang cấu hình bảo mật hệ thống để sửa khóa mã hóa.")}
+                  className="px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-[11px] font-bold transition-all shadow-xs"
+                >
+                  Change
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* COLUMN 2: GOLD-VIOLET CREDIT CARD & SEND WORKFLOW */}
+        <div className="col-span-1 lg:col-span-5 bg-card/65 rounded-[28px] p-6 border border-border/80 shadow-sm relative overflow-hidden backdrop-blur-md flex flex-col gap-6 hover:border-[#fa1b6c]/20 transition-all duration-300">
+          
+          {/* Stunning iuPayme Mockup Floating Plastic Card */}
+          <div className="relative aspect-[1.58/1] w-full max-w-[340px] mx-auto rounded-[20px] p-5 text-white overflow-hidden shadow-[0_15px_30px_rgba(250,27,108,0.25)] bg-gradient-to-tr from-[#6b11ff] via-[#fa1b6c] to-[#fbbf24] select-none hover:scale-[1.02] active:scale-[0.99] transition-all duration-300">
+            <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-white/10 to-transparent rounded-full pointer-events-none" />
+            
+            {/* Hologram card chip & iuPayme brand */}
+            <div className="flex items-start justify-between">
+              {/* Chip container with stylized metallic grid */}
+              <div className="w-10 h-7 rounded-md bg-gradient-to-br from-amber-200 via-amber-300 to-amber-100 p-1 flex flex-col justify-between border border-amber-400/30 opacity-90 shadow-md">
+                <div className="border-b border-amber-600/20 h-2 w-full" />
+                <div className="grid grid-cols-2 gap-1 h-3">
+                  <div className="border-r border-amber-600/20" />
+                  <div className="border-l border-amber-600/20" />
+                </div>
+              </div>
+              <span className="text-base font-extrabold tracking-tight italic select-none">iuPayme</span>
+            </div>
+
+            {/* Card number sequence (Mockup styling) */}
+            <div className="mt-8">
+              <div className="grid grid-cols-4 gap-2 text-sm font-semibold tracking-widest font-mono text-white/95">
+                <span>9648</span>
+                <span>3500</span>
+                <span>9208</span>
+                <span>8180</span>
+              </div>
+            </div>
+
+            {/* Bottom info: Card Balance and MasterCard Circles logo */}
+            <div className="flex items-end justify-between mt-6">
+              <div className="text-left">
+                <p className="text-[9px] uppercase tracking-widest text-white/70 font-bold">Thẻ Thành Viên</p>
+                <p className="text-xl font-extrabold tracking-tight font-heading">$ {walletBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}</p>
+              </div>
+              
+              {/* MasterCard overlapping circles mockup */}
+              <div className="flex -space-x-2 opacity-90 scale-95 shrink-0">
+                <div className="w-7 h-7 rounded-full bg-white/20 select-none backdrop-blur-xs flex items-center justify-center border border-white/10" />
+                <div className="w-7 h-7 rounded-full bg-[#fa1b6c]/90 select-none border border-[#fa1b6c]/20" />
+                <div className="w-7 h-7 rounded-full bg-[#fbbf24]/90 select-none border border-[#fbbf24]/20" />
+              </div>
+            </div>
+          </div>
+
+          {/* Transactions Action Block wrapper */}
+          <div className="flex flex-col gap-4 text-left flex-1">
+            <h3 className="text-sm font-extrabold text-[#131924] dark:text-white uppercase tracking-wider text-center flex items-center justify-center gap-2">
+              <Coins className="w-4 h-4 text-[#fa1b6c]" /> 
+              <span>Transactions</span>
+            </h3>
+
+            {/* Selection Toggles (Send vs Apply for) */}
+            <div className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800">
+              <button 
+                type="button"
+                onClick={() => setActiveWalletAction("send")}
+                className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer ${activeWalletAction === 'send' ? 'bg-[#131924] text-white dark:bg-white dark:text-[#131924] shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+              >
+                Send
+              </button>
+              <button 
+                type="button"
+                onClick={() => {
+                  setActiveWalletAction("apply");
+                  toast.info("Tính năng đăng ký hạn mức thẻ tín dụng (Apply for Limit) hiện đang thuộc giai đoạn thử nghiệm bảo mật.");
+                }}
+                className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer ${activeWalletAction === 'apply' ? 'bg-[#131924] text-white dark:bg-white dark:text-[#131924] shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+              >
+                Apply for
+              </button>
+            </div>
+
+            {/* SEND TRANSACTION INTERFACE FORM */}
+            <form onSubmit={handleWalletSubmit} className="space-y-4">
+              
+              {/* Pay to input */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Pay to (Mã ví / Số tài khoản)</label>
+                <input 
+                  type="text" 
+                  value={payToAddress}
+                  onChange={(e) => setPayToAddress(e.target.value)}
+                  placeholder="Nhập mã ví nhận..."
+                  className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#fa1b6c]/20 text-slate-800 dark:text-slate-100"
+                  required
+                />
+                <span className="text-[10px] text-slate-400 block mt-0.5">Please enter the Wallet ID or destination email.</span>
+              </div>
+
+              {/* Amount & Reason Row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Amount ($)</label>
+                  <input 
+                    type="number" 
+                    value={transferAmount}
+                    onChange={(e) => setTransferAmount(Number(e.target.value))}
+                    min="1"
+                    className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#fa1b6c]/20 text-slate-800 dark:text-slate-100"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Reason</label>
+                  <select
+                    value={transferReason}
+                    onChange={(e) => setTransferReason(e.target.value)}
+                    className="w-full px-3 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#fa1b6c]/20 text-slate-800 dark:text-slate-100"
+                    required
+                  >
+                    <option value="Games">Games</option>
+                    <option value="Rentals">Rentals</option>
+                    <option value="Services">Services</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Refund">Refund</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Commission breakdown */}
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-[11px] font-bold text-slate-500">
+                <div className="flex items-center gap-1.5">
+                  <span>Commission:</span>
+                  <span className="text-slate-800 dark:text-slate-250 font-extrabold">$3</span>
+                </div>
+                <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                <div className="flex items-center gap-1.5">
+                  <span>Total:</span>
+                  <span className="text-[#fa1b6c] font-black">${transferAmount + 3}</span>
+                </div>
+              </div>
+
+              {/* Dynamic submit action with pink gradient */}
+              <button
+                type="submit"
+                className="w-full py-3.5 px-6 rounded-2xl text-xs font-black text-white hover:opacity-95 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all bg-gradient-to-r from-[#fa1b6c] to-[#7c3aed]"
+              >
+                <Send className="w-4 h-4 shrink-0" />
+                <span>Send</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* COLUMN 3: SERVICE QUICK ACCESS BLOCKS */}
+        <div className="col-span-1 lg:col-span-3 flex flex-col gap-4">
+          
+          {/* Quick Item 1: Pay Services */}
+          <button 
+            type="button"
+            onClick={() => toast.success("Hiện tại không có hóa đơn quá hạn cần nộp thanh toán.")}
+            className="bg-card w-full rounded-[24px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#fa1b6c]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 group-hover:scale-105 transition-all">
+              {/* Custom styled vector lines of check and bill */}
+              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+            </div>
+            <div className="text-center">
+              <h4 className="text-xs font-black text-[#131924] dark:text-white">Pay Services</h4>
+              <p className="text-[10px] text-slate-400 mt-1">Thanh toán hóa đơn điện, nước, internet nhanh gọn</p>
+            </div>
+          </button>
+
+          {/* Quick Item 2: Recharge Cell */}
+          <button 
+            type="button"
+            onClick={() => toast.success("Cổng nạp tiền di động đa mạng Việt Nam/Quốc tế đang tải...")}
+            className="bg-card w-full rounded-[24px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#fa1b6c]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-[#fa1b6c]/10 flex items-center justify-center text-[#fa1b6c] group-hover:scale-105 transition-all">
+              <Smartphone className="w-7 h-7" />
+            </div>
+            <div className="text-center">
+              <h4 className="text-xs font-black text-[#131924] dark:text-white">Recharge Cell</h4>
+              <p className="text-[10px] text-slate-400 mt-1">Bắn tiền điện thoại trực tiếp mọi nhà mạng</p>
+            </div>
+          </button>
+
+          {/* Quick Item 3: iuPayme cards */}
+          <button 
+            type="button"
+            onClick={() => toast.success("Đang truy xuất thông tin phát hành các hạng thẻ vật lý...")}
+            className="bg-card w-full rounded-[24px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#fa1b6c]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[#131924] dark:text-white group-hover:scale-105 transition-all">
+              <LucideCreditCard className="w-7 h-7" />
+            </div>
+            <div className="text-center">
+              <h4 className="text-xs font-black text-[#131924] dark:text-white font-heading">iuPayme cards</h4>
+              <p className="text-[10px] text-slate-400 mt-1">Đổi thưởng thành viên lấy thẻ ghi nợ vật lý cực sang</p>
+            </div>
+          </button>
+        </div>
+      </div>
+      
+      {/* ================= END iuPayme PREMIUM WORKSPACE ================= */}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="col-span-full xl:col-span-2">
           <DatabaseStatus />
@@ -814,6 +1196,17 @@ export function DashboardView() {
           </CardContent>
         </Card>
       </motion.div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <motion.div
+           initial={{ opacity: 0, y: 10 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ delay: 0.2 }}
+           className="col-span-full md:col-span-1 lg:col-span-1"
+        >
+          <RecentActivity />
+        </motion.div>
       </div>
     </div>
   );

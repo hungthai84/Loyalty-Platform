@@ -43,14 +43,14 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  const [tiktok, setTiktok] = useState('');
 
  useEffect(() => {
- if (!user) {
+ if (!user || user.isLocal) {
  setCompanies(getGuestCompanies());
  return;
  }
  
  const q = query(collection(db, "companies"), orderBy("name", "asc"));
  const unsubscribe = onSnapshot(q, (snap) => {
- setCompanies(snap.docs.map(d => d.data() as Company));
+ setCompanies(snap.docs.map(d => ({ ...d.data(), id: d.id } as Company)));
  }, (error) => {
   console.error("Error loading companies:", error);
   handleFirestoreError(error, OperationType.LIST, "companies");
@@ -201,8 +201,8 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  onChange={e => setSelectedCompanyId(e.target.value)}
  >
  <option value="">-- Cá nhân --</option>
- {companies.map(c => (
- <option key={c.id} value={c.id}>{c.name}</option>
+ {companies.map((c, i) => (
+ <option key={c.id || `comp-${i}`} value={c.id}>{c.name}</option>
  ))}
  </select>
  </div>
@@ -213,8 +213,8 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  value={activityStatus}
  onChange={e => setActivityStatus(e.target.value)}
  >
- {CUSTOMER_STATUSES.map(s => (
- <option key={s.code} value={s.code}>
+ {CUSTOMER_STATUSES.map((s, i) => (
+ <option key={s.code || `status-${i}`} value={s.code}>
  {s.classification}
  </option>
  ))}
@@ -250,14 +250,14 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  onChange={e => setCustomFields({ ...customFields, [attr.key]: e.target.value })}
  >
  <option value="">-- Chọn --</option>
- {attr.options?.map(opt => (
- <option key={opt} value={opt}>{opt}</option>
+ {attr.options?.map((opt, i) => (
+ <option key={`${opt}-${i}`} value={opt}>{opt}</option>
  ))}
  </select>
  ) : attr.type === 'radio' ? (
  <div className="flex flex-wrap gap-3 pt-1">
- {attr.options?.map(opt => (
- <label key={opt} className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-foreground">
+ {attr.options?.map((opt, i) => (
+ <label key={`${opt}-${i}`} className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-foreground">
  <input 
  type="radio" 
  name={attr.key} 
@@ -272,11 +272,11 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  </div>
  ) : attr.type === 'checkbox' ? (
  <div className="flex flex-wrap gap-3 pt-1">
- {attr.options?.map(opt => {
+ {attr.options?.map((opt, i) => {
  const currentValues = Array.isArray(value) ? value : (value ? [value] : []);
  const isChecked = currentValues.includes(opt);
  return (
- <label key={opt} className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-foreground">
+ <label key={`${opt}-${i}`} className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-foreground">
  <input 
  type="checkbox" 
  value={opt} 

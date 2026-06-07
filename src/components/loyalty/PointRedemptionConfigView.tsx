@@ -151,6 +151,11 @@ export function PointRedemptionConfigView() {
 
   // Load rules from Firestore
   useEffect(() => {
+    if (!user || user.isLocal) {
+      setRules(PRESET_RULES as any);
+      setLoadingRules(false);
+      return;
+    }
     const path = `redemption_rules`;
     const q = query(collection(db, path), orderBy("pointsRequired", "asc"));
 
@@ -200,7 +205,11 @@ export function PointRedemptionConfigView() {
 
   // Load Real Customers from Firestore
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.isLocal) {
+      setCustomers([]);
+      setLoadingCustomers(false);
+      return;
+    }
 
     const path = `customers`;
     const q = query(collection(db, path));
@@ -226,7 +235,7 @@ export function PointRedemptionConfigView() {
 
   // Load Redemption Logs from Firestore
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.isLocal) return;
 
     const path = `redemptions`;
     const q = query(collection(db, path), orderBy("createdAt", "desc"));

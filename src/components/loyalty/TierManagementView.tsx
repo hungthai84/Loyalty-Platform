@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy } from "firebase/firestore";
 import { TierConfig } from "@/types";
 import { TierConfigDialog } from "@/components/loyalty/TierConfigDialog";
+import { getGuestTiers } from "@/data/guestData";
 
 export function TierManagementView() {
  const { user } = useFirebase();
@@ -16,6 +17,12 @@ export function TierManagementView() {
  const [showDialog, setShowDialog] = useState(false);
 
   useEffect(() => {
+    if (!user || user.isLocal) {
+      setTiers(getGuestTiers());
+      setLoading(false);
+      return;
+    }
+
     const path = `tier_configs`;
  const q = query(collection(db, path), orderBy("threshold", "asc"));
  const unsub = onSnapshot(q, (snapshot) => {
@@ -23,7 +30,7 @@ export function TierManagementView() {
  setLoading(false);
  });
  return unsub;
- }, []);
+ }, [user]);
 
  /* if (!user) return null; */
 

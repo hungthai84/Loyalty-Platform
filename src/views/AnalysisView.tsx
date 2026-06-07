@@ -196,6 +196,10 @@ export function AnalysisView() {
 
  // Listen for customers from Firebase Firestore to make this data LIVE!
  useEffect(() => {
+  if (!user || user.isLocal) {
+   setDbCustomers([]);
+   return;
+  }
 
  const q = query(collection(db, "customers"), orderBy("createdAt", "desc"));
  const unsub = onSnapshot(q, (snapshot) => {
@@ -206,7 +210,7 @@ export function AnalysisView() {
 
  // Listen for campaigns from Firebase Firestore
  useEffect(() => {
- if (!user) return;
+ if (!user || user.isLocal) return;
  const q = query(collection(db, "loyalty_campaigns"), orderBy("createdAt", "desc"));
  const unsub = onSnapshot(q, (snapshot) => {
   setCampaigns(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as LoyaltyCampaign)));
@@ -216,7 +220,7 @@ export function AnalysisView() {
 
  // Listen for companies from Firebase Firestore
  useEffect(() => {
- if (!user) return;
+ if (!user || user.isLocal) return;
  const q = query(collection(db, "companies"), orderBy("name", "asc"));
  const unsub = onSnapshot(q, (snapshot) => {
   setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
@@ -226,7 +230,7 @@ export function AnalysisView() {
 
  // Listen for attributes from Firebase Firestore
  useEffect(() => {
- if (!user) return;
+ if (!user || user.isLocal) return;
  const q = query(collection(db, "attribute_definitions"), orderBy("createdAt", "asc"));
  const unsub = onSnapshot(q, (snapshot) => {
   setAttributes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AttributeDefinition)));

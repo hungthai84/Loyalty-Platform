@@ -14,6 +14,7 @@ import { AddCustomerDialog } from "@/components/customers/AddCustomerDialog";
 import { ImportCustomersDialog } from "@/components/customers/ImportCustomersDialog";
 import { AttributeManager } from "@/components/customers/AttributeManager";
 import { CustomerDashboard } from "@/components/customers/CustomerDashboard";
+import { CustomerSearch } from "@/components/customers/CustomerSearch";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { Building2, Cloud, CloudOff, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
@@ -78,11 +79,12 @@ export function CustomersView() {
 
  // New state to view a single customer details dashboard
  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+ const [selectedCustomerIds, setSelectedCustomerIds] = useState<string[]>([]);
  const [forceOffline, setForceOffline] = useState(false);
  const [seeding, setSeeding] = useState(false);
 
  useEffect(() => {
- if (!user || forceOffline) {
+ if (!user || user.isLocal || forceOffline) {
  const loadGuestData = () => {
  setCustomers(getGuestCustomers());
  setAttributes(getGuestAttributes());
@@ -247,10 +249,48 @@ export function CustomersView() {
  ? customers.find(c => c.id === selectedCustomer.id) || selectedCustomer 
  : null;
 
- // Extract all unique autoTags from existing customers for filter dropdown
+ const computeDynamicSegments = (c: Customer) => {
+  const segments: { tag: string; color: string }[] = [];
+  const points = c.points || 0;
+
+  // Base tier mapping based on points
+  if (points >= 10000) {
+    segments.push({ tag: "Atelier", color: "purple" });
+  } else if (points >= 2500) {
+    segments.push({ tag: "Icon", color: "gold" });
+  } else if (points >= 500) {
+    segments.push({ tag: "Essential", color: "emerald" });
+  } else {
+    segments.push({ tag: "Member", color: "slate" });
+  }
+
+  // Value-based segmentation (Customer Lifetime Value)
+  const clv = Number(c.customFields?.clv) || 0;
+  if (clv >= 50000000) {
+    segments.push({ tag: "Big Spender", color: "rose" });
+  }
+
+  // Activeness / Transaction History
+  if (c.activityStatus && c.activityStatus.toLowerCase() === "churn_risk") {
+    segments.push({ tag: "At Risk", color: "rose" });
+  }
+
+  if (points > 0 && clv === 0) {
+    segments.push({ tag: "Newcomer", color: "sky" });
+  }
+
+  return segments;
+ };
+
+ const customersWithSegments = customers.map(c => ({
+   ...c,
+   dynamicSegments: computeDynamicSegments(c)
+ }));
+
+ // Extract all unique dynamic tags from customers for filter dropdown
  const allTags = Array.from(
  new Set(
- customers.flatMap(c => c.customFields?.autoTags?.map((t: any) => t.tag) || [])
+ customersWithSegments.flatMap(c => c.dynamicSegments.map((t: any) => t.tag))
  )
  ) as string[];
 
@@ -286,7 +326,7 @@ export function CustomersView() {
  selectedTag !== "all" || 
  sortBy !== "createdAt_desc";
 
- const filteredCustomers = customers.filter(c => {
+ const filteredCustomers = customersWithSegments.filter(c => {
  const matchesSearch = c.name?.toLowerCase().includes(search.toLowerCase()) ||
  c.email?.toLowerCase().includes(search.toLowerCase()) ||
  c.id?.toLowerCase().includes(search.toLowerCase());
@@ -319,7 +359,7 @@ export function CustomersView() {
  // Tag
  let matchesTag = true;
  if (selectedTag !== "all") {
- const tags = c.customFields?.autoTags || [];
+ const tags = c.dynamicSegments || [];
  matchesTag = tags.some((t: any) => t.tag === selectedTag);
  }
  
@@ -487,16 +527,15 @@ export function CustomersView() {
 					{/* Row 2: Deep nested search and query filters inside the banner */}
 					<div className="flex flex-col md:flex-row gap-4 w-full justify-between items-start md:items-center mt-2">
 						<div className="flex flex-wrap gap-2.5 items-center w-full md:w-auto">
-							<div className="relative w-full md:w-64">
-								<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-								<Input
-									type="search"
-									placeholder="Tìm kiếm khách hàng..."
-									className="pl-8 bg-background h-9 text-xs font-semibold"
-									value={search}
-									onChange={e => setSearch(e.target.value)}
-								/>
-							</div>
+							<CustomerSearch 
+								customers={customers}
+								value={search}
+								onChange={setSearch}
+								onSelectCustomer={(customer) => {
+									// In a real app we might open their profile or filter specifically to them
+									setSearch(customer.name);
+								}}
+							/>
 							
 							<div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
 								<Building2 className="w-3.5 h-3.5 text-muted-foreground" />
@@ -700,20 +739,43 @@ export function CustomersView() {
 
 				</div>
 
-	<Card className="border border-border/50 bg-background/55 shadow-xs">
+	<Card className="border border-border/50 bg-background/55 shadow-xs relative">
+    {/* Bulk Action Floating Banner */}
+    {selectedCustomerIds.length > 0 && (
+      <div className="absolute top-0 left-0 right-0 z-50 bg-[#2f6cf5] text-white px-6 py-3 rounded-t-xl shadow-md flex items-center justify-between border-b border-[#2f6cf5]/20 animate-in fade-in slide-in-from-top-2">
+        <div className="flex items-center gap-3">
+          <span className="bg-white/20 px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-xs">
+            {selectedCustomerIds.length} đã chọn
+          </span>
+          <span className="text-sm font-bold">Thao tác hàng loạt</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="px-3 py-1.5 bg-white text-[#2f6cf5] rounded-lg text-xs font-bold hover:bg-white/90 transition-colors shadow-xs cursor-pointer">
+            Gửi Email Quảng Cáo
+          </button>
+          <button className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-bold transition-colors border border-white/20 cursor-pointer">
+            Gắn thẻ (Bulk Tagging)
+          </button>
+          <button 
+            onClick={() => setSelectedCustomerIds([])}
+            className="px-3 py-1.5 hover:bg-white/10 text-white/80 hover:text-white rounded-lg text-xs transition-colors cursor-pointer"
+          >
+            Hủy
+          </button>
+        </div>
+      </div>
+    )}
  <CardHeader className="pb-3 hidden">
  <div className="flex flex-col md:flex-row gap-4 w-full justify-between items-start md:items-center">
  <div className="flex flex-wrap gap-2.5 items-center w-full md:w-auto">
- <div className="relative w-full md:w-64">
- <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
- <Input
- type="search"
- placeholder="Tìm kiếm khách hàng..."
- className="pl-8 bg-background h-9 text-xs font-semibold"
+ <CustomerSearch 
+ customers={customers}
  value={search}
- onChange={e => setSearch(e.target.value)}
+ onChange={setSearch}
+ onSelectCustomer={(customer) => {
+ setSearch(customer.name);
+ }}
  />
- </div>
  
  <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
  <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
@@ -919,6 +981,20 @@ export function CustomersView() {
  <Table>
  <TableHeader>
  <TableRow>
+ <TableHead className="w-10 text-center">
+  <input 
+   type="checkbox"
+   className="rounded border-border text-[#2f6cf5] focus:ring-[#2f6cf5] h-4 w-4 cursor-pointer"
+   checked={sortedAndFilteredCustomers.length > 0 && selectedCustomerIds.length === sortedAndFilteredCustomers.length}
+   onChange={(e) => {
+    if (e.target.checked) {
+     setSelectedCustomerIds(sortedAndFilteredCustomers.map(c => c.id));
+    } else {
+     setSelectedCustomerIds([]);
+    }
+   }}
+  />
+ </TableHead>
  {visibleColumns.id && <TableHead>Mã KH</TableHead>}
  {visibleColumns.nameEmail && <TableHead>Họ tên / Email</TableHead>}
  {visibleColumns.social && <TableHead>Mạng xã hội</TableHead>}
@@ -934,11 +1010,11 @@ export function CustomersView() {
  <TableBody>
  {loading ? (
  <TableRow>
- <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} className="text-center py-8 text-muted-foreground">Đang tải dữ liệu khách hàng...</TableCell>
+ <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length + 1} className="text-center py-8 text-muted-foreground">Đang tải dữ liệu khách hàng...</TableCell>
  </TableRow>
  ) : sortedAndFilteredCustomers.length === 0 ? (
  <TableRow>
- <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} className="text-center py-12">
+ <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length + 1} className="text-center py-12">
  <div className="flex flex-col items-center justify-center max-w-lg mx-auto p-8 rounded-2xl border border-dashed border-border bg-card shadow-xs text-center space-y-4">
  <div className="p-3 bg-primary/10 text-primary rounded-full">
  <User className="w-8 h-8" />
@@ -1007,8 +1083,22 @@ export function CustomersView() {
    }
    setSelectedCustomer(customer);
   }}
- className="cursor-pointer hover:bg-muted/40 active:bg-muted/60 transition-all duration-200 group/row border-b border-border/50"
+ className={`cursor-pointer transition-all duration-200 group/row border-b ${selectedCustomerIds.includes(customer.id) ? 'bg-[#2f6cf5]/5 border-[#2f6cf5]/20' : 'hover:bg-muted/40 active:bg-muted/60 border-border/50'}`}
  >
+ <TableCell onClick={(e) => e.stopPropagation()} className="w-10 text-center">
+  <input 
+   type="checkbox"
+   className="rounded border-border text-[#2f6cf5] focus:ring-[#2f6cf5] h-4 w-4 cursor-pointer"
+   checked={selectedCustomerIds.includes(customer.id)}
+   onChange={(e) => {
+    if (e.target.checked) {
+     setSelectedCustomerIds(prev => [...prev, customer.id]);
+    } else {
+     setSelectedCustomerIds(prev => prev.filter(id => id !== customer.id));
+    }
+   }}
+  />
+ </TableCell>
  {/* ID */}
  {visibleColumns.id && <TableCell className="text-xs text-muted-foreground">{customer.id}</TableCell>}
  
@@ -1026,7 +1116,7 @@ export function CustomersView() {
  <div>
  <div className="font-extrabold text-foreground transition-colors flex items-center gap-1.5 flex-wrap">
  {customer.name}
- {customer.customFields?.autoTags?.map((t: any, idx: number) => {
+ {customer.dynamicSegments?.map((t: any, idx: number) => {
  const colorClass = COLOR_PRESET_MAP_SHORT[t.color || 'gold'] || COLOR_PRESET_MAP_SHORT.gold;
  return (
  <span 

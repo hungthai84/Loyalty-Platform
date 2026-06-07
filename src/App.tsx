@@ -29,7 +29,7 @@ function AppContent() {
   const safeActiveView = activeView;
 
   return (
-    <div className="h-full w-full flex bg-white/45 dark:bg-[#080808]/40 backdrop-blur-3xl rounded-[16px] overflow-hidden shadow-2xl shadow-black/15 border border-white/40 dark:border-white/5 relative selection:bg-primary/20">
+    <div className="h-full w-full flex bg-white dark:bg-[#10141f] rounded-[10px] overflow-hidden shadow-[0_18px_60px_-15px_rgba(15,23,42,0.15)] border border-[#eef1f6]/60 dark:border-white/5 relative selection:bg-[#fa1b6c]/10">
       <Sidebar 
         className="hidden md:flex shrink-0" 
         activeView={safeActiveView} 
@@ -68,7 +68,7 @@ export default function App() {
   return (
     <FirebaseProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <div className="h-screen w-screen p-[10px] overflow-hidden relative theme-transition">
+        <div className="h-screen w-screen p-[5px] overflow-hidden relative theme-transition">
           {/* Gorgeous Uiverse.io Soft Pastel Rotating Glow Background */}
           <div className="uiverse-container" />
           <AppContent />

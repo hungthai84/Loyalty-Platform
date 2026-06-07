@@ -84,28 +84,12 @@ export function MarketingView() {
       return;
     }
     setIsSending(true);
-    try {
-      const response = await fetch("/api/zimbra/test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          toEmail: testEmail,
-          subject: subject,
-          htmlContent: getHtmlPreview(),
-          fromName: "SEVA Marketing Platform"
-        })
-      });
-      const data = await response.json();
-      if (data.success) {
-        toast.success("Đã gửi email thử nghiệm thực tế tới " + testEmail);
-      } else {
-        toast.error(data.message || "Lỗi khi gửi email qua máy chủ Zimbra.");
-      }
-    } catch (err: any) {
-      toast.error("Lỗi kết nối máy chủ: " + err.message);
-    } finally {
+    
+    // Simulate sending email
+    setTimeout(() => {
       setIsSending(false);
-    }
+      toast.success("Đã mô phỏng gửi email tới " + testEmail);
+    }, 1000);
   };
 
   return (

@@ -40,7 +40,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
  const [systemIsDark, setSystemIsDark] = useState(false);
 
  useEffect(() => {
- if (!user) return;
+ if (!user || user.isLocal) return;
  const q = query(collection(db, "redemption_rules"), orderBy("pointsRequired", "asc"));
  return onSnapshot(q, (snapshot) => {
   setRules(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RedemptionRule)));

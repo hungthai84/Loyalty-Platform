@@ -458,7 +458,7 @@ export function StatusTransitionConfigView() {
 
   // Fetch Rules from Firestore
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.isLocal) return;
 
     const path = `status_transitions`;
     const q = query(collection(db, path));

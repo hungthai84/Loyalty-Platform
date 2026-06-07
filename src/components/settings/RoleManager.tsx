@@ -34,13 +34,17 @@ interface RolePermission {
 }
 
 export function RoleManager() {
-  const { rolePermissions: permissions, updateRolePermissions } = useFirebase();
+  const { user, rolePermissions: permissions, updateRolePermissions } = useFirebase();
 
   const [systemUsers, setSystemUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Load real-time users from Firestore
   useEffect(() => {
+    if (!user || user.isLocal) {
+      setLoading(false);
+      return;
+    }
     const q = query(collection(db, "system_users"));
     const unsubscribe = onSnapshot(
       q,
@@ -65,7 +69,7 @@ export function RoleManager() {
     );
 
     return unsubscribe;
-  }, []);
+  }, [user]);
 
   const approveUser = async (userId: string, role: string) => {
     try {

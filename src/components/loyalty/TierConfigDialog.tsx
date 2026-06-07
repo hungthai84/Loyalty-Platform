@@ -67,7 +67,7 @@ export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.isLocal) return;
 
     const q = query(collection(db, "attribute_definitions"));
     const unsubscribe = onSnapshot(

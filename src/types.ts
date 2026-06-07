@@ -77,7 +77,7 @@ export interface RedemptionRule {
 export interface EarnRule {
  id: string;
  name: string;
- type: 'purchase' | 'review' | 'referral' | 'checkin' | 'birthday' | 'ai_styling' | 'social_share';
+ type: string;
  value?: number; // per unit (e.g. per 100k)
  points: number; // points awarded
  isActive: boolean;

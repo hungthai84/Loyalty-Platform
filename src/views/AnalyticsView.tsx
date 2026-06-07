@@ -126,6 +126,20 @@ const trendData = [
  { month: "T6", tích: 6700, đổi: 4500 },
 ];
 
+const signupsData = [
+  { day: "08/05", signups: 12 }, { day: "09/05", signups: 15 }, { day: "10/05", signups: 9 },
+  { day: "11/05", signups: 14 }, { day: "12/05", signups: 18 }, { day: "13/05", signups: 22 },
+  { day: "14/05", signups: 25 }, { day: "15/05", signups: 19 }, { day: "16/05", signups: 21 },
+  { day: "17/05", signups: 16 }, { day: "18/05", signups: 30 }, { day: "19/05", signups: 28 },
+  { day: "20/05", signups: 24 }, { day: "21/05", signups: 18 }, { day: "22/05", signups: 15 },
+  { day: "23/05", signups: 20 }, { day: "24/05", signups: 26 }, { day: "25/05", signups: 35 },
+  { day: "26/05", signups: 42 }, { day: "27/05", signups: 38 }, { day: "28/05", signups: 31 },
+  { day: "29/05", signups: 25 }, { day: "30/05", signups: 29 }, { day: "31/05", signups: 34 },
+  { day: "01/06", signups: 40 }, { day: "02/06", signups: 45 }, { day: "03/06", signups: 50 },
+  { day: "04/06", signups: 48 }, { day: "05/06", signups: 55 }, { day: "06/06", signups: 62 },
+];
+
+
 const tierData = [
  { name: "Member", value: 450, color: "#94a3b8" },
  { name: "Essential", value: 300, color: "#10b981" },
@@ -181,7 +195,7 @@ const heatmapData = [
   }, [clvPeriod]);
 
  useEffect(() => {
-  if (!user) {
+  if (!user || user.isLocal) {
    setTiers(getGuestTiers());
    setDbCustomers(getGuestCustomers());
    return;
@@ -411,6 +425,68 @@ const heatmapData = [
        activeDot={{ r: 5, strokeWidth: 0 }}
       />
      )}
+    </LineChart>
+   </ResponsiveContainer>
+  </CardContent>
+  </Card>
+ </motion.div>
+
+ {/* New Customer Sign-ups Growth Chart */}
+ <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.25 }}
+ >
+  <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
+  <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
+   <div>
+    <CardTitle className="font-heading">Tăng trưởng hội viên mới (30 ngày)</CardTitle>
+    <CardDescription>
+     Theo dõi số lượng đăng ký tham gia chương trình Loyalty hàng ngày.
+    </CardDescription>
+   </div>
+  </CardHeader>
+  <CardContent className="h-[380px] pt-6">
+   <ResponsiveContainer width="100%" height="100%">
+    <LineChart data={signupsData}>
+     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
+     <XAxis 
+      dataKey="day" 
+      axisLine={false} 
+      tickLine={false} 
+      tick={{ fontSize: 12, fill: "#64748b", fontWeight: 500 }}
+      dy={10}
+      minTickGap={20}
+     />
+     <YAxis 
+      axisLine={false} 
+      tickLine={false} 
+      tick={{ fontSize: 11, fill: "#64748b" }}
+      dx={-10}
+     />
+     <Tooltip 
+      contentStyle={{ 
+       backgroundColor: "var(--card)", 
+       borderColor: "var(--border)",
+       borderRadius: "12px",
+       boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+       border: "1px solid rgba(226, 232, 240, 0.5)",
+       fontWeight: 500
+      }}
+      itemStyle={{ fontSize: "13px" }}
+      labelStyle={{ fontSize: "11px", fontWeight: "bold", color: "#64748b", marginBottom: "4px" }}
+      formatter={(value: number) => [`${value} hội viên`, "Đăng ký mới"]}
+     />
+     <Legend iconType="circle" wrapperStyle={{ paddingTop: "20px", fontSize: "12px", fontWeight: "bold" }} />
+     <Line 
+      type="monotone" 
+      dataKey="signups" 
+      name="Hội viên mới"
+      stroke="#10b981" 
+      strokeWidth={3} 
+      dot={{ r: 0 }}
+      activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
+     />
     </LineChart>
    </ResponsiveContainer>
   </CardContent>

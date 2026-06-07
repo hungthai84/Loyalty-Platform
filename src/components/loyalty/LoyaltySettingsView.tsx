@@ -60,6 +60,10 @@ export function LoyaltySettingsView() {
     CUSTOMER_STATUSES[0];
 
   useEffect(() => {
+    if (!user || user.isLocal) {
+      setLoading(false);
+      return;
+    }
     const docRef = doc(db, `loyalty_settings`, "main");
 
     // Using onSnapshot instead of getDoc to be more resilient to offline states
@@ -83,7 +87,7 @@ export function LoyaltySettingsView() {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

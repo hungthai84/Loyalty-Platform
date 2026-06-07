@@ -22,7 +22,16 @@ export const recentCustomers = [
   { id: "CUS-8925", name: "Lâm Mỹ Dung", tier: "Atelier", spent: "1.320.000.000 ₫", joined: "2022-11-30", points: 32000 },
 ];
 
+export const recentActivityData = [
+  { id: "act-1", type: "sign_up", user: "Phạm Hải Đăng", description: "đã đăng ký thành viên mới", time: "10 phút trước" },
+  { id: "act-2", type: "upgrade", user: "Lê Thúy Diễm", description: "đã thăng hạng lên Icon", time: "25 phút trước" },
+  { id: "act-3", type: "redeem", user: "Nguyễn Thảo Chi", description: "đã đổi 15,000 điểm lấy Voucher High-Tea", time: "1 giờ trước" },
+  { id: "act-4", type: "rule_trigger", user: "Hệ thống", description: "kích hoạt chiến dịch 'Welcome Essential Tier'", time: "3 giờ trước" },
+  { id: "act-5", type: "purchase", user: "Trần Thế Phong", description: "đã hoàn thành đơn hàng 12,000,000đ", time: "5 giờ trước" }
+];
+
 export const loyaltyTiers = [
+
  { name: "Member", threshold: 0, spendThreshold: 0, orderThreshold: 0, multiplier: "1x", benefits: ["Quà tặng sinh nhật", "Ưu đãi đặc biệt"] },
  { name: "Essential", threshold: 500, spendThreshold: 50000000, orderThreshold: 10, multiplier: "1.25x", benefits: ["Truy cập sớm", "Miễn phí giao hàng", "Quà tặng sinh nhật"] },
  { name: "Icon", threshold: 2500, spendThreshold: 250000000, orderThreshold: 25, multiplier: "1.5x", benefits: ["Quản lý riêng", "Sự kiện VIP", "Quà tặng năm"] },

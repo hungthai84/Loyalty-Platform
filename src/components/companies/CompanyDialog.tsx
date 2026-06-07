@@ -24,7 +24,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  const [companies, setCompanies] = useState<Company[]>([]);
 
  useEffect(() => {
- if (!user) return;
+ if (!user || user.isLocal) return;
  const q = query(collection(db, "companies"), orderBy("createdAt", "desc"));
  const unsub = onSnapshot(q, snap => {
  setCompanies(snap.docs.map(d => ({ ...d.data(), id: d.id } as Company)));

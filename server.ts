@@ -7,7 +7,6 @@ import { AuthRequest, requireAuth } from "./src/middleware/auth.ts";
 import { getOrCreateUser } from "./src/db/users.ts";
 import { db } from "./src/db/index.ts";
 import { sql } from "drizzle-orm";
-import nodemailer from "nodemailer";
 
 dotenv.config();
 
@@ -74,49 +73,16 @@ async function startServer() {
     }
   });
 
-  // Secure Proxy API for Zimbra SMTP Email Actions
+  // Secure Proxy API for SMTP Email Actions
   app.post("/api/zimbra/test", async (req, res) => {
     try {
-      const { smtpHost, smtpPort, smtpUser, smtpPass, fromEmail, fromName, toEmail, subject, htmlContent } = req.body;
-      
-      const host = smtpHost || process.env.ZIMBRA_SMTP_HOST;
-      const port = Number(smtpPort || process.env.ZIMBRA_SMTP_PORT || 587);
-      const user = smtpUser || process.env.ZIMBRA_SMTP_USER;
-      const pass = smtpPass || process.env.ZIMBRA_SMTP_PASSWORD;
-      const from = fromEmail || process.env.ZIMBRA_SMTP_FROM || user;
-
-      if (!host || !user || !pass) {
-        return res.status(400).json({
-          success: false,
-          message: "Cấu hình Zimbra SMTP chưa đầy đủ. Vui lòng cung cấp Host, User và Password trong Settings hoặc file .env."
-        });
-      }
-
-      const transporter = nodemailer.createTransport({
-        host: host,
-        port: port,
-        secure: port === 465, // true for 465, false for other ports
-        auth: {
-          user: user,
-          pass: pass,
-        },
-      });
-
-      const mailOptions = {
-        from: `"${fromName || "SEVA CRM Premium"}" <${from}>`,
-        to: toEmail,
-        subject: subject,
-        html: htmlContent,
-      };
-
-      await transporter.sendMail(mailOptions);
-      
-      return res.json({ success: true, message: "Đã gửi email kiểm tra thành công qua máy chủ Zimbra SMTP!" });
+      // Simulate sending email since integration was removed
+      await new Promise(resolve => setTimeout(resolve, 800));
+      return res.json({ success: true, message: "Đã gửi email kiểm tra (mô phỏng) thành công!" });
     } catch (err: any) {
-      console.error("Zimbra SMTP Error:", err);
       return res.status(500).json({
         success: false,
-        message: `Lỗi kết nối máy chủ Zimbra SMTP: ${err.message}`
+        message: `Lỗi mô phỏng máy chủ: ${err.message}`
       });
     }
   });

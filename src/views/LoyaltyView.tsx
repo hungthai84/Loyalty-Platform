@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Sparkles,
   CheckCircle2,
+  Heart,
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
@@ -45,6 +46,7 @@ import { RedemptionRuleDialog } from "@/components/loyalty/RedemptionRuleDialog"
 import { EarnRuleDialog } from "@/components/loyalty/EarnRuleDialog";
 import { LoyaltyCampaignDialog } from "@/components/loyalty/LoyaltyCampaignDialog";
 import { SegmentationRuleDialog } from "@/components/loyalty/SegmentationRuleDialog";
+import { LoyaltyTiers } from "@/components/loyalty/LoyaltyTiers";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -187,7 +189,7 @@ export function LoyaltyView() {
   const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || user.isLocal) {
       const loadGuestData = () => {
         setTiers(getGuestTiers());
         setRules(getGuestRedemptionRules());
@@ -547,57 +549,9 @@ export function LoyaltyView() {
           >
             {activeTab === "tiers" && (
               <>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold font-heading flex items-center">
-                      <Star className="w-5 h-5 mr-3 text-primary" /> Phân hạng
-                      Thành viên
-                    </h3>
-                  </div>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                    {tiers.map((tier) => (
-                      <motion.div
-                        key={tier.id}
-                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                      >
-                        <Card
-                          className="relative overflow-hidden group border-none glass-card p-6 border-l-4 h-full transition-shadow hover:shadow-lg"
-                          style={{ borderLeftColor: tier.color }}
-                        >
-                        <div className="absolute top-0 right-0 p-4 opacity-5">
-                          <Star className="w-20 h-20 text-primary" />
-                        </div>
-                        <div className="flex justify-between items-start mb-4">
-                          <h4 className="text-xl font-bold font-heading">
-                            {tier.name}
-                          </h4>
-                          <Badge
-                            variant="secondary"
-                            className="bg-muted text-muted-foreground border-none text-xs"
-                          >
-                            {tier.threshold.toLocaleString()} pts
-                          </Badge>
-                        </div>
-                        <div className="space-y-4 relative z-10">
-                          <div className="flex items-baseline gap-2">
-                            <span
-                              className="text-4xl font-black text-primary"
-                              style={{ color: tier.color }}
-                            >
-                              {tier.multiplier || 1}x
-                            </span>
-                            <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
-                              Tích điểm
-                            </span>
-                          </div>
-                        </div>
-                      </Card>
-                    </motion.div>
-                  ))}
-                  </div>
-                </div>
+                <LoyaltyTiers tiers={tiers} />
 
-                <div className="space-y-4">
+                <div className="space-y-4 pt-4 border-t border-border/40 mt-8">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xl font-bold font-heading flex items-center">
                       <Gift className="w-5 h-5 mr-3 text-primary" /> Đổi thưởng
@@ -990,14 +944,22 @@ export function LoyaltyView() {
                           )}
                         >
                         <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center shrink-0">
-                          {er.type === "review" ? (
+                          {er.type === "review" || er.type === "review_google" || er.type === "testimonial" ? (
                             <Star className="text-yellow-500" />
-                          ) : er.type === "referral" ? (
+                          ) : er.type === "referral" || er.type === "referral_purchase" ? (
                             <Share2 className="text-blue-500" />
                           ) : er.type === "ai_styling" ? (
                             <Scissors className="text-indigo-500" />
                           ) : er.type === "checkin" ? (
                             <Camera className="text-purple-500" />
+                          ) : er.type === "signup" ? (
+                            <Star className="text-emerald-500" />
+                          ) : er.type === "anniversary" || er.type === "birthday" ? (
+                            <Gift className="text-rose-500" />
+                          ) : er.type === "purchase" || er.type === "purchase_quantity" || er.type === "purchase_value" || er.type === "beat_best" ? (
+                            <Trophy className="text-amber-500" />
+                          ) : er.type === "social_share" || er.type === "social_follow" || er.type === "youtube_sub" ? (
+                            <Heart className="text-pink-500" />
                           ) : (
                             <TrendingUp className="text-primary" />
                           )}

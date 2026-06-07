@@ -59,16 +59,16 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
           "px-6 py-2 flex items-center transition-all duration-300",
           !isHovered && "px-[22px]"
         )}>
-          <BrandLogo className="w-9 h-9 shrink-0 shadow-lg shadow-primary/20 hover:scale-105 transition-transform duration-300" />
+          <BrandLogo className="w-9 h-9 shrink-0 hover:scale-105 transition-transform duration-300" />
           <AnimatePresence>
             {isHovered && (
               <motion.h2 
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="text-lg font-black tracking-tight font-heading ml-3 whitespace-nowrap bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-300"
+                className="text-lg font-extrabold tracking-tight font-heading ml-2 whitespace-nowrap bg-gradient-to-r from-[#fa1b6c] via-[#7c3aed] to-[#131924] bg-clip-text text-transparent"
               >
-                Loyalty Platform
+                iuPayme
               </motion.h2>
             )}
           </AnimatePresence>
@@ -81,11 +81,11 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
                 key={item.name}
                 onClick={() => setActiveView(item.view)}
                 className={cn(
-                  "w-full flex items-center rounded-xl py-2.5 text-sm font-medium transition-all group relative",
+                  "w-full flex items-center rounded-2xl py-3 text-sm font-semibold transition-all group relative",
                   activeView === item.view
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                    : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
-                  !isHovered ? "px-0 justify-center" : "px-3 space-x-3",
+                    ? "bg-[#131924] text-white shadow-lg shadow-[#131924]/10 dark:bg-white dark:text-[#131924]"
+                    : "text-muted-foreground hover:bg-[#F3F5F8] hover:text-foreground",
+                  !isHovered ? "px-0 justify-center" : "px-4 space-x-3",
                   item.isSecondary && isHovered && "mt-8 border border-border/50",
                   item.isSecondary && !isHovered && "mt-8"
                 )}
@@ -93,7 +93,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
               >
                 <item.icon className={cn(
                   "h-5 w-5 shrink-0 transition-transform duration-300",
-                  activeView === item.view ? "text-primary-foreground" : "text-muted-foreground group-hover:scale-110"
+                  activeView === item.view ? "text-white dark:text-[#131924]" : "text-slate-400 group-hover:text-[#131924] group-hover:scale-105"
                 )} />
                 
                 <AnimatePresence>
@@ -128,17 +128,17 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
         <button
           onClick={() => setActiveView("portal")}
           className={cn(
-            "w-full flex items-center rounded-xl py-2.5 text-sm font-medium transition-all group relative justify-center",
+            "w-full flex items-center rounded-2xl py-3 text-sm font-semibold transition-all group relative justify-center",
             activeView === "portal"
-              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-              : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
-            !isHovered ? "px-0" : "px-3 space-x-3 justify-start"
+              ? "bg-[#131924] text-white shadow-lg shadow-[#131924]/10 dark:bg-white dark:text-[#131924]"
+              : "text-muted-foreground hover:bg-[#F3F5F8] hover:text-foreground",
+            !isHovered ? "px-0" : "px-4 space-x-3 justify-start"
           )}
           title={!isHovered ? "Cổng Loyalty" : undefined}
         >
           <Fingerprint className={cn(
             "h-5 w-5 shrink-0 transition-transform duration-300",
-            activeView === "portal" ? "text-primary-foreground" : "text-muted-foreground group-hover:scale-110"
+            activeView === "portal" ? "text-white dark:text-[#131924]" : "text-slate-400 group-hover:text-[#131924] group-hover:scale-105"
           )} />
           
           <AnimatePresence>
