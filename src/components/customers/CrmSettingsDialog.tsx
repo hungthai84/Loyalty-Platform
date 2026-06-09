@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { X, Star, Building2, SlidersHorizontal } from "lucide-react";
+import { X, Star, Building2, SlidersHorizontal, GitCompare } from "lucide-react";
 import * as motion from "motion/react-client";
 import { TierManagementView } from "@/components/loyalty/TierManagementView";
 import { CompanyManager } from "@/components/settings/CompanyManager";
 import { AttributeManager } from "@/components/customers/AttributeManager";
+import { StatusTransitionConfigView } from "@/components/loyalty/StatusTransitionConfigView";
 import { AttributeDefinition } from "@/types";
 
 interface CrmSettingsDialogProps {
@@ -11,7 +12,7 @@ interface CrmSettingsDialogProps {
   attributes: AttributeDefinition[];
 }
 
-type TabType = "tiers" | "companies" | "custom_fields";
+type TabType = "tiers" | "companies" | "custom_fields" | "transitions";
 
 export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProps) {
   const [activeTab, setActiveTab] = useState<TabType>("tiers");
@@ -33,7 +34,7 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
               Cài đặt Hệ thống CRM & VIP
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Cấu hình cấp bậc hội viên, quản lý hệ thống đại lý/chi nhánh trực thuộc và tùy chỉnh các trường bổ sung.
+              Cấu hình cấp bậc hội viên, quản lý hệ thống đại lý/chi nhánh trực thuộc, bộ quy luật chuyển trạng thái và tùy chỉnh các trường bổ sung.
             </p>
           </div>
           <button
@@ -49,6 +50,7 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
           {[
             { id: "tiers", label: "Cấu hình phân hạng VIP", icon: Star, color: "text-amber-500" },
             { id: "companies", label: "Công ty & Chi nhánh", icon: Building2, color: "text-blue-500" },
+            { id: "transitions", label: "Quy luật trạng thái", icon: GitCompare, color: "text-purple-500" },
             { id: "custom_fields", label: "Trường dữ liệu tùy chỉnh", icon: SlidersHorizontal, color: "text-emerald-500" },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -91,6 +93,22 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
                 </div>
               </div>
               <CompanyManager />
+            </div>
+          )}
+
+          {activeTab === "transitions" && (
+            <div className="max-w-6xl mx-auto space-y-6">
+              <div className="bg-white/50 backdrop-blur-sm p-6 rounded-3xl border border-border/50 mb-6 flex items-center justify-between text-left">
+                <div>
+                  <h3 className="text-lg font-bold font-heading flex items-center gap-2">
+                    <GitCompare className="w-5 h-5 text-purple-500" /> Cấu hình Quy luật chuyển trạng thái
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Số ngày không phát sinh giao dịch để tự động chuyển khách hàng giữa các nhóm trạng thái (Chăm sóc, Rời bỏ, ...).
+                  </p>
+                </div>
+              </div>
+              <StatusTransitionConfigView />
             </div>
           )}
 

@@ -32,6 +32,28 @@ export function TierManagementView() {
  return unsub;
  }, [user]);
 
+ const seedDemoData = async () => {
+   if (!user || user.isLocal) return;
+   setLoading(true);
+   try {
+     const { GUEST_TIERS } = await import("@/data/guestData");
+     const { setDoc, doc, serverTimestamp } = await import("firebase/firestore");
+     for (const tier of GUEST_TIERS) {
+       const { id, ...data } = tier;
+       await setDoc(doc(db, "tier_configs", id), {
+         ...data,
+         userId: user.uid,
+         createdAt: serverTimestamp(),
+         updatedAt: serverTimestamp(),
+       }, { merge: true });
+     }
+   } catch (error) {
+     console.error(error);
+   } finally {
+     setLoading(false);
+   }
+ };
+
  /* if (!user) return null; */
 
  return (
@@ -55,13 +77,19 @@ export function TierManagementView() {
  {loading ? (
  <div className="py-12 text-center text-muted-foreground">Đang tải cấu hình...</div>
  ) : tiers.length === 0 ? (
- <div className="py-20 text-center border-2 border-dashed border-border rounded-3xl space-y-4">
- <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
+ <div className="py-20 text-center border-2 border-dashed border-border rounded-3xl space-y-6 flex flex-col items-center justify-center">
+ <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
  <Star className="w-8 h-8 text-muted-foreground" />
  </div>
- <div>
+ <div className="flex flex-col items-center">
  <p className="text-lg font-bold">Chưa có cấp bậc nào</p>
- <p className="text-sm text-muted-foreground">Hãy bắt đầu bằng cách tạo Hạng Đồng hoặc Hạng Bạc đầu tiên.</p>
+ <p className="text-sm text-muted-foreground mb-6">Hãy bắt đầu bằng cách tạo Hạng Đồng hoặc Hạng Bạc đầu tiên.</p>
+ <button 
+  onClick={seedDemoData}
+  className="px-8 py-3 bg-primary/10 text-primary border border-primary/20 rounded-2xl text-sm font-bold hover:bg-primary/20 transition-all flex items-center gap-2"
+ >
+  <Zap className="w-4 h-4" /> Khởi tạo phân hạng mẫu (Member, Essential, Icon, Atelier)
+ </button>
  </div>
  </div>
  ) : (

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
-import { Customer, Company, AttributeDefinition } from "@/types";
+import { Customer, Company, AttributeDefinition, TierConfig } from "@/types";
+import { StatusService, CustomerActivityMetrics } from "@/services/StatusService";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -211,6 +212,7 @@ interface CustomerDashboardProps {
   userId: string;
   companies: Company[];
   attributes: AttributeDefinition[];
+  tierConfigs: TierConfig[];
   onBack: () => void;
 }
 
@@ -219,6 +221,7 @@ export function CustomerDashboard({
   userId,
   companies,
   attributes,
+  tierConfigs,
   onBack,
 }: CustomerDashboardProps) {
   const [points, setPoints] = useState(customer.points || 0);
@@ -706,8 +709,51 @@ export function CustomerDashboard({
 
   const company = companies.find((c) => c.id === customer.companyId);
 
-  // Calculate membership tier locally
+  // Calculate membership tier dynamically from configs
   const getTierInfo = (pts: number) => {
+    if (tierConfigs && tierConfigs.length > 0) {
+      // Find eligible tiers
+      const eligible = [...tierConfigs].filter(t => pts >= t.threshold).sort((a,b) => b.threshold - a.threshold);
+      const nextTier = [...tierConfigs].filter(t => pts < t.threshold).sort((a,b) => a.threshold - b.threshold)[0];
+      
+      const current = eligible.length > 0 ? eligible[0] : null;
+      
+      if (!current) {
+        return {
+          name: "Member (Hạng Phổ thông)",
+          nextTarget: nextTier ? `${nextTier.threshold - pts} pts nâng ${nextTier.name}` : "Tối đa",
+          progress: nextTier ? (pts / nextTier.threshold) * 100 : 100,
+          color: "text-slate-400 border-slate-400",
+          bg: "bg-slate-400/10",
+        };
+      }
+
+      // Compute color classes based on hex or name
+      const c = current.color || "slate";
+      let colorClass = "text-slate-400 border-slate-400";
+      let bgClass = "bg-slate-400/10";
+      
+      if (c.toLowerCase().includes("gold") || c === "#f59e0b" || c === "#2f6cf5") {
+        colorClass = "text-[#2f6cf5] border-[#2f6cf5]";
+        bgClass = "bg-[#2f6cf5]/10";
+      } else if (c.toLowerCase().includes("purple") || c === "#a855f7") {
+        colorClass = "text-purple-500 border-purple-500";
+        bgClass = "bg-purple-500/10";
+      } else if (c.toLowerCase().includes("emerald") || c === "#10b981") {
+        colorClass = "text-emerald-500 border-emerald-500";
+        bgClass = "bg-emerald-500/10";
+      }
+
+      return {
+        name: current.name,
+        nextTarget: nextTier ? `${nextTier.threshold - pts} pts nâng ${nextTier.name}` : "Hạng cao nhất",
+        progress: nextTier ? ((pts - current.threshold) / (nextTier.threshold - current.threshold)) * 100 : 100,
+        color: colorClass,
+        bg: bgClass,
+      };
+    }
+
+    // Static fallback
     if (pts >= 10000) {
       return {
         name: "Atelier (Thượng lưu)",
@@ -1004,65 +1050,122 @@ export function CustomerDashboard({
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 justify-center">
-                {/* Interactive Status Changer Dropdown */}
-                <div className="relative group/status flex items-center gap-1 bg-[#2f6cf5]/5 dark:bg-[#2f6cf5]/10 border border-[#2f6cf5]/20 hover:border-[#2f6cf5]/40 rounded-full px-2.5 py-1 text-xs font-bold text-[#2f6cf5] hover:text-[#2f6cf5] transition-all">
-                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse shrink-0" />
-                  <select
-                    value={customer.activityStatus || "ACTIVE"}
-                    onChange={async (e) => {
-                      const nextStatus = e.target.value;
-                      const prevStatus = customer.activityStatus || "ACTIVE";
-                      if (nextStatus === prevStatus) return;
+              <div className="flex flex-col items-center gap-3 justify-center w-full">
+                <div className="flex flex-wrap items-center gap-2 justify-center">
+                  {/* Interactive Status Changer Dropdown */}
+                  <div className="relative group/status flex items-center gap-1 bg-[#2f6cf5]/5 dark:bg-[#2f6cf5]/10 border border-[#2f6cf5]/20 hover:border-[#2f6cf5]/40 rounded-full px-2.5 py-1 text-xs font-bold text-[#2f6cf5] hover:text-[#2f6cf5] transition-all">
+                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse shrink-0" />
+                    <select
+                      value={customer.activityStatus || "ACTIVE"}
+                      onChange={async (e) => {
+                        const nextStatus = e.target.value;
+                        const prevStatus = customer.activityStatus || "ACTIVE";
+                        if (nextStatus === prevStatus) return;
 
-                      const logEntry = {
-                        id: `ST-${Date.now()}`,
-                        type: "status_change",
-                        from: prevStatus,
-                        to: nextStatus,
-                        date:
-                          new Date().toLocaleDateString("vi-VN") +
-                          " " +
-                          new Date().toLocaleTimeString("vi-VN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }),
-                        timestamp: Date.now(),
-                      };
+                        const logEntry = {
+                          id: `ST-${Date.now()}`,
+                          type: "status_change",
+                          from: prevStatus,
+                          to: nextStatus,
+                          date:
+                            new Date().toLocaleDateString("vi-VN") +
+                            " " +
+                            new Date().toLocaleTimeString("vi-VN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }),
+                          timestamp: Date.now(),
+                        };
 
-                      const updatedHistory = [
-                        ...(customer.statusHistory || []),
-                        logEntry,
-                      ];
-                      await updateFirestore(
-                        {
-                          activityStatus: nextStatus as any,
-                          statusHistory: updatedHistory,
-                        },
-                        `Đã cập nhật trạng thái mới: ${CUSTOMER_STATUSES.find((st) => st.code === nextStatus)?.classification || nextStatus}`,
-                      );
-                    }}
-                    className="bg-transparent text-xs font-extrabold outline-none cursor-pointer pr-1 appearance-none border-none text-center text-[#2f6cf5]"
-                    style={{ WebkitAppearance: "none", MozAppearance: "none" }}
+                        const updatedHistory = [
+                          ...(customer.statusHistory || []),
+                          logEntry,
+                        ];
+                        await updateFirestore(
+                          {
+                            activityStatus: nextStatus as any,
+                            statusHistory: updatedHistory,
+                          },
+                          `Đã cập nhật trạng thái mới: ${CUSTOMER_STATUSES.find((st) => st.code === nextStatus)?.classification || nextStatus}`,
+                        );
+                      }}
+                      className="bg-transparent text-xs font-extrabold outline-none cursor-pointer pr-1 appearance-none border-none text-center text-[#2f6cf5]"
+                      style={{ WebkitAppearance: "none", MozAppearance: "none" }}
+                    >
+                      {CUSTOMER_STATUSES.map((st) => (
+                        <option
+                          key={st.code}
+                          value={st.code}
+                          className="text-foreground dark:text-white bg-background font-semibold"
+                        >
+                          {st.classification}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-xs opacity-65 shrink-0">▼</span>
+                  </div>
+
+                  <span
+                    className={`px-2.5 py-0.5 text-xs font-bold uppercase rounded-full border ${tier.color} ${tier.bg}`}
                   >
-                    {CUSTOMER_STATUSES.map((st) => (
-                      <option
-                        key={st.code}
-                        value={st.code}
-                        className="text-foreground dark:text-white bg-background font-semibold"
-                      >
-                        {st.classification}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="text-xs opacity-65 shrink-0">▼</span>
+                    🏆 {tier.name}
+                  </span>
                 </div>
 
-                <span
-                  className={`px-2.5 py-0.5 text-xs font-bold uppercase rounded-full border ${tier.color} ${tier.bg}`}
-                >
-                  🏆 {tier.name}
-                </span>
+                {/* Suggested Status logic from StatusService */}
+                {(() => {
+                  const lastInteraction = customer.lastTransactionAt ? parseVietnameseDate(customer.lastTransactionAt) : parseVietnameseDate(customer.createdAt);
+                  const daysDiff = Math.floor((Date.now() - (lastInteraction || Date.now())) / (1000 * 60 * 60 * 24));
+                  
+                  const metrics: CustomerActivityMetrics = {
+                    lastInteractionDays: daysDiff,
+                    lastPurchaseDays: daysDiff,
+                    totalOrders: (customer.orders || []).length,
+                    isVerified: !!customer.customFields?.verified,
+                    isLoyaltyMember: (customer.points || 0) > 0,
+                    clv: Number(customer.customFields?.clv) || 0,
+                    isVip: (customer.points || 0) >= 2500,
+                    hasHighRiskFlags: false
+                  };
+                  
+                  const suggested = StatusService.determineStatus(metrics);
+                  const currentStatus = customer.activityStatus || "ACTIVE";
+                  
+                  if (suggested.code !== currentStatus) {
+                    return (
+                      <div className="flex flex-col items-center gap-2 bg-amber-500/5 border border-amber-500/20 rounded-2xl p-3 w-full max-w-[280px]">
+                        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Trạng thái gợi ý</span>
+                        </div>
+                        <p className="text-[11px] text-center text-muted-foreground leading-tight">
+                          Dựa trên hành vi, khách hàng nên là: <strong className="text-foreground">{suggested.classification}</strong>
+                        </p>
+                        <button
+                          onClick={async () => {
+                            const logEntry = {
+                              id: `ST-AUTO-${Date.now()}`,
+                              type: "status_change",
+                              from: currentStatus,
+                              to: suggested.code,
+                              date: formatVietnameseDate(Date.now()),
+                              timestamp: Date.now(),
+                              note: "Tự động gợi ý từ hệ thống SEVA Status Service"
+                            };
+                            await updateFirestore({
+                              activityStatus: suggested.code as any,
+                              statusHistory: [...(customer.statusHistory || []), logEntry]
+                            }, `Đã áp dụng trạng thái hệ thống: ${suggested.classification}`);
+                          }}
+                          className="w-full py-1.5 bg-amber-500 text-white rounded-lg text-[10px] font-bold shadow-sm hover:bg-amber-600 transition-colors"
+                        >
+                          Cập nhật ngay
+                        </button>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
 

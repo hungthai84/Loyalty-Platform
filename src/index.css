@@ -9,12 +9,17 @@
     --font-heading: "Inter", system-ui, -apple-system, sans-serif;
     --font-sans: "Inter", system-ui, -apple-system, sans-serif;
     --font-mono: "JetBrains Mono", monospace;
-    --font-size-xl: clamp(1.1rem, 1.05rem + 0.25vw, 1.25rem);
-    --font-size-2xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
-    --font-size-3xl: clamp(1.4rem, 1.25rem + 0.75vw, 1.875rem);
-    --font-size-4xl: clamp(1.6rem, 1.45rem + 1vw, 2.25rem);
-    --font-size-5xl: clamp(1.85rem, 1.6rem + 1.5vw, 3rem);
-    --font-size-6xl: clamp(2.1rem, 1.8rem + 2.5vw, 3.75rem);
+    
+    /* Fluid Typography Config (320px to 1440px) */
+    --font-size-base: clamp(1rem, calc(0.96rem + 0.18vw), 1.125rem); /* Body: 16px -> 18px */
+    --font-size-h1: clamp(2rem, calc(1.57rem + 2.14vw), 3.5rem);      /* H1: 32px -> 56px */
+    --font-size-h2: clamp(1.5rem, calc(1.2rem + 1.43vw), 2.5rem);     /* H2: 24px -> 40px */
+    --font-size-h3: clamp(1.25rem, calc(1.1rem + 0.71vw), 1.75rem);   /* H3: 20px -> 28px */
+    
+    --font-size-xl: var(--font-size-h3);
+    --font-size-2xl: var(--font-size-h2);
+    --font-size-3xl: var(--font-size-h1);
+    
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -148,12 +153,17 @@
     height: 100vh;
     @apply text-foreground bg-background;
     font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-    font-size: 0.875rem; /* Body M: 14px */
-    line-height: 1.5;
+    font-size: var(--font-size-base);
+    line-height: 1.7; /* Desktop standard line-height */
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
+  }
+
+  p {
+    max-width: 70ch; /* Optimal line length for reading */
+    line-height: 1.6;
   }
 
   input, button, select, textarea {
@@ -162,23 +172,23 @@
   }
 
   h1 {
-    font-size: clamp(1.5rem, 1.35rem + 0.75vw, 2rem);
-    font-weight: 700;
+    font-size: var(--font-size-h1);
+    font-weight: 800;
     line-height: 1.2;
     @apply tracking-tight font-heading;
   }
 
   h2 {
-    font-size: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
-    font-weight: 600;
-    line-height: 1.25;
+    font-size: var(--font-size-h2);
+    font-weight: 700;
+    line-height: 1.2;
     @apply tracking-tight font-heading;
   }
 
   h3 {
-    font-size: clamp(1.05rem, 1rem + 0.25vw, 1.125rem);
+    font-size: var(--font-size-h3);
     font-weight: 600;
-    line-height: 1.35;
+    line-height: 1.2;
     @apply tracking-tight font-heading;
   }
 

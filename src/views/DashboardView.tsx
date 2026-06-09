@@ -8,9 +8,11 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { kpiData, revenueData, recentCustomers } from "@/data/mockData";
+import { getGuestCustomers } from "@/data/guestData";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { useFirebase } from "@/components/FirebaseProvider";
+import { Customer } from "@/types";
 import {
   XAxis,
   YAxis,
@@ -19,6 +21,8 @@ import {
   CartesianGrid,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -57,7 +61,8 @@ import {
   Globe,
   Copy,
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  TrendingUp,
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { DatabaseStatus } from "@/components/layout/DatabaseStatus";
@@ -75,52 +80,27 @@ export function DashboardView() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   
   const { user } = useFirebase();
-  const [totalCustomers, setTotalCustomers] = useState(24);
+  const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
   const [activeCampaigns, setActiveCampaigns] = useState(4);
-  const [loyaltyPointsIssued, setLoyaltyPointsIssued] = useState(1200000);
 
   useEffect(() => {
     if (!user || user.isLocal) {
-      // Local Guest storage fallback
-      const localStr = localStorage.getItem("crm_guest_customers");
-      if (localStr) {
-        try {
-          const list = JSON.parse(localStr);
-          setTotalCustomers(list.length || 24);
-          const pts = list.reduce((acc: number, c: any) => acc + (c.points || 0), 0);
-          setLoyaltyPointsIssued(pts || 120000);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-
+      // Use helper to get guest customers
+      const list = getGuestCustomers();
+      setAllCustomers(list);
+      
       // Listen to event for guest changes
       const handleGuestChange = () => {
-        const localStr2 = localStorage.getItem("crm_guest_customers");
-        if (localStr2) {
-          try {
-            const list = JSON.parse(localStr2);
-            setTotalCustomers(list.length || 24);
-            const pts = list.reduce((acc: number, c: any) => acc + (c.points || 0), 0);
-            setLoyaltyPointsIssued(pts || 120000);
-          } catch (e) {
-            console.error(e);
-          }
-        }
+        const list2 = getGuestCustomers();
+        setAllCustomers(list2);
       };
       window.addEventListener("crm_guest_data_changed", handleGuestChange);
       return () => window.removeEventListener("crm_guest_data_changed", handleGuestChange);
     } else {
       // Firestore Real-Time listeners!
       const unsubscribeCust = onSnapshot(collection(db, "customers"), (snap) => {
-        const count = snap.size;
-        setTotalCustomers(count || 0);
-
-        let sumPts = 0;
-        snap.docs.forEach((doc) => {
-          sumPts += doc.data().points || 0;
-        });
-        setLoyaltyPointsIssued(sumPts || 0);
+        const list = snap.docs.map(doc => ({ ...doc.data(), id: doc.id } as Customer));
+        setAllCustomers(list);
       }, (err) => {
         console.error("Firestore customers KPI listener error:", err);
       });
@@ -309,143 +289,97 @@ export function DashboardView() {
     }
   }, [selectedTier]);
 
-  // Stat Recalculations for KPIs based on date interval and tier
+  // Stat Recalculations for KPIs based on actual data
   const filteredKpis = useMemo(() => {
+    const getTier = (pts: number) => {
+      if (pts >= 10000) return "Atelier";
+      if (pts >= 2500) return "Icon";
+      if (pts >= 500) return "Essential";
+      return "Member";
+    };
+
+    const criteriaCustomers = selectedTier === "all" 
+      ? allCustomers 
+      : allCustomers.filter(c => getTier(c.points || 0) === selectedTier);
+
+    const activeInCriteria = criteriaCustomers.filter(c => 
+      (c.activityStatus as any) === 'active' || 
+      (c.activityStatus as any) === 'ACTIVE' || 
+      (c.activityStatus as any) === 'VIP'
+    );
+
+    const totalSpend = criteriaCustomers.reduce((acc, c) => acc + (Number(c.customFields?.spend) || 0), 0);
+    const totalPts = criteriaCustomers.reduce((acc, c) => acc + (c.points || 0), 0);
+    const avgLtv = criteriaCustomers.length > 0 ? totalSpend / criteriaCustomers.length : 0;
+
     if (activePreset === "all") {
-      return kpiData.map((kpi, idx) => {
-        if (idx === 0) {
-          // Revenue
-          const origVal = 105700000000;
-          const newVal = origVal * tierFactor;
-          return {
-            ...kpi,
-            value: `${(newVal / 1000000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tỷ ₫`,
-          };
-        }
-        if (idx === 1) {
-          // Active customers
-          const origVal = 24591;
-          const newVal = Math.floor(origVal * tierFactor);
-          return { ...kpi, value: newVal.toLocaleString("vi-VN") };
-        }
-        if (idx === 3) {
-          // points
-          const origVal = 1200000;
-          const newVal = Math.floor(origVal * tierFactor);
-          return {
-            ...kpi,
-            value: `${(newVal / 1000).toFixed(1).replace(".", ",")}k pts`,
-          };
-        }
-        return kpi;
-      });
+      return [
+        {
+          label: "Thành viên hoạt động",
+          value: `${activeInCriteria.length.toLocaleString("vi-VN")} / ${criteriaCustomers.length.toLocaleString("vi-VN")}`,
+          change: "+12.5%",
+          positive: true,
+        },
+        {
+          label: "Tổng doanh thu",
+          value: totalSpend >= 1000000000 
+            ? `${(totalSpend / 1000000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tỷ ₫`
+            : `${(totalSpend / 1000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tr ₫`,
+          change: "+8.2%",
+          positive: true,
+        },
+        {
+          label: "LTV Trung bình",
+          value: `${(avgLtv / 1000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tr ₫`,
+          change: "+3.4%",
+          positive: true,
+        },
+        {
+          label: "Điểm Loyalty đã cấp",
+          value: totalPts >= 1000000 
+            ? `${(totalPts / 1000000).toFixed(1).replace(".", ",")}M pts`
+            : `${(totalPts / 1000).toFixed(1).replace(".", ",")}k pts`,
+          change: "+15.7%",
+          positive: true,
+        },
+      ];
     }
 
-    // Daily revenue average = 88,000,000 VNĐ
-    const revenueVal = daysDiff * 88000000 * tierFactor;
-    let formattedRevenue = "";
-    if (revenueVal >= 1000000000) {
-      formattedRevenue = `${(revenueVal / 1000000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tỷ ₫`;
-    } else {
-      formattedRevenue = `${(revenueVal / 1000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tr ₫`;
-    }
-
-    // Daily guest onboarding active pool
-    const activeCust = Math.min(
-      24591,
-      Math.max(10, Math.floor((50 + daysDiff * 14.5) * tierFactor)),
-    );
-    const formattedActiveCust = activeCust.toLocaleString("vi-VN");
-
-    // Repeat rate percentage fluctuates based on size
-    let repeatRate = "68%";
-    let repeatChange = "+2.1%";
-    let repeatPositive = true;
-    if (activePreset === "today") {
-      repeatRate = selectedTier === "Atelier" ? "88%" : "74%";
-      repeatChange = "+4.8%";
-    } else if (activePreset === "7days") {
-      repeatRate = selectedTier === "Atelier" ? "82%" : "71%";
-      repeatChange = "+1.8%";
-    } else if (activePreset === "30days") {
-      repeatRate = selectedTier === "Atelier" ? "79%" : "68.5%";
-      repeatChange = "+2.4%";
-    } else {
-      const seed =
-        (daysDiff % 6) * 0.35 +
-        (selectedTier === "Atelier"
-          ? 12
-          : selectedTier === "Icon"
-            ? 7
-            : 0);
-      repeatRate = `${(66.2 + seed).toFixed(1).replace(".", ",")}%`;
-      repeatChange =
-        seed >= 0
-          ? `+${seed.toFixed(1).replace(".", ",")}%`
-          : `${seed.toFixed(1).replace(".", ",")}%`;
-      repeatPositive = seed >= 0;
-    }
-
-    // Point Redemptions
-    const pointsRedeemed = Math.min(
-      1200000,
-      Math.floor(daysDiff * 2420 * tierFactor),
-    );
-    let formattedPoints = "";
-    if (pointsRedeemed >= 1000000) {
-      formattedPoints = `${(pointsRedeemed / 1000000).toFixed(1).replace(".", ",")}M pts`;
-    } else if (pointsRedeemed >= 1000) {
-      formattedPoints = `${(pointsRedeemed / 1000).toFixed(1).replace(".", ",")}k pts`;
-    } else {
-      formattedPoints = `${pointsRedeemed} pts`;
-    }
-
-    const revenueChange =
-      activePreset === "today"
-        ? "+8.5%"
-        : activePreset === "7days"
-          ? "+4.2%"
-          : "+12.5%";
-    const activeCustChange =
-      activePreset === "today"
-        ? "+0.3%"
-        : activePreset === "7days"
-          ? "+1.4%"
-          : "+5.2%";
-    const pointsChange = activePreset === "today" ? "+2.9%" : "-4.5%";
-    const formattedPointsIssued = loyaltyPointsIssued >= 1000000 
-      ? `${(loyaltyPointsIssued / 1000000).toFixed(1).replace(".", ",")}M pts`
-      : loyaltyPointsIssued >= 1000 
-        ? `${(loyaltyPointsIssued / 1000).toFixed(1).replace(".", ",")}k pts`
-        : `${loyaltyPointsIssued} pts`;
-
+    // Default mock behavior but adjusted with real base values if needed
+    // Keep it simple for now, just filtering the total/active counts
+    const revenueChange = activePreset === "today" ? "+8.5%" : activePreset === "7days" ? "+4.2%" : "+12.5%";
+    
     return [
       {
         label: "Thành viên hoạt động",
-        value: totalCustomers.toLocaleString("vi-VN"),
-        change: activeCustChange,
+        value: `${activeInCriteria.length.toLocaleString("vi-VN")} / ${criteriaCustomers.length.toLocaleString("vi-VN")}`,
+        change: "+5.2%",
         positive: true,
       },
       {
         label: "Tổng doanh thu",
-        value: formattedRevenue,
+        value: totalSpend >= 1000000000 
+          ? `${(totalSpend / 1000000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tỷ ₫`
+          : `${(totalSpend / 1000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tr ₫`,
         change: revenueChange,
         positive: true,
       },
       {
         label: "LTV Trung bình",
-        value: `${(65000000 * tierFactor / 1000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tr ₫`,
+        value: `${(avgLtv / 1000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tr ₫`,
         change: "+3.4%",
         positive: true,
       },
       {
         label: "Điểm Loyalty đã cấp",
-        value: formattedPointsIssued,
+        value: totalPts >= 1000000 
+          ? `${(totalPts / 1000000).toFixed(1).replace(".", ",")}M pts`
+          : `${(totalPts / 1000).toFixed(1).replace(".", ",")}k pts`,
         change: "+15.7%",
         positive: true,
       },
     ];
-  }, [daysDiff, activePreset, selectedTier, tierFactor, totalCustomers, activeCampaigns, loyaltyPointsIssued]);
+  }, [daysDiff, activePreset, selectedTier, allCustomers, activeCampaigns]);
 
   // Dynamic Charting categories matching dates or weeks scaled by tier
   const filteredRevenueData = useMemo(() => {
@@ -771,6 +705,53 @@ export function DashboardView() {
       {/* ================= Power Service PREMIUM DIGITAL WALLET WORKSPACE (MOCKUP ACCURACY) ================= */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-12 items-start">
         
+        {/* Loyalty Points Distribution Overview (Moved from Loyalty) */}
+        <div className="col-span-full">
+          <Card className="p-6 border border-border/60 shadow-sm glass-card overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-extrabold font-heading flex items-center text-[#2f6cf5]">
+                <TrendingUp className="w-5 h-5 mr-3 text-[#2f6cf5]" /> Phân bổ Điểm thưởng (30 Ngày)
+              </h3>
+              <div className="flex items-center gap-4 text-xs font-bold text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-sm bg-[#10b981]" />
+                  <span>Tích lũy</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-sm bg-[#f43f5e]" />
+                  <span>Đổi điểm</span>
+                </div>
+              </div>
+            </div>
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={[
+                    { day: "01/05", earn: 120, burn: 40 },
+                    { day: "05/05", earn: 210, burn: 80 },
+                    { day: "10/05", earn: 300, burn: 150 },
+                    { day: "15/05", earn: 450, burn: 190 },
+                    { day: "20/05", earn: 200, burn: 110 },
+                    { day: "25/05", earn: 340, burn: 200 },
+                    { day: "30/05", earn: 500, burn: 290 },
+                  ]}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.2)" />
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+                  <Tooltip
+                    cursor={{ fill: "hsl(var(--muted)/0.4)" }}
+                    contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "12px", border: "1px solid hsl(var(--border))", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+                  />
+                  <Bar dataKey="earn" name="Tích lũy" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="burn" name="Đổi điểm" fill="#f43f5e" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </div>
+
         {/* COLUMN 1: BALANCE, INFORMATION & SECURITY (LIME MOCKUP STYLE) */}
         <div className="col-span-1 lg:col-span-4 flex flex-col gap-5">
           

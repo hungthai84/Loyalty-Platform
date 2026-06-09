@@ -5,41 +5,31 @@ import {
   Plus,
   Settings as SettingsIcon,
   Star,
-  Clock,
   Shield,
   Database,
   Fingerprint,
   Webhook,
   Key as KeyIcon,
   Activity,
-  GitCompare,
   Gift,
   Check,
-  Mail,
+  Plug,
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
-import { LoyaltySettingsView } from "@/components/loyalty/LoyaltySettingsView";
-import { TierManagementView } from "@/components/loyalty/TierManagementView";
-import { StatusTransitionConfigView } from "@/components/loyalty/StatusTransitionConfigView";
-import { PointRedemptionConfigView } from "@/components/loyalty/PointRedemptionConfigView";
 import { SystemStatusMonitor } from "@/components/layout/SystemStatusMonitor";
-import { CompanyManager } from "@/components/settings/CompanyManager";
+import { IntegrationsManager } from "@/components/settings/IntegrationsManager";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 type SettingsTab =
-  | "companies"
-  | "tiers"
-  | "redemption"
-  | "retention"
-  | "transitions"
-  | "portal"
   | "api"
+  | "portal"
+  | "integrations"
   | "monitor";
 
 export function SettingsView() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>("companies");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("api");
   const [savedTabs, setSavedTabs] = useState<Record<string, boolean>>({});
   const [savingPortal, setSavingPortal] = useState(false);
 
@@ -78,13 +68,9 @@ export function SettingsView() {
   };
 
   const tabs = [
-    { id: "companies", label: "Công ty & Chi nhánh", icon: Building2 },
-    { id: "tiers", label: "Cấp bậc khách hàng", icon: Star },
-    { id: "redemption", label: "Đổi quà ưu đãi", icon: Gift },
-    { id: "retention", label: "Trạng thái & Rủi ro", icon: Clock },
-    { id: "transitions", label: "Luật chuyển trạng thái", icon: GitCompare },
     { id: "api", label: "Kết nối API", icon: Webhook },
     { id: "portal", label: "Tùy chỉnh Cổng Loyalty", icon: Fingerprint },
+    { id: "integrations", label: "Tích hợp ERP/CRM", icon: Plug },
     { id: "monitor", label: "Giám sát Hệ thống", icon: Activity },
   ];
 
@@ -178,31 +164,6 @@ export function SettingsView() {
               transition={{ duration: 0.15 }}
               className="h-full"
             >
-              {activeTab === "companies" && (
-                <div className="max-w-6xl mx-auto pb-12">
-                  <CompanyManager />
-                </div>
-              )}
-              {activeTab === "tiers" && (
-                <div className="max-w-6xl mx-auto">
-                  <TierManagementView />
-                </div>
-              )}
-              {activeTab === "redemption" && (
-                <div className="max-w-6xl mx-auto pb-12">
-                  <PointRedemptionConfigView />
-                </div>
-              )}
-              {activeTab === "retention" && (
-                <div className="max-w-3xl mx-auto">
-                  <LoyaltySettingsView />
-                </div>
-              )}
-              {activeTab === "transitions" && (
-                <div className="max-w-6xl mx-auto pb-12">
-                  <StatusTransitionConfigView />
-                </div>
-              )}
               {activeTab === "api" && (
                 <div className="max-w-4xl mx-auto space-y-6">
                   <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
@@ -383,6 +344,11 @@ export function SettingsView() {
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+              {activeTab === "integrations" && (
+                <div className="max-w-6xl mx-auto pb-12">
+                  <IntegrationsManager />
                 </div>
               )}
               {activeTab === "monitor" && (

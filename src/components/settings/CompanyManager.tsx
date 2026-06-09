@@ -79,6 +79,34 @@ export function CompanyManager() {
     return unsubscribe;
   }, [user]);
 
+  const seedDemoData = async () => {
+    if (!user?.uid || user?.isLocal) return toast.error("Vui lòng đăng nhập để đồng bộ dữ liệu");
+    
+    setLoading(true);
+    try {
+      const { GUEST_COMPANIES } = await import("@/data/guestData");
+      const companiesPath = "companies";
+      
+      for (const comp of GUEST_COMPANIES) {
+        // Simple map from guest data to firestore format
+        const { id, ...data } = comp;
+        const newRef = doc(db, companiesPath, id.startsWith('comp_') ? id : `comp_${Math.random().toString(36).substr(2, 9)}`);
+        await setDoc(newRef, {
+          ...data,
+          userId: user.uid,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+      }
+      
+      toast.success("Đã khởi tạo dữ liệu mẫu thành công");
+    } catch (error: any) {
+      toast.error("Lỗi khởi tạo: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleOpenForm = (company?: Company, isBranchOf?: string) => {
     if (company) {
       setIsEditing(true);
@@ -210,11 +238,17 @@ export function CompanyManager() {
             <span className="text-muted-foreground text-sm">Đang tải...</span>
           </div>
         ) : parentCompanies.length === 0 && branches.length === 0 ? (
-          <div className="text-center py-12">
-            <Building2 className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
-            <p className="text-sm text-muted-foreground">
-              Chưa có công ty nào.
+          <div className="text-center py-12 flex flex-col items-center">
+            <Building2 className="w-12 h-12 text-muted-foreground/20 mb-4" />
+            <p className="text-sm text-muted-foreground mb-6">
+              Chưa có cấu trúc tổ chức nào được thiết lập.
             </p>
+            <button
+              onClick={seedDemoData}
+              className="px-6 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl text-sm font-bold hover:bg-primary/20 transition-all flex items-center gap-2"
+            >
+              <Layers className="w-4 h-4" /> Khởi tạo dữ liệu mẫu (Seva Retail)
+            </button>
           </div>
         ) : (
           <div className="space-y-6">

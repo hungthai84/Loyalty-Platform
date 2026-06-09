@@ -447,9 +447,13 @@ export function AnalysisView() {
  const [aiLoading, setAiLoading] = useState(false);
  const [aiResponse, setAiResponse] = useState<any>(null);
 
+ const [simCustomerId, setSimCustomerId] = useState('SVG-9081');
+ const [aiFocusKeyword, setAiFocusKeyword] = useState("gemstone");
+ const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+ const [aiResult, setAiResult] = useState<any>(null);
+
   // POS Invoice Simulation states
   const [simInvoiceId, setSimInvoiceId] = useState(`POS-${Math.floor(100000 + Math.random() * 900000)}`);
-  const [simCustomerId, setSimCustomerId] = useState('SVG-9081');
   const [simAmount, setSimAmount] = useState(15000000); // default 15 Millions VND
   const [simLoading, setSimLoading] = useState(false);
   const [simLogs, setSimLogs] = useState<{ time: string; type: 'info' | 'success' | 'warning' | 'error'; text: string }[]>([

@@ -40,7 +40,7 @@ export function LoyaltySettingsView() {
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [systemStatusFilter, setSystemStatusFilter] = useState<
-    "all" | "Active" | "Pending" | "Deactive"
+    "all" | "New" | "Active" | "Suspended" | "Inactive"
   >("all");
   const [selectedStatusId, setSelectedStatusId] = useState<string>("ACTIVE");
 
@@ -236,7 +236,7 @@ export function LoyaltySettingsView() {
               Trạng thái Khách hàng
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Dựa theo tài liệu đặc tả cấu trúc hệ thống gồm 14 trạng thái phân
+              Dựa theo tài liệu đặc tả cấu trúc hệ thống gồm 15 trạng thái phân
               loại chi tiết.
             </p>
           </div>
@@ -254,7 +254,7 @@ export function LoyaltySettingsView() {
             </div>
 
             <div className="flex gap-1 p-1 bg-muted/40 rounded-xl">
-              {(["all", "Active", "Pending", "Deactive"] as const).map(
+              {(["all", "New", "Active", "Suspended", "Inactive"] as const).map(
                 (tab) => (
                   <button
                     key={tab}
@@ -309,9 +309,11 @@ export function LoyaltySettingsView() {
                           className={`w-3 h-3 rounded-full ${
                             status.systemStatus === "Active"
                               ? "bg-emerald-500"
-                              : status.systemStatus === "Pending"
-                                ? "bg-amber-500"
-                                : "bg-red-500"
+                              : status.systemStatus === "New"
+                                ? "bg-blue-500"
+                                : status.systemStatus === "Suspended"
+                                  ? "bg-amber-500"
+                                  : "bg-red-500"
                           } shrink-0`}
                         />
                         <div>
@@ -461,9 +463,11 @@ export function LoyaltySettingsView() {
                       className={`font-extrabold ${
                         activeSelectedStatus.systemStatus === "Active"
                           ? "text-emerald-500"
-                          : activeSelectedStatus.systemStatus === "Pending"
-                            ? "text-amber-500"
-                            : "text-rose-500"
+                          : activeSelectedStatus.systemStatus === "New"
+                            ? "text-blue-500"
+                            : activeSelectedStatus.systemStatus === "Suspended"
+                              ? "text-amber-500"
+                              : "text-rose-500"
                       }`}
                     >
                       {activeSelectedStatus.systemStatus}
@@ -476,7 +480,9 @@ export function LoyaltySettingsView() {
                 >
                   {activeSelectedStatus.systemStatus === "Active" ? (
                     <HeartPulse className="w-5 h-5" />
-                  ) : activeSelectedStatus.systemStatus === "Pending" ? (
+                  ) : activeSelectedStatus.systemStatus === "New" ? (
+                    <Sparkles className="w-5 h-5" />
+                  ) : activeSelectedStatus.systemStatus === "Suspended" ? (
                     <AlertCircle className="w-5 h-5" />
                   ) : (
                     <ShieldAlert className="w-5 h-5" />

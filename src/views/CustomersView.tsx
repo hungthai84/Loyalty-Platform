@@ -8,7 +8,7 @@ import * as motion from "motion/react-client";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy, doc, writeBatch, serverTimestamp, where } from "firebase/firestore";
-import { Customer, AttributeDefinition, Company } from "@/types";
+import { Customer, AttributeDefinition, Company, TierConfig } from "@/types";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
 import { AddCustomerDialog } from "@/components/customers/AddCustomerDialog";
 import { ImportCustomersDialog } from "@/components/customers/ImportCustomersDialog";
@@ -49,6 +49,7 @@ export function CustomersView() {
  const [customers, setCustomers] = useState<Customer[]>([]);
  const [attributes, setAttributes] = useState<AttributeDefinition[]>([]);
  const [companies, setCompanies] = useState<Company[]>([]);
+ const [tierConfigs, setTierConfigs] = useState<TierConfig[]>([]);
  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("all");
  const [selectedStatus, setSelectedStatus] = useState<string>("all");
  const [selectedTier, setSelectedTier] = useState<string>("all");
@@ -155,10 +156,20 @@ export function CustomersView() {
   setCompanies(getGuestCompanies());
  });
 
+ const qTiers = query(collection(db, "tier_configs"), orderBy("threshold", "asc"));
+ const unsubTiers = onSnapshot(qTiers, (snapshot) => {
+  if (!snapshot.empty) {
+   setTierConfigs(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as TierConfig)));
+  }
+ }, (error) => {
+  console.error("Firestore error for tiers:", error);
+ });
+
  return () => {
  unsubCustomers();
  unsubAttrs();
  unsubCompanies();
+ unsubTiers();
  };
  }, [user, forceOffline]);
 
@@ -513,6 +524,7 @@ export function CustomersView() {
  userId={user?.uid || "guest"}
  companies={companies}
  attributes={attributes}
+ tierConfigs={tierConfigs}
  onBack={() => setSelectedCustomer(null)}
  />
  ) : (
