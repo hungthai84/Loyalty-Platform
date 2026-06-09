@@ -96,29 +96,40 @@ export function CrossBranchAnalysis({ customers, companies, attributes }: Props)
  <p className="text-xs text-muted-foreground mt-1">Các chi nhánh có khách hàng khớp giá trị hoàn toàn ở TẤT CẢ các trường được chọn dưới đây sẽ được nhóm lại.</p>
  </div>
 
- <div className="flex flex-wrap gap-2">
- {allFields.map(field => {
- const isSelected = selectedFields.includes(field.key);
- return (
- <button
- key={field.key}
- onClick={() => toggleField(field.key)}
- className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
- isSelected 
- ? 'bg-primary/10 border-primary/30 text-primary' 
- : 'bg-background border-border text-muted-foreground hover:border-primary/20 hover:bg-muted'
- }`}
+ <div className="relative">
+ <select
+ multiple
+ value={selectedFields}
+ onChange={(e) => {
+ const options = Array.from(e.target.selectedOptions, option => option.value);
+ setSelectedFields(options);
+ setAnalyzed(false);
+ }}
+ className="w-full bg-muted/50 border border-border rounded-lg text-sm p-2 outline-none focus:border-primary/50 min-h-[140px]"
  >
- <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${isSelected ? 'bg-primary border-primary text-white' : 'border-current'}`}>
- {isSelected && <Check className="w-2.5 h-2.5" />}
- </div>
- {field.label}
- </button>
- );
- })}
+ {allFields.map(field => (
+ <option key={field.key} value={field.key} className="p-1.5 hover:bg-background rounded cursor-pointer">
+ {field.label} {selectedFields.includes(field.key) ? '✓' : ''}
+ </option>
+ ))}
+ </select>
+ <p className="text-[10px] text-muted-foreground mt-1">Giữ phím Ctrl (hoặc Cmd) để chọn nhiều trường. Những ô bắt buộc chọn được tô xám.</p>
  </div>
 
- <div className="flex justify-end pt-2">
+ <div className="flex justify-end pt-2 gap-3">
+ <button
+ onClick={() => {
+ const toastElement = document.createElement('div');
+ toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
+ toastElement.innerHTML = `<div class="text-xs font-bold text-foreground">Lưu kết quả phân tích trùng lặp chi nhánh thành công!</div>`;
+ document.body.appendChild(toastElement);
+ setTimeout(() => document.body.removeChild(toastElement), 3000);
+ }}
+ className="px-6 py-2 bg-muted text-foreground border border-border font-bold rounded-xl shadow-sm hover:bg-muted/80 transition-all text-sm flex items-center gap-2"
+ >
+ <Check className="w-4 h-4" />
+ Lưu lại
+ </button>
  <button
  onClick={() => setAnalyzed(true)}
  disabled={selectedFields.length === 0}

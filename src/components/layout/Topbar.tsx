@@ -1,14 +1,7 @@
-import { Bell, Search, Menu, Sun, Moon, Monitor, X, AlertTriangle, Sparkles, CheckCircle2 } from "lucide-react";
+import { Bell, Search, Menu, X, AlertTriangle, Sparkles, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useFirebase } from "@/components/FirebaseProvider";
-import { useTheme } from "next-themes";
 import React, { useState, useRef, useEffect } from "react";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface SystemNotification {
  id: string;
@@ -25,7 +18,6 @@ interface TopbarProps {
 
 export function Topbar({ setActiveView }: TopbarProps) {
  const { user, logout } = useFirebase();
- const { setTheme, theme } = useTheme();
  const [showNotifications, setShowNotifications] = useState(false);
  const notificationRef = useRef<HTMLDivElement>(null);
 
@@ -49,7 +41,7 @@ export function Topbar({ setActiveView }: TopbarProps) {
  {
  id: "alert-3",
  type: "info",
- title: "Giao diện Zimbra kích hoạt",
+ title: "Chăm sóc khách hàng tự động",
  description: "Cấu hình gửi email tự động mừng sinh nhật đã sẵn sàng.",
  time: "1 ngày trước",
  read: true
@@ -94,101 +86,77 @@ export function Topbar({ setActiveView }: TopbarProps) {
  type="search"
  placeholder="Tìm kiếm mọi thứ..."
  className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px] bg-muted/30 border-none focus-visible:ring-1"
- />
- </div>
- </form>
+  />
+  </div>
+  </form>
 
- <DropdownMenu>
- <DropdownMenuTrigger className="rounded-full flex h-8 w-8 items-center justify-center bg-muted/30 text-muted-foreground hover:text-foreground transition-all">
- <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
- <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
- <span className="sr-only">Chuyển đổi giao diện</span>
- </DropdownMenuTrigger>
- <DropdownMenuContent align="end" className="glass">
- <DropdownMenuItem onClick={() => setTheme("light")} className="flex items-center gap-2">
- <Sun className="h-4 w-4" /> Sáng
- </DropdownMenuItem>
- <DropdownMenuItem onClick={() => setTheme("dark")} className="flex items-center gap-2">
- <Moon className="h-4 w-4" /> Tối
- </DropdownMenuItem>
- <DropdownMenuItem onClick={() => setTheme("system")} className="flex items-center gap-2">
- <Monitor className="h-4 w-4" /> Hệ thống
- </DropdownMenuItem>
- </DropdownMenuContent>
- </DropdownMenu>
+  <div className="relative" ref={notificationRef}>
+  <button 
+  onClick={() => setShowNotifications(!showNotifications)}
+  className="relative rounded-full flex h-8 w-8 items-center justify-center bg-muted/30 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+  >
+  <Bell className="h-4 w-4" />
+  {unreadCount > 0 && (
+  <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 rounded-full bg-rose-500 text-xs font-black text-white px-1 flex items-center justify-center animate-pulse">
+  {unreadCount}
+  </span>
+  )}
+  </button>
 
- <div className="relative" ref={notificationRef}>
- <button 
- onClick={() => setShowNotifications(!showNotifications)}
- className="relative rounded-full flex h-8 w-8 items-center justify-center bg-muted/30 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
- >
- <Bell className="h-4 w-4" />
- {unreadCount > 0 && (
- <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 rounded-full bg-rose-500 text-xs font-black text-white px-1 flex items-center justify-center animate-pulse">
- {unreadCount}
- </span>
- )}
- </button>
+  {showNotifications && (
+  <div className="absolute right-0 top-11 w-80 sm:w-96 rounded-2xl border border-border/80 bg-background/95 backdrop-blur-md shadow-2xl p-4 z-[100] text-xs text-foreground animate-fadeIn">
+  <div className="flex items-center justify-between border-b border-border/60 pb-2 mb-2">
+  <span className="font-bold uppercase tracking-wider text-muted-foreground text-xs">Thông báo hệ thống</span>
+  {unreadCount > 0 && (
+  <button 
+  onClick={markAllRead} 
+  className="text-xs text-primary hover:underline font-bold"
+  >
+  Đánh dấu tất cả là đã đọc
+  </button>
+  )}
+  </div>
 
- {showNotifications && (
- <div className="absolute right-0 top-11 w-80 sm:w-96 rounded-2xl border border-border/80 bg-background/95 backdrop-blur-md shadow-2xl p-4 z-[100] text-xs text-foreground animate-fadeIn">
- <div className="flex items-center justify-between border-b border-border/60 pb-2 mb-2">
- <span className="font-bold uppercase tracking-wider text-muted-foreground text-xs">Thông báo hệ thống</span>
- {unreadCount > 0 && (
- <button 
- onClick={markAllRead} 
- className="text-xs text-primary hover:underline font-bold"
- >
- Đánh dấu tất cả là đã đọc
- </button>
- )}
- </div>
+  <div className="space-y-2 max-h-80 overflow-y-auto custom-scrollbar pr-1 divide-y divide-border/45">
+  {notifications.length === 0 ? (
+  <div className="py-8 text-center text-muted-foreground italic">Chưa có thông báo mới nào.</div>
+  ) : (
+  notifications.map((notif, i) => (
+  <div 
+  key={notif.id} 
+  onClick={() => toggleRead(notif.id)}
+  className={`pt-2 flex gap-3 transition-colors cursor-pointer group rounded-lg p-1.5 ${
+  notif.read ? "opacity-60 hover:opacity-100" : "bg-primary/5 hover:bg-primary/10"
+  }`}
+  >
+  <div className="mt-0.5 animate-pulse">
+  {notif.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+  {notif.type === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-500" />}
+  {notif.type === 'info' && <Sparkles className="w-4 h-4 text-[#2f6cf5]" />}
+  </div>
+  
+  <div className="flex-1 space-y-1">
+  <div className="flex items-center justify-between">
+  <span className={`font-bold transition-transform ${!notif.read ? "text-[#2f6cf5]" : ""}`}>{notif.title}</span>
+  <span className="text-xs text-muted-foreground shrink-0">{notif.time}</span>
+  </div>
+  <p className="text-muted-foreground text-xs leading-relaxed">{notif.description}</p>
+  </div>
 
- <div className="space-y-2 max-h-80 overflow-y-auto custom-scrollbar pr-1 divide-y divide-border/45">
- {notifications.length === 0 ? (
- <div className="py-8 text-center text-muted-foreground italic">Chưa có thông báo mới nào.</div>
- ) : (
- notifications.map((notif, i) => (
- <div 
- key={notif.id} 
- onClick={() => toggleRead(notif.id)}
- className={`pt-2 flex gap-3 transition-colors cursor-pointer group rounded-lg p-1.5 ${
- notif.read ? "opacity-60 hover:opacity-100" : "bg-primary/5 hover:bg-primary/10"
- }`}
- >
- <div className="mt-0.5 animate-pulse">
- {notif.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
- {notif.type === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-500" />}
- {notif.type === 'info' && <Sparkles className="w-4 h-4 text-[#2f6cf5]" />}
- </div>
- 
- <div className="flex-1 space-y-1">
- <div className="flex items-center justify-between">
- <span className={`font-bold transition-transform ${!notif.read ? "text-[#2f6cf5]" : ""}`}>{notif.title}</span>
- <span className="text-xs text-muted-foreground shrink-0">{notif.time}</span>
- </div>
- <p className="text-muted-foreground text-xs leading-relaxed">{notif.description}</p>
- </div>
-
- <button 
- onClick={(e) => removeNotification(notif.id, e)}
- className="text-muted-foreground/30 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded cursor-pointer"
- >
- <X className="w-3.5 h-3.5" />
- </button>
- </div>
- ))
- )}
- </div>
- </div>
- )}
- </div>
-
-  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20">
-    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-    <span className="text-[11px] font-black uppercase tracking-tighter text-primary">System Admin</span>
+  <button 
+  onClick={(e) => removeNotification(notif.id, e)}
+  className="text-muted-foreground/30 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded cursor-pointer"
+  >
+  <X className="w-3.5 h-3.5" />
+  </button>
+  </div>
+  ))
+  )}
   </div>
   </div>
-  </header>
- );
+  )}
+  </div>
+   </div>
+   </header>
+  );
 }

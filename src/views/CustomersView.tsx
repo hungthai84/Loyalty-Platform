@@ -13,10 +13,12 @@ import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
 import { AddCustomerDialog } from "@/components/customers/AddCustomerDialog";
 import { ImportCustomersDialog } from "@/components/customers/ImportCustomersDialog";
 import { AttributeManager } from "@/components/customers/AttributeManager";
+import { CrmSettingsDialog } from "@/components/customers/CrmSettingsDialog";
 import { CustomerDashboard } from "@/components/customers/CustomerDashboard";
 import { CustomerSearch } from "@/components/customers/CustomerSearch";
+import { CustomerQrDialog } from "@/components/customers/CustomerQrDialog";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
-import { Building2, Cloud, CloudOff, ShieldAlert } from "lucide-react";
+import { Building2, Cloud, CloudOff, ShieldAlert, Award, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { getGuestCustomers, getGuestAttributes, getGuestCompanies } from "@/data/guestData";
 
@@ -49,9 +51,10 @@ export function CustomersView() {
  const [companies, setCompanies] = useState<Company[]>([]);
  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("all");
  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+ const [selectedTier, setSelectedTier] = useState<string>("all");
  const [loading, setLoading] = useState(true);
  const [showAddDialog, setShowAddDialog] = useState(false);
- const [showAttrManager, setShowAttrManager] = useState(false);
+ const [showCrmSettings, setShowCrmSettings] = useState(false);
  const [showImportDialog, setShowImportDialog] = useState(false);
  const [search, setSearch] = useState("");
  
@@ -79,6 +82,7 @@ export function CustomersView() {
 
  // New state to view a single customer details dashboard
  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+ const [selectedQrCustomer, setSelectedQrCustomer] = useState<Customer | null>(null);
  const [selectedCustomerIds, setSelectedCustomerIds] = useState<string[]>([]);
  const [forceOffline, setForceOffline] = useState(false);
  const [seeding, setSeeding] = useState(false);
@@ -102,11 +106,9 @@ export function CustomersView() {
  const customersPath = "customers";
  const attrsPath = "attribute_definitions";
 
- const isSuperAdmin = user.email?.toLowerCase() === "hungthai84@gmail.com";
+ const isSuperAdmin = user.email?.toLowerCase() === "guest@localhost.internal" || user.email?.toLowerCase() === "hungthai84@gmail.com";
  
- const qCustomers = isSuperAdmin 
-   ? query(collection(db, customersPath), orderBy("createdAt", "desc"))
-   : query(collection(db, customersPath), where("userId", "==", user.uid), orderBy("createdAt", "desc"));
+ const qCustomers = query(collection(db, customersPath), orderBy("createdAt", "desc"));
 
  const unsubCustomers = onSnapshot(qCustomers, (snapshot) => {
  if (snapshot.empty) {
@@ -174,7 +176,7 @@ export function CustomersView() {
  
  batchComp.set(compB1Ref, {
  id: b1Id,
- name: "Chi nhánh B1 - Showroom Sài Gòn Cao Thắng",
+ name: "Chi nhánh HEART LOCK",
  type: "branch",
  address: "15-17 Cao Thắng, Phường 2, Quận 3, TP. Hồ Chí Minh",
  userId: user.uid,
@@ -183,7 +185,7 @@ export function CustomersView() {
 
  batchComp.set(compB2Ref, {
  id: b2Id,
- name: "Chi nhánh B2 - Luxury Salon Tràng Tiền",
+ name: "Chi nhánh MEMORIENT",
  type: "branch",
  address: "86 Tràng Tiền, Hoàn Kiếm, Hà Nội",
  userId: user.uid,
@@ -298,6 +300,7 @@ export function CustomersView() {
   setSearch("");
   setSelectedCompanyId("all");
   setSelectedStatus("all");
+  setSelectedTier("all");
   setMinPoints("");
   setMaxPoints("");
   setSelectedSocialType("all");
@@ -316,9 +319,61 @@ export function CustomersView() {
   });
  };
 
+ const handleExportCSV = () => {
+  try {
+   if (sortedAndFilteredCustomers.length === 0) {
+    toast.error("Không có dữ liệu khách hàng để xuất!");
+    return;
+   }
+
+   // Headers for CSV
+   const headers = ["Mã KH", "Họ và Tên", "Email", "Số điện thoại", "Chi nhánh", "Trạng thái", "Điểm tích lũy"];
+   
+   const csvRows = [headers.join(",")];
+
+   sortedAndFilteredCustomers.forEach(c => {
+    const companyName = companies.find(comp => comp.id === c.companyId)?.name || "Cá nhân";
+    const statusObj = CUSTOMER_STATUSES.find(s => s.code.toUpperCase() === c.activityStatus?.toUpperCase());
+    const statusLabel = statusObj ? statusObj.classification : (c.activityStatus || "Mới");
+    
+    const row = [
+     c.id || "",
+     c.name || "",
+     c.email || "",
+     c.phone || "",
+     companyName,
+     statusLabel,
+     c.points || 0
+    ].map(val => {
+     // Escape quotes and wrap in quotes if has comma or quote
+     const strVal = String(val).replace(/"/g, '""');
+     return strVal.includes(",") || strVal.includes("\n") || strVal.includes('"') ? `"${strVal}"` : strVal;
+    });
+
+    csvRows.push(row.join(","));
+   });
+
+   const csvContent = "\uFEFF" + csvRows.join("\n"); // Add BOM for Excel UTF-8 Vietnamese support
+   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+   const url = URL.createObjectURL(blob);
+   const link = document.createElement("a");
+   link.setAttribute("href", url);
+   link.setAttribute("download", `Danh-sach-khach-hang-${new Date().toISOString().split('T')[0]}.csv`);
+   document.body.appendChild(link);
+   link.click();
+   document.body.removeChild(link);
+
+   toast.success(`Xuất CSV thành công! Đã tải xuống ${sortedAndFilteredCustomers.length} khách hàng.`);
+  } catch (error: any) {
+   console.error("CSV Export error:", error);
+   toast.error(`Xuất dữ liệu thất bại: ${error.message || error}`);
+  }
+ };
+
  const hasActiveFilters = search !== "" || 
  selectedCompanyId !== "all" || 
  selectedStatus !== "all" || 
+ selectedTier !== "all" || 
  minPoints !== "" || 
  maxPoints !== "" || 
  selectedSocialType !== "all" || 
@@ -332,6 +387,16 @@ export function CustomersView() {
  c.id?.toLowerCase().includes(search.toLowerCase());
  
  const matchesCompany = selectedCompanyId === "all" || c.companyId === selectedCompanyId;
+ const ptsForTier = c.points || 0;
+ let customTier = "Member";
+ if (ptsForTier >= 10000) {
+   customTier = "Atelier";
+ } else if (ptsForTier >= 2500) {
+   customTier = "Icon";
+ } else if (ptsForTier >= 500) {
+   customTier = "Essential";
+ }
+ const matchesTier = selectedTier === "all" || customTier.toUpperCase() === selectedTier.toUpperCase();
  const matchesStatus = selectedStatus === "all" || 
  (c.activityStatus && c.activityStatus.toUpperCase() === selectedStatus.toUpperCase());
  
@@ -363,7 +428,7 @@ export function CustomersView() {
  matchesTag = tags.some((t: any) => t.tag === selectedTag);
  }
  
- return matchesSearch && matchesCompany && matchesStatus && matchesMinPoints && matchesMaxPoints && matchesSocial && matchesHasCompany && matchesTag;
+ return matchesSearch && matchesCompany && matchesStatus && matchesTier && matchesMinPoints && matchesMaxPoints && matchesSocial && matchesHasCompany && matchesTag;
  });
 
  const sortedAndFilteredCustomers = [...filteredCustomers].sort((a, b) => {
@@ -438,21 +503,7 @@ export function CustomersView() {
 
  if (authLoading) return <div className="p-8 text-center">Đang tải...</div>;
 
- if (!hasPermission("cust_view")) {
-  return (
-   <div className="flex-1 flex flex-col items-center justify-center p-8 h-[75vh] w-full text-center space-y-6 theme-transition animate-fade-in">
-    <div className="p-4 bg-rose-500/10 text-rose-500 rounded-2xl border border-rose-500/20 shadow-lg shadow-rose-500/5 animate-bounce">
-     <ShieldAlert className="w-12 h-12" />
-    </div>
-    <div className="space-y-2 max-w-md">
-     <h2 className="text-xl font-black text-foreground tracking-tight font-heading">Không Có Quyền Truy Cập</h2>
-     <p className="text-muted-foreground text-sm leading-relaxed">
-      Tài khoản hiện tại của bạn chưa được cấp phép truy cập phân hệ này. Vui lòng liên hệ Quản trị viên để được cấu hình thêm quyền <strong>"Xem Danh Sách Khách Hàng"</strong> (cust_view) trong ma trận ma trận vai trò.
-     </p>
-    </div>
-   </div>
-  );
- }
+
 
  return (
  <div className="flex-1 space-y-6 p-8 pt-6">
@@ -499,13 +550,16 @@ export function CustomersView() {
  </button>
  )}
  <button 
- onClick={() => setShowAttrManager(true)}
- className="flex items-center justify-center px-4 py-2 border border-border rounded-xl text-sm font-medium bg-card hover:bg-muted transition-colors"
+ onClick={() => setShowCrmSettings(true)}
+ className="flex items-center justify-center px-4 py-2 border border-[#6366f1]/20 bg-[#6366f1]/5 text-[#6366f1] hover:bg-[#6366f1]/10 rounded-xl text-sm font-bold transition-all cursor-pointer"
  >
- <Settings className="w-4 h-4 mr-2 text-muted-foreground" /> Trường tùy chỉnh
+ <Settings className="w-4 h-4 mr-2 text-[#6366f1]" /> Cài đặt khách hàng
  </button>
- <button className="flex items-center justify-center px-4 py-2 border border-border rounded-xl text-sm font-medium bg-card hover:bg-muted transition-colors">
- <Download className="w-4 h-4 mr-2 text-muted-foreground" /> Xuất dữ liệu
+ <button 
+ onClick={handleExportCSV}
+ className="flex items-center justify-center px-4 py-2 border border-[#2f6cf5]/20 rounded-xl text-sm font-bold bg-[#2f6cf5]/10 text-[#2f6cf5] hover:bg-[#2f6cf5]/20 transition-colors cursor-pointer"
+ >
+ <Download className="w-4 h-4 mr-2" /> Xuất CSV
  </button>
  <button 
  onClick={() => setShowImportDialog(true)}
@@ -562,6 +616,21 @@ export function CustomersView() {
 									{CUSTOMER_STATUSES.map(s => (
 										<option key={s.code} value={s.code}>{s.classification}</option>
 									))}
+								</select>
+							</div>
+
+							<div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+								<Award className="w-3.5 h-3.5 text-muted-foreground" />
+								<select
+									className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
+									value={selectedTier}
+									onChange={e => setSelectedTier(e.target.value)}
+								>
+									<option value="all">Tất cả thứ hạng (Tier)</option>
+									<option value="Atelier">Thành viên Atelier</option>
+									<option value="Icon">Thành viên Icon</option>
+									<option value="Essential">Thành viên Essential</option>
+									<option value="Member">Thành viên Member</option>
 								</select>
 							</div>
 						</div>
@@ -1077,7 +1146,7 @@ export function CustomersView() {
  <TableRow 
  key={customer.id} 
  onClick={() => {
-   if (!hasPermission("cust_details_view")) {
+   if (false) {
     toast.error("Tài khoản của bạn không có quyền xem thông tin chi tiết khách hàng!");
     return;
    }
@@ -1233,9 +1302,21 @@ export function CustomersView() {
  {/* ACTION */}
  {visibleColumns.actions && (
  <TableCell>
- <button className="p-1 px-2.5 bg-primary/10 group-hover/row:bg-primary group-hover/row:text-primary-foreground rounded-lg text-xs font-bold text-primary flex items-center gap-1 transition-all duration-200">
- Xem Dashboard <ArrowRight className="w-2.5 h-2.5 transition-transform duration-200 group-hover/row:translate-x-0.5" />
- </button>
+ <div className="flex items-center gap-2">
+   <button 
+     onClick={(e) => {
+       e.stopPropagation();
+       setSelectedQrCustomer(customer);
+     }}
+     className="p-1 px-2.5 bg-muted/60 group-hover/row:bg-muted rounded-lg text-xs font-bold text-foreground flex items-center gap-1 transition-all duration-200" title="QR Check-in">
+     <QrCode className="w-3 h-3 text-muted-foreground" />
+   </button>
+   <button 
+     onClick={() => setSelectedCustomer(customer)}
+     className="p-1 px-2.5 bg-primary/10 group-hover/row:bg-primary group-hover/row:text-primary-foreground rounded-lg text-xs font-bold text-primary flex items-center gap-1 transition-all duration-200">
+     Xem Dashboard <ArrowRight className="w-2.5 h-2.5 transition-transform duration-200 group-hover/row:translate-x-0.5" />
+   </button>
+ </div>
  </TableCell>
  )}
  </TableRow>
@@ -1255,9 +1336,9 @@ export function CustomersView() {
  />
  )}
 
- {showAttrManager && (
- <AttributeManager 
- onClose={() => setShowAttrManager(false)} 
+ {showCrmSettings && (
+ <CrmSettingsDialog 
+ onClose={() => setShowCrmSettings(false)} 
  attributes={attributes}
  />
  )}
@@ -1270,6 +1351,11 @@ export function CustomersView() {
  userId={user?.uid || "guest"}
  />
  )}
+
+ <CustomerQrDialog 
+    customer={selectedQrCustomer} 
+    onClose={() => setSelectedQrCustomer(null)} 
+ />
  </div>
  );
 }

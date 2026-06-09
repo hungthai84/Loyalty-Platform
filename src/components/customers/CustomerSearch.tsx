@@ -28,7 +28,7 @@ export function CustomerSearch({ customers, onSelectCustomer, value, onChange }:
   const searchResults = customers.filter(c => {
     if (!value) return false;
     const q = value.toLowerCase();
-    return c.name?.toLowerCase().includes(q) || c.id?.toLowerCase().includes(q);
+    return c.name?.toLowerCase().includes(q) || c.id?.toLowerCase().includes(q) || c.phone?.toLowerCase().includes(q);
   }).slice(0, 5); // Show top 5 matches
 
   const handleSelect = (customer: Customer) => {
@@ -44,7 +44,7 @@ export function CustomerSearch({ customers, onSelectCustomer, value, onChange }:
       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         type="search"
-        placeholder="Tìm kiếm nhanh KH (Họ tên, Mã KH)..."
+        placeholder="Tìm kiếm danh sách khách hàng (Họ tên, SĐT, Mã KH)..."
         className="pl-8 bg-background h-9 text-xs font-semibold"
         value={value}
         onChange={e => {

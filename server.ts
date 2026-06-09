@@ -73,20 +73,6 @@ async function startServer() {
     }
   });
 
-  // Secure Proxy API for SMTP Email Actions
-  app.post("/api/zimbra/test", async (req, res) => {
-    try {
-      // Simulate sending email since integration was removed
-      await new Promise(resolve => setTimeout(resolve, 800));
-      return res.json({ success: true, message: "Đã gửi email kiểm tra (mô phỏng) thành công!" });
-    } catch (err: any) {
-      return res.status(500).json({
-        success: false,
-        message: `Lỗi mô phỏng máy chủ: ${err.message}`
-      });
-    }
-  });
-
   // POS Orders Gateway
   app.post("/api/pos/orders", async (req, res) => {
     try {

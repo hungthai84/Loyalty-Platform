@@ -29,7 +29,7 @@ function AppContent() {
   const safeActiveView = activeView;
 
   return (
-    <div className="h-full w-full flex bg-white dark:bg-[#10141f] rounded-[10px] overflow-hidden shadow-[0_18px_60px_-15px_rgba(15,23,42,0.15)] border border-[#eef1f6]/60 dark:border-white/5 relative selection:bg-[#fa1b6c]/10">
+    <div className="h-full w-full flex bg-background rounded-2xl overflow-hidden shadow-[0_45px_120px_-15px_rgba(0,0,0,0.95),_0_0_80px_rgba(255,255,255,0.035)] border-2 border-black dark:border-white relative selection:bg-[#eb7a2e]/10">
       <Sidebar 
         className="hidden md:flex shrink-0" 
         activeView={safeActiveView} 
@@ -67,10 +67,8 @@ function AppContent() {
 export default function App() {
   return (
     <FirebaseProvider>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <div className="h-screen w-screen p-[5px] overflow-hidden relative theme-transition">
-          {/* Gorgeous Uiverse.io Soft Pastel Rotating Glow Background */}
-          <div className="uiverse-container" />
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <div className="h-screen w-screen p-[5px] overflow-hidden relative theme-transition bg-black">
           <AppContent />
         </div>
         <Toaster />

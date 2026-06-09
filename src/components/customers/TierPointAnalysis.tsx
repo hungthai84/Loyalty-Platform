@@ -9,12 +9,16 @@ import {
   Medal,
   Award,
   Crown,
-  Star
+  Star,
+  Sparkles,
+  CheckCircle2,
+  Gift
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 const TIERS = [
   { id: 'member', name: 'Member', icon: Star, color: 'text-zinc-500', bg: 'bg-zinc-100', req: '0 - 1.49m', multiplier: 1.0 },
@@ -27,6 +31,70 @@ export function TierPointAnalysis() {
   const [baseCashbackPercent, setBaseCashbackPercent] = useState<number>(1);
   const [aov, setAov] = useState<number>(750000);
   const [pointScale, setPointScale] = useState<number>(10000); // 1 point = ? VND spent
+  const [simSpent, setSimSpent] = useState<string>("120000000");
+
+  const calculateSimulatedTier = (spentVal: number) => {
+    if (spentVal >= 1000000000) {
+      return {
+        name: "Atelier",
+        color: "#2f6cf5",
+        multiplier: "2.0x",
+        badgeColor: "bg-[#2f6cf5]/15 text-[#2f6cf5]",
+        benefits: [
+          "Bao gồm tất cả quyền lợi của hạng Icon",
+          "Thiết kế trang sức độc bản",
+          "Dịch vụ Spa trang sức trọn đời",
+          "Limousine đưa đón mua sắm"
+        ],
+        nextThreshold: "Cao nhất",
+        remainingToNext: 0
+      };
+    } else if (spentVal >= 250000000) {
+      return {
+        name: "Icon",
+        color: "#f59e0b",
+        multiplier: "1.5x",
+        badgeColor: "bg-[#f59e0b]/15 text-[#f59e0b]",
+        benefits: [
+          "Bao gồm tất cả quyền lợi của hạng Essential",
+          "Có stylist tư vấn riêng 1-1",
+          "Tham dự Private Event",
+          "Phiếu mua hàng tự động hàng quý"
+        ],
+        nextThreshold: "1.000.000.000 đ",
+        remainingToNext: 1000000000 - spentVal
+      };
+    } else if (spentVal >= 50000000) {
+      return {
+        name: "Essential",
+        color: "#10b981",
+        multiplier: "1.25x",
+        badgeColor: "bg-[#10b981]/15 text-[#10b981]",
+        benefits: [
+          "Bao gồm tất cả quyền lợi của hạng Member",
+          "Ưu tiên mua các sản phẩm limited",
+          "Miễn phí giao hàng toàn quốc",
+          "Quà tặng sinh nhật cao cấp"
+        ],
+        nextThreshold: "250.000.000 đ",
+        remainingToNext: 250000000 - spentVal
+      };
+    } else {
+      return {
+        name: "Member",
+        color: "#94a3b8",
+        multiplier: "1.0x",
+        badgeColor: "bg-muted text-muted-foreground",
+        benefits: [
+          "Tích lũy 1% giá trị hóa đơn quy thành điểm chi tiêu",
+          "Nhận thông tin sớm nhất về các BST giới hạn ra mắt hàng tháng",
+          "Nhận thiệp chúc mừng thiết kế tinh xảo kèm quà tặng lưu niệm từ Seva"
+        ],
+        nextThreshold: "50.000.000 đ",
+        remainingToNext: 50000000 - spentVal
+      };
+    }
+  };
 
   const analysis = useMemo(() => {
     // Value of 1 point based on base cash back
@@ -75,7 +143,7 @@ export function TierPointAnalysis() {
                   type="number" 
                   value={baseCashbackPercent} 
                   onChange={(e) => setBaseCashbackPercent(Number(e.target.value) || 0)} 
-                  className="font-mono"
+                  className="font-mono bg-muted"
                   step="0.5"
                   min="0"
                 />
@@ -97,7 +165,7 @@ export function TierPointAnalysis() {
                   type="number" 
                   value={aov} 
                   onChange={(e) => setAov(Number(e.target.value) || 0)} 
-                  className="font-mono pr-12"
+                  className="font-mono pr-12 bg-muted"
                   step="50000"
                   min="0"
                 />
@@ -117,7 +185,7 @@ export function TierPointAnalysis() {
                     type="number" 
                     value={pointScale} 
                     onChange={(e) => setPointScale(Number(e.target.value) || 0)} 
-                    className="font-mono"
+                    className="font-mono bg-muted"
                     step="1000"
                     min="1000"
                   />
@@ -134,6 +202,22 @@ export function TierPointAnalysis() {
                 Với mức chi tiêu <strong>{pointScale.toLocaleString()}đ</strong>, khách hàng được tặng <strong>1 điểm</strong>. <br/>
                 Giá trị của 1 điểm tương đương <strong>{((pointScale * baseCashbackPercent) / 100).toLocaleString()}đ</strong> (mức Member).
               </p>
+            </div>
+
+            <div className="pt-4 flex justify-end">
+              <button 
+                onClick={() => {
+                  const toastElement = document.createElement('div');
+                  toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
+                  toastElement.innerHTML = `<div class="text-xs font-bold text-foreground">Lưu cấu hình phân tích hạng & điểm thành công!</div>`;
+                  document.body.appendChild(toastElement);
+                  setTimeout(() => document.body.removeChild(toastElement), 3000);
+                }}
+                className="w-full px-6 py-2.5 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow flex items-center justify-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent"
+              >
+                <Calculator className="w-4 h-4" />
+                Lưu định dạng tính toán
+              </button>
             </div>
           </CardContent>
         </Card>
@@ -215,6 +299,114 @@ export function TierPointAnalysis() {
               Với khách Atelier, trải nghiệm ưu đãi hoàn tiền <strong>{analysis[3].tierCashbackPercent.toFixed(1)}%</strong> là cực kỳ hấp dẫn, biến họ thành người ủng hộ thương hiệu (Brand Advocate).
             </p>
           </CardContent>
+        </Card>
+
+        {/* 1. MÔ PHỎNG CẤU TRÚC PHÂN HẠNG SEVA CLUB (DEMO) */}
+        <Card className="p-6 border border-[#2f6cf5]/20 bg-[#2f6cf5]/5 rounded-3xl mt-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+            <div>
+              <h4 className="font-bold text-lg flex items-center gap-2 text-[#2f6cf5] font-heading">
+                <Sparkles className="w-5 h-5 text-indigo-500 animate-pulse" /> Trình Mô phỏng Cấu trúc Phân hạng Khách hàng
+              </h4>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Tính toán thăng hạng VIP ngay lập tức dựa trên tổng chi tiêu tích luỹ từ trước đến nay.
+              </p>
+            </div>
+            <Badge variant="outline" className="w-fit bg-primary/10 border-primary/20 text-primary font-bold uppercase tracking-wider text-[10px]">
+              Hạng Tiêu Chuẩn Config
+            </Badge>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 bg-background/50 p-5 rounded-2xl border border-border/60">
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground block mb-2">
+                  Nhập tổng doanh số tích lũy (VND)
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={Number(simSpent || 0).toLocaleString("vi-VN")}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/\./g, "").replace(/[^\d]/g, "");
+                      setSimSpent(clean ? clean : "0");
+                    }}
+                    className="w-full bg-background border border-border/80 p-3 pl-4 rounded-xl font-bold font-mono text-base outline-none focus:border-primary tracking-tight text-foreground"
+                    placeholder="Ví dụ: 120.000.000"
+                  />
+                  <span className="absolute right-3.5 top-3.5 text-xs font-bold text-muted-foreground">VND</span>
+                </div>
+              </div>
+
+              {/* Presets to click */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Chọn nhanh mẫu chi tiêu</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: "Khách lẻ (30M)", value: "30000000" },
+                    { label: "Essential VIP (120M)", value: "120000000" },
+                    { label: "Icon VIP (450M)", value: "450000000" },
+                    { label: "Atelier VVIP (1.5B)", value: "1500000000" },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setSimSpent(option.value)}
+                      className="px-3 py-2 bg-muted/40 text-xs font-bold rounded-xl text-left hover:bg-muted hover:border-primary/20 border border-transparent transition-all cursor-pointer"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Result */}
+            {(() => {
+              const res = calculateSimulatedTier(Number(simSpent || 0));
+              return (
+                <div className="flex flex-col justify-between border-l border-border/40 pl-0 md:pl-6 pt-4 md:pt-0">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-muted-foreground uppercase block">HẠNG KHÁCH ĐẠT ĐƯỢC:</span>
+                      <Badge className={cn("text-xs font-bold uppercase py-0.5 px-2.5 rounded-full border-none", res.badgeColor)}>
+                        {res.name}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-black font-mono tracking-tighter" style={{ color: res.color }}>
+                        {res.multiplier}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Tốc độ tích luỹ điểm</span>
+                    </div>
+
+                    <div className="pt-2">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1.5 flex items-center gap-1">
+                        <Gift className="w-3 h-3" /> Đặc quyền độc quyền được kích hoạt:
+                      </span>
+                      <div className="space-y-1.5 font-sans leading-relaxed text-foreground/90">
+                        {res.benefits.map((benefit, i) => (
+                          <div key={i} className="flex items-start gap-2 text-xs">
+                            <span style={{ color: res.color }} className="font-extrabold mt-0.5">✓</span>
+                            <span>{benefit}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-border/40 text-xs text-muted-foreground flex justify-between items-center bg-muted/20 p-2.5 rounded-lg mt-3">
+                    {res.remainingToNext > 0 ? (
+                      <span>Cần thêm <strong className="text-foreground font-semibold">{res.remainingToNext.toLocaleString("vi-VN")} đ</strong> để thăng hạng VIP kế tiếp ({res.nextThreshold})</span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-emerald-600 font-bold"><CheckCircle2 className="w-4 h-4" /> Đã chạm tinh hoa đặc quyền Atelier cao cấp nhất!</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
         </Card>
       </div>
     </div>

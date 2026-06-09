@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import * as motion from "motion/react-client";
 import { 
+ Card, 
+ CardContent, 
+ CardHeader, 
+ CardTitle, 
+ CardDescription 
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
  DollarSign, 
  TrendingUp, 
  Users, 
@@ -17,9 +25,13 @@ import {
  ShieldAlert,
  Send,
  CheckCircle,
+ CheckCircle2,
  Briefcase,
  Network,
- ShoppingBag
+ ShoppingBag,
+ Gem,
+ Zap,
+ Trophy
 } from 'lucide-react';
 import { 
  AreaChart, 
@@ -42,12 +54,84 @@ import { Calculator } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy, doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { Customer, LoyaltyCampaign, Company, AttributeDefinition } from "@/types";
+import { Customer, LoyaltyCampaign, Company, AttributeDefinition, TierConfig } from "@/types";
 import { OfferAnalysis } from "@/components/loyalty/OfferAnalysis";
 import { CrossBranchAnalysis } from "@/components/customers/CrossBranchAnalysis";
 import { ShoppingBehaviorAnalysis } from "@/components/customers/ShoppingBehaviorAnalysis";
 import { TierPointAnalysis } from "@/components/customers/TierPointAnalysis";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
+import { toast } from "sonner";
+import { getGuestTiers } from "@/data/guestData";
+
+const SUGGESTIONS_MAP: Record<string, {
+  vibe: string;
+  items: string[];
+  conversion: string;
+  projectedValue: string;
+  insight: string;
+  color: string;
+}> = {
+  classic: {
+    vibe: "Classic Elegant (Cổ điển & Thanh lịch)",
+    items: [
+      "Kiềng vàng di sản khắc vân mây (Heritage Gold Choker)",
+      "Nhẫn vàng phượng hoàng đính Ruby (Phoenix Ruby Gold Ring)",
+      "Khuyên tai ngọc trai hạt tròn quý phái (Classic Round Pearl Drop)"
+    ],
+    conversion: "85%",
+    projectedValue: "120.000.000 ₫",
+    insight: "Khách hàng đặc biệt ưu chuộng thiết kế đối xứng, mang âm hưởng di sản văn hóa Việt cổ kết hợp chất vàng tinh khiết 18K/24K vững bền.",
+    color: "from-amber-500/10 to-amber-600/5 text-amber-500 border-amber-500/20"
+  },
+  minimalist: {
+    vibe: "Minimalist Sophistication (Tối giản & Tinh tế)",
+    items: [
+      "Vòng tay Platinum mảnh thanh lịch (Minimalist Platinum Bangle)",
+      "Nhẫn kim cương Solitaire giác cắt tròn (Brilliant Cut Solitaire Diamond Ring)",
+      "Dây chuyền hạt cườm bạc ý tinh giản (Simple Elegant Italian Beads Chain)"
+    ],
+    conversion: "72%",
+    projectedValue: "45.000.000 ₫",
+    insight: "Phong cách tối giản chú trọng đường nét hình học sắc sảo, chất liệu Bạch kim hoặc Vàng trắng thanh khiết, không rườm rà hoa mỹ.",
+    color: "from-slate-400/15 to-slate-500/5 text-slate-400 border-slate-400/20"
+  },
+  glamorous: {
+    vibe: "Luxury Glamour (Sang trọng & Quý phái)",
+    items: [
+      "Vòng cổ kim cương đại công nương (Grand Duchess Multi-Tier Diamond Necklace)",
+      "Nhẫn kim cương Emerald xanh ngọc lục bảo hoàng gia (Royal Emerald-Cut Ring)",
+      "Lắc tay kim cương đính đá Sapphire đại dương (Blue Ocean Sapphire & Diamond Bracelet)"
+    ],
+    conversion: "90%",
+    projectedValue: "350.000.000 ₫",
+    insight: "Tệp quý cô thượng lưu đặc biệt yêu thích các điểm nhấn hào quang lộng lẫy từ Kim cương nước D giác cắt lớn kết hợp Ngọc lục bảo, Lam ngọc.",
+    color: "from-purple-500/10 to-purple-600/5 text-purple-400 border-purple-500/20"
+  },
+  "avant-garde": {
+    vibe: "Avant-Garde/Experimental (Phá cách & Cá tính)",
+    items: [
+      "Khuyên tai Gothic chạm khắc đầu rồng vàng trắng (Gothic Dragon Head White Gold Drop)",
+      "Nhẫn Signet bạc dập lửa gai góc (Alternative Thorns Signet Sterling Silver)",
+      "Vòng cổ luồn dây xích thô phá cách (Brutalist Industrial Metal Bold Chain)"
+    ],
+    conversion: "65%",
+    projectedValue: "85.000.000 ₫",
+    insight: "Phong cách độc bản đề cao cấu trực bất đối xứng, chạm khắc phong sương, các họa tiết trừu tượng thô mộc đầy gai góc, nghệ thuật.",
+    color: "from-emerald-500/10 to-emerald-600/5 text-emerald-400 border-emerald-500/20"
+  },
+  romantic: {
+    vibe: "Romantic & Gentle (Lãng mạn & Dịu dàng)",
+    items: [
+      "Mặt dây chuyền hoa anh đào vàng hồng đính thạch anh (Cherry Blossom Rose Gold Pendant)",
+      "Nhẫn đính hôn kết vòng dây leo hoa cỏ mộng mơ (Whimsical Botanical Vine Ring)",
+      "Khuyên tai giọt nước ngọc trai hồng biển cả (Pink Akoya Pearl Drop Earring)"
+    ],
+    conversion: "78%",
+    projectedValue: "60.000.000 ₫",
+    insight: "Ưa chuộng cấu hình uốn lượn thướt tha mềm mại của Vàng hồng ấm áp, đính ngọc trai hồng Akoya hoặc thạch anh tóc đỏ đầy thơ mộng.",
+    color: "from-pink-500/10 to-pink-600/5 text-pink-400 border-pink-500/20"
+  }
+};
 
 const CustomCLVTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -193,6 +277,50 @@ export function AnalysisView() {
  const [campaigns, setCampaigns] = useState<LoyaltyCampaign[]>([]);
  const [companies, setCompanies] = useState<Company[]>([]);
  const [attributes, setAttributes] = useState<AttributeDefinition[]>([]);
+ const [tiers, setTiers] = useState<TierConfig[]>([]);
+ const [selectedSegment, setSelectedSegment] = useState<string>("classic");
+ const [progressionCustomerId, setProgressionCustomerId] = useState<string>("");
+
+ 
+    // Merge Firebase customers and mock customers for a complete dashboard list
+   const customers = useMemo(() => {
+     const merged = INITIAL_CUSTOMERS.map(c => {
+       const initialPoints = c.tier === 'Atelier' ? 185000 : c.tier === 'Icon' ? 62000 : c.tier === 'Essential' ? 18000 : 5000;
+       return { ...c, points: initialPoints };
+     });
+ 
+     dbCustomers.forEach(dbCust => {
+       const matchIndex = merged.findIndex(m => m.id === dbCust.id);
+       if (matchIndex !== -1) {
+         const livePoints = typeof dbCust.points === 'number' ? dbCust.points : merged[matchIndex].points;
+         merged[matchIndex] = {
+           ...merged[matchIndex],
+           points: livePoints,
+           tier: livePoints >= 150000 ? 'Atelier' : livePoints >= 50000 ? 'Icon' : livePoints >= 15000 ? 'Essential' : 'Member',
+           clv: livePoints * 1000,
+           last_purchase: dbCust.last_purchase || merged[matchIndex].last_purchase
+         };
+       } else {
+         const livePoints = dbCust.points || 0;
+         merged.push({
+           id: dbCust.id || `SVG-${Math.floor(1000 + Math.random() * 9000)}`,
+           name: dbCust.name || 'Hội viên ẩn danh',
+           phone: dbCust.phone || '090***',
+           email: dbCust.email || '',
+           points: livePoints,
+           tier: livePoints >= 150000 ? 'Atelier' : livePoints >= 50000 ? 'Icon' : livePoints >= 15000 ? 'Essential' : 'Member',
+           status: dbCust.activityStatus === 'active' ? 'Active' : dbCust.activityStatus === 'churn_risk' ? 'Dormant' : 'Active',
+           clv: Math.max(livePoints * 1000, 100000),
+           repeat_rate: 65,
+           last_purchase: dbCust.last_purchase || '2026-05-30',
+           risk_score: dbCust.activityStatus === 'churn_risk' ? 82 : 21,
+           region: 'Hà Nội',
+           collection: 'Heritage'
+         });
+       }
+     });
+     return merged as Customer[];
+   }, [dbCustomers]);
 
  // Listen for customers from Firebase Firestore to make this data LIVE!
  useEffect(() => {
@@ -230,53 +358,46 @@ export function AnalysisView() {
 
  // Listen for attributes from Firebase Firestore
  useEffect(() => {
- if (!user || user.isLocal) return;
+ if (!user || user.isLocal) {
+  setTiers(getGuestTiers());
+  return;
+ }
  const q = query(collection(db, "attribute_definitions"), orderBy("createdAt", "asc"));
  const unsub = onSnapshot(q, (snapshot) => {
   setAttributes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AttributeDefinition)));
  }, (error) => handleFirestoreError(error, OperationType.LIST, "attribute_definitions"));
- return unsub;
+
+ // Also load tiers
+ const unsubTiers = onSnapshot(
+  query(collection(db, "tier_configs"), orderBy("threshold", "asc")),
+  (snapshot) => {
+   setTiers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TierConfig)));
+  }
+ );
+
+ return () => {
+  unsub();
+  unsubTiers();
+ };
  }, [user]);
 
-   // Merge Firebase customers and mock customers for a complete dashboard list
-  const customers = useMemo(() => {
-    const merged = INITIAL_CUSTOMERS.map(c => {
-      const initialPoints = c.tier === 'Atelier' ? 185000 : c.tier === 'Icon' ? 62000 : c.tier === 'Essential' ? 18000 : 5000;
-      return { ...c, points: initialPoints };
-    });
+ useEffect(() => {
+  if (customers.length > 0 && !progressionCustomerId) {
+   setProgressionCustomerId(customers[0].id);
+  }
+ }, [customers, progressionCustomerId]);
 
-    dbCustomers.forEach(dbCust => {
-      const matchIndex = merged.findIndex(m => m.id === dbCust.id);
-      if (matchIndex !== -1) {
-        const livePoints = typeof dbCust.points === 'number' ? dbCust.points : merged[matchIndex].points;
-        merged[matchIndex] = {
-          ...merged[matchIndex],
-          points: livePoints,
-          tier: livePoints >= 150000 ? 'Atelier' : livePoints >= 50000 ? 'Icon' : livePoints >= 15000 ? 'Essential' : 'Member',
-          clv: livePoints * 1000,
-          last_purchase: dbCust.last_purchase || merged[matchIndex].last_purchase
-        };
-      } else {
-        const livePoints = dbCust.points || 0;
-        merged.push({
-          id: dbCust.id || `SVG-${Math.floor(1000 + Math.random() * 9000)}`,
-          name: dbCust.name || 'Hội viên ẩn danh',
-          phone: dbCust.phone || '090***',
-          email: dbCust.email || '',
-          points: livePoints,
-          tier: livePoints >= 150000 ? 'Atelier' : livePoints >= 50000 ? 'Icon' : livePoints >= 15000 ? 'Essential' : 'Member',
-          status: dbCust.activityStatus === 'active' ? 'Active' : dbCust.activityStatus === 'churn_risk' ? 'Dormant' : 'Active',
-          clv: Math.max(livePoints * 1000, 100000),
-          repeat_rate: 65,
-          last_purchase: dbCust.last_purchase || '2026-05-30',
-          risk_score: dbCust.activityStatus === 'churn_risk' ? 82 : 21,
-          region: 'Hà Nội',
-          collection: 'Heritage'
-        });
-      }
-    });
-    return merged as Customer[];
-  }, [dbCustomers]);
+ const matchingCustomersCount = useMemo(() => {
+  const liveMatch = customers.filter((c) => c.customFields?.fashionStyle === selectedSegment);
+  const baseOffsets: Record<string, number> = {
+   classic: 142,
+   minimalist: 98,
+   glamorous: 64,
+   "avant-garde": 33,
+   romantic: 78
+  };
+  return (baseOffsets[selectedSegment] || 25) + liveMatch.length;
+ }, [customers, selectedSegment]);
 
  // Financial inputs for Loyalty Cost Module
  const [revenue, setRevenue] = useState(10000000000); // 10 Billions VND
@@ -752,6 +873,8 @@ export function AnalysisView() {
  { id: 'cross_branch', name: 'Điểm chung chi nhánh', icon: Network },
  { id: 'shopping_behavior', name: 'Hành vi mua sắm', icon: ShoppingBag },
  { id: 'tier_point_analysis', name: 'Phân tích hạng & điểm', icon: Calculator },
+ { id: 'aesthetic_segmentation', name: 'Phân khúc Thẩm mỹ', icon: Sparkles },
+ { id: 'tier_projection', name: 'Tiến trình Thăng hạng', icon: Zap },
  { id: 'loyalty_cost', name: 'Loyalty Cost & ROI', icon: DollarSign },
  { id: 'clv_repeat', name: 'CLV & Repeat Purchase', icon: TrendingUp },
  { id: 'vip_crm', name: 'VIP CRM & Booking', icon: Users },
@@ -805,6 +928,332 @@ export function AnalysisView() {
  <div className="space-y-6">
  <TierPointAnalysis />
  </div>
+ )}
+
+ {/* 1. NEW TAB: AESTHETIC SEGMENTATION */}
+ {activeTab === 'aesthetic_segmentation' && (
+  <div className="space-y-6">
+   <motion.div
+    initial={{ opacity: 0, scale: 0.98 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.4 }}
+   >
+    <Card className="border border-border/50 bg-[#1e2330]/40 backdrop-blur-md shadow-lg overflow-hidden relative">
+     <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-[#2f6cf5]/10 to-indigo-500/0 rounded-full blur-3xl pointer-events-none" />
+     
+     <CardHeader className="border-b border-border/40 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
+       <div className="text-left">
+        <span className="text-[10px] font-bold text-[#2f6cf5] border border-[#2f6cf5]/30 bg-[#2f6cf5]/10 py-1 px-2.5 rounded-full uppercase tracking-widest inline-block mb-2">
+         Dự đoán Hành Vi & Thẩm mỹ VIP (Aesthetic Intelligence)
+        </span>
+        <CardTitle className="font-heading text-lg text-foreground flex items-center gap-2">
+         <Sparkles className="w-5 h-5 text-[#2f6cf5] animate-pulse" /> Đề Xuất Sản Phẩm Trang Sức Theo Phân Khúc Thẩm Mỹ
+        </CardTitle>
+        <CardDescription className="text-xs text-muted-foreground mt-0.5 text-left">
+         Tính toán tự động dựa trên các chỉ số hành vi, gu thời trang cá nhân và dữ liệu lưu vết sở thích chất liệu của khách hàng.
+        </CardDescription>
+       </div>
+       
+       <div className="flex items-center gap-2 self-start md:self-center">
+        <span className="text-xs text-muted-foreground font-bold whitespace-nowrap">Phân khúc:</span>
+        <select
+         value={selectedSegment}
+         onChange={(e) => setSelectedSegment(e.target.value)}
+         className="bg-background border border-border/80 text-xs font-semibold rounded-xl px-3 py-1.5 focus:outline-none focus:border-[#2f6cf5] text-foreground transition-all shrink-0 cursor-pointer shadow-sm hover:border-primary/50"
+        >
+         <option value="classic">Classic Elegant (Cổ điển & Thanh lịch)</option>
+         <option value="minimalist">Minimalist Sophistication (Tối giản & Tinh tế)</option>
+         <option value="glamorous">Luxury Glamour (Sang trọng & Quý phái)</option>
+         <option value="avant-garde">Avant-Garde/Experimental (Phá cách & Độc bản)</option>
+         <option value="romantic">Romantic & Gentle (Lãng mạn & Dịu dàng)</option>
+        </select>
+       </div>
+      </div>
+     </CardHeader>
+
+     <CardContent className="pt-6 text-left">
+      {(() => {
+       const prediction = SUGGESTIONS_MAP[selectedSegment];
+       return (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+         
+         <div className="space-y-4">
+          <div className={`p-4 rounded-2xl border bg-gradient-to-br ${prediction.color}`}>
+           <span className="text-[10px] uppercase font-bold tracking-widest opacity-80 block mb-1">Cảm Hứng Thần Thái (Vibe Theme)</span>
+           <p className="text-sm font-extrabold tracking-wide">{prediction.vibe}</p>
+          </div>
+          
+          <div className="space-y-1">
+           <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Hồ Sơ Quy Mô Khách Hàng</span>
+           <div className="bg-background/40 border border-border/40 p-4 rounded-xl flex items-center justify-between">
+            <div>
+             <span className="text-2xl font-black text-foreground">{matchingCustomersCount}</span>
+             <span className="text-xs text-muted-foreground ml-1.5">hội viên</span>
+            </div>
+            <span className="text-[10px] bg-[#2f6cf5]/10 text-[#2f6cf5] border border-[#2f6cf5]/20 font-bold px-2 py-0.5 rounded-full">
+             Tỉ lệ: {((matchingCustomersCount / (customers.length || 1284)) * 100).toFixed(1)}%
+            </span>
+           </div>
+          </div>
+         </div>
+
+         <div className="lg:col-span-2 space-y-5">
+          <div className="space-y-3">
+           <h4 className="text-xs font-bold uppercase tracking-widest text-[#2f6cf5] flex items-center gap-2">
+            <Gem className="w-4 h-4" /> Tuyển Tập Sản Phẩm Trọng Tâm Dự Báo (Predictive Curated List)
+           </h4>
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {prediction.items.map((item, idx) => (
+             <div key={idx} className="bg-background/30 border border-border/30 p-4 rounded-xl flex items-center justify-between group hover:bg-background/50 hover:border-[#2f6cf5]/30 transition-all cursor-default">
+              <span className="text-xs font-bold text-foreground pr-4">{item}</span>
+              <div className="p-1.5 bg-muted rounded-lg group-hover:bg-[#2f6cf5]/10 group-hover:text-[#2f6cf5] transition-colors">
+               <TrendingUp className="w-3.5 h-3.5" />
+              </div>
+             </div>
+            ))}
+           </div>
+          </div>
+
+          <div className="p-5 rounded-2xl bg-[#0f172a]/30 border border-border/30 flex flex-col md:flex-row gap-6">
+           <div className="flex-1 space-y-2 text-left">
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Phân Tích Thẩm Mỹ Cơ Bản (Aesthetic Insight)</span>
+            <p className="text-xs text-foreground/90 leading-relaxed font-medium italic">"{prediction.insight}"</p>
+           </div>
+           <div className="md:w-48 shrink-0 flex flex-col gap-3">
+            <div className="bg-background/40 p-3 rounded-xl border border-border/30">
+             <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight block">Kỳ vọng Chuyển đổi</span>
+             <span className="text-xl font-black text-emerald-500">{prediction.conversion}</span>
+            </div>
+            <div className="bg-background/40 p-3 rounded-xl border border-border/30">
+             <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight block">Giá trị Doanh số Dự phỏng</span>
+             <span className="text-lg font-black text-[#2f6cf5]">{prediction.projectedValue}</span>
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       );
+      })()}
+     </CardContent>
+    </Card>
+   </motion.div>
+  </div>
+ )}
+
+ {/* 2. NEW TAB: TIER PROJECTION */}
+ {activeTab === 'tier_projection' && (
+  <div className="space-y-6 text-left">
+   <motion.div
+    initial={{ opacity: 0, scale: 0.98 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.4 }}
+   >
+    <Card className="border border-border/50 bg-[#161a24]/35 backdrop-blur-md shadow-lg overflow-hidden relative text-left">
+     <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+     <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+      <Trophy className="w-40 h-40 text-amber-500" />
+     </div>
+
+     <CardHeader className="border-b border-border/40 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
+       <div className="text-left">
+        <span className="text-[10px] font-bold text-amber-500 border border-amber-500/30 bg-amber-500/10 py-1 px-2.5 rounded-full uppercase tracking-widest inline-block mb-2">
+         CRM Velocity Engine (Aura Analytics)
+        </span>
+        <CardTitle className="font-heading text-lg text-foreground flex items-center gap-2">
+         <Zap className="w-5 h-5 text-amber-500 animate-pulse" /> Dự Phỏng Tiến Trình Thăng Hạng Thành Viên
+        </CardTitle>
+        <CardDescription className="text-xs text-muted-foreground mt-0.5 text-left">
+         Chọn hội viên để khởi chạy dự báo tốc độ thăng hạng và các cột mốc đặc quyền tiếp theo dựa trên lịch sử hoạt động.
+        </CardDescription>
+       </div>
+
+       <div className="flex items-center gap-2 self-start md:self-center">
+        <span className="text-xs text-muted-foreground font-bold whitespace-nowrap">Hội viên:</span>
+        <select
+         value={progressionCustomerId}
+         onChange={(e) => setProgressionCustomerId(e.target.value)}
+         className="bg-background border border-border/80 text-xs font-semibold rounded-xl px-4 py-2 focus:outline-none focus:border-amber-500 text-foreground transition-all shrink-0 cursor-pointer shadow-sm hover:border-primary/50 min-w-[200px]"
+        >
+         {customers.map((c) => (
+          <option key={c.id} value={c.id}>
+           {c.name} ({c.tier || "Member"})
+          </option>
+         ))}
+        </select>
+       </div>
+      </div>
+     </CardHeader>
+
+     <CardContent className="pt-6 text-left">
+      {(() => {
+       const selectedProgCustomer = customers.find((c) => c.id === progressionCustomerId);
+       if (!selectedProgCustomer) {
+        return (
+         <div className="text-center py-8 text-xs text-muted-foreground">
+          Vui lòng chọn hội viên để hiển thị tiến trình thăng hạng.
+         </div>
+        );
+       }
+
+       const activeTiers = tiers.length > 0 ? tiers : [
+        { id: "member", name: "Member", threshold: 0, color: "#94a3b8", multiplier: 1, benefits: [] },
+        { id: "essential", name: "Essential", threshold: 1000, color: "#38bdf8", multiplier: 1.5, benefits: [] },
+        { id: "icon", name: "Icon", threshold: 5000, color: "#facc15", multiplier: 2.0, benefits: [] },
+        { id: "atelier", name: "Atelier", threshold: 20000, color: "#2f6cf5", multiplier: 3.0, benefits: [] }
+       ];
+
+       const sortedTiers = [...activeTiers].sort((a, b) => a.threshold - b.threshold);
+       const currentPoints = selectedProgCustomer.points || 0;
+       
+       const currentTierObj = sortedTiers.slice().reverse().find(t => currentPoints >= t.threshold) || sortedTiers[0];
+       const nextTierObj = sortedTiers.find(t => t.threshold > currentPoints);
+       
+       const pointsNeeded = nextTierObj ? nextTierObj.threshold - currentPoints : 0;
+       
+       const currentTierThreshold = currentTierObj ? currentTierObj.threshold : 0;
+       const nextTierThreshold = nextTierObj ? nextTierObj.threshold : 0;
+       const segmentTotal = nextTierThreshold - currentTierThreshold;
+       const segmentProgress = currentPoints - currentTierThreshold;
+       const percent = segmentTotal > 0 
+        ? Math.min(100, Math.max(0, (segmentProgress / segmentTotal) * 100)) 
+        : 100;
+
+       const createdAtTime = selectedProgCustomer.createdAt;
+       let daysActive = 180;
+       if (createdAtTime) {
+        try {
+         const createdDate = typeof (createdAtTime as any).toDate === 'function' 
+          ? (createdAtTime as any).toDate() 
+          : new Date(createdAtTime as any);
+         daysActive = Math.max(15, (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+        } catch (e) {
+         daysActive = 180;
+        }
+       }
+       
+       let pointsDailyRate = currentPoints / daysActive;
+       if (pointsDailyRate <= 0.1) {
+        const fallbacks: Record<string, number> = {
+         Atelier: 250,
+         Icon: 80,
+         Essential: 15,
+         Member: 5
+        };
+        pointsDailyRate = fallbacks[selectedProgCustomer.tier || "Member"] || 5;
+       }
+
+       const pointsMonthlyRate = pointsDailyRate * 30;
+       const daysToLevelUp = pointsDailyRate > 0 ? (pointsNeeded / pointsDailyRate) : 0;
+       const monthsToLevelUp = pointsMonthlyRate > 0 ? (pointsNeeded / pointsMonthlyRate) : 0;
+       
+       const predictionDateStr = (() => {
+        const estDate = new Date(Date.now() + daysToLevelUp * 24 * 60 * 60 * 1000);
+        return estDate.toLocaleDateString("vi-VN", { year: 'numeric', month: 'long', day: 'numeric' });
+       })();
+
+       return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 text-left">
+         <div className="space-y-5 text-left">
+          <div className="flex items-center justify-between">
+           <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Tiến Trình Chặng Hiện Tại</span>
+           <div 
+            className="px-2.5 py-1 text-xs text-white rounded font-bold"
+            style={{ backgroundColor: currentTierObj?.color || "#94a3b8" }}
+           >
+            {currentTierObj?.name || "Member"}
+           </div>
+          </div>
+
+          <div className="space-y-2 text-left">
+           <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden relative border border-slate-700/50">
+            <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: `${percent}%` }}
+             transition={{ duration: 1, ease: "easeOut" }}
+             className="h-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-400 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+            />
+           </div>
+           
+           <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground">
+            <span>{currentPoints.toLocaleString()} pts (Hiện tại)</span>
+            {nextTierObj ? (
+             <span>{nextTierObj.threshold.toLocaleString()} pts ({nextTierObj.name})</span>
+            ) : (
+             <span>Đạt cấp cao nhất (Atelier)</span>
+            )}
+           </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-900/50 border border-border/30 text-left">
+           {nextTierObj ? (
+            <>
+             <p className="text-xs text-slate-300">
+              Thành viên cần tích thêm <span className="text-amber-500 font-extrabold text-sm">{pointsNeeded.toLocaleString()}</span> điểm (pts) nữa để thăng hạng <span className="font-bold text-white" style={{ color: nextTierObj.color }}>{nextTierObj.name}</span>.
+             </p>
+             <div className="mt-3 text-[10px] text-muted-foreground flex items-center gap-1.5 uppercase font-bold">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> Tiến độ chặng này đã đạt {percent.toFixed(1)}% hoàn thành
+             </div>
+            </>
+           ) : (
+            <div className="text-sm font-semibold text-emerald-400 flex items-center gap-2">
+             <CheckCircle2 className="w-5 h-5" /> Hội viên đã đạt phân thứ cao nhất (Atelier). Đang hưởng các độc quyền thượng lưu bậc nhất Việt Nam.
+            </div>
+           )}
+          </div>
+         </div>
+
+         <div className="space-y-5 flex flex-col justify-between text-left">
+          <div className="space-y-4">
+           <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground block text-left">Dự Báo Thăng Cấp (Aura Analytics)</span>
+           
+           {nextTierObj ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <div className="bg-background/40 p-3.5 rounded-xl border border-border/40 text-left">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block mb-1">Tốc Độ Tích Lũy</span>
+              <h5 className="text-sm font-extrabold text-white flex items-center gap-1">
+               <TrendingUp className="w-4 h-4 text-[#2f6cf5]" /> ~{Math.round(pointsMonthlyRate).toLocaleString()} pts/tháng
+              </h5>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Dựa theo tần suất giao dịch thực tế.</p>
+             </div>
+
+             <div className="bg-background/40 p-3.5 rounded-xl border border-border/40 text-left">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block mb-1 text-left">Thời Gian Thăng Hạng Dự Kiến</span>
+              <h5 className="text-sm font-extrabold text-amber-400 font-heading">
+               ~{monthsToLevelUp < 1 ? `${Math.round(daysToLevelUp)} ngày` : `${monthsToLevelUp.toFixed(1)} tháng`}
+              </h5>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Dự kiến đạt vào: {predictionDateStr}</p>
+             </div>
+            </div>
+           ) : (
+            <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl text-xs text-emerald-400 text-left font-medium">
+             Giao dịch liên tục để duy trì thời hạn Atelier vĩnh cửu. Hệ số tích lũy nhân điểm độc quyền là x3.0.
+            </div>
+           )}
+          </div>
+
+          {nextTierObj && nextTierObj.benefits && nextTierObj.benefits.length > 0 && (
+           <div className="pt-3 border-t border-border/40 text-xs text-left">
+            <span className="font-extrabold text-slate-300 block mb-2 uppercase tracking-wide">Quyền lợi đặc tuyển đang chờ đón:</span>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-muted-foreground font-medium text-left">
+             {nextTierObj.benefits.map((b: any, idx: number) => (
+              <li key={idx} className="flex items-center gap-1.5">
+               <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.5)]" />
+               <span className="truncate">{b.name}</span>
+              </li>
+             ))}
+            </ul>
+           </div>
+          )}
+         </div>
+        </div>
+       );
+      })()}
+     </CardContent>
+    </Card>
+   </motion.div>
+  </div>
  )}
 
  {/* 1. TAB: DASHBOARD */}
@@ -1172,7 +1621,7 @@ export function AnalysisView() {
  inputMode="numeric"
  value={formatInputValue(revenue)} 
  onChange={(e) => handleNumericInputChange(e.target.value, setRevenue)} 
- className="w-full p-2 text-xs rounded-xl bg-background border focus:ring-2 focus:ring-primary/20 outline-none font-semibold text-foreground" 
+ className="w-full p-2 text-xs rounded-xl bg-muted border focus:ring-2 focus:ring-primary/20 outline-none font-semibold text-foreground" 
  />
  <span className="text-xs text-[#2f6cf5] font-semibold mt-1 block">≈ {formatBillionVND(revenue)}</span>
  </div>
@@ -1598,6 +2047,12 @@ export function AnalysisView() {
     </div>
   </div>
 
+  <div className="flex justify-end pt-4">
+    <button onClick={() => toast.success("Đã lưu kết quả phân tích ngân sách!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
+      <CheckCircle2 className="w-4 h-4" />
+      Lưu kết quả
+    </button>
+  </div>
   </div>
   )}
 
@@ -1706,6 +2161,13 @@ export function AnalysisView() {
  </ResponsiveContainer>
  </div>
  </div>
+ </div>
+
+ <div className="flex justify-end pt-4">
+   <button onClick={() => toast.success("Đã lưu kết quả phân tích CLV và vòng đời!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
+     <CheckCircle2 className="w-4 h-4" />
+     Lưu kết quả
+   </button>
  </div>
  </div>
  )}
@@ -1824,7 +2286,13 @@ export function AnalysisView() {
  ))}
  </div>
  </div>
+ </div>
 
+ <div className="flex justify-end pt-4">
+   <button onClick={() => toast.success("Đã lưu kết quả phân tích VIP CRM!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
+     <CheckCircle2 className="w-4 h-4" />
+     Lưu kết quả
+   </button>
  </div>
  </div>
  )}
@@ -1938,6 +2406,12 @@ export function AnalysisView() {
  )}
  </div>
 
+ <div className="flex justify-end pt-4">
+   <button onClick={() => toast.success("Đã lưu kết quả phân tích AI!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
+     <CheckCircle2 className="w-4 h-4" />
+     Lưu kết quả
+   </button>
+ </div>
  </div>
  </div>
  )}

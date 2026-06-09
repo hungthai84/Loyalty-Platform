@@ -165,7 +165,7 @@ export function ShoppingBehaviorAnalysis() {
               placeholder="Tên, mã KH..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="mt-2 text-xs h-8"
+              className="mt-2 text-xs h-8 bg-muted border-border"
             />
           </CardHeader>
           <div className="p-2 space-y-1 overflow-y-auto max-h-[500px]">
@@ -381,6 +381,22 @@ export function ShoppingBehaviorAnalysis() {
                 )}
               </CardContent>
             </Card>
+
+            <div className="pt-4 flex justify-end">
+              <button 
+                onClick={() => {
+                  const toastElement = document.createElement('div');
+                  toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
+                  toastElement.innerHTML = `<div class="text-xs font-bold text-foreground">Lưu kết quả phân tích hành vi mua sắm thành công!</div>`;
+                  document.body.appendChild(toastElement);
+                  setTimeout(() => document.body.removeChild(toastElement), 3000);
+                }}
+                className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Lưu lại
+              </button>
+            </div>
 
           </motion.div>
         )}

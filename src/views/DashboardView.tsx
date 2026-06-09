@@ -8,6 +8,9 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { kpiData, revenueData, recentCustomers } from "@/data/mockData";
+import { db } from "@/lib/firebase";
+import { collection, onSnapshot } from "firebase/firestore";
+import { useFirebase } from "@/components/FirebaseProvider";
 import {
   XAxis,
   YAxis,
@@ -36,6 +39,7 @@ import {
   ChevronDown,
   Filter,
   Award,
+  User,
   RotateCcw,
   LayoutDashboard,
   Database,
@@ -56,7 +60,6 @@ import {
   HelpCircle
 } from "lucide-react";
 import * as motion from "motion/react-client";
-import { SeedDemoData } from "@/components/layout/SeedDemoData";
 import { DatabaseStatus } from "@/components/layout/DatabaseStatus";
 import {
   Dialog,
@@ -65,11 +68,78 @@ import {
 } from "@/components/ui/dialog";
 
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { UpcomingBirthdays } from "@/components/dashboard/UpcomingBirthdays";
+import { TierUpProgress } from "@/components/dashboard/TierUpProgress";
 
 export function DashboardView() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
+  const { user } = useFirebase();
+  const [totalCustomers, setTotalCustomers] = useState(24);
+  const [activeCampaigns, setActiveCampaigns] = useState(4);
+  const [loyaltyPointsIssued, setLoyaltyPointsIssued] = useState(1200000);
 
-  // Digital iuPayme Wallet dynamic states matching the design mockup layout
+  useEffect(() => {
+    if (!user || user.isLocal) {
+      // Local Guest storage fallback
+      const localStr = localStorage.getItem("crm_guest_customers");
+      if (localStr) {
+        try {
+          const list = JSON.parse(localStr);
+          setTotalCustomers(list.length || 24);
+          const pts = list.reduce((acc: number, c: any) => acc + (c.points || 0), 0);
+          setLoyaltyPointsIssued(pts || 120000);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // Listen to event for guest changes
+      const handleGuestChange = () => {
+        const localStr2 = localStorage.getItem("crm_guest_customers");
+        if (localStr2) {
+          try {
+            const list = JSON.parse(localStr2);
+            setTotalCustomers(list.length || 24);
+            const pts = list.reduce((acc: number, c: any) => acc + (c.points || 0), 0);
+            setLoyaltyPointsIssued(pts || 120000);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      };
+      window.addEventListener("crm_guest_data_changed", handleGuestChange);
+      return () => window.removeEventListener("crm_guest_data_changed", handleGuestChange);
+    } else {
+      // Firestore Real-Time listeners!
+      const unsubscribeCust = onSnapshot(collection(db, "customers"), (snap) => {
+        const count = snap.size;
+        setTotalCustomers(count || 0);
+
+        let sumPts = 0;
+        snap.docs.forEach((doc) => {
+          sumPts += doc.data().points || 0;
+        });
+        setLoyaltyPointsIssued(sumPts || 0);
+      }, (err) => {
+        console.error("Firestore customers KPI listener error:", err);
+      });
+
+      const unsubscribeCamp = onSnapshot(collection(db, "loyalty_campaigns"), (snap) => {
+        const activeCount = snap.docs.filter(doc => doc.data().isActive === true).length;
+        setActiveCampaigns(activeCount || 0);
+      }, (err) => {
+        console.error("Firestore campaigns KPI listener error:", err);
+      });
+
+      return () => {
+        unsubscribeCust();
+        unsubscribeCamp();
+      };
+    }
+  }, [user]);
+
+  // Digital Power Service Wallet dynamic states matching the design mockup layout
   const [walletBalance, setWalletBalance] = useState(7610.00);
   const [is2FAEnabled, setIs2FAEnabled] = useState(true);
   const [activeWalletAction, setActiveWalletAction] = useState<"send" | "apply">("send");
@@ -343,8 +413,19 @@ export function DashboardView() {
           ? "+1.4%"
           : "+5.2%";
     const pointsChange = activePreset === "today" ? "+2.9%" : "-4.5%";
+    const formattedPointsIssued = loyaltyPointsIssued >= 1000000 
+      ? `${(loyaltyPointsIssued / 1000000).toFixed(1).replace(".", ",")}M pts`
+      : loyaltyPointsIssued >= 1000 
+        ? `${(loyaltyPointsIssued / 1000).toFixed(1).replace(".", ",")}k pts`
+        : `${loyaltyPointsIssued} pts`;
 
     return [
+      {
+        label: "Thành viên hoạt động",
+        value: totalCustomers.toLocaleString("vi-VN"),
+        change: activeCustChange,
+        positive: true,
+      },
       {
         label: "Tổng doanh thu",
         value: formattedRevenue,
@@ -352,25 +433,19 @@ export function DashboardView() {
         positive: true,
       },
       {
-        label: "Khách hàng hoạt động",
-        value: formattedActiveCust,
-        change: activeCustChange,
+        label: "LTV Trung bình",
+        value: `${(65000000 * tierFactor / 1000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tr ₫`,
+        change: "+3.4%",
         positive: true,
       },
       {
-        label: "Tỷ lệ mua lại",
-        value: repeatRate,
-        change: repeatChange,
-        positive: repeatPositive,
-      },
-      {
-        label: "Điểm đã đổi",
-        value: formattedPoints,
-        change: pointsChange,
-        positive: activePreset === "today",
+        label: "Điểm Loyalty đã cấp",
+        value: formattedPointsIssued,
+        change: "+15.7%",
+        positive: true,
       },
     ];
-  }, [daysDiff, activePreset, selectedTier, tierFactor]);
+  }, [daysDiff, activePreset, selectedTier, tierFactor, totalCustomers, activeCampaigns, loyaltyPointsIssued]);
 
   // Dynamic Charting categories matching dates or weeks scaled by tier
   const filteredRevenueData = useMemo(() => {
@@ -424,11 +499,11 @@ export function DashboardView() {
     <div className="flex-1 space-y-6 p-8 pt-6">
       <motion.div
         whileHover={{ y: -2, transition: { duration: 0.2 } }}
-        className="relative z-30 flex w-full flex-col justify-between gap-5 rounded-2xl border border-border/60 bg-card/45 p-5 shadow-xs transition-all backdrop-blur-md md:flex-row md:items-center md:p-6 hover:shadow-md hover:border-primary/25"
+        className="relative z-30 flex w-full flex-col justify-between gap-5 rounded-[10px] border border-border/60 bg-card/45 p-5 shadow-xs transition-all backdrop-blur-md md:flex-row md:items-center md:p-6 hover:shadow-md hover:border-primary/25"
       >
         {/* Title container + Date Range Picker right next to it */}
         <div className="flex items-center gap-4 text-left">
-          <div className="p-3 bg-primary/10 rounded-2xl text-primary flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+          <div className="p-3 bg-primary/10 rounded-[10px] text-primary flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
             <motion.div
               animate={{
@@ -449,21 +524,6 @@ export function DashboardView() {
               <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
                 Tổng quan
               </h2>
-              <Dialog>
-                <DialogTrigger className="flex items-center gap-1.5 px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-[10px] font-bold shadow-sm cursor-pointer animate-fade-in uppercase tracking-wider">
-                  <Database className="w-3 h-3" />
-                  <span>Nạp mẫu</span>
-                </DialogTrigger>
-                <DialogContent
-                  className="max-w-4xl p-0 border-none bg-transparent shadow-none"
-                  aria-describedby="dialog-description"
-                >
-                  <div id="dialog-description" className="sr-only">
-                    Nạp dữ liệu mẫu vào hệ thống
-                  </div>
-                  <SeedDemoData />
-                </DialogContent>
-              </Dialog>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               Số liệu thống kê và thông tin tổng quan hệ thống.
@@ -479,7 +539,7 @@ export function DashboardView() {
                 setIsOpen(!isOpen);
                 setIsTierOpen(false);
               }}
-              className="flex items-center gap-2 px-3.5 py-2 bg-card hover:bg-muted/50 text-foreground border border-border rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-primary/20 outline-none"
+              className="flex items-center gap-2 px-3.5 py-2 bg-card hover:bg-muted/50 text-foreground border border-border rounded-[10px] text-xs font-bold transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-primary/20 outline-none"
             >
               <Calendar className="w-4 h-4 text-[#2f6cf5]" />
               <span className="">{formatRangeText()}</span>
@@ -495,7 +555,7 @@ export function DashboardView() {
                   className="fixed inset-0 z-10"
                   onClick={() => setIsOpen(false)}
                 />
-                <div className="absolute left-0 mt-2 w-72 bg-card border border-border shadow-2xl rounded-[1.25rem] p-4.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150">
+                <div className="absolute left-0 mt-2 w-72 bg-card border border-border shadow-2xl rounded-[10px] p-4.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150">
                   <div className="space-y-4">
                     <div className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest flex items-center gap-1.5">
                       <Filter className="w-3.5 h-3.5" />
@@ -514,7 +574,7 @@ export function DashboardView() {
                             onClick={() =>
                               handlePresetSelect(p.id, range.start, range.end)
                             }
-                            className={`px-3 py-2 text-xs font-bold rounded-xl text-left transition-all cursor-pointer ${
+                            className={`px-3 py-2 text-xs font-bold rounded-[10px] text-left transition-all cursor-pointer ${
                               isActive
                                 ? "bg-primary text-primary-foreground shadow-sm"
                                 : "bg-muted/40 hover:bg-muted text-foreground"
@@ -542,7 +602,7 @@ export function DashboardView() {
                             onChange={(e) =>
                               handleCustomDateChange("start", e.target.value)
                             }
-                            className="w-full bg-background border border-border rounded-xl p-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                            className="w-full bg-background border border-border rounded-[10px] p-2 text-xs outline-none focus:border-primary/50 text-foreground"
                           />
                         </div>
                         <div className="space-y-1">
@@ -555,7 +615,7 @@ export function DashboardView() {
                             onChange={(e) =>
                               handleCustomDateChange("end", e.target.value)
                             }
-                            className="w-full bg-background border border-border rounded-xl p-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                            className="w-full bg-background border border-border rounded-[10px] p-2 text-xs outline-none focus:border-primary/50 text-foreground"
                           />
                         </div>
                       </div>
@@ -604,7 +664,7 @@ export function DashboardView() {
                   className="fixed inset-0 z-10"
                   onClick={() => setIsTierOpen(false)}
                 />
-                <div className="absolute left-0 mt-2 w-48 bg-card border border-border shadow-2xl rounded-[1.25rem] p-2.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150">
+                <div className="absolute left-0 mt-2 w-48 bg-card border border-border shadow-2xl rounded-[10px] p-2.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150">
                   <div className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest px-2.5 py-1.5 border-b border-border/60">
                     Chọn hạng thành viên
                   </div>
@@ -685,7 +745,10 @@ export function DashboardView() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {kpi.label}
                 </CardTitle>
-                <Gem className="h-4 w-4 text-primary/40" />
+                {kpi.label.includes("doanh thu") && <LucideCreditCard className="h-4 w-4 text-emerald-500/60" />}
+                {kpi.label.includes("khách hàng") && <User className="h-4 w-4 text-[#2f6cf5]" />}
+                {kpi.label.includes("Chiến dịch") && <Award className="h-4 w-4 text-amber-500/60" />}
+                {kpi.label.includes("Điểm Loyalty") && <Coins className="h-4 w-4 text-[#eb7a2e]/60" />}
               </CardHeader>
               <CardContent className="text-left">
                 <div className="text-2xl font-bold">{kpi.value}</div>
@@ -705,15 +768,15 @@ export function DashboardView() {
         ))}
       </div>
 
-      {/* ================= iuPayme PREMIUM DIGITAL WALLET WORKSPACE (MOCKUP ACCURACY) ================= */}
+      {/* ================= Power Service PREMIUM DIGITAL WALLET WORKSPACE (MOCKUP ACCURACY) ================= */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-12 items-start">
         
         {/* COLUMN 1: BALANCE, INFORMATION & SECURITY (LIME MOCKUP STYLE) */}
         <div className="col-span-1 lg:col-span-4 flex flex-col gap-5">
           
           {/* Balance Card */}
-          <div className="bg-card rounded-[24px] p-6 border border-border/85 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:border-[#fa1b6c]/20 transition-all duration-300">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#fa1b6c]/5 to-transparent rounded-full pointer-events-none" />
+          <div className="bg-card rounded-[10px] p-6 border border-border/85 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:border-[#eb7a2e]/20 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#eb7a2e]/5 to-transparent rounded-full pointer-events-none" />
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-400 select-none tracking-wide">Balance</span>
@@ -737,7 +800,7 @@ export function DashboardView() {
           </div>
 
           {/* Information Card */}
-          <div className="bg-card rounded-[24px] p-6 border border-border/85 shadow-sm text-left relative group hover:border-[#fa1b6c]/20 transition-all duration-300">
+          <div className="bg-card rounded-[10px] p-6 border border-border/85 shadow-sm text-left relative group hover:border-[#eb7a2e]/20 transition-all duration-300">
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100/60 dark:border-slate-800/60">
               <span className="text-xs font-bold text-slate-400 tracking-wide">information</span>
               <button 
@@ -764,7 +827,7 @@ export function DashboardView() {
                   <span className="text-slate-400 font-medium">Wallet ID:</span>
                   <button 
                     onClick={() => handleCopyWalletId("4d2ca285e64945c7fe88772bb5fda24b")}
-                    className="p-1 text-[#fa1b6c] hover:underline flex items-center gap-1 cursor-pointer font-bold"
+                    className="p-1 text-[#eb7a2e] hover:underline flex items-center gap-1 cursor-pointer font-bold"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>Copy</span>
@@ -778,16 +841,16 @@ export function DashboardView() {
           </div>
 
           {/* Security Card */}
-          <div className="bg-card rounded-[24px] p-6 border border-border/85 shadow-sm text-left relative group hover:border-[#fa1b6c]/20 transition-all duration-300">
+          <div className="bg-card rounded-[10px] p-6 border border-border/85 shadow-sm text-left relative group hover:border-[#eb7a2e]/20 transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-bold text-slate-400 tracking-wide">Security</span>
               <HelpCircle className="w-4 h-4 text-slate-300" />
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between p-3.5 rounded-[10px] bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#fa1b6c]/10 text-[#fa1b6c] rounded-xl">
+                  <div className="p-2 bg-[#eb7a2e]/10 text-[#eb7a2e] rounded-xl">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div className="text-left">
@@ -808,7 +871,7 @@ export function DashboardView() {
                 </button>
               </div>
 
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between p-3.5 rounded-[10px] bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl">
                     <Lock className="w-4 h-4" />
@@ -831,13 +894,13 @@ export function DashboardView() {
         </div>
 
         {/* COLUMN 2: GOLD-VIOLET CREDIT CARD & SEND WORKFLOW */}
-        <div className="col-span-1 lg:col-span-5 bg-card/65 rounded-[28px] p-6 border border-border/80 shadow-sm relative overflow-hidden backdrop-blur-md flex flex-col gap-6 hover:border-[#fa1b6c]/20 transition-all duration-300">
+        <div className="col-span-1 lg:col-span-5 bg-card/65 rounded-[10px] p-6 border border-border/80 shadow-sm relative overflow-hidden backdrop-blur-md flex flex-col gap-6 hover:border-[#eb7a2e]/20 transition-all duration-300 font-sans">
           
-          {/* Stunning iuPayme Mockup Floating Plastic Card */}
-          <div className="relative aspect-[1.58/1] w-full max-w-[340px] mx-auto rounded-[20px] p-5 text-white overflow-hidden shadow-[0_15px_30px_rgba(250,27,108,0.25)] bg-gradient-to-tr from-[#6b11ff] via-[#fa1b6c] to-[#fbbf24] select-none hover:scale-[1.02] active:scale-[0.99] transition-all duration-300">
+          {/* Stunning Power Service Mockup Floating Plastic Card */}
+          <div className="relative aspect-[1.58/1] w-full max-w-[340px] mx-auto rounded-[10px] p-5 text-white overflow-hidden shadow-[0_15px_30px_rgba(235,122,46,0.25)] bg-gradient-to-tr from-[#6b11ff] via-[#eb7a2e] to-[#fbbf24] select-none hover:scale-[1.02] active:scale-[0.99] transition-all duration-300">
             <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-white/10 to-transparent rounded-full pointer-events-none" />
             
-            {/* Hologram card chip & iuPayme brand */}
+            {/* Hologram card chip & Power Service brand */}
             <div className="flex items-start justify-between">
               {/* Chip container with stylized metallic grid */}
               <div className="w-10 h-7 rounded-md bg-gradient-to-br from-amber-200 via-amber-300 to-amber-100 p-1 flex flex-col justify-between border border-amber-400/30 opacity-90 shadow-md">
@@ -847,7 +910,7 @@ export function DashboardView() {
                   <div className="border-l border-amber-600/20" />
                 </div>
               </div>
-              <span className="text-base font-extrabold tracking-tight italic select-none">iuPayme</span>
+              <span className="text-base font-extrabold tracking-tight italic select-none">Power Service</span>
             </div>
 
             {/* Card number sequence (Mockup styling) */}
@@ -870,7 +933,7 @@ export function DashboardView() {
               {/* MasterCard overlapping circles mockup */}
               <div className="flex -space-x-2 opacity-90 scale-95 shrink-0">
                 <div className="w-7 h-7 rounded-full bg-white/20 select-none backdrop-blur-xs flex items-center justify-center border border-white/10" />
-                <div className="w-7 h-7 rounded-full bg-[#fa1b6c]/90 select-none border border-[#fa1b6c]/20" />
+                <div className="w-7 h-7 rounded-full bg-[#eb7a2e]/90 select-none border border-[#eb7a2e]/20" />
                 <div className="w-7 h-7 rounded-full bg-[#fbbf24]/90 select-none border border-[#fbbf24]/20" />
               </div>
             </div>
@@ -879,12 +942,12 @@ export function DashboardView() {
           {/* Transactions Action Block wrapper */}
           <div className="flex flex-col gap-4 text-left flex-1">
             <h3 className="text-sm font-extrabold text-[#131924] dark:text-white uppercase tracking-wider text-center flex items-center justify-center gap-2">
-              <Coins className="w-4 h-4 text-[#fa1b6c]" /> 
+              <Coins className="w-4 h-4 text-[#eb7a2e]" /> 
               <span>Transactions</span>
             </h3>
 
             {/* Selection Toggles (Send vs Apply for) */}
-            <div className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800">
+            <div className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-[10px] border border-slate-200/50 dark:border-slate-800">
               <button 
                 type="button"
                 onClick={() => setActiveWalletAction("send")}
@@ -915,7 +978,7 @@ export function DashboardView() {
                   value={payToAddress}
                   onChange={(e) => setPayToAddress(e.target.value)}
                   placeholder="Nhập mã ví nhận..."
-                  className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#fa1b6c]/20 text-slate-800 dark:text-slate-100"
+                  className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
                   required
                 />
                 <span className="text-[10px] text-slate-400 block mt-0.5">Please enter the Wallet ID or destination email.</span>
@@ -930,7 +993,7 @@ export function DashboardView() {
                     value={transferAmount}
                     onChange={(e) => setTransferAmount(Number(e.target.value))}
                     min="1"
-                    className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#fa1b6c]/20 text-slate-800 dark:text-slate-100"
+                    className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
                     required
                   />
                 </div>
@@ -940,7 +1003,7 @@ export function DashboardView() {
                   <select
                     value={transferReason}
                     onChange={(e) => setTransferReason(e.target.value)}
-                    className="w-full px-3 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#fa1b6c]/20 text-slate-800 dark:text-slate-100"
+                    className="w-full px-3 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
                     required
                   >
                     <option value="Games">Games</option>
@@ -953,7 +1016,7 @@ export function DashboardView() {
               </div>
 
               {/* Commission breakdown */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-[11px] font-bold text-slate-500">
+              <div className="flex items-center justify-between p-3.5 rounded-[10px] bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-[11px] font-bold text-slate-500">
                 <div className="flex items-center gap-1.5">
                   <span>Commission:</span>
                   <span className="text-slate-800 dark:text-slate-250 font-extrabold">$3</span>
@@ -961,14 +1024,14 @@ export function DashboardView() {
                 <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
                 <div className="flex items-center gap-1.5">
                   <span>Total:</span>
-                  <span className="text-[#fa1b6c] font-black">${transferAmount + 3}</span>
+                  <span className="text-[#eb7a2e] font-black">${transferAmount + 3}</span>
                 </div>
               </div>
 
               {/* Dynamic submit action with pink gradient */}
               <button
                 type="submit"
-                className="w-full py-3.5 px-6 rounded-2xl text-xs font-black text-white hover:opacity-95 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all bg-gradient-to-r from-[#fa1b6c] to-[#7c3aed]"
+                className="w-full py-3.5 px-6 rounded-[10px] text-xs font-black text-white hover:opacity-95 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all bg-gradient-to-r from-[#eb7a2e] to-[#7c3aed]"
               >
                 <Send className="w-4 h-4 shrink-0" />
                 <span>Send</span>
@@ -984,9 +1047,9 @@ export function DashboardView() {
           <button 
             type="button"
             onClick={() => toast.success("Hiện tại không có hóa đơn quá hạn cần nộp thanh toán.")}
-            className="bg-card w-full rounded-[24px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#fa1b6c]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
+            className="bg-card w-full rounded-[10px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#eb7a2e]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
           >
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 group-hover:scale-105 transition-all">
+            <div className="w-14 h-14 rounded-[10px] bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 group-hover:scale-105 transition-all">
               {/* Custom styled vector lines of check and bill */}
               <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -1006,9 +1069,9 @@ export function DashboardView() {
           <button 
             type="button"
             onClick={() => toast.success("Cổng nạp tiền di động đa mạng Việt Nam/Quốc tế đang tải...")}
-            className="bg-card w-full rounded-[24px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#fa1b6c]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
+            className="bg-card w-full rounded-[10px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#eb7a2e]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
           >
-            <div className="w-14 h-14 rounded-2xl bg-[#fa1b6c]/10 flex items-center justify-center text-[#fa1b6c] group-hover:scale-105 transition-all">
+            <div className="w-14 h-14 rounded-[10px] bg-[#eb7a2e]/10 flex items-center justify-center text-[#eb7a2e] group-hover:scale-105 transition-all">
               <Smartphone className="w-7 h-7" />
             </div>
             <div className="text-center">
@@ -1017,24 +1080,24 @@ export function DashboardView() {
             </div>
           </button>
 
-          {/* Quick Item 3: iuPayme cards */}
+          {/* Quick Item 3: Power Service cards */}
           <button 
             type="button"
             onClick={() => toast.success("Đang truy xuất thông tin phát hành các hạng thẻ vật lý...")}
-            className="bg-card w-full rounded-[24px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#fa1b6c]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
+            className="bg-card w-full rounded-[10px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#eb7a2e]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
           >
-            <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[#131924] dark:text-white group-hover:scale-105 transition-all">
+            <div className="w-14 h-14 rounded-[10px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[#131924] dark:text-white group-hover:scale-105 transition-all">
               <LucideCreditCard className="w-7 h-7" />
             </div>
             <div className="text-center">
-              <h4 className="text-xs font-black text-[#131924] dark:text-white font-heading">iuPayme cards</h4>
+              <h4 className="text-xs font-black text-[#131924] dark:text-white font-heading">Power Service cards</h4>
               <p className="text-[10px] text-slate-400 mt-1">Đổi thưởng thành viên lấy thẻ ghi nợ vật lý cực sang</p>
             </div>
           </button>
         </div>
       </div>
       
-      {/* ================= END iuPayme PREMIUM WORKSPACE ================= */}
+      {/* ================= END Power Service PREMIUM WORKSPACE ================= */}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="col-span-full xl:col-span-2">
@@ -1198,15 +1261,43 @@ export function DashboardView() {
       </motion.div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <motion.div
            initial={{ opacity: 0, y: 10 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ delay: 0.2 }}
-           className="col-span-full md:col-span-1 lg:col-span-1"
+           className="xl:col-span-2"
         >
           <RecentActivity />
         </motion.div>
+        <motion.div
+           initial={{ opacity: 0, y: 10 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ delay: 0.3 }}
+           className="xl:col-span-1 space-y-6"
+        >
+          <UpcomingBirthdays />
+          <TierUpProgress />
+        </motion.div>
+      </div>
+
+      {/* Floating Quick Actions Menu */}
+      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3 group">
+        <div className="flex flex-col gap-2 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 origin-bottom-right mb-2">
+           <button 
+             onClick={() => toast.success("Mở form thêm điểm...")}
+             className="flex items-center gap-2 px-4 py-2 bg-card border border-border shadow-md rounded-full hover:bg-muted font-semibold text-sm transition-colors text-foreground whitespace-nowrap cursor-pointer">
+             <Plus className="w-4 h-4 text-emerald-500" /> Thêm điểm Loyalty
+           </button>
+           <button 
+             onClick={() => toast.success("Mở công cụ gửi khuyến mãi...")}
+             className="flex items-center gap-2 px-4 py-2 bg-card border border-border shadow-md rounded-full hover:bg-muted font-semibold text-sm transition-colors text-foreground whitespace-nowrap cursor-pointer">
+             <Send className="w-4 h-4 text-[#2f6cf5]" /> Gửi Promotion
+           </button>
+        </div>
+        <button className="h-14 w-14 rounded-full bg-[#2f6cf5] text-white shadow-lg flex items-center justify-center hover:bg-[#2f6cf5]/90 hover:scale-105 transition-all shadow-[#2f6cf5]/30 cursor-pointer">
+          <Plus className="w-6 h-6" />
+        </button>
       </div>
     </div>
   );

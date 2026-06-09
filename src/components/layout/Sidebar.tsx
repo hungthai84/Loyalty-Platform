@@ -22,20 +22,15 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className, activeView, setActiveView }: SidebarProps) {
-  const { user, systemUser } = useFirebase();
   const [isHovered, setIsHovered] = useState(false);
 
-  const isAdmin = systemUser?.role === "Admin" || user?.email?.toLowerCase() === "hungthai84@gmail.com";
-
-  const allMenuItems = [
+  const allMenuItems: { name: string; view: string; icon: any; isSecondary?: boolean }[] = [
     { name: "Tổng quan", view: "dashboard", icon: LayoutDashboard },
     { name: "Khách hàng", view: "customers", icon: Users },
     { name: "Ưu đãi", view: "loyalty", icon: Award },
-    { name: "Tiếp thị", view: "marketing", icon: Bell },
+    { name: "Tương tác", view: "marketing", icon: Bell },
     { name: "Phân tích", view: "analysis", icon: Sparkles },
     { name: "Báo cáo", view: "analytics", icon: BarChart },
-    { name: "Tích hợp", view: "integrations", icon: Plug },
-    { name: "Cài đặt", view: "settings", icon: Settings, isSecondary: true },
   ];
 
   const menuItems = allMenuItems;
@@ -56,8 +51,8 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
     >
       <div className="space-y-4 py-4 flex-1 overflow-x-hidden">
         <div className={cn(
-          "px-6 py-2 flex items-center transition-all duration-300",
-          !isHovered && "px-[22px]"
+          "h-16 flex items-center transition-all duration-300",
+          isHovered ? "px-6 justify-start" : "justify-center"
         )}>
           <BrandLogo className="w-9 h-9 shrink-0 hover:scale-105 transition-transform duration-300" />
           <AnimatePresence>
@@ -66,9 +61,9 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="text-lg font-extrabold tracking-tight font-heading ml-2 whitespace-nowrap bg-gradient-to-r from-[#fa1b6c] via-[#7c3aed] to-[#131924] bg-clip-text text-transparent"
+                className="text-lg font-extrabold tracking-tight font-heading ml-2 whitespace-nowrap bg-gradient-to-r from-[#eb7a2e] via-[#f59e0b] to-[#131924] bg-clip-text text-transparent"
               >
-                iuPayme
+                Power Service
               </motion.h2>
             )}
           </AnimatePresence>
@@ -81,23 +76,23 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
                 key={item.name}
                 onClick={() => setActiveView(item.view)}
                 className={cn(
-                  "w-full flex items-center rounded-2xl py-3 text-sm font-semibold transition-all group relative",
+                  "flex items-center rounded-2xl text-sm font-semibold transition-all group relative",
                   activeView === item.view
-                    ? "bg-[#131924] text-white shadow-lg shadow-[#131924]/10 dark:bg-white dark:text-[#131924]"
-                    : "text-muted-foreground hover:bg-[#F3F5F8] hover:text-foreground",
-                  !isHovered ? "px-0 justify-center" : "px-4 space-x-3",
-                  item.isSecondary && isHovered && "mt-8 border border-border/50",
-                  item.isSecondary && !isHovered && "mt-8"
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/15"
+                    : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  !isHovered ? "w-11 h-11 mx-auto justify-center px-0" : "w-full py-3 px-4 space-x-3 justify-start",
+                  item.isSecondary && "mt-8",
+                  item.isSecondary && isHovered && "border border-sidebar-border"
                 )}
                 title={!isHovered ? item.name : undefined}
               >
                 <item.icon className={cn(
                   "h-5 w-5 shrink-0 transition-transform duration-300",
-                  activeView === item.view ? "text-white dark:text-[#131924]" : "text-slate-400 group-hover:text-[#131924] group-hover:scale-105"
+                  activeView === item.view ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/45 group-hover:text-sidebar-accent-foreground group-hover:scale-105"
                 )} />
                 
-                <AnimatePresence>
-                  {isHovered && (
+                {isHovered && (
+                  <AnimatePresence>
                     <motion.span
                       initial={{ opacity: 0, x: -5 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -106,8 +101,8 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
                     >
                       {item.name}
                     </motion.span>
-                  )}
-                </AnimatePresence>
+                  </AnimatePresence>
+                )}
 
                 {isHovered && activeView === item.view && (
                   <motion.div 
@@ -122,27 +117,27 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
       </div>
 
       <div className={cn(
-        "px-3 py-4 border-t border-border/50 transition-all",
-        !isHovered && "px-2 flex justify-center"
+        "px-3 py-4 border-t border-border/50 transition-all flex flex-col gap-1.5",
+        !isHovered && "items-center"
       )}>
         <button
           onClick={() => setActiveView("portal")}
           className={cn(
-            "w-full flex items-center rounded-2xl py-3 text-sm font-semibold transition-all group relative justify-center",
+            "flex items-center rounded-2xl text-sm font-semibold transition-all group relative",
             activeView === "portal"
-              ? "bg-[#131924] text-white shadow-lg shadow-[#131924]/10 dark:bg-white dark:text-[#131924]"
-              : "text-muted-foreground hover:bg-[#F3F5F8] hover:text-foreground",
-            !isHovered ? "px-0" : "px-4 space-x-3 justify-start"
+              ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/15"
+              : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            !isHovered ? "w-11 h-11 mx-auto justify-center px-0" : "w-full py-3 px-4 space-x-3 justify-start"
           )}
           title={!isHovered ? "Cổng Loyalty" : undefined}
         >
           <Fingerprint className={cn(
             "h-5 w-5 shrink-0 transition-transform duration-300",
-            activeView === "portal" ? "text-white dark:text-[#131924]" : "text-slate-400 group-hover:text-[#131924] group-hover:scale-105"
+            activeView === "portal" ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/45 group-hover:text-sidebar-accent-foreground group-hover:scale-105"
           )} />
           
-          <AnimatePresence>
-            {isHovered && (
+          {isHovered && (
+            <AnimatePresence>
               <motion.span
                 initial={{ opacity: 0, x: -5 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -151,10 +146,86 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
               >
                 Cổng Loyalty
               </motion.span>
-            )}
-          </AnimatePresence>
+            </AnimatePresence>
+          )}
 
           {isHovered && activeView === "portal" && (
+            <motion.div 
+              layoutId="activeIndicator"
+              className="absolute right-2 w-1.5 h-1.5 rounded-full bg-primary-foreground/50" 
+            />
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveView("settings")}
+          className={cn(
+            "flex items-center rounded-2xl text-sm font-semibold transition-all group relative",
+            activeView === "settings"
+              ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/15"
+              : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            !isHovered ? "w-11 h-11 mx-auto justify-center px-0" : "w-full py-3 px-4 space-x-3 justify-start",
+            isHovered && "border border-sidebar-border"
+          )}
+          title={!isHovered ? "Cài đặt" : undefined}
+        >
+          <Settings className={cn(
+            "h-5 w-5 shrink-0 transition-transform duration-300",
+            activeView === "settings" ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/45 group-hover:text-sidebar-accent-foreground group-hover:scale-105"
+          )} />
+          
+          {isHovered && (
+            <AnimatePresence>
+              <motion.span
+                initial={{ opacity: 0, x: -5 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -5 }}
+                className="whitespace-nowrap overflow-hidden text-sm"
+              >
+                Cài đặt
+              </motion.span>
+            </AnimatePresence>
+          )}
+
+          {isHovered && activeView === "settings" && (
+            <motion.div 
+              layoutId="activeIndicator"
+              className="absolute right-2 w-1.5 h-1.5 rounded-full bg-primary-foreground/50" 
+            />
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveView("integrations")}
+          className={cn(
+            "flex items-center rounded-2xl text-sm font-semibold transition-all group relative",
+            activeView === "integrations"
+              ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/15"
+              : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            !isHovered ? "w-11 h-11 mx-auto justify-center px-0" : "w-full py-3 px-4 space-x-3 justify-start",
+            isHovered && "border border-sidebar-border"
+          )}
+          title={!isHovered ? "Tích hợp" : undefined}
+        >
+          <Plug className={cn(
+            "h-5 w-5 shrink-0 transition-transform duration-300",
+            activeView === "integrations" ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/45 group-hover:text-sidebar-accent-foreground group-hover:scale-105"
+          )} />
+          
+          {isHovered && (
+            <AnimatePresence>
+              <motion.span
+                initial={{ opacity: 0, x: -5 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -5 }}
+                className="whitespace-nowrap overflow-hidden text-sm"
+              >
+                Tích hợp
+              </motion.span>
+            </AnimatePresence>
+          )}
+
+          {isHovered && activeView === "integrations" && (
             <motion.div 
               layoutId="activeIndicator"
               className="absolute right-2 w-1.5 h-1.5 rounded-full bg-primary-foreground/50" 

@@ -238,7 +238,7 @@ export function CustomerDashboard({
   const [email, setEmail] = useState(customer.email || "");
 
   const [timelineFilter, setTimelineFilter] = useState<
-    "all" | "purchase" | "ticket" | "status_change"
+    "all" | "purchase" | "ticket" | "status_change" | "redemption"
   >("all");
   const [clvScenario, setClvScenario] = useState<
     "conservative" | "baseline" | "optimistic"
@@ -656,6 +656,21 @@ export function CustomerDashboard({
     };
   });
 
+  const redemptionEvents = (customer.redemptions || []).map((r: any) => ({
+    id: r.id,
+    type: "redemption" as const,
+    title: `Đổi quà ưu đãi: ${r.rewardName || r.name}`,
+    description: r.description || `Đổi thành công: ${r.rewardName || r.name}`,
+    valueStr: `-${r.pointsUsed || r.pointsRequired || r.points || r.value || 0} pts`,
+    pointsStr: `-${r.pointsUsed || r.pointsRequired || r.points || r.value || 0} pts`,
+    badgeText: r.status || "Đã nhận",
+    badgeStyle: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+    dateStr: formatVietnameseDate(r.date || r.createdAt),
+    timestamp: parseVietnameseDate(r.date || r.createdAt) || Date.now() - 5000000,
+    icon: "🎁",
+    iconColor: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+  }));
+
   const createdDateStr =
     customer.createdAt?.toDate?.()?.toLocaleDateString("vi-VN") ||
     (customer.createdAt
@@ -680,6 +695,7 @@ export function CustomerDashboard({
     ...purchaseEvents,
     ...ticketEvents,
     ...statusEvents,
+    ...redemptionEvents,
     creationEvent,
   ].sort((a, b) => b.timestamp - a.timestamp);
 
@@ -2595,6 +2611,16 @@ export function CustomerDashboard({
                     }`}
                   >
                     Trạng thái ({statusEvents.length + 1})
+                  </button>
+                  <button
+                    onClick={() => setTimelineFilter("redemption")}
+                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      timelineFilter === "redemption"
+                        ? "bg-rose-500 text-white shadow-xs"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Đổi ưu đãi ({redemptionEvents.length})
                   </button>
                 </div>
               </div>

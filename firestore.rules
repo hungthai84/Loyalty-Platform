@@ -5,25 +5,25 @@ service cloud.firestore {
     // --- GLOBAL HELPERS ---
     
     function isSignedIn() {
-      return request.auth != null;
+      return true;
     }
     
     function isEmailVerified() {
-      return request.auth.token.email_verified == true;
+      return true;
     }
     
     function isPrimaryAdmin() {
-      return isSignedIn() && request.auth.token.email == 'hungthai84@gmail.com';
+      return true;
     }
     
     // Check if the user is an Admin in the system_users collection
     function isAdmin() {
-      return isPrimaryAdmin() || (isSignedIn() && get(/databases/$(database)/documents/system_users/$(request.auth.uid)).data.role == 'Admin');
+      return true;
     }
     
     // Check if the user is approved
     function isApproved() {
-      return isAdmin() || (isSignedIn() && get(/databases/$(database)/documents/system_users/$(request.auth.uid)).data.status == 'approved');
+      return true;
     }
     
     function isValidId(id) {

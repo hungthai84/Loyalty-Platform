@@ -26,6 +26,7 @@ export interface Customer {
  orders?: any[];
  tickets?: any[];
  statusHistory?: any[];
+ redemptions?: any[];
  createdAt: any; // ServerTimestamp
  updatedAt: any; // ServerTimestamp
 }
@@ -57,6 +58,7 @@ export interface TierConfig {
  multiplier?: number;
  conditions?: TierCondition[];
  color?: string;
+ description?: string;
  benefits?: { name: string; value: string }[];
  userId: string;
  createdAt: any;
@@ -80,6 +82,7 @@ export interface EarnRule {
  type: string;
  value?: number; // per unit (e.g. per 100k)
  points: number; // points awarded
+ pointsAwarded?: number;
  isActive: boolean;
  userId: string;
  createdAt: any;
@@ -92,6 +95,7 @@ export interface LoyaltyCampaign {
  description?: string;
  rewardType: 'points' | 'voucher' | 'gift';
  rewardValue: number;
+ pointsMultiplier?: number;
  isActive: boolean;
  userId: string;
  createdAt: any;
@@ -130,14 +134,4 @@ export interface Company {
  createdAt: any;
 }
 
-export interface ZimbraSettings {
- id: string;
- smtpHost: string;
- smtpPort: number;
- smtpUser: string;
- smtpPass: string;
- fromEmail: string;
- fromName: string;
- userId: string;
- updatedAt: any;
-}
+ 

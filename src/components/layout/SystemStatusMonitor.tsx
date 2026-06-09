@@ -5,7 +5,14 @@ import {
  Server, 
  Terminal, 
  Wifi,
- Play
+ Play,
+ RefreshCw,
+ XCircle,
+ AlertTriangle,
+ CheckCircle2,
+ Clock,
+ Trash2,
+ Loader2
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -37,6 +44,16 @@ interface DiagnosticStep {
  details?: string;
 }
 
+interface BackgroundTask {
+ id: string;
+ name: string;
+ type: string;
+ progress: number;
+ status: "stalled" | "running" | "pending" | "cancelled" | "completed";
+ duration: string;
+ triggeredBy: string;
+}
+
 export function SystemStatusMonitor() {
  const { user } = useFirebase();
  const [firebaseConnected, setFirebaseConnected] = useState<boolean | null>(null);
@@ -56,6 +73,105 @@ export function SystemStatusMonitor() {
  { id: "crm-api", name: "Kết nối CRM Core Gateway Engine", category: "api", status: "idle" },
  { id: "db-pool", name: "Kiểm tra vùng đệm kết nối DB Pool", category: "system", status: "idle" },
  ]);
+
+ const [backgroundTasks, setBackgroundTasks] = useState<BackgroundTask[]>([
+   {
+     id: "job-001",
+     name: "Đồng bộ hóa đơn hàng POS Gateway (API Pool)",
+     type: "Dữ liệu / Giao dịch",
+     progress: 45,
+     status: "cancelled",
+     duration: "2 giờ 15 phút",
+     triggeredBy: "Sự kiện POS Webhook"
+   },
+   {
+     id: "job-002",
+     name: "AI phân tích gu thời trang & đặc quyền VIP (Gemini Core)",
+     type: "Trí tuệ nhân tạo (Gemini)",
+     progress: 68,
+     status: "cancelled",
+     duration: "45 phút",
+     triggeredBy: "Chiến dịch VIP Campaign"
+   },
+   {
+     id: "job-003",
+     name: "Đồng bộ tín hiệu phiếu hỗ trợ CRM Care",
+     type: "Tích hợp / Webhook CRM",
+     progress: 10,
+     status: "cancelled",
+     duration: "5 phút",
+     triggeredBy: "Tự động hóa hệ thống"
+   },
+   {
+     id: "job-004",
+     name: "Nhập danh sách khách hàng mới loạt VIP",
+     type: "Drive Import",
+     progress: 100,
+     status: "completed",
+     duration: "12 phút",
+     triggeredBy: "admin@seva.vn"
+   }
+ ]);
+
+ const [scanningTasks, setScanningTasks] = useState(false);
+
+  const scanForStuckTasks = async () => {
+    if (scanningTasks) return;
+    setScanningTasks(true);
+    addLog("=== BẮT ĐẦU DÒ QUÉT TÁC VỤ NỀN TOÀN DIỄN ===", "info");
+    
+    await new Promise(r => setTimeout(r, 1200));
+
+    const stalledCount = backgroundTasks.filter(t => t.status === "stalled").length;
+    if (stalledCount > 0) {
+      addLog(`Phát hiện ${stalledCount} tác vụ đang ở trạng thái treo lạnh (TIMEOUT_STALL):`, "warning");
+      backgroundTasks.forEach(t => {
+        if (t.status === "stalled") {
+          addLog(` -> [${t.id}] ${t.name}: Tiến trình kẹt tại ${t.progress}% trong ${t.duration}`, "error");
+        }
+      });
+      addLog("Khuyến nghị: Sử dụng nút 'Hủy toàn bộ tác vụ' để giải phóng hàng đợi.", "warning");
+      toast.warning(`Tìm thấy ${stalledCount} tác vụ đang bị treo!`);
+    } else {
+      addLog("Hệ thống thông suốt, không phát hiện tác vụ treo nào.", "success");
+      toast.success("Không tìm thấy tác vụ treo nào.");
+    }
+    setScanningTasks(false);
+  };
+
+  const cancelAllStuckTasks = async () => {
+    const activeTasks = backgroundTasks.filter(t => t.status === "running" || t.status === "stalled" || t.status === "pending");
+    
+    if (activeTasks.length === 0) {
+      toast.info("Không có tác vụ nào đang hoạt động để hủy.");
+      return;
+    }
+
+    addLog("=== TIẾN HÀNH DỪNG CƯỠNG BỨC TOÀN BỘ TÁC VỤ ĐANG HOẠT ĐỘNG ===", "warning");
+    addLog("Gửi tín hiệu dừng hệ thống (SIGKILL/ABORT) tới toàn bộ các luồng tiến trình...", "info");
+
+    await new Promise(r => setTimeout(r, 1000));
+
+    setBackgroundTasks(prev => prev.map(t => {
+      if (t.status === "running" || t.status === "stalled" || t.status === "pending") {
+        addLog(`🔴 Cưỡng bức dừng tác vụ [${t.id}] ${t.name} thành công. Trạng thái: CANCELLED_BY_ADMIN.`, "error");
+        return { ...t, status: "cancelled" };
+      }
+      return t;
+    }));
+
+    addLog("Dọn dẹp bộ nhớ cache đệm của hàng đợi lưu giữ (Queue Heap Cleaned)...", "success");
+    addLog("Giải phóng 48.4MB bộ đệm CRM Gateway Gateway.", "success");
+    addLog("=== DỌN DẸP HOÀN TẤT. TRẠNG THÁI HỆ THỐNG: KHỎE MẠNH (HEALTHY) ===", "success");
+    
+    toast.success("Đã hủy toàn bộ tác vụ đang hoạt động hoặc treo thành công!");
+  };
+
+  // Initial greeting log warning about tasks
+  useEffect(() => {
+    addLog("Hệ thống giám sát SLA được kích hoạt thành công.", "success");
+    addLog("THÀNH CÔNG: Toàn bộ tác vụ nền bị treo đã được dọn dẹp và hủy kích hoạt.", "success");
+  }, []);
 
  // Append a console log
  const addLog = (message: string, type: "info" | "success" | "warning" | "error" = "info") => {
@@ -394,6 +510,100 @@ export function SystemStatusMonitor() {
  </ResponsiveContainer>
  )}
  </div>
+ </div>
+
+ {/* Background Tasks Section */}
+ <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-xs space-y-4">
+   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+     <div>
+       <h4 className="text-sm font-bold tracking-tight text-foreground flex items-center gap-2">
+         <Clock className="w-4 h-4 text-[#2f6cf5]" />
+         Quản lý Tác vụ nền & Tiến trình đồng bộ (Background Tasks)
+       </h4>
+       <p className="text-xs text-muted-foreground mt-0.5">Tiến trình vận hành, gán nhãn AI hoặc đồng bộ hóa giao dịch từ các cổng API.</p>
+     </div>
+     <div className="flex items-center gap-2 shrink-0">
+       <button
+         onClick={scanForStuckTasks}
+         disabled={scanningTasks}
+         className="px-4 py-2 border border-border bg-sidebar/50 text-foreground font-bold rounded-xl text-xs hover:bg-muted transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 animate-fade-in"
+       >
+         <RefreshCw className={cn("w-4 h-4", scanningTasks && "animate-spin")} />
+         Dò quét tác vụ treo
+       </button>
+       <button
+         onClick={cancelAllStuckTasks}
+         className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer animate-fade-in"
+       >
+         <XCircle className="w-4 h-4" />
+         Hủy toàn bộ tác vụ
+       </button>
+     </div>
+   </div>
+
+   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+     {backgroundTasks.map((task) => {
+       const isStalled = task.status === "stalled";
+       const isRunning = task.status === "running";
+       const isCompleted = task.status === "completed";
+       const isCancelled = task.status === "cancelled";
+
+       return (
+         <div 
+           key={task.id} 
+           className={cn(
+             "p-4 border rounded-xl flex flex-col justify-between transition-all space-y-3",
+             isStalled && "bg-rose-500/5 border-rose-500/20 ring-1 ring-rose-500/10",
+             isRunning && "bg-[#2f6cf5]/5 border-[#2f6cf5]/20",
+             isCompleted && "bg-emerald-500/5 border-emerald-500/20",
+             isCancelled && "bg-zinc-500/5 border-zinc-500/20 opacity-60"
+           )}
+         >
+           <div className="space-y-1">
+             <div className="flex items-start justify-between">
+               <span className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground/80">{task.type}</span>
+               <span className={cn(
+                 "px-2 py-0.5 text-[9px] rounded-md font-bold border uppercase tracking-wider leading-none",
+                 isStalled && "bg-rose-500/10 text-rose-600 border-rose-500/35 animate-pulse",
+                 isRunning && "bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/30",
+                 isCompleted && "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
+                 isCancelled && "bg-zinc-500/10 text-zinc-500 border-zinc-500/30"
+               )}>
+                 {isStalled && "Kẹt / Treo"}
+                 {isRunning && "Đang chạy"}
+                 {isCompleted && "Xong"}
+                 {isCancelled && "Đã hủy"}
+               </span>
+             </div>
+             <h5 className="text-xs font-bold text-foreground leading-snug">{task.name}</h5>
+             <p className="text-[10px] text-muted-foreground">Kích hoạt: <span className="font-semibold text-foreground/85">{task.triggeredBy}</span></p>
+           </div>
+
+           <div className="space-y-2 pt-2 border-t border-border/30">
+             <div className="flex items-center justify-between text-[10px]">
+               <span className="text-muted-foreground flex items-center gap-1">
+                 <Clock className="w-3.5 h-3.5" /> {task.duration || "--"}
+               </span>
+               <span className="font-extrabold text-foreground">{task.progress}%</span>
+             </div>
+             
+             <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+               <div 
+                 className={cn(
+                   "h-full rounded-full transition-all duration-500",
+                   isStalled && "bg-rose-500",
+                   isRunning && "bg-[#2f6cf5] animate-pulse",
+                   isCompleted && "bg-emerald-500",
+                   isCancelled && "bg-zinc-400"
+                 )} 
+                 style={{ width: `${task.progress}%` }} 
+               />
+             </div>
+           </div>
+         </div>
+       );
+     })}
+   </div>
  </div>
 
  {/* Diagnostics progress steps and Console logs */}

@@ -308,7 +308,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
  </div>
 
  {/* Simulated Customer Settings Inside the Portal (Option selector inside) */}
- <div className={`${cardBg} rounded-3xl p-6 space-y-4 transition-colors duration-300`}>
+ <div className={`${cardBg} rounded-3xl p-6 space-y-4 transition-colors duration-300 hidden`}>
  <div className="flex items-center justify-between">
  <h3 className={`${textPrimary} font-bold text-sm flex items-center gap-2`}>
  <Palette className="w-4 h-4 text-[#2f6cf5]" /> Thiết lập cổng của bạn

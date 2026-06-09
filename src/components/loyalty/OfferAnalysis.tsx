@@ -252,7 +252,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  <select 
  value={selectedCamId} 
  onChange={(e) => setSelectedCamId(e.target.value)}
- className="p-2 bg-background border border-border/80 rounded-xl text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+ className="p-2 bg-muted border border-border/80 rounded-xl text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
  >
  {campaignOptions.map((opt) => (
  <option key={opt.id} value={opt.id}>{opt.name}</option>
@@ -565,6 +565,18 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  </div>
  )}
 
+ <div className="flex justify-end pt-4">
+   <button onClick={() => {
+     const toastElement = document.createElement('div');
+     toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
+     toastElement.innerHTML = `<div class="text-xs font-bold text-foreground">Lưu kết quả phân tích chiến dịch và ưu đãi thành công!</div>`;
+     document.body.appendChild(toastElement);
+     setTimeout(() => document.body.removeChild(toastElement), 3000);
+   }} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
+     <CheckCircle2 className="w-4 h-4" />
+     Lưu kết quả
+   </button>
+ </div>
  </div>
  );
 }

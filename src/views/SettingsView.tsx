@@ -24,15 +24,11 @@ import { TierManagementView } from "@/components/loyalty/TierManagementView";
 import { StatusTransitionConfigView } from "@/components/loyalty/StatusTransitionConfigView";
 import { PointRedemptionConfigView } from "@/components/loyalty/PointRedemptionConfigView";
 import { SystemStatusMonitor } from "@/components/layout/SystemStatusMonitor";
-import { SeedDemoData } from "@/components/layout/SeedDemoData";
-import { RoleManager } from "@/components/settings/RoleManager";
-import { ProfileTab } from "@/components/settings/ProfileTab";
 import { CompanyManager } from "@/components/settings/CompanyManager";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 type SettingsTab =
-  | "profile"
   | "companies"
   | "tiers"
   | "redemption"
@@ -40,9 +36,7 @@ type SettingsTab =
   | "transitions"
   | "portal"
   | "api"
-  | "monitor"
-  | "demo"
-  | "roles";
+  | "monitor";
 
 export function SettingsView() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("companies");
@@ -92,7 +86,6 @@ export function SettingsView() {
     { id: "api", label: "Kết nối API", icon: Webhook },
     { id: "portal", label: "Tùy chỉnh Cổng Loyalty", icon: Fingerprint },
     { id: "monitor", label: "Giám sát Hệ thống", icon: Activity },
-    { id: "demo", label: "Sandbox Dữ liệu", icon: Database },
   ];
 
   return (
@@ -185,11 +178,6 @@ export function SettingsView() {
               transition={{ duration: 0.15 }}
               className="h-full"
             >
-              {activeTab === "profile" && (
-                <div className="max-w-6xl mx-auto pb-12">
-                  <ProfileTab />
-                </div>
-              )}
               {activeTab === "companies" && (
                 <div className="max-w-6xl mx-auto pb-12">
                   <CompanyManager />
@@ -400,16 +388,6 @@ export function SettingsView() {
               {activeTab === "monitor" && (
                 <div className="max-w-6xl mx-auto pb-12">
                   <SystemStatusMonitor />
-                </div>
-              )}
-              {activeTab === "demo" && (
-                <div className="max-w-6xl mx-auto pb-12">
-                  <SeedDemoData />
-                </div>
-              )}
-              {activeTab === "roles" && (
-                <div className="max-w-6xl mx-auto pb-12">
-                  <RoleManager />
                 </div>
               )}
             </motion.div>

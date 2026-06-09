@@ -233,7 +233,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
 
  {deleteConfirm && (
  <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
- <div className="bg-card w-full max-w-sm rounded-[24px] shadow-2xl overflow-hidden border border-border animate-in fade-in zoom-in-95 duration-200 p-6 flex flex-col items-center text-center">
+ <div className="bg-card w-full max-w-sm rounded-[10px] shadow-2xl overflow-hidden border border-border animate-in fade-in zoom-in-95 duration-200 p-6 flex flex-col items-center text-center">
  <div className="w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 mb-4">
  <Trash2 className="w-6 h-6" />
  </div>

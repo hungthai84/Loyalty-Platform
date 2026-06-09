@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { X, File as FileIcon, Folder, Map, FileText, Image as ImageIcon, Search, LogOut } from 'lucide-react';
+import { X, File as FileIcon, Folder, Map, FileText, Image as ImageIcon, Search, LogOut, ChevronRight, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { googleSignIn, initAuth, getAccessToken, logout } from '../../lib/workspace';
+import firebaseConfig from '../../../firebase-applet-config.json';
+import { toast } from 'sonner';
+
+declare global {
+  interface Window {
+    gapi: any;
+    google: any;
+  }
+}
 
 interface GoogleDrivePickerProps {
   onPick: (file: any) => void;
@@ -15,6 +24,48 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentFolder, setCurrentFolder] = useState<string>('root');
   const [folderHistory, setFolderHistory] = useState<{id: string, name: string}[]>([{id: 'root', name: 'My Drive'}]);
+
+  const [gapiLoaded, setGapiLoaded] = useState(false);
+  const [pickerLoaded, setPickerLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Dynamically load Google Client API (gapi)
+    let script: HTMLScriptElement | null = document.querySelector('script[src="https://apis.google.com/js/api.js"]');
+    
+    const loadPicker = () => {
+      if (window.gapi) {
+        window.gapi.load('picker', {
+          callback: () => {
+            setPickerLoaded(true);
+          },
+          onerror: () => {
+            setLoadError("Không thể tải thư viện Google Picker");
+          }
+        });
+      }
+    };
+
+    if (!script) {
+      script = document.createElement('script');
+      script.src = 'https://apis.google.com/js/api.js';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        setGapiLoaded(true);
+        loadPicker();
+      };
+      script.onerror = () => {
+        setLoadError("Không thể tải Google API Loader");
+      };
+      document.body.appendChild(script);
+    } else {
+      setGapiLoaded(true);
+      if (window.gapi) {
+        loadPicker();
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = initAuth(
@@ -46,6 +97,46 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
     await logout();
     setNeedsAuth(true);
     setFiles([]);
+  };
+
+  const openOfficialPicker = async () => {
+    const token = await getAccessToken();
+    if (!token) {
+      toast.error("Vui lòng kết nối Google Drive trước để lấy quyền truy cập!");
+      return;
+    }
+
+    if (!window.gapi || !window.google || !window.google.picker) {
+      toast.error("Không thể khởi động Google Picker trực tiếp. Các trình chặn quảng cáo hoặc cơ chế bảo mật sandbox iframe đang ngăn chặn tải script Google. Vui lòng sử dụng Trình duyệt bên dưới hoặc chạy ứng dụng ở Tab mới.");
+      return;
+    }
+
+    try {
+      const docsView = new window.google.picker.DocsView(window.google.picker.ViewId.DOCS);
+      docsView.setMimeTypes("text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.google-apps.spreadsheet");
+
+      const picker = new window.google.picker.PickerBuilder()
+        .addView(docsView)
+        .setOAuthToken(token)
+        .setDeveloperKey(firebaseConfig.apiKey)
+        .setAppId(firebaseConfig.projectId)
+        .setCallback((data: any) => {
+          if (data.action === window.google.picker.Action.PICKED) {
+            const doc = data.docs[0];
+            onPick({
+              id: doc.id,
+              name: doc.name,
+              mimeType: doc.mimeType,
+              url: doc.url || `https://drive.google.com/open?id=${doc.id}`
+            });
+          }
+        })
+        .build();
+      picker.setVisible(true);
+    } catch (err: any) {
+      console.error("Google Picker builder error:", err);
+      toast.error("Lỗi khởi tạo Google Picker: " + err.message);
+    }
   };
 
   const fetchFiles = async (token: string, folderId: string, query: string = '') => {
@@ -118,30 +209,39 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 text-left">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 text-left font-sans">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-100">
         
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white">
-          <h2 className="text-xl font-semibold text-gray-900">Select File from Google Drive</h2>
-          <button onClick={onCancel} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <div>
+            <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <svg className="w-5 h-5 text-blue-600 animate-pulse" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z" />
+              </svg>
+              Kết nối Google Workspace
+            </h2>
+            <p className="text-[11px] text-slate-400 mt-0.5">Nhập danh sách khách hàng trực tiếp từ Google Drive hoặc Google Picker</p>
+          </div>
+          <button onClick={onCancel} className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-auto bg-gray-50/50">
+        <div className="flex-1 overflow-auto bg-gray-50/50 flex flex-col">
           {needsAuth ? (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-4">
-              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-                <FileIcon className="w-8 h-8 text-blue-500" />
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4 my-auto">
+              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
+                <FileIcon className="w-8 h-8 text-blue-500 animate-bounce" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900">Connect Google Drive</h3>
-              <p className="text-gray-500 max-w-md">
-                Sign in with Google to browse and select files directly from your Drive.
+              <h3 className="text-base font-bold text-gray-900">Kết nối Tài khoản Google</h3>
+              <p className="text-xs text-gray-500 max-w-sm leading-relaxed">
+                Đăng nhập tài khoản Google của bạn để chọn tệp trực tiếp từ Drive và sử dụng giao diện Google Picker chính thức.
               </p>
+              
               <button 
                 onClick={handleLogin} 
                 disabled={isLoggingIn}
-                className="gsi-material-button mt-4"
+                className="gsi-material-button mt-4 shadow-sm hover:shadow-md border-slate-350 transition-all font-sans"
               >
                 <div className="gsi-material-button-state"></div>
                 <div className="gsi-material-button-content-wrapper">
@@ -154,71 +254,99 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
                       <path fill="none" d="M0 0h48v48H0z"></path>
                     </svg>
                   </div>
-                  <span className="gsi-material-button-contents">{isLoggingIn ? 'Signing in...' : 'Sign in with Google'}</span>
+                  <span className="gsi-material-button-contents font-bold">{isLoggingIn ? 'Đang kết nối...' : 'Liên kết tài khoản Google'}</span>
                   <span style={{display: 'none'}}>Sign in with Google</span>
                 </div>
               </button>
             </div>
           ) : (
-            <div className="flex flex-col h-full">
-              <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2 overflow-x-auto text-sm text-gray-600 pb-1 flex-1">
+            <div className="flex flex-col h-full flex-1">
+              {/* Premium Google Picker Prompt */}
+              <div className="p-4 bg-blue-50/50 border-b border-blue-100/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-blue-700 font-bold text-xs uppercase tracking-wider">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                    Google Picker Đã Được Kích Hoạt!
+                  </div>
+                  <p className="text-[11px] text-slate-500 max-w-lg leading-relaxed font-sans">
+                    <strong>Khuyên dùng:</strong> Bấm nút bên phải để kích hoạt hộp chọn chính chủ của Google. Hỗ trợ tìm kiếm thông minh, xem biểu mẫu, lọc tệp thuận tiện. Đảm bảo bạn không chặn popup của website.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={openOfficialPicker}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-xs py-2.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer w-full md:w-auto shrink-0"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z" />
+                  </svg>
+                  Bật Google Picker chính thức 🔗
+                </button>
+              </div>
+
+              {/* Inline Browser Navigation */}
+              <div className="p-4 bg-white border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-1 overflow-x-auto text-xs text-gray-600 pb-1 flex-1 w-full">
+                  <span className="font-bold text-[10px] text-gray-400 uppercase tracking-widest shrink-0 mr-1">Duyệt nhanh:</span>
                   {folderHistory.map((folder, index) => (
                     <React.Fragment key={folder.id}>
                       <button 
+                        type="button"
                         onClick={() => handleNavigateBack(index)}
-                        className="hover:bg-gray-100 px-2 py-1 rounded transition-colors whitespace-nowrap"
+                        className="hover:bg-gray-100 px-2 py-1 rounded transition-colors whitespace-nowrap font-bold text-gray-700"
                       >
                         {folder.name}
                       </button>
-                      {index < folderHistory.length - 1 && <span className="text-gray-400">/</span>}
+                      {index < folderHistory.length - 1 && <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />}
                     </React.Fragment>
                   ))}
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <form onSubmit={handleSearch} className="relative">
-                    <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <form onSubmit={handleSearch} className="relative flex-1 sm:flex-initial">
+                    <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
-                      placeholder="Search files..."
+                      placeholder="Tìm kiếm tệp..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 pr-4 py-1.5 text-sm border-gray-200 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+                      className="pl-8 pr-4 py-1.5 text-xs border-gray-200 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-36 bg-gray-50/50"
                     />
                   </form>
-                  <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors" title="Disconnect Google Drive">
+                  <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Đăng xuất Google">
                     <LogOut className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              <div className="p-4 flex-1 overflow-auto">
+              {/* Subfiles & Folder Visuals */}
+              <div className="p-4 flex-1 overflow-auto bg-gray-50/20 max-h-[40vh]">
                 {loading ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 ) : files.length === 0 ? (
-                  <div className="text-center py-12 text-gray-500">
-                    <FileIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                    <p>No files found.</p>
+                  <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200 p-8 max-w-md mx-auto my-4">
+                    <FileIcon className="w-10 h-10 mx-auto text-gray-300 mb-3" />
+                    <p className="text-xs">Không có tệp CSV hoặc trang tính phù hợp tại đây.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                     {files.map((file) => (
                       <button
                         key={file.id}
+                        type="button"
                         onClick={() => handleFileClick(file)}
-                        className="flex flex-col items-center p-4 bg-white border border-gray-100 rounded-lg hover:border-blue-500 hover:shadow-md transition-all text-center group"
+                        className="flex flex-col items-center p-3 bg-white border border-gray-150 rounded-xl hover:border-blue-500 hover:shadow-sm transition-all text-center group cursor-pointer"
                       >
-                        <div className="w-12 h-12 flex items-center justify-center bg-gray-50 rounded-lg mb-3 group-hover:bg-blue-50 transition-colors">
+                        <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-lg mb-2 group-hover:bg-blue-50 transition-colors">
                           {file.thumbnailLink ? (
-                            <img src={file.thumbnailLink} alt={file.name} className="w-10 h-10 object-cover rounded" />
+                            <img src={file.thumbnailLink} alt={file.name} referrerPolicy="no-referrer" className="w-8 h-8 object-cover rounded" />
                           ) : (
                             getFileIcon(file.mimeType)
                           )}
                         </div>
-                        <span className="text-sm font-medium text-gray-700 truncate w-full" title={file.name}>
+                        <span className="text-xs font-semibold text-gray-700 truncate w-full px-1" title={file.name}>
                           {file.name}
                         </span>
                       </button>
@@ -236,17 +364,17 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
           background-color: white;
           background-image: none;
           border: 1px solid #747775;
-          border-radius: 4px;
+          border-radius: 8px;
           box-sizing: border-box;
           color: #1f1f1f;
           cursor: pointer;
-          font-family: 'Roboto', arial, sans-serif;
-          font-size: 14px;
-          height: 40px;
+          font-family: inherit;
+          font-size: 13px;
+          height: 38px;
           letter-spacing: 0.25px;
           outline: none;
           overflow: hidden;
-          padding: 0 12px;
+          padding: 0 16px;
           position: relative;
           text-align: center;
           transition: background-color .218s, border-color .218s, box-shadow .218s;
@@ -257,10 +385,10 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
           min-width: min-content;
         }
         .gsi-material-button .gsi-material-button-icon {
-          height: 20px;
-          margin-right: 12px;
-          min-width: 20px;
-          width: 20px;
+          height: 18px;
+          margin-right: 10px;
+          min-width: 18px;
+          width: 18px;
         }
         .gsi-material-button .gsi-material-button-content-wrapper {
           align-items: center;
@@ -274,8 +402,7 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
         }
         .gsi-material-button .gsi-material-button-contents {
           flex-grow: 1;
-          font-family: 'Roboto', arial, sans-serif;
-          font-weight: 500;
+          font-weight: 600;
           overflow: hidden;
           text-overflow: ellipsis;
           vertical-align: top;
