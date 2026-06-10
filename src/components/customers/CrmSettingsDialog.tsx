@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { X, Star, Building2, SlidersHorizontal, GitCompare } from "lucide-react";
 import * as motion from "motion/react-client";
-import { TierManagementView } from "@/components/loyalty/TierManagementView";
 import { CompanyManager } from "@/components/settings/CompanyManager";
 import { AttributeManager } from "@/components/customers/AttributeManager";
 import { StatusTransitionConfigView } from "@/components/loyalty/StatusTransitionConfigView";
@@ -15,7 +14,7 @@ interface CrmSettingsDialogProps {
 type TabType = "tiers" | "companies" | "custom_fields" | "transitions";
 
 export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("tiers");
+  const [activeTab, setActiveTab] = useState<TabType>("companies");
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
@@ -48,7 +47,6 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
         {/* Tab Navigation bar */}
         <div className="flex border-b border-border bg-muted/10 px-6 py-2 gap-1 overflow-x-auto">
           {[
-            { id: "tiers", label: "Cấu hình phân hạng VIP", icon: Star, color: "text-amber-500" },
             { id: "companies", label: "Công ty & Chi nhánh", icon: Building2, color: "text-blue-500" },
             { id: "transitions", label: "Quy luật trạng thái", icon: GitCompare, color: "text-purple-500" },
             { id: "custom_fields", label: "Trường dữ liệu tùy chỉnh", icon: SlidersHorizontal, color: "text-emerald-500" },
@@ -74,12 +72,6 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
 
         {/* Tab Body Contents */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-background/50">
-          {activeTab === "tiers" && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              <TierManagementView />
-            </div>
-          )}
-
           {activeTab === "companies" && (
             <div className="max-w-4xl mx-auto space-y-6">
               <div className="bg-white/50 backdrop-blur-sm p-6 rounded-3xl border border-border/50 mb-6 flex items-center justify-between text-left">

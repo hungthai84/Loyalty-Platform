@@ -37,6 +37,35 @@ export const GUEST_COMPANIES: Company[] = [
  userId: "guest",
  createdAt: daysAgo(95),
  },
+ {
+ id: "comp_revaretail",
+ name: "Revaretail",
+ logoUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=150&auto=format&fit=crop&q=60",
+ address: "Trung tâm Đào tạo Kỹ năng Kỹ thuật số",
+ type: "company",
+ userId: "guest",
+ createdAt: daysAgo(10),
+ },
+ {
+ id: "comp_reva_b1",
+ name: "Chi nhánh B1",
+ logoUrl: "https://images.unsplash.com/photo-1556740749-887f6717d7e4?w=150&auto=format&fit=crop&q=60",
+ address: "Khu B1, TP. Hồ Chí Minh",
+ type: "branch",
+ parentId: "comp_revaretail",
+ userId: "guest",
+ createdAt: daysAgo(5),
+ },
+ {
+ id: "comp_reva_b2",
+ name: "Chi nhánh B2",
+ logoUrl: "https://images.unsplash.com/photo-1556740749-887f6717d7e4?w=150&auto=format&fit=crop&q=60",
+ address: "Khu B2, Hà Nội",
+ type: "branch",
+ parentId: "comp_revaretail",
+ userId: "guest",
+ createdAt: daysAgo(5),
+ },
 ];
 
 export const GUEST_ATTRIBUTES: AttributeDefinition[] = [

@@ -51,9 +51,37 @@ export function CompanyManager() {
   });
 
   useEffect(() => {
-    if (!user?.uid || user?.isLocal) {
+    if (!user) {
       setLoading(false);
       return;
+    }
+
+    if (user.isLocal) {
+      const loadLocalData = async () => {
+        try {
+          const { getGuestCompanies } = await import("@/data/guestData");
+          const list = getGuestCompanies();
+          list.sort((a, b) => a.name.localeCompare(b.name));
+          setCompanies(list);
+        } catch (error) {
+          console.error("Error loading local companies:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadLocalData();
+
+      const handleDataChange = () => {
+        const load = async () => {
+          const { getGuestCompanies } = await import("@/data/guestData");
+          const list = getGuestCompanies();
+          list.sort((a, b) => a.name.localeCompare(b.name));
+          setCompanies(list);
+        };
+        load();
+      };
+      window.addEventListener("crm_guest_data_changed", handleDataChange);
+      return () => window.removeEventListener("crm_guest_data_changed", handleDataChange);
     }
 
     const companiesPath = "companies";
@@ -80,28 +108,37 @@ export function CompanyManager() {
   }, [user]);
 
   const seedDemoData = async () => {
-    if (!user?.uid || user?.isLocal) return toast.error("Vui lòng đăng nhập để đồng bộ dữ liệu");
-    
     setLoading(true);
     try {
       const { GUEST_COMPANIES } = await import("@/data/guestData");
-      const companiesPath = "companies";
-      
-      for (const comp of GUEST_COMPANIES) {
-        // Simple map from guest data to firestore format
-        const { id, ...data } = comp;
-        const newRef = doc(db, companiesPath, id.startsWith('comp_') ? id : `comp_${Math.random().toString(36).substr(2, 9)}`);
-        await setDoc(newRef, {
-          ...data,
-          userId: user.uid,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        }, { merge: true });
+      if (!user || user.isLocal) {
+        // Local mode: seed to localStorage
+        const { setLocalStorageData } = await import("@/data/guestData");
+        setLocalStorageData("crm_guest_companies_v5", GUEST_COMPANIES);
+        setCompanies(GUEST_COMPANIES);
+        toast.success("Đã khởi tạo dữ liệu mẫu (Chế độ Local) thành công");
+      } else {
+        // Firebase mode: seed to Firestore
+        const companiesPath = "companies";
+        const { writeBatch } = await import("firebase/firestore");
+        const batch = writeBatch(db);
+        
+        for (const comp of GUEST_COMPANIES) {
+          const { id, ...data } = comp;
+          const newRef = doc(db, companiesPath, id);
+          batch.set(newRef, {
+            ...data,
+            userId: user.uid,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          }, { merge: true });
+        }
+        await batch.commit();
+        toast.success("Đã đồng bộ dữ liệu mẫu lên hệ thống thành công");
       }
-      
-      toast.success("Đã khởi tạo dữ liệu mẫu thành công");
     } catch (error: any) {
-      toast.error("Lỗi khởi tạo: " + error.message);
+      console.error(error);
+      toast.error("Lỗi khởi tạo: " + (error.message || "Unknown error"));
     } finally {
       setLoading(false);
     }
@@ -137,34 +174,46 @@ export function CompanyManager() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return toast.error("Vui lòng nhập tên");
-    if (!user?.uid || user?.isLocal)
-      return toast.error(
-        "Vui lòng đăng nhập bằng Google để thực hiện thao tác này",
-      );
+    if (!user) return;
 
     try {
-      const companiesPath = "companies";
-      if (isEditing && editId) {
-        await updateDoc(doc(db, companiesPath, editId), {
+      if (user.isLocal) {
+        const { saveGuestCompany } = await import("@/data/guestData");
+        const id = isEditing && editId ? editId : `comp_${Date.now()}`;
+        saveGuestCompany({
+          id,
           name: formData.name,
           address: formData.address,
           type: formData.type,
           parentId: formData.type === "branch" ? formData.parentId : null,
-          updatedAt: serverTimestamp(),
+          userId: "guest",
+          createdAt: new Date(),
         });
-        toast.success("Cập nhật thành công");
+        toast.success(isEditing ? "Cập nhật thành công" : "Thêm mới thành công");
       } else {
-        const newRef = doc(collection(db, companiesPath));
-        await setDoc(newRef, {
-          name: formData.name,
-          address: formData.address,
-          type: formData.type,
-          parentId: formData.type === "branch" ? formData.parentId : null,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          userId: user.uid,
-        });
-        toast.success("Thêm mới thành công");
+        const companiesPath = "companies";
+        if (isEditing && editId) {
+          await updateDoc(doc(db, companiesPath, editId), {
+            name: formData.name,
+            address: formData.address,
+            type: formData.type,
+            parentId: formData.type === "branch" ? formData.parentId : null,
+            updatedAt: serverTimestamp(),
+          });
+          toast.success("Cập nhật thành công");
+        } else {
+          const newRef = doc(collection(db, companiesPath));
+          await setDoc(newRef, {
+            name: formData.name,
+            address: formData.address,
+            type: formData.type,
+            parentId: formData.type === "branch" ? formData.parentId : null,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            userId: user.uid,
+          });
+          toast.success("Thêm mới thành công");
+        }
       }
       setShowForm(false);
       window.dispatchEvent(
@@ -176,19 +225,25 @@ export function CompanyManager() {
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (!user?.uid || user?.isLocal)
-      return toast.error("Vui lòng đăng nhập bằng Google để thực hiện thao tác này");
-    
+    if (!user) return;
     setDeleteConfirm({ id, name });
   };
 
   const executeDelete = async () => {
-    if (!deleteConfirm) return;
+    if (!deleteConfirm || !user) return;
     
     try {
-      const companiesPath = "companies";
-      await deleteDoc(doc(db, companiesPath, deleteConfirm.id));
-      toast.success("Xóa thành công");
+      if (user.isLocal) {
+        const { getGuestCompanies, setLocalStorageData } = await import("@/data/guestData");
+        const list = getGuestCompanies();
+        const updated = list.filter(c => c.id !== deleteConfirm.id);
+        setLocalStorageData("crm_guest_companies_v5", updated);
+        toast.success("Xóa thành công");
+      } else {
+        const companiesPath = "companies";
+        await deleteDoc(doc(db, companiesPath, deleteConfirm.id));
+        toast.success("Xóa thành công");
+      }
       window.dispatchEvent(
         new CustomEvent("crm-config-saved", { detail: { tab: "companies" } }),
       );
@@ -224,12 +279,20 @@ export function CompanyManager() {
         <h3 className="font-bold text-foreground flex items-center gap-2">
           <Briefcase className="w-5 h-5 text-primary" /> DANH SÁCH TỔ CHỨC
         </h3>
-        <button
-          onClick={() => handleOpenForm()}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-sm"
-        >
-          <Plus className="w-4 h-4" /> Thêm Công ty
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={seedDemoData}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-sm font-bold rounded-xl hover:bg-emerald-500 hover:text-white transition-colors"
+          >
+            Tạo dữ liệu Demo
+          </button>
+          <button
+            onClick={() => handleOpenForm()}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> Thêm Công ty
+          </button>
+        </div>
       </div>
 
       <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-sm min-h-[400px]">

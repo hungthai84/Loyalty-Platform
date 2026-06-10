@@ -28,7 +28,12 @@ export function CustomerSearch({ customers, onSelectCustomer, value, onChange }:
   const searchResults = customers.filter(c => {
     if (!value) return false;
     const q = value.toLowerCase();
-    return c.name?.toLowerCase().includes(q) || c.id?.toLowerCase().includes(q) || c.phone?.toLowerCase().includes(q);
+    return (
+      c.name?.toLowerCase().includes(q) || 
+      c.id?.toLowerCase().includes(q) || 
+      c.phone?.toLowerCase().includes(q) ||
+      c.email?.toLowerCase().includes(q)
+    );
   }).slice(0, 5); // Show top 5 matches
 
   const handleSelect = (customer: Customer) => {

@@ -8,11 +8,15 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { kpiData, revenueData, recentCustomers } from "@/data/mockData";
-import { getGuestCustomers } from "@/data/guestData";
+import { getGuestCustomers, saveGuestCustomer } from "@/data/guestData";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { Customer } from "@/types";
+import { formatCurrency, getCurrency } from "@/lib/currency";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
+import confetti from "canvas-confetti";
 import {
   XAxis,
   YAxis,
@@ -23,6 +27,8 @@ import {
   Area,
   BarChart,
   Bar,
+  LineChart,
+  Line,
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -63,7 +69,15 @@ import {
   CheckCircle,
   HelpCircle,
   TrendingUp,
+  Gift,
+  Trophy,
+  Crown,
+  ArrowRight,
+  UserPlus,
+  Megaphone,
+  Printer,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import * as motion from "motion/react-client";
 import { DatabaseStatus } from "@/components/layout/DatabaseStatus";
 import {
@@ -119,6 +133,334 @@ export function DashboardView() {
     }
   }, [user]);
 
+  // Floating Quick Action States
+  const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
+  const [showLaunchCampaignModal, setShowLaunchCampaignModal] = useState(false);
+
+  // Add Customer Form States
+  const [newCustName, setNewCustName] = useState("");
+  const [newCustEmail, setNewCustEmail] = useState("");
+  const [newCustPhone, setNewCustPhone] = useState("");
+  const [newCustTier, setNewCustTier] = useState("Essential");
+  const [newCustPoints, setNewCustPoints] = useState(100);
+
+  // Launch Campaign Form States
+  const [newCampName, setNewCampName] = useState("");
+  const [newCampMultiplier, setNewCampMultiplier] = useState(1.5);
+  const [newCampTarget, setNewCampTarget] = useState("Tất cả hội viên");
+  const [newCampDays, setNewCampDays] = useState(14);
+
+  const handleQuickAddCustomer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCustName.trim()) {
+      toast.error("Vui lòng điền tên khách hàng");
+      return;
+    }
+
+    const newCust: any = {
+      id: "KH_" + Math.floor(1000 + Math.random() * 9000),
+      name: newCustName,
+      email: newCustEmail || "",
+      phone: newCustPhone || "",
+      tier: newCustTier,
+      points: Number(newCustPoints) || 0,
+      clv: 0,
+      activityStatus: "active",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      userId: user?.id || "guest",
+      customFields: {
+        last_purchase: new Date().toISOString(),
+        clv: 0,
+      }
+    };
+
+    if (!user || user.isLocal) {
+      saveGuestCustomer(newCust);
+    } else {
+      // Set to Firestore if authentication and project connected
+      try {
+        const { addDoc, collection, serverTimestamp } = require("firebase/firestore");
+        addDoc(collection(db, "customers"), {
+          name: newCust.name,
+          email: newCust.email,
+          phone: newCust.phone,
+          tier: newCust.tier,
+          points: newCust.points,
+          clv: 0,
+          activityStatus: "active",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          userId: user.uid,
+          customFields: {
+            last_purchase: new Date().toISOString(),
+            clv: 0,
+          }
+        });
+      } catch (err) {
+        console.error("Firestore user write error:", err);
+      }
+    }
+
+    window.dispatchEvent(new CustomEvent("crm_guest_data_changed"));
+
+    confetti({
+      particleCount: 80,
+      spread: 60,
+      origin: { y: 0.7 }
+    });
+
+    toast.success(`Đã thêm thành công khách hàng ${newCustName}!`);
+    setShowAddCustomerModal(false);
+
+    // Reset fields
+    setNewCustName("");
+    setNewCustEmail("");
+    setNewCustPhone("");
+    setNewCustTier("Essential");
+    setNewCustPoints(100);
+  };
+
+  const handleLaunchCampaign = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCampName.trim()) {
+      toast.error("Vui lòng nhập tên chiến dịch");
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const end = new Date();
+    end.setDate(end.getDate() + Number(newCampDays));
+    const endStr = end.toISOString().split('T')[0];
+
+    const newCamp = {
+      id: "camp-" + Math.floor(1000 + Math.random() * 9000),
+      name: newCampName,
+      multiplier: Number(newCampMultiplier),
+      startDate: todayStr,
+      endDate: endStr,
+      targetAudience: newCampTarget,
+      isActive: true,
+      notes: `Chiến dịch nhân điểm x${newCampMultiplier} khởi chạy nhanh từ Dashboard.`
+    };
+
+    const savedCampaigns = localStorage.getItem("marketing_point_campaigns");
+    let pointCampaignsList = [];
+    if (savedCampaigns) {
+      try {
+        pointCampaignsList = JSON.parse(savedCampaigns);
+      } catch (e) {}
+    }
+    pointCampaignsList.unshift(newCamp);
+    localStorage.setItem("marketing_point_campaigns", JSON.stringify(pointCampaignsList));
+
+    if (user && !user.isLocal) {
+      try {
+        const { addDoc, collection } = require("firebase/firestore");
+        addDoc(collection(db, "loyalty_campaigns"), {
+          name: newCamp.name,
+          multiplier: newCamp.multiplier,
+          startDate: newCamp.startDate,
+          endDate: newCamp.endDate,
+          targetAudience: newCamp.targetAudience,
+          isActive: true,
+          notes: newCamp.notes
+        });
+      } catch (err) {
+        console.error("Firestore campaign write error:", err);
+      }
+    }
+
+    window.dispatchEvent(new CustomEvent("crm_guest_data_changed"));
+
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+
+    toast.success(`Đã khởi chạy chiến dịch "${newCampName}" thành công!`);
+    setShowLaunchCampaignModal(false);
+
+    setNewCampName("");
+    setNewCampMultiplier(1.5);
+    setNewCampTarget("Tất cả hội viên");
+    setNewCampDays(14);
+  };
+
+  const handlePrintLoyaltyReport = () => {
+    const toastId = toast.loading("Đang kết xuất dữ liệu báo cáo Seva VIP...");
+    try {
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+      });
+
+      const primaryColor = [47, 108, 245];
+      const darkColor = [31, 41, 55];
+      const grayColor = [107, 114, 128];
+
+      const reportDate = new Date().toLocaleString("vi-VN", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      // Top line accent
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(0, 0, 210, 6, "F");
+
+      // Title header
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+      doc.text("SEVA CLUB - REPORT SUMMARY", 14, 20);
+
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
+      doc.text("Báo cáo phân tích chương trình Loyalty & Dữ liệu VIP", 14, 25);
+
+      doc.setFontSize(9);
+      doc.text(`Thời gian: ${reportDate}`, 196, 20, { align: "right" });
+      doc.text("Chế độ: Đồng bộ thời gian thực", 196, 25, { align: "right" });
+
+      doc.setDrawColor(229, 231, 235);
+      doc.setLineWidth(0.5);
+      doc.line(14, 30, 196, 30);
+
+      // Section 1: KPI Statistics
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text("1. Chỉ số Loyalty tổng quan (Heart Metrics)", 14, 40);
+
+      const totalCust = allCustomers.length;
+      const totalPoints = allCustomers.reduce((sum, c) => sum + (c.points || 0), 0);
+      const avgPoints = totalCust > 0 ? Math.round(totalPoints / totalCust) : 0;
+      
+      const atelierCount = allCustomers.filter(c => (c.points || 0) >= 10000).length;
+      const iconCount = allCustomers.filter(c => (c.points || 0) >= 2500 && (c.points || 0) < 10000).length;
+      const essentialCount = allCustomers.filter(c => (c.points || 0) >= 500 && (c.points || 0) < 2500).length;
+
+      // Draw box widgets
+      doc.setFillColor(249, 250, 251);
+      doc.rect(14, 45, 56, 25, "F");
+      doc.rect(74, 45, 56, 25, "F");
+      doc.rect(134, 45, 62, 25, "F");
+
+      doc.setDrawColor(209, 213, 219);
+      doc.setLineWidth(0.3);
+      doc.rect(14, 45, 56, 25, "S");
+      doc.rect(74, 45, 56, 25, "S");
+      doc.rect(134, 45, 62, 25, "S");
+
+      doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+      doc.setFontSize(10);
+      doc.setFont("Helvetica", "bold");
+      doc.text("Tổng sỹ số VIP", 18, 51);
+      doc.setFontSize(15);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text(`${totalCust.toLocaleString()} KH`, 18, 62);
+
+      doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+      doc.setFontSize(10);
+      doc.setFont("Helvetica", "bold");
+      doc.text("Điểm tích lũy tích tụ", 78, 51);
+      doc.setFontSize(15);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text(`${totalPoints.toLocaleString()} pts`, 78, 62);
+
+      doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+      doc.setFontSize(10);
+      doc.setFont("Helvetica", "bold");
+      doc.text("Bình quân / Khách", 138, 51);
+      doc.setFontSize(15);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text(`${avgPoints.toLocaleString()} pts`, 138, 62);
+
+      // Section 2: Tiers
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text("2. Phân lớp cơ cấu Hội viên (Membership Tiers)", 14, 82);
+
+      const tableTiers = [
+        ["Cấp Atelier (Kim Cương)", "Từ 10,000 pts", `${atelierCount} 成 viên`],
+        ["Cấp Icon (Vàng)", "Từ 2,500 pts", `${iconCount} 成 viên`],
+        ["Cấp Essential (Bạc)", "Từ 500 pts", `${essentialCount} 成 viên`],
+      ];
+
+      (doc as any).autoTable({
+        startY: 88,
+        head: [["Thứ hạng", "Yêu cầu tối thiểu", "Số lượng thành viên"]],
+        body: tableTiers,
+        theme: "plain",
+        headStyles: {
+          fillColor: [243, 244, 246],
+          textColor: darkColor,
+          fontStyle: "bold",
+        },
+        styles: {
+          fontSize: 9.5,
+          font: "Helvetica",
+        },
+        margin: { left: 14, right: 14 },
+      });
+
+      // Section 3: High loyalty
+      const nextY = (doc as any).lastAutoTable.finalY + 12;
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text("3. Top 5 siêu hạt nhân tích lũy (Top Elite Members)", 14, nextY);
+
+      const topElite = [...allCustomers]
+        .sort((a, b) => (b.points || 0) - (a.points || 0))
+        .slice(0, 5);
+
+      const eliteBody = topElite.map((c, i) => [
+        `#${i + 1}`,
+        c.name,
+        c.phone || "—",
+        c.tier || "Essential",
+        `${(c.points || 0).toLocaleString()} pts`,
+      ]);
+
+      (doc as any).autoTable({
+        startY: nextY + 6,
+        head: [["XH", "Họ tên", "Số điện thoại", "Hạng hội viên", "Điểm tích lũy"]],
+        body: eliteBody,
+        theme: "striped",
+        headStyles: {
+          fillColor: primaryColor,
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+        },
+        styles: {
+          fontSize: 9,
+          font: "Helvetica",
+        },
+        margin: { left: 14, right: 14 },
+      });
+
+      const finalY = (doc as any).lastAutoTable.finalY + 15;
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
+      doc.text("(*) Tài liệu lưu hành nội bộ của hệ thống Seva Club.", 14, finalY);
+
+      doc.save("Bao_Cao_Loyalty_Seva_Club.pdf");
+      toast.success("Bản báo cáo PDF đã được khởi tạo và tải về máy!", { id: toastId });
+    } catch (err: any) {
+      console.error(err);
+      toast.error(`Có lỗi xảy ra: ${err.message}`, { id: toastId });
+    }
+  };
+
   // Digital Power Service Wallet dynamic states matching the design mockup layout
   const [walletBalance, setWalletBalance] = useState(7610.00);
   const [is2FAEnabled, setIs2FAEnabled] = useState(true);
@@ -153,6 +495,26 @@ export function DashboardView() {
   };
 
   useEffect(() => {
+    // Stock Watcher: Check for low stock items and show toast
+    const LOW_STOCK_ITEMS = [
+      { name: "Voucher High-Tea Atelier", stock: 8 },
+      { name: "Vé mời Private Showcase", stock: 3 }
+    ];
+
+    const timer = setTimeout(() => {
+      LOW_STOCK_ITEMS.forEach(item => {
+        toast.warning("Cảnh báo tồn kho thấp", {
+          description: `Mục "${item.name}" chỉ còn ${item.stock} đơn vị. Hãy nhập thêm!`,
+          icon: <Gift className="w-4 h-4 text-amber-500" />,
+          duration: 10000,
+        });
+      });
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
@@ -170,6 +532,15 @@ export function DashboardView() {
   const [endDate, setEndDate] = useState("2026-05-27");
   const [activePreset, setActivePreset] = useState<string>("30days");
   const [isOpen, setIsOpen] = useState(false);
+  const [currencyConfig, setCurrencyConfig] = useState(getCurrency());
+
+  useEffect(() => {
+    const handleCurrencyChange = () => setCurrencyConfig(getCurrency());
+    window.addEventListener('seva-currency-changed', handleCurrencyChange);
+    return () => window.removeEventListener('seva-currency-changed', handleCurrencyChange);
+  }, []);
+
+  const currentCurrency = useMemo(() => getCurrency(), [currencyConfig]);
 
   // Membership Tier States
   const [selectedTier, setSelectedTier] = useState<string>("all");
@@ -322,15 +693,13 @@ export function DashboardView() {
         },
         {
           label: "Tổng doanh thu",
-          value: totalSpend >= 1000000000 
-            ? `${(totalSpend / 1000000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tỷ ₫`
-            : `${(totalSpend / 1000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tr ₫`,
+          value: formatCurrency(totalSpend, currentCurrency),
           change: "+8.2%",
           positive: true,
         },
         {
           label: "LTV Trung bình",
-          value: `${(avgLtv / 1000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tr ₫`,
+          value: formatCurrency(avgLtv, currentCurrency),
           change: "+3.4%",
           positive: true,
         },
@@ -358,15 +727,13 @@ export function DashboardView() {
       },
       {
         label: "Tổng doanh thu",
-        value: totalSpend >= 1000000000 
-          ? `${(totalSpend / 1000000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tỷ ₫`
-          : `${(totalSpend / 1000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tr ₫`,
+        value: formatCurrency(totalSpend, currentCurrency),
         change: revenueChange,
         positive: true,
       },
       {
         label: "LTV Trung bình",
-        value: `${(avgLtv / 1000000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tr ₫`,
+        value: formatCurrency(avgLtv, currentCurrency),
         change: "+3.4%",
         positive: true,
       },
@@ -428,6 +795,37 @@ export function DashboardView() {
       (c) => c.tier.toLowerCase() === selectedTier.toLowerCase(),
     );
   }, [selectedTier]);
+
+  const topPerformers = useMemo(() => {
+    // Get top 10 by points from allCustomers
+    return [...allCustomers]
+      .sort((a, b) => (b.points || 0) - (a.points || 0))
+      .slice(0, 10);
+  }, [allCustomers]);
+
+  const [chartView, setChartView] = useState<"distribution" | "trend">("distribution");
+
+  const pointIssuanceTrendData = useMemo(() => {
+    const totalPoints = allCustomers.reduce((acc, c) => acc + (c.points || 0), 0);
+    const baseValue = totalPoints > 0 ? totalPoints : 285400; // Realistic seed base
+    
+    const data = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const label = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      
+      const factor = 0.7 + 0.3 * (1 - i / 30); // smooth growth from 70% to 100%
+      const seed = Math.sin(d.getDate()) * (baseValue * 0.02); // 2% micro variation
+      const points = Math.max(0, Math.round(baseValue * factor + seed));
+      
+      data.push({
+        date: label,
+        points: points
+      });
+    }
+    return data;
+  }, [allCustomers]);
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6">
@@ -705,51 +1103,197 @@ export function DashboardView() {
       {/* ================= Power Service PREMIUM DIGITAL WALLET WORKSPACE (MOCKUP ACCURACY) ================= */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-12 items-start">
         
-        {/* Loyalty Points Distribution Overview (Moved from Loyalty) */}
+        {/* Loyalty Points Distribution & Issuance Growth (Modified with Recharts) */}
         <div className="col-span-full">
           <Card className="p-6 border border-border/60 shadow-sm glass-card overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-extrabold font-heading flex items-center text-[#2f6cf5]">
-                <TrendingUp className="w-5 h-5 mr-3 text-[#2f6cf5]" /> Phân bổ Điểm thưởng (30 Ngày)
-              </h3>
-              <div className="flex items-center gap-4 text-xs font-bold text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-sm bg-[#10b981]" />
-                  <span>Tích lũy</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3 text-left">
+              <div>
+                <h3 className="text-lg font-extrabold font-heading flex items-center text-[#2f6cf5]">
+                  <TrendingUp className="w-5 h-5 mr-3 text-[#2f6cf5]" />
+                  {chartView === "distribution" ? "Phân bổ Điểm thưởng (30 Ngày)" : "Xu hướng Cấp phát Điểm (30 Ngày)"}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {chartView === "distribution" 
+                    ? "Tỷ lệ tích lũy và đổi sê-ri điểm thưởng trong vòng 30 ngày qua." 
+                    : "Tổng điểm thưởng đã cung cấp lũy kế tích hợp trên hệ thống CRM."}
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex bg-muted/60 p-1 rounded-xl border border-border/40 shrink-0">
+                  <button
+                    onClick={() => setChartView("distribution")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                      chartView === "distribution"
+                        ? "bg-white dark:bg-zinc-800 text-foreground shadow-xs border border-border/20"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Phân bổ Tích lũy
+                  </button>
+                  <button
+                    onClick={() => setChartView("trend")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                      chartView === "trend"
+                        ? "bg-white dark:bg-zinc-800 text-foreground shadow-xs border border-border/20"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Xu hướng Khởi phát (Line)
+                  </button>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-sm bg-[#f43f5e]" />
-                  <span>Đổi điểm</span>
+
+                <div className="flex items-center gap-4 text-xs font-bold text-muted-foreground shrink-0 select-none">
+                  {chartView === "distribution" ? (
+                    <>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 rounded-sm bg-[#10b981]" />
+                        <span>Tích lũy</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 rounded-sm bg-[#f43f5e]" />
+                        <span>Đổi điểm</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                      <span>Tổng tích lũy</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-            <div className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    { day: "01/05", earn: 120, burn: 40 },
-                    { day: "05/05", earn: 210, burn: 80 },
-                    { day: "10/05", earn: 300, burn: 150 },
-                    { day: "15/05", earn: 450, burn: 190 },
-                    { day: "20/05", earn: 200, burn: 110 },
-                    { day: "25/05", earn: 340, burn: 200 },
-                    { day: "30/05", earn: 500, burn: 290 },
-                  ]}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.2)" />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-                  <Tooltip
-                    cursor={{ fill: "hsl(var(--muted)/0.4)" }}
-                    contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "12px", border: "1px solid hsl(var(--border))", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
-                  />
-                  <Bar dataKey="earn" name="Tích lũy" fill="#10b981" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="burn" name="Đổi điểm" fill="#f43f5e" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+
+            <div className="h-[260px] w-full">
+              {chartView === "distribution" ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { day: "01/05", earn: 120, burn: 40 },
+                      { day: "05/05", earn: 210, burn: 80 },
+                      { day: "10/05", earn: 300, burn: 150 },
+                      { day: "15/05", earn: 450, burn: 190 },
+                      { day: "20/05", earn: 200, burn: 110 },
+                      { day: "25/05", earn: 340, burn: 200 },
+                      { day: "30/05", earn: 500, burn: 290 },
+                    ]}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.2)" />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+                    <Tooltip
+                      cursor={{ fill: "hsl(var(--muted)/0.4)" }}
+                      contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "12px", border: "1px solid hsl(var(--border))", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+                    />
+                    <Bar dataKey="earn" name="Tích lũy" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="burn" name="Đổi điểm" fill="#f43f5e" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={pointIssuanceTrendData}
+                    margin={{ top: 10, right: 15, left: -20, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.2)" />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "12px", border: "1px solid hsl(var(--border))", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+                      formatter={(value: number) => [`${value.toLocaleString()} pts`, "Tổng điểm cấp phát"]}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="points" 
+                      name="Tổng cấp phát" 
+                      stroke="#2f6cf5" 
+                      strokeWidth={3.5} 
+                      dot={{ r: 3, stroke: "#2f6cf5", strokeWidth: 1.5, fill: "#fff" }}
+                      activeDot={{ r: 6, stroke: "#2f6cf5", strokeWidth: 2, fill: "#fff" }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </Card>
+        </div>
+
+        {/* Top Performers Leaderboard (New Section) */}
+        <div className="col-span-full">
+           <Card className="border border-border/60 shadow-sm glass-card overflow-hidden">
+             <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                   <CardTitle className="text-lg font-extrabold flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-amber-500" /> Bảng xếp hạng Top Performers
+                   </CardTitle>
+                   <CardDescription>Top 5 khách hàng có điểm tích lũy cao nhất tháng này.</CardDescription>
+                </div>
+                <Badge variant="outline" className="bg-amber-500/10 text-amber-500 font-bold border-amber-500/20">Tháng 06/2026</Badge>
+             </CardHeader>
+             <CardContent className="p-0">
+                <Table>
+                   <TableHeader className="bg-muted/30">
+                      <TableRow>
+                         <TableHead className="w-[80px] text-center">Hạng</TableHead>
+                         <TableHead>Khách hàng</TableHead>
+                         <TableHead>Hạng thẻ</TableHead>
+                         <TableHead className="text-right">Điểm tích lũy</TableHead>
+                         <TableHead className="text-right sr-only">Thao tác</TableHead>
+                      </TableRow>
+                   </TableHeader>
+                   <TableBody>
+                      {topPerformers.map((customer, index) => (
+                         <TableRow key={customer.id} className="hover:bg-muted/10 transition-colors group">
+                            <TableCell className="text-center">
+                               {index === 0 ? (
+                                  <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto">
+                                     <Crown className="w-5 h-5 text-amber-500" />
+                                  </div>
+                               ) : (
+                                  <span className="text-sm font-black text-muted-foreground">#{index + 1}</span>
+                               )}
+                            </TableCell>
+                            <TableCell>
+                               <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-slate-200 border border-border overflow-hidden flex items-center justify-center text-slate-500 font-bold shrink-0">
+                                     {customer.name ? customer.name.charAt(0) : <User className="w-5 h-5" />}
+                                  </div>
+                                  <div>
+                                     <p className="text-sm font-bold leading-none">{customer.name}</p>
+                                     <p className="text-[10px] text-muted-foreground mt-1 uppercase font-black">{customer.customFields?.city || 'TP.HCM'}</p>
+                                  </div>
+                               </div>
+                            </TableCell>
+                            <TableCell>
+                               <Badge className={cn(
+                                  "text-[10px] font-black uppercase tracking-wider",
+                                  customer.points && customer.points >= 10000 ? "bg-blue-500" :
+                                  customer.points && customer.points >= 2500 ? "bg-amber-500" :
+                                  customer.points && customer.points >= 500 ? "bg-emerald-500" : "bg-slate-400"
+                               )}>
+                                  {customer.points && customer.points >= 10000 ? "Atelier" :
+                                   customer.points && customer.points >= 2500 ? "Icon" :
+                                   customer.points && customer.points >= 500 ? "Essential" : "Member"}
+                               </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                               <span className="text-sm font-black tabular-nums">{(customer.points || 0).toLocaleString()} <span className="text-[10px] text-muted-foreground ml-0.5">pts</span></span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                               <button className="p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted rounded-lg">
+                                  <ArrowRight className="w-4 h-4 text-primary" />
+                               </button>
+                            </TableCell>
+                         </TableRow>
+                      ))}
+                   </TableBody>
+                </Table>
+             </CardContent>
+           </Card>
         </div>
 
         {/* COLUMN 1: BALANCE, INFORMATION & SECURITY (LIME MOCKUP STYLE) */}
@@ -1153,10 +1697,7 @@ export function DashboardView() {
                     contentStyle={{ borderRadius: "8px", border: "none" }}
                     cursor={{ stroke: "var(--color-border)" }}
                     formatter={(value: number) => [
-                      new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(value),
+                      formatCurrency(value, currentCurrency),
                       "Doanh thu",
                     ]}
                   />
@@ -1221,7 +1762,7 @@ export function DashboardView() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        {customer.spent}
+                        {formatCurrency(Number(customer.spent.replace(/[^0-9]/g, '')) || 0, currentCurrency)}
                       </TableCell>
                     </TableRow>
                   ))
@@ -1242,42 +1783,266 @@ export function DashboardView() {
       </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <motion.div
-           initial={{ opacity: 0, y: 10 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ delay: 0.2 }}
-           className="xl:col-span-2"
-        >
-          <RecentActivity />
-        </motion.div>
-        <motion.div
-           initial={{ opacity: 0, y: 10 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ delay: 0.3 }}
-           className="xl:col-span-1 space-y-6"
-        >
-          <UpcomingBirthdays />
-          <TierUpProgress />
-        </motion.div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+         <motion.div
+           initial={{ opacity: 0, scale: 0.95 }}
+           animate={{ opacity: 1, scale: 1 }}
+           className="col-span-1 md:col-span-2 bg-gradient-to-br from-[#2f6cf5] to-[#1e4db7] text-white rounded-3xl p-6 shadow-xl shadow-blue-500/20 relative overflow-hidden"
+         >
+            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+               <Trophy className="w-48 h-48 rotate-12" />
+            </div>
+            <div className="relative z-10 space-y-6">
+               <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold flex items-center gap-2">
+                       <Trophy className="w-5 h-5 text-amber-300" /> Bảng xếp hạng khách hàng
+                    </h3>
+                    <p className="text-xs text-white/70 mt-1">Top 10 khách hàng có chi tiêu tích lũy cao nhất.</p>
+                  </div>
+                  <div className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">Live</div>
+               </div>
+
+               <div className="grid grid-cols-1 gap-2">
+                  {topPerformers.map((customer, i) => (
+                    <div key={customer.id} className="flex items-center justify-between p-3 bg-white/10 rounded-2xl hover:bg-white/15 transition-colors group">
+                       <div className="flex items-center gap-3">
+                          <span className={cn(
+                            "w-6 h-6 flex items-center justify-center rounded-lg text-[10px] font-bold",
+                            i === 0 ? "bg-amber-400 text-amber-950" : 
+                            i === 1 ? "bg-slate-300 text-slate-900" :
+                            i === 2 ? "bg-amber-600 text-white" : "bg-white/20 text-white"
+                          )}>
+                             {i + 1}
+                          </span>
+                          <div>
+                             <p className="text-sm font-bold truncate max-w-[120px]">{customer.name}</p>
+                             <p className="text-[10px] text-white/60">Hạng: {customer.tier || 'Member'}</p>
+                          </div>
+                       </div>
+                       <div className="text-right">
+                          <p className="text-sm font-bold">{formatCurrency(Number(customer.customFields?.spend) || 0, currentCurrency)}</p>
+                          <p className="text-[10px] text-white/70">{customer.points || 0} pts</p>
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+         </motion.div>
+
+         <div className="col-span-1 md:col-span-2 grid grid-cols-1 gap-6">
+            <RecentActivity />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <UpcomingBirthdays />
+               <TierUpProgress />
+            </div>
+         </div>
       </div>
+
+      {/* Quick Action Overlay Modals */}
+      <Dialog open={showAddCustomerModal} onOpenChange={setShowAddCustomerModal}>
+        <DialogContent className="max-w-md bg-card border border-border p-6 rounded-2xl shadow-xl">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-border">
+              <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg">
+                <UserPlus className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-foreground">Thêm khách hàng nhanh</h3>
+                <p className="text-xs text-muted-foreground">Tích hợp tức thì với CRM & dữ liệu VIP</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleQuickAddCustomer} className="space-y-3.5">
+              <div className="space-y-1.5">
+                <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Họ và tên</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ví dụ: Nguyễn Văn A"
+                  value={newCustName}
+                  onChange={(e) => setNewCustName(e.target.value)}
+                  className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Số điện thoại</label>
+                  <input
+                    type="tel"
+                    placeholder="09xx xxx xxx"
+                    value={newCustPhone}
+                    onChange={(e) => setNewCustPhone(e.target.value)}
+                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Email</label>
+                  <input
+                    type="email"
+                    placeholder="name@gmail.com"
+                    value={newCustEmail}
+                    onChange={(e) => setNewCustEmail(e.target.value)}
+                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Hạng thành viên</label>
+                  <select
+                    value={newCustTier}
+                    onChange={(e) => setNewCustTier(e.target.value)}
+                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
+                  >
+                    <option value="Essential">Essential (Bạc)</option>
+                    <option value="Icon">Icon (Vàng)</option>
+                    <option value="Atelier">Atelier (Kim Cương)</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Điểm nạp ban đầu</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newCustPoints}
+                    onChange={(e) => setNewCustPoints(Number(e.target.value))}
+                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowAddCustomerModal(false)}
+                  className="px-4 py-2 bg-muted hover:bg-muted/80 text-muted-foreground rounded-lg text-xs font-bold transition-all cursor-pointer"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-lg text-xs font-bold transition-all shadow-md shadow-[#2f6cf5]/20 cursor-pointer"
+                >
+                  Lưu thông tin
+                </button>
+              </div>
+            </form>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showLaunchCampaignModal} onOpenChange={setShowLaunchCampaignModal}>
+        <DialogContent className="max-w-md bg-card border border-border p-6 rounded-2xl shadow-xl">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-border">
+              <div className="p-2 bg-[#2f6cf5]/10 text-[#2f6cf5] rounded-lg">
+                <Megaphone className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-foreground">Khởi chạy chiến dịch mới</h3>
+                <p className="text-xs text-muted-foreground">Kích hoạt nhân điểm loyalty cho thành viên</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleLaunchCampaign} className="space-y-3.5">
+              <div className="space-y-1.5">
+                <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Tên chiến dịch</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ví dụ: Lễ hội ngọc bích x2 điểm"
+                  value={newCampName}
+                  onChange={(e) => setNewCampName(e.target.value)}
+                  className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Hệ số nhân điểm</label>
+                  <select
+                    value={newCampMultiplier}
+                    onChange={(e) => setNewCampMultiplier(Number(e.target.value))}
+                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
+                  >
+                    <option value="1.5">x1.5 Điểm tích lũy</option>
+                    <option value="2.0">x2.0 Điểm vàng</option>
+                    <option value="2.5">x2.5 Diamond Special</option>
+                    <option value="3.0">x3.0 Supreme</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Thời hạn chiến dịch</label>
+                  <select
+                    value={newCampDays}
+                    onChange={(e) => setNewCampDays(Number(e.target.value))}
+                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
+                  >
+                    <option value="3">3 ngày ngắn hạn</option>
+                    <option value="7">1 tuần lễ (7 ngày)</option>
+                    <option value="14">2 tuần (14 ngày)</option>
+                    <option value="30">1 tháng (30 ngày)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Đối tượng áp dụng</label>
+                <select
+                  value={newCampTarget}
+                  onChange={(e) => setNewCampTarget(e.target.value)}
+                  className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
+                >
+                  <option value="Tất cả hội viên">Tất cả hạng thành viên (All)</option>
+                  <option value="Chỉ từ hạng Vàng trở lên">Hội viên Thường Xuyên (Icon+)</option>
+                  <option value="Độc quyền Diamond Elite">Chỉ dành riêng cho Elite / Atelier</option>
+                </select>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowLaunchCampaignModal(false)}
+                  className="px-4 py-2 bg-muted hover:bg-muted/80 text-muted-foreground rounded-lg text-xs font-bold transition-all cursor-pointer"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-lg text-xs font-bold transition-all shadow-md shadow-[#2f6cf5]/20 cursor-pointer"
+                >
+                  Kích hoạt ngay
+                </button>
+              </div>
+            </form>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Floating Quick Actions Menu */}
       <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3 group">
         <div className="flex flex-col gap-2 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 origin-bottom-right mb-2">
            <button 
-             onClick={() => toast.success("Mở form thêm điểm...")}
-             className="flex items-center gap-2 px-4 py-2 bg-card border border-border shadow-md rounded-full hover:bg-muted font-semibold text-sm transition-colors text-foreground whitespace-nowrap cursor-pointer">
-             <Plus className="w-4 h-4 text-emerald-500" /> Thêm điểm Loyalty
+             onClick={() => setShowAddCustomerModal(true)}
+             className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border shadow-md rounded-full hover:bg-muted font-bold text-xs transition-colors text-foreground whitespace-nowrap cursor-pointer">
+             <UserPlus className="w-4 h-4 text-emerald-500" /> Thêm khách hàng mới
            </button>
            <button 
-             onClick={() => toast.success("Mở công cụ gửi khuyến mãi...")}
-             className="flex items-center gap-2 px-4 py-2 bg-card border border-border shadow-md rounded-full hover:bg-muted font-semibold text-sm transition-colors text-foreground whitespace-nowrap cursor-pointer">
-             <Send className="w-4 h-4 text-[#2f6cf5]" /> Gửi Promotion
+             onClick={() => setShowLaunchCampaignModal(true)}
+             className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border shadow-md rounded-full hover:bg-muted font-bold text-xs transition-colors text-foreground whitespace-nowrap cursor-pointer">
+             <Megaphone className="w-4 h-4 text-amber-500" /> Khởi chạy Campaign
+           </button>
+           <button 
+             onClick={handlePrintLoyaltyReport}
+             className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border shadow-md rounded-full hover:bg-muted font-bold text-xs transition-colors text-foreground whitespace-nowrap cursor-pointer">
+             <Printer className="w-4 h-4 text-[#2f6cf5]" /> In báo cáo Loyalty
            </button>
         </div>
         <button className="h-14 w-14 rounded-full bg-[#2f6cf5] text-white shadow-lg flex items-center justify-center hover:bg-[#2f6cf5]/90 hover:scale-105 transition-all shadow-[#2f6cf5]/30 cursor-pointer">
-          <Plus className="w-6 h-6" />
+          <Plus className="w-6 h-6 transition-transform group-hover:rotate-45 duration-300" />
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Plus,
   Star,
@@ -28,7 +29,11 @@ import {
   X,
   Coins,
   Settings2,
+  Diamond,
+  User,
+  Sliders,
 } from "lucide-react";
+import { formatCurrency, getCurrency, CURRENCIES } from "@/lib/currency";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
 import { useFirebase } from "@/components/FirebaseProvider";
@@ -42,6 +47,7 @@ import {
   setDoc,
   writeBatch,
   serverTimestamp,
+  deleteDoc,
 } from "firebase/firestore";
 import {
   BarChart,
@@ -64,8 +70,10 @@ import { RedemptionRuleDialog } from "@/components/loyalty/RedemptionRuleDialog"
 import { EarnRuleDialog } from "@/components/loyalty/EarnRuleDialog";
 import { LoyaltyCampaignDialog } from "@/components/loyalty/LoyaltyCampaignDialog";
 import { SegmentationRuleDialog } from "@/components/loyalty/SegmentationRuleDialog";
-import { LoyaltyTiers } from "@/components/loyalty/LoyaltyTiers";
+import { TierManagementView } from "@/components/loyalty/TierManagementView";
 import { GamificationProgress } from "@/components/loyalty/GamificationProgress";
+import { CustomerProgressGrid } from "@/components/loyalty/CustomerProgressGrid";
+import { LoyaltyProgressionTimeline } from "@/components/loyalty/LoyaltyProgressionTimeline";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { PointRedemptionConfigView } from "@/components/loyalty/PointRedemptionConfigView";
 import { cn } from "@/lib/utils";
@@ -73,6 +81,7 @@ import { toast } from "sonner";
 import {
   getGuestTiers,
   saveGuestTier,
+  setLocalStorageData,
   getGuestRedemptionRules,
   getGuestEarnRules,
   getGuestCampaigns,
@@ -219,6 +228,42 @@ export function LoyaltyView() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Calculate Program Health (average points per member and redemption rate)
+  const programHealthStats = useMemo(() => {
+    const totalCustomers = customers.length;
+    if (totalCustomers === 0) {
+      return {
+        avgPoints: 0,
+        redemptionRate: 0,
+        totalPoints: 0,
+        totalRedeemed: 0,
+      };
+    }
+
+    let sumPoints = 0;
+    let sumRedeemed = 0;
+
+    customers.forEach((cust) => {
+      sumPoints += Number(cust.points) || 0;
+      if (cust.redemptions && Array.isArray(cust.redemptions)) {
+        cust.redemptions.forEach((red) => {
+          sumRedeemed += Number(red.pointsUsed) || Number(red.points_used) || 0;
+        });
+      }
+    });
+
+    const averagePointsPerMember = sumPoints / totalCustomers;
+    const totalEarnedPoints = sumPoints + sumRedeemed;
+    const redemptionRate = totalEarnedPoints > 0 ? (sumRedeemed / totalEarnedPoints) * 100 : 0;
+
+    return {
+      avgPoints: averagePointsPerMember,
+      redemptionRate,
+      totalPoints: sumPoints,
+      totalRedeemed: sumRedeemed,
+    };
+  }, [customers]);
+
   // Demo states
   const [selectedSimCustomer, setSelectedSimCustomer] = useState<string>("Nguyễn Thảo Chi");
   const [aiFocusKeyword, setAiFocusKeyword] = useState<string>("gemstone");
@@ -250,6 +295,14 @@ export function LoyaltyView() {
   // Interactive VIP Privilege and AOV Point Calculator states
   const [simAovValue, setSimAovValue] = useState<number>(750000);
   const [selectedSimTierId, setSelectedSimTierId] = useState<string>("tier-member");
+
+  // Automated custom tier parameters
+  const [tierFormName, setTierFormName] = useState("");
+  const [tierFormThreshold, setTierFormThreshold] = useState<number>(1000);
+  const [tierFormMultiplier, setTierFormMultiplier] = useState<number>(1.2);
+  const [tierFormColor, setTierFormColor] = useState("#fbbf24");
+  const [tierFormIcon, setTierFormIcon] = useState("star");
+  const [editingTierId, setEditingTierId] = useState<string | null>(null);
 
   const runCampaignSimulation = (campId: string, campName: string) => {
     setIsSimulatingCampaign(campId);
@@ -407,6 +460,15 @@ export function LoyaltyView() {
 
   const [selectedSegId, setSelectedSegId] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [currencyConfig, setCurrencyConfig] = useState(getCurrency());
+
+  useEffect(() => {
+    const handleCurrencyChange = () => setCurrencyConfig(getCurrency());
+    window.addEventListener('seva-currency-changed', handleCurrencyChange);
+    return () => window.removeEventListener('seva-currency-changed', handleCurrencyChange);
+  }, []);
+
+  const currentCurrency = useMemo(() => getCurrency(), [currencyConfig]);
 
   // Privilege tab states
   const [showCreatePrivilegeDialog, setShowCreatePrivilegeDialog] = useState(false);
@@ -666,6 +728,141 @@ export function LoyaltyView() {
       toast.error("Đã xảy ra lỗi khi hoàn thiện đồng bộ.", { id: toastId });
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleUpdateMultiplier = async (tierId: string, multiplier: number) => {
+    const tier = tiers.find(t => t.id === tierId);
+    if (!tier) return;
+
+    if (!user || user.isLocal) {
+      saveGuestTier({ ...tier, multiplier });
+      toast.success(`Đã cập nhật hệ số điểm cho hạng ${tier.name}`);
+    } else {
+      const path = `tier_configs/${tierId}`;
+      try {
+        await setDoc(doc(db, path), { ...tier, multiplier });
+        toast.success(`Đã cập nhật hệ số điểm cho hạng ${tier.name}`);
+      } catch (error) {
+        toast.error("Lỗi cập nhật cấu hình");
+      }
+    }
+  };
+
+  const handleUpdateTierIcon = async (tierId: string, icon: string) => {
+    const tier = tiers.find(t => t.id === tierId);
+    if (!tier) return;
+
+    if (!user || user.isLocal) {
+      saveGuestTier({ ...tier, icon });
+      toast.success(`Đã cập nhật icon cho hạng ${tier.name}`);
+    } else {
+      const path = `tier_configs/${tierId}`;
+      try {
+        await setDoc(doc(db, path), { ...tier, icon });
+        await new Promise(resolve => setTimeout(resolve, 300));
+        toast.success(`Đã cập nhật icon cho hạng ${tier.name}`);
+      } catch (error) {
+        toast.error("Lỗi cập nhật icon");
+      }
+    }
+  };
+
+  const handleSaveCustomTier = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tierFormName.trim()) {
+      toast.error("Vui lòng nhập tên hạng hội viên!");
+      return;
+    }
+
+    const tierId = editingTierId || `tier-${tierFormName.toLowerCase().trim().replace(/\s+/g, "-")}`;
+    const tierData: TierConfig = {
+      id: tierId,
+      name: tierFormName,
+      threshold: Number(tierFormThreshold),
+      multiplier: Number(tierFormMultiplier),
+      color: tierFormColor,
+      icon: tierFormIcon,
+      benefits: [
+        { name: "Hệ số tích luỹ", value: `${tierFormMultiplier}x` },
+        { name: "Thời gian duy trì hạn mức", value: "12 Tháng" },
+        { name: "Quà tặng sinh nhật", value: "Ưu đãi riêng" }
+      ],
+      userId: user?.uid || "guest",
+      createdAt: new Date().toISOString()
+    };
+
+    if (!user || user.isLocal) {
+      saveGuestTier(tierData);
+      window.dispatchEvent(new Event("crm_guest_data_changed"));
+      toast.success(`Đã lưu cấu hình Hạng ${tierFormName} thành công!`);
+    } else {
+      try {
+        const path = `tier_configs/${tierId}`;
+        await setDoc(doc(db, path), tierData);
+        toast.success(`Đã đồng bộ Hạng ${tierFormName} lên Firestore!`);
+      } catch (error) {
+        toast.error("Lỗi đồng bộ cấu hình hạng");
+      }
+    }
+
+    // Reset Form
+    setTierFormName("");
+    setTierFormThreshold(1000);
+    setTierFormMultiplier(1.2);
+    setTierFormColor("#fbbf24");
+    setTierFormIcon("star");
+    setEditingTierId(null);
+  };
+
+  const handleLoadDemoTiers = async () => {
+    const defaultTiers = getGuestTiers();
+    if (!user || user.isLocal) {
+      setLocalStorageData("crm_guest_tiers_v6", defaultTiers);
+      window.dispatchEvent(new Event("crm_guest_data_changed"));
+      toast.success("Đã thêm dữ liệu Demo Cấu hình Cấp bậc thành công!");
+    } else {
+      try {
+        const batch = writeBatch(db);
+        defaultTiers.forEach(tier => {
+          const docRef = doc(collection(db, "tier_configs"), tier.id);
+          batch.set(docRef, { ...tier, userId: user.uid });
+        });
+        await batch.commit();
+        toast.success("Đã đồng bộ dữ liệu Demo Cấu hình Cấp bậc lên Firestore!");
+      } catch (error) {
+        toast.error("Lỗi đồng bộ cấu hình hạng Demo");
+      }
+    }
+  };
+
+  const handleEditTierClick = (tier: TierConfig) => {
+    setEditingTierId(tier.id);
+    setTierFormName(tier.name);
+    setTierFormThreshold(tier.threshold || 0);
+    setTierFormMultiplier(tier.multiplier || 1.0);
+    setTierFormColor(tier.color || "#fbbf24");
+    setTierFormIcon(tier.icon || "star");
+    toast.info(`Đang sửa cấu hình hạng: ${tier.name}`);
+  };
+
+  const handleDeleteTier = async (tierId: string) => {
+    if (confirm("Bạn có chắc chắn muốn xóa hạng hội viên này ra khỏi chương trình?")) {
+      if (!user || user.isLocal) {
+        const current = getGuestTiers();
+        const updated = current.filter(t => t.id !== tierId);
+        setLocalStorageData("crm_guest_tiers_v6", updated);
+        window.dispatchEvent(new Event("crm_guest_data_changed"));
+        toast.success("Đã xóa hạng thành công!");
+      } else {
+        const path = `tier_configs/${tierId}`;
+        try {
+          await deleteDoc(doc(db, path));
+          toast.success("Đã xóa cấu hình hạng trên cloud!");
+        } catch (error) {
+          toast.error("Lỗi xóa cấu hình hạng");
+        }
+      }
     }
   };
 
@@ -933,59 +1130,59 @@ export function LoyaltyView() {
             className="space-y-8"
           >
             {activeTab === "tiers" && (
-              <>
-                <GamificationProgress currentPoints={1420} nextTierPoints={2500} currentTier="Essential" nextTier="Icon" />
-                <LoyaltyTiers tiers={tiers} />
-
-                {/* MÔ PHỎNG CẤU TRÚC PHÂN HẠNG (Đã được chuyển qua Phân tích) */}
-
-                <div className="space-y-4 pt-4 border-t border-border/40 mt-8">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold font-heading flex items-center">
-                      <Gift className="w-5 h-5 mr-3 text-primary" /> Đổi thưởng
-                      & Ưu đãi
-                    </h3>
-                    <button
-                      onClick={() => {
-                        setSelectedRule(undefined);
-                        setShowRuleDialog(true);
-                      }}
-                      className="text-sm font-bold text-primary hover:underline flex items-center gap-1"
-                    >
-                      <Plus className="w-3 h-3" /> Tạo phần quà
-                    </button>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {rules.map((rule) => (
-                      <motion.div
-                        key={rule.id}
-                        whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
-                      >
-                        <Card
-                          onClick={() => {
-                            setSelectedRule(rule);
-                            setShowRuleDialog(true);
-                          }}
-                          className="flex items-center p-4 gap-4 glass-card hover:shadow-md transition-all cursor-pointer group h-full"
-                        >
-                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                          <Gift className="w-6 h-6" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-sm leading-tight">
-                            {rule.name}
-                          </h4>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            Yêu cầu {rule.pointsRequired.toLocaleString()} pts
-                          </p>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                      </Card>
-                    </motion.div>
-                  ))}
-                  </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                  <GamificationProgress currentPoints={1420} nextTierPoints={2500} currentTier="Essential" nextTier="Icon" />
+                  <CustomerProgressGrid customers={customers} tiers={tiers} />
+                  <TierManagementView />
                 </div>
-              </>
+                
+                <div className="lg:col-span-1 space-y-6">
+                  {/* Program Health Card */}
+                  <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-3xl shadow-lg text-left">
+                    <h3 className="text-lg font-bold font-heading flex items-center gap-2 mb-4">
+                      <TrendingUp className="w-5 h-5 text-emerald-500" /> Sức khỏe Chương trình (Program Health)
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="bg-background/45 border border-border/50 p-4 rounded-2xl">
+                        <p className="text-xs text-muted-foreground uppercase font-black tracking-wider mb-1">Điểm Trung Bình / Hội Viên</p>
+                        <p className="text-2xl font-black text-foreground tracking-tight">
+                          {programHealthStats.avgPoints.toLocaleString(undefined, { maximumFractionDigits: 1 })} <span className="text-sm font-semibold text-muted-foreground">pts</span>
+                        </p>
+                      </div>
+
+                      <div className="bg-background/45 border border-border/50 p-4 rounded-2xl">
+                        <p className="text-xs text-muted-foreground uppercase font-black tracking-wider mb-1">Tỷ Lệ Đổi Thưởng (Redemption Rate)</p>
+                        <p className="text-2xl font-black text-foreground tracking-tight">
+                          {programHealthStats.redemptionRate.toLocaleString(undefined, { maximumFractionDigits: 1 })}%
+                        </p>
+                        {/* Progress Bar */}
+                        <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                          <div 
+                            className="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" 
+                            style={{ width: `${Math.min(programHealthStats.redemptionRate, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 pt-2 text-[11px] font-semibold text-muted-foreground">
+                        <div>
+                          <p className="uppercase text-[9px] font-black opacity-80 mb-0.5">Tổng điểm hiện tại</p>
+                          <p className="text-foreground font-bold text-xs">{programHealthStats.totalPoints.toLocaleString()} pts</p>
+                        </div>
+                        <div>
+                          <p className="uppercase text-[9px] font-black opacity-80 mb-0.5">Tổng điểm đã đổi</p>
+                          <p className="text-foreground font-bold text-xs">{programHealthStats.totalRedeemed.toLocaleString()} pts</p>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-3xl shadow-lg">
+                    <LoyaltyProgressionTimeline currentPoints={1420} tierName="Essential" />
+                  </Card>
+                </div>
+              </div>
             )}
 
             {activeTab === "segmentation" && (
@@ -1139,7 +1336,7 @@ export function LoyaltyView() {
                                               ? "<= "
                                               : "< "}
                                       {rule.criteriaType === "total_spend"
-                                        ? `${rule.value.toLocaleString("vi-VN")} ₫`
+                                        ? formatCurrency(rule.value, currentCurrency)
                                         : rule.criteriaType ===
                                             "time_since_last_purchase"
                                           ? `${rule.value} ngày`

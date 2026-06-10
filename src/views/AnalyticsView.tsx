@@ -6,6 +6,8 @@ import {
  CardTitle, 
  CardDescription 
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { 
  BarChart, 
  Bar, 
@@ -22,6 +24,7 @@ import {
  Legend
 } from "recharts";
 import { ActivityHeatmap } from "@/components/dashboard/ActivityHeatmap";
+import { ChurnRiskList } from "@/components/analytics/ChurnRiskList";
 import { 
   TrendingUp, 
   Users, 
@@ -48,6 +51,11 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { Customer, TierConfig } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { getGuestTiers, getGuestCustomers } from "@/data/guestData";
+import { formatCurrency, getCurrency } from "@/lib/currency";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Mail, Clock, Send } from "lucide-react";
 
 const SUGGESTIONS_MAP: Record<string, {
   vibe: string;
@@ -142,6 +150,14 @@ const signupsData = [
 ];
 
 
+const popularRewardsData = [
+  { name: "Voucher 500k", count: 145 },
+  { name: "Trang sức Bạc", count: 98 },
+  { name: "Vệ sinh SP", count: 86 },
+  { name: "Voucher 1tr", count: 54 },
+  { name: "Quà tặng VIP", count: 32 },
+];
+
 const tierData = [
  { name: "Member", value: 450, color: "#94a3b8" },
  { name: "Essential", value: 300, color: "#10b981" },
@@ -168,6 +184,15 @@ const heatmapData = [
   const [progressionCustomerId, setProgressionCustomerId] = useState<string>("");
   const [clvPeriod, setClvPeriod] = useState<"week" | "month" | "quarter">("month");
   const [clvCompare, setClvCompare] = useState<boolean>(true);
+  const [scheduledEnabled, setScheduledEnabled] = useState(false);
+  const [reportEmail, setReportEmail] = useState("admin@seva.premium");
+  const [currencyConfig, setCurrencyConfig] = useState(getCurrency());
+
+  useEffect(() => {
+    const handleCurrencyChange = () => setCurrencyConfig(getCurrency());
+    window.addEventListener('seva-currency-changed', handleCurrencyChange);
+    return () => window.removeEventListener('seva-currency-changed', handleCurrencyChange);
+  }, []);
 
   // Date Selection States (copied from DashboardView layout style)
   const [startDate, setStartDate] = useState("2026-04-28");
@@ -244,6 +269,8 @@ const heatmapData = [
     }
   };
 
+  const currentCurrency = useMemo(() => getCurrency(), [currencyConfig]);
+
   const daysDiff = useMemo(() => {
     try {
       const s = new Date(startDate);
@@ -268,12 +295,7 @@ const heatmapData = [
     const redeemRate = (32.4 + (daysDiff % 5) * 0.15).toFixed(1) + "%";
     
     const revenueVal = Math.floor((1150000000 / 30) * daysDiff);
-    let revenueStr = "";
-    if (revenueVal >= 1000000000) {
-      revenueStr = `${(revenueVal / 1000000000).toFixed(2)} Tỷ ₫`;
-    } else {
-      revenueStr = `${revenueVal.toLocaleString("vi-VN")} ₫`;
-    }
+    let revenueStr = formatCurrency(revenueVal, currentCurrency);
 
     return [
       { title: "Tổng khách hàng", value: totalCustCount.toLocaleString("vi-VN"), icon: Users, trend: `+${(12.5 * (daysDiff / 30)).toFixed(1)}%`, positive: true },
@@ -284,11 +306,99 @@ const heatmapData = [
   }, [daysDiff, dbCustomers]);
 
   const filteredSignupsData = useMemo(() => {
-    if (daysDiff <= 30) {
-      return signupsData.slice(signupsData.length - daysDiff);
+    // Generate dates for the range
+    const dates: Record<string, number> = {};
+    const now = new Date();
+    
+    // Initialize day counts for the requested diff
+    for (let i = 0; i < daysDiff; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dateStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      dates[dateStr] = 0;
     }
-    return signupsData;
-  }, [daysDiff]);
+
+    // Process real customer records
+    dbCustomers.forEach(c => {
+      if (!c.createdAt) return;
+      
+      let createdDate: Date;
+      if (typeof (c.createdAt as any).toDate === "function") {
+        createdDate = (c.createdAt as any).toDate();
+      } else if ((c.createdAt as any).seconds !== undefined) {
+        createdDate = new Date((c.createdAt as any).seconds * 1000);
+      } else {
+        createdDate = new Date(c.createdAt as any);
+      }
+      
+      const dateStr = `${createdDate.getDate().toString().padStart(2, '0')}/${(createdDate.getMonth() + 1).toString().padStart(2, '0')}`;
+      if (dates[dateStr] !== undefined) {
+        dates[dateStr]++;
+      }
+    });
+
+    // Convert to array and sort by date
+    const realData = Object.entries(dates).map(([day, count]) => ({
+      day,
+      signups: count
+    })).reverse();
+
+    // If no real data found (e.g. all 0), fall back to mock data but scaled to daysDiff
+    const totalRealSignups = realData.reduce((acc, curr) => acc + curr.signups, 0);
+    if (totalRealSignups === 0) {
+      if (daysDiff <= 30) {
+        return signupsData.slice(signupsData.length - daysDiff);
+      }
+      return signupsData;
+    }
+
+    return realData;
+  }, [daysDiff, dbCustomers]);
+
+  const tierGrowthData = useMemo(() => {
+    const dates: Record<string, any> = {};
+    const now = new Date();
+    
+    // Tier threshold definitions (synced with app logic)
+    const getTierStr = (pts: number) => {
+      if (pts >= 10000) return "Atelier";
+      if (pts >= 2500) return "Icon";
+      if (pts >= 500) return "Essential";
+      return "Member";
+    };
+
+    for (let i = 0; i < daysDiff; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dateStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      dates[dateStr] = { day: dateStr, Member: 0, Essential: 0, Icon: 0, Atelier: 0 };
+    }
+
+    // Process customers to see tiers at specific dates
+    // For demo purposes, we distribute current tiers based on creation date
+    dbCustomers.forEach(c => {
+      if (!c.createdAt) return;
+      let createdDate: Date;
+      if (typeof (c.createdAt as any).toDate === "function") createdDate = (c.createdAt as any).toDate();
+      else if ((c.createdAt as any).seconds !== undefined) createdDate = new Date((c.createdAt as any).seconds * 1000);
+      else createdDate = new Date(c.createdAt as any);
+      
+      const dateStr = `${createdDate.getDate().toString().padStart(2, '0')}/${(createdDate.getMonth() + 1).toString().padStart(2, '0')}`;
+      const tier = getTierStr(c.points || 0);
+
+      // Backfill: if someone exists today as Icon, they were Member -> Essential -> Icon
+      // Simplification: just increment the tier they belong to for that day and all subsequent days
+      Object.keys(dates).forEach(dKey => {
+        const [day, month] = dKey.split('/').map(Number);
+        const loopDate = new Date(now.getFullYear(), month - 1, day);
+        if (loopDate >= createdDate) {
+          dates[dKey][tier]++;
+        }
+      });
+    });
+
+    return Object.values(dates).reverse();
+  }, [daysDiff, dbCustomers]);
 
   const clvData = useMemo(() => {
     if (clvPeriod === "week") {
@@ -362,6 +472,15 @@ const heatmapData = [
   };
   return (baseOffsets[selectedSegment] || 25) + liveMatch.length;
  }, [dbCustomers, selectedSegment]);
+
+ const predictedSpendData = [
+  { month: "Tháng 7", spend: 42000000, confidence: 95 },
+  { month: "Tháng 8", spend: 48000000, confidence: 92 },
+  { month: "Tháng 9", spend: 55000000, confidence: 88 },
+  { month: "Tháng 10", spend: 62000000, confidence: 85 },
+  { month: "Tháng 11", spend: 74000000, confidence: 80 },
+  { month: "Tháng 12", spend: 85000000, confidence: 75 },
+ ];
 
  return (
  <div className="flex-1 p-8 pt-6 space-y-8 overflow-y-auto max-h-[calc(100vh-64px)]">
@@ -540,7 +659,11 @@ const heatmapData = [
  </div>
  </div>
 
- {/* KPI Stats */}
+  <div className="mb-8">
+     <ChurnRiskList customers={dbCustomers} />
+  </div>
+
+  {/* KPI Stats */}
  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
  {statCards.map((stat, i) => (
  <motion.div
@@ -577,6 +700,57 @@ const heatmapData = [
  </motion.div>
  ))}
  </div>
+
+ <motion.div
+   initial={{ opacity: 0, y: 20 }}
+   animate={{ opacity: 1, y: 0 }}
+   transition={{ delay: 0.15 }}
+ >
+   <Card className="border-border/50 bg-gradient-to-br from-[#2f6cf5]/5 to-purple-500/5 backdrop-blur-sm shadow-md overflow-hidden relative border-primary/20">
+     <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+        <Sparkles className="w-32 h-32" />
+     </div>
+     <CardHeader>
+       <CardTitle className="font-heading flex items-center gap-2">
+         <Gem className="w-5 h-5 text-[#2f6cf5]" /> Loyalty ROI Calculator
+       </CardTitle>
+       <CardDescription>
+         Ước tính hiệu quả kinh tế khi chuyển đổi nhóm khách hàng "At-Risk" thành khách hàng trung thành.
+       </CardDescription>
+     </CardHeader>
+     <CardContent>
+       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+         <div className="space-y-2">
+           <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Khách hàng At-Risk (Ước tính)</p>
+           <p className="text-2xl font-black">84 <span className="text-sm font-medium text-muted-foreground">thành viên</span></p>
+           <p className="text-[10px] text-amber-500 font-bold">~15% tổng cơ sở khách hàng</p>
+         </div>
+         <div className="space-y-2">
+           <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Mục tiêu chuyển đổi (10%)</p>
+           <p className="text-2xl font-black text-emerald-500">+ 9 <span className="text-sm font-medium text-muted-foreground">thành viên</span></p>
+           <p className="text-[10px] text-muted-foreground font-bold italic">Chiến dịch Win-back tự động</p>
+         </div>
+         <div className="space-y-2">
+           <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Tiềm năng doanh thu (Ước tính)</p>
+           <p className="text-2xl font-black text-[#2f6cf5]">~ 405.000.000 <span className="text-sm font-medium text-muted-foreground">₫</span></p>
+           <p className="text-[10px] text-emerald-500 font-bold">+ 12.4% ARR Potential</p>
+         </div>
+       </div>
+       
+       <div className="mt-8 p-4 bg-primary/10 rounded-2xl border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+             <div className="p-2 bg-[#2f6cf5] rounded-xl text-white">
+                <Zap className="w-4 h-4" />
+             </div>
+             <p className="text-xs font-bold">Kích hoạt chiến dịch "Win-back" ngay để tối ưu hóa ROI?</p>
+          </div>
+          <button className="px-6 py-2 bg-[#2f6cf5] text-white rounded-xl text-xs font-bold hover:scale-105 transition-all shadow-lg shadow-[#2f6cf5]/20">
+             Khởi chạy chiến dịch
+          </button>
+       </div>
+     </CardContent>
+   </Card>
+ </motion.div>
 
  {/* CLV Growth Chart */}
  <motion.div
@@ -659,7 +833,7 @@ const heatmapData = [
       }}
       itemStyle={{ fontSize: "13px" }}
       labelStyle={{ fontSize: "11px", fontWeight: "bold", color: "#64748b", marginBottom: "4px" }}
-      formatter={(value: number) => [`${value.toLocaleString()} ₫`, ""]}
+      formatter={(value: number) => [formatCurrency(value, currentCurrency), ""]}
      />
      <Legend iconType="circle" wrapperStyle={{ paddingTop: "20px", fontSize: "12px", fontWeight: "bold" }} />
      <Line 
@@ -750,6 +924,232 @@ const heatmapData = [
   </CardContent>
   </Card>
  </motion.div>
+
+ {/* Popular Rewards Chart */}
+ <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.28 }}
+ >
+  <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
+    <CardHeader>
+      <CardTitle className="font-heading text-lg">Quà tặng đổi thưởng phổ biến</CardTitle>
+      <CardDescription>
+        Top 5 phần quà được khách hàng quy đổi nhiều nhất trong 30 ngày qua.
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart 
+          data={popularRewardsData} 
+          layout="vertical"
+          margin={{ left: 40, right: 40 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
+          <XAxis type="number" hide />
+          <YAxis 
+            dataKey="name" 
+            type="category" 
+            axisLine={false} 
+            tickLine={false} 
+            tick={{ fontSize: 12, fill: "#64748b", fontWeight: "bold" }}
+          />
+          <Tooltip 
+            cursor={{ fill: 'transparent' }}
+            contentStyle={{ 
+             backgroundColor: "var(--card)", 
+             borderColor: "var(--border)",
+             borderRadius: "12px",
+             boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+             border: "1px solid rgba(226, 232, 240, 0.5)",
+             fontWeight: 500
+            }}
+          />
+          <Bar 
+           dataKey="count" 
+           fill="#2f6cf5" 
+           radius={[0, 8, 8, 0]} 
+           barSize={32}
+           label={{ position: 'right', fill: '#64748b', fontSize: 10, fontWeight: 'bold' }}
+          >
+            {popularRewardsData.map((entry, index) => (
+               <Cell 
+                 key={`cell-${index}`} 
+                 fill={index === 0 ? "#2f6cf5" : index === 1 ? "#10b981" : index === 2 ? "#f59e0b" : "#94a3b8"} 
+               />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </CardContent>
+  </Card>
+ </motion.div>
+
+ {/* Predicted Future Spend Chart */}
+ <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.3 }}
+ >
+  <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden border-primary/20">
+  <div className="absolute top-0 right-0 p-4">
+   <Badge className="bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/20 animate-pulse">
+    <Sparkles className="w-3 h-3 mr-1" /> Dự báo AI Smart Prediction
+   </Badge>
+  </div>
+  <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
+   <div>
+    <CardTitle className="font-heading">Dự báo chi tiêu tương lai (6 tháng tới)</CardTitle>
+    <CardDescription>
+     Phân tích dự đoán tổng chi tiêu dựa trên tần suất mua hàng lịch sử và thói quen tiêu dùng.
+    </CardDescription>
+   </div>
+  </CardHeader>
+  <CardContent className="h-[380px] pt-6">
+   <ResponsiveContainer width="100%" height="100%">
+    <LineChart data={predictedSpendData}>
+     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
+     <XAxis 
+      dataKey="month" 
+      axisLine={false} 
+      tickLine={false} 
+      tick={{ fontSize: 12, fill: "#64748b", fontWeight: 500 }}
+      dy={10}
+     />
+     <YAxis 
+      axisLine={false} 
+      tickLine={false} 
+      tick={{ fontSize: 11, fill: "#64748b" }}
+      tickFormatter={(val) => `${val/1000000}tr`}
+      dx={-10}
+     />
+     <Tooltip 
+      contentStyle={{ 
+       backgroundColor: "var(--card)", 
+       borderColor: "var(--border)",
+       borderRadius: "12px",
+       boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+       border: "1px solid rgba(226, 232, 240, 0.5)",
+       fontWeight: 500
+      }}
+      itemStyle={{ fontSize: "13px" }}
+      labelStyle={{ fontSize: "11px", fontWeight: "bold", color: "#64748b", marginBottom: "4px" }}
+      formatter={(value: number) => [formatCurrency(value, currentCurrency), "Chi tiêu dự kiến"]}
+     />
+     <Line 
+      type="monotone" 
+      dataKey="spend" 
+      name="Chi tiêu dự kiến"
+      stroke="#2f6cf5" 
+      strokeWidth={4} 
+      dot={{ r: 6, fill: "#2f6cf5", strokeWidth: 2, stroke: "#fff" }}
+      activeDot={{ r: 8, stroke: "#fff", strokeWidth: 2 }}
+     />
+    </LineChart>
+   </ResponsiveContainer>
+  </CardContent>
+  <div className="px-6 pb-6 pt-2 flex flex-wrap gap-4 border-t border-border/40 mt-4">
+   {predictedSpendData.slice(0, 3).map((d, i) => (
+     <div key={i} className="flex-1 min-w-[120px] bg-muted/30 p-3 rounded-xl border border-border/50">
+       <p className="text-[10px] uppercase font-black text-muted-foreground tracking-wider">{d.month}</p>
+       <p className="text-sm font-bold text-foreground mt-0.5">~{formatCurrency(d.spend, currentCurrency)}</p>
+       <p className="text-[10px] text-emerald-500 font-bold mt-1">Độ tin cậy: {d.confidence}%</p>
+     </div>
+   ))}
+  </div>
+  </Card>
+ </motion.div>
+
+ <div className="grid gap-6 md:grid-cols-2">
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.35 }}
+    >
+      <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm h-full">
+        <CardHeader>
+          <CardTitle className="font-heading flex items-center gap-2">
+            <Clock className="w-5 h-5 text-primary" /> Báo cáo định kỳ (Scheduled)
+          </CardTitle>
+          <CardDescription>
+            Tự động gửi bản tóm tắt hiệu suất Loyalty hàng tuần tới email quản trị.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl border border-border/60">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-bold">Kích hoạt chuyển phát hàng tuần</Label>
+              <p className="text-[10px] text-muted-foreground">Gửi vào thứ Hai hàng tuần, 08:00 AM</p>
+            </div>
+            <Switch 
+              checked={scheduledEnabled} 
+              onCheckedChange={setScheduledEnabled} 
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Email nhận báo cáo</Label>
+            <div className="flex gap-2">
+              <Input 
+                value={reportEmail}
+                onChange={(e) => setReportEmail(e.target.value)}
+                placeholder="email@company.com"
+                className="bg-background/50"
+              />
+              <Button 
+                variant="outline" 
+                className="rounded-xl font-bold"
+                onClick={() => toast.success(`Đã gửi bản xem trước tới ${reportEmail}`)}
+              >
+                <Send className="w-3.5 h-3.5 mr-2" /> Gửi thử
+              </Button>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl border border-dashed border-border bg-muted/10 space-y-2">
+             <p className="text-[10px] font-bold text-muted-foreground uppercase">Nội dung bao gồm:</p>
+             <ul className="text-[11px] space-y-1.5 list-disc pl-4 text-foreground/80">
+                <li>Biểu đồ tăng trưởng hội viên mới</li>
+                <li>Thống kê Top 5 quà tặng được quy đổi</li>
+                <li>Dự báo doanh thu tháng tiếp theo</li>
+                <li>Danh sách khách hàng "At-Risk" cần chăm sóc</li>
+             </ul>
+          </div>
+
+          {scheduledEnabled && (
+             <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-2 rounded-lg border border-emerald-500/20">
+                <CheckCircle2 className="w-3 h-3" /> Chế độ chuyển phát định kỳ đang hoạt động
+             </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.35 }}
+    >
+      <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm h-full">
+         <CardHeader>
+           <CardTitle className="font-heading">Ghi chú vận hành</CardTitle>
+           <CardDescription>Các lưu ý quan trọng trong việc phân tích dữ liệu.</CardDescription>
+         </CardHeader>
+         <CardContent className="space-y-4">
+            <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
+               <p className="text-xs text-foreground/80 leading-relaxed italic">
+                 "Dữ liệu Doanh thu ước tính được tính toán dựa trên điểm tích lũy và tỷ lệ chuyển đổi trung bình. Các chỉ số này có thể thay đổi tùy thuộc vào cấu hình Earn Rule của bạn."
+               </p>
+            </div>
+            <div className="p-4 bg-amber-500/5 rounded-2xl border border-amber-500/10">
+               <p className="text-xs text-foreground/80 leading-relaxed">
+                 Phân khúc "Classic Elegant" hiện đang mang lại ROI cao nhất, hãy cân nhắc tập trung các chiến dịch Marekting cá nhân hóa vào nhóm này.
+               </p>
+            </div>
+         </CardContent>
+      </Card>
+    </motion.div>
+ </div>
 
  <div className="grid gap-6 md:grid-cols-7">
  {/* Main Chart */}

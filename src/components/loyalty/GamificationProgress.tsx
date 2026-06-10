@@ -4,6 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 // Simple div-based progress bar below
 import { Trophy, Star, ShieldCheck, Crown } from "lucide-react";
 
+const ACHIEVEMENTS = [
+  { id: "a1", name: "Top Spender", description: "Chi tiêu vượt mốc 100M trong tháng", icon: "💎", unlocked: true, color: "from-blue-500 to-indigo-600" },
+  { id: "a2", name: "Early Bird", description: "Mua sắm trong giờ vàng khai trương", icon: "🐦", unlocked: true, color: "from-amber-400 to-orange-500" },
+  { id: "a3", name: "Diamond Member", description: "Đạt hạng Atelier sớm nhất", icon: "💍", unlocked: false, color: "from-purple-500 to-pink-500" },
+  { id: "a4", name: "Loyalist", description: "Duy trì hạng Icon trên 12 tháng", icon: "🤝", unlocked: true, color: "from-emerald-400 to-teal-500" },
+];
+
 export function GamificationProgress({ currentPoints = 1420, nextTierPoints = 2500, currentTier = 'Essential', nextTier = 'Icon' }) {
     const progressPercent = Math.min(100, Math.max(0, (currentPoints / nextTierPoints) * 100));
     
@@ -60,19 +67,32 @@ export function GamificationProgress({ currentPoints = 1420, nextTierPoints = 25
                     </div>
                 </div>
  
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-                    {[
-                        { name: "Member", pts: "0", active: currentPoints >= 0, icon: ShieldCheck, color: "text-slate-400" },
-                        { name: "Essential", pts: "500", active: currentPoints >= 500, icon: Star, color: "text-[#10b981]" },
-                        { name: "Icon", pts: "2,500", active: currentPoints >= 2500, icon: Crown, color: "text-[#f59e0b]" },
-                        { name: "Atelier", pts: "10,000+", active: currentPoints >= 10000, icon: Trophy, color: "text-[#2f6cf5]" },
-                    ].map((badge, i) => (
-                        <div key={i} className={`flex flex-col items-center justify-center p-4 rounded-xl border ${badge.active ? 'bg-background/80 border-primary/20 shadow-sm' : 'bg-muted/20 border-transparent opacity-50'} transition-all`}>
-                            <badge.icon className={`w-8 h-8 mb-2 ${badge.color} ${badge.active ? 'opacity-100 drop-shadow-sm' : 'opacity-40 grayscale'}`} />
-                            <span className={`text-xs font-bold ${badge.active ? 'text-foreground' : 'text-muted-foreground'}`}>{badge.name}</span>
-                            <span className="text-[10px] text-muted-foreground">{badge.pts} pts</span>
-                        </div>
-                    ))}
+                <div className="mt-10 border-t border-border/40 pt-8">
+                    <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-4">Huy hiệu thành tựu (Virtual Badges)</h5>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {ACHIEVEMENTS.map((achievement) => (
+                            <div 
+                                key={achievement.id} 
+                                className={`relative group p-4 rounded-2xl border transition-all duration-300 ${
+                                    achievement.unlocked 
+                                        ? 'bg-gradient-to-br from-background to-muted/30 border-primary/20 shadow-md hover:shadow-lg' 
+                                        : 'bg-muted/10 border-transparent opacity-40 grayscale pointer-events-none'
+                                }`}
+                            >
+                                <div className={`w-12 h-12 rounded-xl mb-3 flex items-center justify-center text-2xl shadow-inner bg-gradient-to-tr ${achievement.color} text-white`}>
+                                    {achievement.icon}
+                                </div>
+                                <h6 className="text-[11px] font-black tracking-tight mb-1">{achievement.name}</h6>
+                                <p className="text-[9px] leading-tight text-muted-foreground line-clamp-2">{achievement.description}</p>
+                                
+                                {achievement.unlocked && (
+                                    <div className="absolute top-3 right-3 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+                                        <ShieldCheck className="w-2.5 h-2.5 text-white" />
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </CardContent>
         </Card>

@@ -23,51 +23,71 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  
  const [companies, setCompanies] = useState<Company[]>([]);
 
- useEffect(() => {
- if (!user || user.isLocal) return;
- const q = query(collection(db, "companies"), orderBy("createdAt", "desc"));
- const unsub = onSnapshot(q, snap => {
- setCompanies(snap.docs.map(d => ({ ...d.data(), id: d.id } as Company)));
- });
- return () => unsub();
- }, [user]);
+  useEffect(() => {
+    if (!user) return;
+    
+    if (user.isLocal) {
+      const loadLocal = async () => {
+        const { getGuestCompanies } = await import("@/data/guestData");
+        setCompanies(getGuestCompanies());
+      };
+      loadLocal();
+      return;
+    }
 
- const handleSubmit = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!user) return;
- if (!name) {
- toast.error("Vui lòng nhập tên công ty/chi nhánh");
- return;
- }
- if (type === 'branch' && !parentId) {
- toast.error("Vui lòng chọn công ty quản lý cho chi nhánh này");
- return;
- }
+    const q = query(collection(db, "companies"), orderBy("createdAt", "desc"));
+    const unsub = onSnapshot(q, snap => {
+      setCompanies(snap.docs.map(d => ({ ...d.data(), id: d.id } as Company)));
+    });
+    return () => unsub();
+  }, [user]);
 
- setSubmitting(true);
- try {
- const id = company?.id || Math.random().toString(36).substring(7);
- const data = {
- id,
- name,
- logoUrl,
- address,
- type,
- parentId: type === 'branch' ? parentId : null,
- userId: user.uid,
- createdAt: company?.createdAt || serverTimestamp(),
- };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    if (!name) {
+      toast.error("Vui lòng nhập tên công ty/chi nhánh");
+      return;
+    }
+    if (type === 'branch' && !parentId) {
+      toast.error("Vui lòng chọn công ty quản lý cho chi nhánh này");
+      return;
+    }
 
- await setDoc(doc(db, "companies", id), data);
- toast.success(company ? "Đã cập nhật thông tin" : "Đã tạo thành công");
- onClose();
- } catch (error) {
- console.error(error);
- toast.error("Đã xảy ra lỗi");
- } finally {
- setSubmitting(false);
- }
- };
+    setSubmitting(true);
+    try {
+      const id = company?.id || `comp_${Math.random().toString(36).substring(7)}`;
+      const data: Company = {
+        id,
+        name,
+        logoUrl,
+        address,
+        type,
+        parentId: type === 'branch' ? parentId : undefined,
+        userId: user.isLocal ? "guest" : user.uid,
+        createdAt: company?.createdAt || new Date(),
+      };
+
+      if (user.isLocal) {
+        const { saveGuestCompany } = await import("@/data/guestData");
+        saveGuestCompany(data);
+        toast.success(company ? "Đã cập nhật thông tin" : "Đã tạo thành công");
+      } else {
+        await setDoc(doc(db, "companies", id), {
+          ...data,
+          createdAt: company?.createdAt || serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        toast.success(company ? "Đã cập nhật thông tin" : "Đã tạo thành công");
+      }
+      onClose();
+    } catch (error) {
+      console.error(error);
+      toast.error("Đã xảy ra lỗi");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
  const handleDelete = async () => {
  if (!user || !company) return;

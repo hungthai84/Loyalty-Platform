@@ -269,8 +269,7 @@ const INITIAL_VOUCHER_CAMPAIGNS = [
 
 export function AnalysisView() {
  const { user } = useFirebase();
- const [activeTab, setActiveTab] = useState('dashboard');
- const [userRole, setUserRole] = useState('Admin'); 
+ const [activeTab, setActiveTab] = useState('dashboard'); 
  const [toastMessage, setToastMessage] = useState<string | null>(null);
  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
  const [dbCustomers, setDbCustomers] = useState<Customer[]>([]);
@@ -841,23 +840,7 @@ export function AnalysisView() {
  </div>
 
  <div className="flex items-center gap-3">
- <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/65 border rounded-xl text-xs">
- <Briefcase className="w-4 h-4 text-[#2f6cf5]" />
- <span className="text-muted-foreground">Phân quyền:</span>
- <select 
- value={userRole} 
- onChange={(e) => {
- setUserRole(e.target.value);
- triggerToast(`Đã chuyển phân quyền sang: ${e.target.value}`, 'info');
- }}
- className="bg-transparent text-[#2f6cf5] outline-none cursor-pointer font-bold"
- >
- <option value="Admin">Admin (Full)</option>
- <option value="Marketing">Marketing</option>
- <option value="Finance">Finance</option>
- <option value="CSKH">CSKH</option>
- </select>
- </div>
+ 
  <button 
  onClick={() => {
  triggerToast('Đồng bộ thành công dữ liệu đa kênh!');

@@ -58,6 +58,7 @@ export interface TierConfig {
  multiplier?: number;
  conditions?: TierCondition[];
  color?: string;
+ icon?: string;
  description?: string;
  benefits?: { name: string; value: string }[];
  userId: string;

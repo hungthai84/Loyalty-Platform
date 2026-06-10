@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { 
  X, Upload, AlertCircle, CheckCircle2, ArrowLeft, 
  ChevronRight, Play, Loader2, Table as TableIcon, RefreshCw,
- Users, LogOut, Search
+ Users, LogOut, Search, Download
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { db } from "@/lib/firebase";
@@ -586,13 +586,32 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
         </div>
 
         <div className="flex items-center justify-between gap-3 mt-2">
-          <span className="text-xs text-muted-foreground/80">Bạn cũng có thể duyệt tìm tệp CSV từ lưu trữ đám mây:</span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                const headers = ["name", "email", "phone", "points", "facebook", "zalo", "linkedin", "instagram", "tiktok", "companyId"];
+                const csvContent = "\uFEFF" + headers.join(",") + "\nExample Name,example@email.com,0901234567,1000,facebook.com/example,0901234567,,@example,,BRANCH_01";
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", "crm_import_template.csv");
+                link.click();
+                toast.success("Đã tải xuống tệp mẫu CSV!");
+              }}
+              className="flex items-center gap-1.5 text-xs font-bold bg-[#2f6cf5]/10 text-[#2f6cf5] hover:bg-[#2f6cf5]/20 px-4 py-2.5 rounded-xl border border-[#2f6cf5]/20 transition-all cursor-pointer shadow-xs"
+            >
+              <Download className="w-3.5 h-3.5" /> Tải tệp mẫu
+            </button>
+            <span className="text-xs text-muted-foreground/80">Hoặc duyệt tìm tệp từ Cloud:</span>
+          </div>
           <button
             type="button"
             onClick={() => setShowDrivePicker(true)}
             className="flex items-center gap-1.5 text-xs font-bold bg-muted hover:bg-muted/85 text-foreground px-4 py-2.5 rounded-xl border border-border/60 transition-all cursor-pointer shadow-xs"
           >
-            <RefreshCw className="w-3.5 h-3.5" /> Thêm tệp từ Google Drive
+            <RefreshCw className="w-3.5 h-3.5" /> Google Drive
           </button>
         </div>
 

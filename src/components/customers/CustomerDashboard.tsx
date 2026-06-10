@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { Customer, Company, AttributeDefinition, TierConfig } from "@/types";
 import { StatusService, CustomerActivityMetrics } from "@/services/StatusService";
 import { toast } from "sonner";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 import {
   ArrowLeft,
   Phone,
@@ -28,7 +30,13 @@ import {
   Compass,
   Check,
   X,
+  Calendar,
+  Download,
+  Smile,
+  MessageSquare,
 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -38,6 +46,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription 
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   AreaChart,
   Area,
@@ -216,7 +233,23 @@ interface CustomerDashboardProps {
   onBack: () => void;
 }
 
+// Mock email communications for demo
+const MOCK_REWARDS = [
+  { id: "r1", name: "Voucher High-Tea Atelier", image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=400", date: "20/05/2026", points: 1500, category: "Lifestyle" },
+  { id: "r2", name: "Set Nến thơm Signature", image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=400", date: "10/05/2026", points: 800, category: "Gift" },
+  { id: "r3", name: "Khăn lụa Tơ tằm Luxury", image: "https://images.unsplash.com/photo-1601050638917-3606f548f246?auto=format&fit=crop&q=80&w=400", date: "02/04/2026", points: 2500, category: "Fashion" },
+  { id: "r4", name: "Vé mời Private Showcase", image: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?auto=format&fit=crop&q=80&w=400", date: "15/03/2026", points: 500, category: "Event" },
+];
+
+const MOCK_EMAIL_COMMS = [
+  { id: "e1", subject: "Chào mừng thành viên hạng Essential", status: "delivered", date: "Hôm qua, 09:00", type: "automated" },
+  { id: "e2", subject: "Ưu đãi đặc biệt: Giảm 20% bộ sưu tập Kim Cương", status: "opened", date: "25/05/2026", type: "marketing" },
+  { id: "e3", subject: "Chúc mừng sinh nhật quý khách", status: "opened", date: "20/05/2026", type: "automated" },
+  { id: "e4", subject: "Thông báo bảo trì hệ thống", status: "delivered", date: "15/05/2026", type: "transactional" },
+];
+
 export function CustomerDashboard({
+
   customer,
   userId,
   companies,
@@ -258,12 +291,91 @@ export function CustomerDashboard({
   const [braceletSize, setBraceletSize] = useState(customer.customFields?.braceletSize || "");
   const [necklaceLength, setNecklaceLength] = useState(customer.customFields?.necklaceLength || "");
   const [jewelryPreference, setJewelryPreference] = useState(customer.customFields?.jewelryPreference || "");
+  const [emailNotifications, setEmailNotifications] = useState(customer.customFields?.emailNotifications ?? true);
+  const [smsNotifications, setSmsNotifications] = useState(customer.customFields?.smsNotifications ?? false);
   const [aiReport, setAiReport] = useState<any>(customer.customFields?.aiFashionReport || null);
   const [analyzingStyle, setAnalyzingStyle] = useState(false);
   const [ticketSubject, setTicketSubject] = useState("Yêu cầu spa làm dưỡng đá quý");
   const [ticketSeverity, setTicketSeverity] = useState("Trung bình");
   const [ticketStatus, setTicketStatus] = useState("Đang xử lý");
   const [customTicketSubject, setCustomTicketSubject] = useState("");
+  const [isAdjustingPoints, setIsAdjustingPoints] = useState(false);
+  const [adjustAmount, setAdjustAmount] = useState<number>(0);
+  const [adjustReason, setAdjustReason] = useState("");
+
+  // Survey States
+  const [showSurvey, setShowSurvey] = useState(false);
+  const [surveyRating, setSurveyRating] = useState<number | null>(null);
+  const [surveyComment, setSurveyComment] = useState("");
+  const [surveySubmitted, setSurveySubmitted] = useState(false);
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF() as any;
+    const primaryColor = [47, 108, 245]; // #2f6cf5
+
+    // Add Header
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.text("CUSTOMER LOYALTY REPORT", 105, 20, { align: "center" });
+    doc.setFontSize(10);
+    doc.text("SEVA RETAIL - PREMIUM CRM SYSTEM", 105, 30, { align: "center" });
+
+    // Customer Info
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.text("THÔNG TIN KHÁCH HÀNG", 20, 55);
+    
+    doc.autoTable({
+      startY: 60,
+      head: [["Truong", "Gia tri"]],
+      body: [
+        ["Ho ten", customer.name],
+        ["Email", customer.email],
+        ["So dien thoai", customer.phone],
+        ["Hang thanh vien", tier.name],
+        ["Diem tich luy", points.toLocaleString() + " pts"],
+        ["Ngay gia nhap", formatVietnameseDate(customer.createdAt)],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
+      styles: { fontSize: 10, cellPadding: 3 }
+    });
+
+    // Activity Summary
+    doc.setFontSize(14);
+    doc.text("TONG QUAN HOAT DONG", 20, doc.lastAutoTable.finalY + 15);
+    
+    const activityData = combinedTimeline.slice(0, 10).map(item => [
+      item.dateStr,
+      item.title,
+      item.type.toUpperCase(),
+      item.pointsStr || "0"
+    ]);
+
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 20,
+      head: [["Ngay", "Hoat dong", "Loai", "Diem"]],
+      body: activityData,
+      theme: 'striped',
+      headStyles: { fillColor: [80, 80, 80], textColor: [255, 255, 255] },
+      styles: { fontSize: 9 }
+    });
+
+    // Footer
+    const pageCount = (doc.internal as any).getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Trang ${i}/${pageCount} - Bao cao duoc tao tu dong boi SEVA CRM`, 105, 285, { align: "center" });
+    }
+
+    doc.save(`SEVA_Report_${customer.name.replace(/\s+/g, '_')}_${Date.now()}.pdf`);
+    toast.success("Đã xuất báo cáo PDF thành công!");
+  };
 
   // States for unified extended attributes & fashion editing
   const [isEditingAttributes, setIsEditingAttributes] = useState(false);
@@ -283,6 +395,8 @@ export function CustomerDashboard({
     setBraceletSize(customer.customFields?.braceletSize || "");
     setNecklaceLength(customer.customFields?.necklaceLength || "");
     setJewelryPreference(customer.customFields?.jewelryPreference || "");
+    setEmailNotifications(customer.customFields?.emailNotifications ?? true);
+    setSmsNotifications(customer.customFields?.smsNotifications ?? false);
     setAiReport(customer.customFields?.aiFashionReport || null);
   }, [customer]);
 
@@ -311,6 +425,8 @@ export function CustomerDashboard({
       braceletSize: newBraceletSize,
       necklaceLength: newNecklaceLength,
       jewelryPreference: newJewelryPref,
+      emailNotifications,
+      smsNotifications,
     };
     
     // Auto-update tags based on local rules
@@ -347,6 +463,8 @@ export function CustomerDashboard({
       braceletSize,
       necklaceLength,
       jewelryPreference,
+      emailNotifications,
+      smsNotifications,
     };
     
     // Auto-update tags based on local rules
@@ -960,6 +1078,12 @@ export function CustomerDashboard({
 
         <div className="flex items-center gap-3">
           <button
+            onClick={handleExportPDF}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-blue-500/20 bg-blue-500/5 text-blue-600 text-sm font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+          >
+            <Download className="w-3.5 h-3.5" /> Xuất PDF
+          </button>
+          <button
             onClick={() => setShowDeleteConfirm(true)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/5 text-rose-500 text-sm font-bold hover:bg-rose-500 hover:text-white transition-all shadow-sm"
           >
@@ -1266,6 +1390,31 @@ export function CustomerDashboard({
             )}
           </motion.div>
 
+          {/* Point Adjustment Utility (New) */}
+          <div className="rounded-3xl border border-amber-500/30 bg-amber-500/5 p-6 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-xs font-black text-amber-600 uppercase tracking-wider flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5" /> Quản lý điểm thưởng
+                </h4>
+                <p className="text-[10px] text-amber-600/70 font-bold mt-0.5">Thêm/Bớt điểm thủ công (Admin)</p>
+              </div>
+              <div className="text-right">
+                 <p className="text-lg font-black text-foreground">{points.toLocaleString()}</p>
+                 <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">Điểm hiện tại</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+               <button 
+                onClick={() => setIsAdjustingPoints(true)}
+                className="flex-1 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase shadow-sm hover:shadow-md transition-all active:scale-95"
+               >
+                 Điều chỉnh điểm
+               </button>
+            </div>
+          </div>
+
           {/* CUSTOM ATTRIBUTES & FASHION PANEL */}
           <div className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 space-y-4 shadow-md">
             <div className="flex items-center justify-between border-b pb-2">
@@ -1467,7 +1616,51 @@ export function CustomerDashboard({
                   </div>
                 </div>
 
-                {/* Section 2: Thuộc tính Tùy chỉnh hệ thống */}
+                {/* Section 2: Tùy chọn thông báo */}
+                <div className="space-y-3 pt-2 border-t border-border/40">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
+                    Tùy chọn nhận thông báo
+                  </span>
+                  <div className="space-y-3">
+                    <label className="flex items-center justify-between p-2.5 rounded-xl border border-border bg-background/50 cursor-pointer hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${emailNotifications ? "bg-blue-500/10 text-blue-500" : "bg-muted text-muted-foreground"}`}>
+                          <Mail className="w-4 h-4" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-xs font-bold text-foreground">Email Loyalty Updates</p>
+                          <p className="text-[10px] text-muted-foreground">Nhận cập nhật điểm và hạng qua email</p>
+                        </div>
+                      </div>
+                      <input 
+                        type="checkbox"
+                        checked={emailNotifications}
+                        onChange={(e) => setEmailNotifications(e.target.checked)}
+                        className="w-4 h-4 accent-[#2f6cf5] rounded"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between p-2.5 rounded-xl border border-border bg-background/50 cursor-pointer hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${smsNotifications ? "bg-amber-500/10 text-amber-500" : "bg-muted text-muted-foreground"}`}>
+                          <MessageSquare className="w-4 h-4" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-xs font-bold text-foreground">SMS Loyalty Updates</p>
+                          <p className="text-[10px] text-muted-foreground">Nhận mã OTP và ưu đãi qua tin nhắn</p>
+                        </div>
+                      </div>
+                      <input 
+                        type="checkbox"
+                        checked={smsNotifications}
+                        onChange={(e) => setSmsNotifications(e.target.checked)}
+                        className="w-4 h-4 accent-[#2f6cf5] rounded"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Section 3: Thuộc tính Tùy chỉnh hệ thống */}
                 {attributes.length > 0 && (
                   <div className="space-y-3">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
@@ -1623,6 +1816,21 @@ export function CustomerDashboard({
                   </div>
 
                   {/* Ring size, bracelet size, necklace length, preference fields */}
+                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/30 mt-4">
+                    <div className="col-span-2 mb-1">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Thông báo ưu tiên</span>
+                    </div>
+                    <div className={`p-2 rounded-xl border ${emailNotifications ? "bg-blue-500/5 border-blue-500/20" : "bg-muted/20 border-border/20"} flex items-center gap-2`}>
+                      <Mail className={`w-3.5 h-3.5 ${emailNotifications ? "text-blue-500" : "text-muted-foreground"}`} />
+                      <span className={`text-[10px] font-bold ${emailNotifications ? "text-blue-600" : "text-muted-foreground"}`}>Email: {emailNotifications ? "Bật" : "Tắt"}</span>
+                    </div>
+                    <div className={`p-2 rounded-xl border ${smsNotifications ? "bg-amber-500/5 border-amber-500/20" : "bg-muted/20 border-border/20"} flex items-center gap-2`}>
+                      <MessageSquare className={`w-3.5 h-3.5 ${smsNotifications ? "text-amber-500" : "text-muted-foreground"}`} />
+                      <span className={`text-[10px] font-bold ${smsNotifications ? "text-amber-600" : "text-muted-foreground"}`}>SMS: {smsNotifications ? "Bật" : "Tắt"}</span>
+                    </div>
+                  </div>
+
+                  {/* Ring size, bracelet size, necklace length, preference fields */}
                   {(ringSize || braceletSize || necklaceLength || jewelryPreference) && (
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       {ringSize && (
@@ -1698,6 +1906,8 @@ export function CustomerDashboard({
             <TabsList className="bg-muted/50 border p-1 rounded-xl">
               <TabsTrigger value="overview" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">Tổng quan</TabsTrigger>
               <TabsTrigger value="timeline" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">Timeline Sự kiện</TabsTrigger>
+              <TabsTrigger value="gallery" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 data-[state=active]:shadow-sm">Bộ sưu tập đổi quà</TabsTrigger>
+              <TabsTrigger value="emails" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-indigo-500/10 data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm">Email Marketing</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
@@ -2654,6 +2864,176 @@ export function CustomerDashboard({
           </motion.div>
           </TabsContent>
 
+          <TabsContent value="emails" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
+            <Card className="border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
+               <CardHeader className="pb-3 border-b border-border/40">
+                  <div className="flex items-center justify-between">
+                     <div>
+                        <CardTitle className="text-lg font-bold flex items-center gap-2">
+                           <Mail className="w-5 h-5 text-indigo-500" /> Lịch sử Email Communications
+                        </CardTitle>
+                        <CardDescription className="text-xs">Theo dõi các chiến dịch email đã gửi đến khách hàng này.</CardDescription>
+                     </div>
+                     <Badge variant="outline" className="bg-indigo-500/5 text-indigo-500 border-indigo-500/20">
+                        {MOCK_EMAIL_COMMS.length} Emails
+                     </Badge>
+                  </div>
+               </CardHeader>
+               <CardContent className="p-0">
+                  <div className="divide-y divide-border/30">
+                     {MOCK_EMAIL_COMMS.map((email) => (
+                        <div key={email.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors group">
+                           <div className="flex items-start gap-4">
+                              <div className={cn(
+                                 "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                                 email.type === "automated" ? "bg-emerald-500/10 text-emerald-500" :
+                                 email.type === "marketing" ? "bg-amber-500/10 text-amber-500" :
+                                 "bg-blue-500/10 text-blue-500"
+                              )}>
+                                 <Mail className="w-5 h-5" />
+                              </div>
+                              <div className="min-w-0">
+                                 <h5 className="text-sm font-bold truncate group-hover:text-primary transition-colors">{email.subject}</h5>
+                                 <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground">
+                                       {email.type}
+                                    </span>
+                                    <span className="text-[11px] text-muted-foreground">{email.date}</span>
+                                 </div>
+                              </div>
+                           </div>
+                           <div className="flex flex-col items-end gap-2">
+                              {email.status === "opened" ? (
+                                 <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 flex items-center gap-1 text-[10px]">
+                                    <Check className="w-3 h-3" /> Đã mở
+                                 </Badge>
+                              ) : (
+                                 <Badge variant="outline" className="text-muted-foreground border-muted text-[10px]">
+                                    Đã gửi
+                                 </Badge>
+                              )}
+                              <button className="text-[10px] font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity hover:underline">
+                                 Xem chi tiết
+                              </button>
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+               </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="gallery" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
+            {/* Survey Widget (New Feature) */}
+            {redemptionEvents.length > 0 && !surveySubmitted && (
+              <Card className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-3xl overflow-hidden shadow-sm">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-primary/10 rounded-xl">
+                      <Smile className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base font-black">Khảo sát hài lòng sau đổi thưởng</CardTitle>
+                      <CardDescription className="text-[10px]">Đánh giá nhanh trải nghiệm quà tặng của hội viên.</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-center gap-4 py-2">
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <button
+                        key={num}
+                        onClick={() => setSurveyRating(num)}
+                        className={cn(
+                          "w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-all",
+                          surveyRating === num 
+                            ? "bg-primary text-white scale-110 shadow-lg shadow-primary/30" 
+                            : "bg-background border border-border hover:border-primary/50 text-muted-foreground"
+                        )}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">Phản hồi định tính (Qualitative Feedback)</Label>
+                    <textarea 
+                      className="w-full min-h-[80px] p-3 text-xs bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                      placeholder="Ghi chú lại đánh giá của khách hàng về món quà hoặc quy trình đổi..."
+                      value={surveyComment}
+                      onChange={(e) => setSurveyComment(e.target.value)}
+                    />
+                  </div>
+                  <Button 
+                    disabled={!surveyRating || !surveyComment}
+                    onClick={() => {
+                      setSurveySubmitted(true);
+                      toast.success("Cảm ơn! Phản hồi khảo sát đã được lưu vào hệ thống.");
+                    }}
+                    className="w-full h-10 rounded-xl font-bold bg-[#2f6cf5] hover:bg-blue-600 shadow-lg shadow-blue-500/20"
+                  >
+                    Lưu phản hồi khảo sát
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {surveySubmitted && (
+               <Card className="border border-emerald-500/30 bg-emerald-500/5 rounded-3xl p-4 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-600 flex items-center justify-center">
+                    <Check className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-black text-emerald-700">Khảo sát đã hoàn tất</h5>
+                    <p className="text-[10px] text-emerald-600/70">Xếp hạng: {surveyRating}/5 - Phản hồi: "{surveyComment}"</p>
+                  </div>
+               </Card>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {MOCK_REWARDS.map((reward) => (
+                <Card key={reward.id} className="group overflow-hidden border-border/40 hover:border-amber-500/30 transition-all bg-card/60 backdrop-blur-sm">
+                  <div className="aspect-video w-full overflow-hidden relative">
+                    <img 
+                      src={reward.image} 
+                      alt={reward.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                      <Badge className="bg-amber-500 text-white border-none shadow-lg">
+                        {reward.points} pts
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardHeader className="p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="text-sm font-bold truncate">{reward.name}</CardTitle>
+                      <span className="text-[10px] font-black uppercase text-amber-500 tracking-wider shrink-0">{reward.category}</span>
+                    </div>
+                    <CardDescription className="text-[11px] flex items-center gap-1 mt-1">
+                      <Calendar className="w-3 h-3" /> Ngày nhận: {reward.date}
+                    </CardDescription>
+                  </CardHeader>
+                  <div className="px-4 pb-4 flex items-center justify-between">
+                    <button className="text-[10px] font-bold text-[#2f6cf5] flex items-center gap-1 hover:underline">
+                      <Compass className="w-3 h-3" /> Xem chứng từ <ExternalLink className="w-2.5 h-2.5" />
+                    </button>
+                    <Badge variant="outline" className="text-[10px] bg-emerald-500/5 text-emerald-500 border-emerald-500/20">
+                      Đã sử dụng
+                    </Badge>
+                  </div>
+                </Card>
+              ))}
+              <button className="border-2 border-dashed border-border/40 rounded-3xl p-6 flex flex-col items-center justify-center gap-3 text-muted-foreground hover:bg-muted/30 hover:border-primary/30 transition-all min-h-[200px]">
+                <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
+                  <Plus className="w-6 h-6" />
+                </div>
+                <p className="text-xs font-bold">Thêm quà đã đổi thủ công</p>
+              </button>
+            </div>
+          </TabsContent>
+
           <TabsContent value="timeline" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
             {/* DÒNG THỜI GIAN HOẠT ĐỘNG CHRONOLOGICAL (ACTIVITY TIMELINE) */}
             <motion.div
@@ -2797,6 +3177,69 @@ export function CustomerDashboard({
           </Tabs>
         </div>
       </div>
+
+      {/* Point Adjustment Dialog */}
+      <Dialog open={isAdjustingPoints} onOpenChange={setIsAdjustingPoints}>
+        <DialogContent className="sm:max-w-[425px] rounded-3xl bg-background border-border shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-xl font-black">Điều chỉnh điểm Loyalty</DialogTitle>
+            <DialogDescription className="text-xs font-medium">
+              Thêm hoặc bớt điểm thưởng thủ công cho khách hàng <strong>{customer.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Số điểm (Dùng dấu - để trừ)</Label>
+              <Input 
+                type="number" 
+                value={adjustAmount} 
+                onChange={(e) => setAdjustAmount(Number(e.target.value))}
+                className="text-xl font-black text-center h-16 rounded-2xl bg-muted/30 border-2 border-dashed border-border focus-visible:ring-amber-500/20 focus-visible:border-amber-500/40"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Lý do điều chỉnh</Label>
+              <textarea 
+                className="w-full min-h-[120px] p-4 text-sm bg-muted/30 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500/10 focus:border-amber-500/30 transition-all"
+                placeholder="Ví dụ: Tặng điểm sinh nhật muộn, Đền bù sự cố giao hàng..."
+                value={adjustReason}
+                onChange={(e) => setAdjustReason(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0 mt-2">
+            <Button variant="outline" onClick={() => setIsAdjustingPoints(false)} className="rounded-xl font-bold px-6">Hủy</Button>
+            <Button 
+               disabled={!adjustReason || adjustAmount === 0}
+               onClick={async () => {
+                 const newPoints = points + adjustAmount;
+                 const logEntry = {
+                    id: `PTS-${Date.now()}`,
+                    type: adjustAmount > 0 ? "manual_add" : "manual_subtract",
+                    amount: Math.abs(adjustAmount),
+                    balance: newPoints,
+                    description: adjustReason,
+                    date: formatVietnameseDate(Date.now()),
+                    timestamp: Date.now()
+                 };
+
+                 await updateFirestore({
+                    points: newPoints,
+                    redemptions: [logEntry, ...(customer.redemptions || [])]
+                 }, `Đã điều chỉnh ${adjustAmount > 0 ? "+" : ""}${adjustAmount} điểm. Lý do: ${adjustReason}`);
+                 
+                 setPoints(newPoints);
+                 setIsAdjustingPoints(false);
+                 setAdjustAmount(0);
+                 setAdjustReason("");
+               }}
+               className="rounded-xl font-bold bg-[#2f6cf5] hover:bg-blue-600 px-8 shadow-lg shadow-blue-500/20"
+            >
+              Xác nhận thay đổi
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
