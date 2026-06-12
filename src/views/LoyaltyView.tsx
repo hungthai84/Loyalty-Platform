@@ -75,6 +75,7 @@ import { TierManagementView } from "@/components/loyalty/TierManagementView";
 import { GamificationProgress } from "@/components/loyalty/GamificationProgress";
 import { CustomerProgressGrid } from "@/components/loyalty/CustomerProgressGrid";
 import { LoyaltyProgressionTimeline } from "@/components/loyalty/LoyaltyProgressionTimeline";
+import { TierComparisonTable } from "@/components/loyalty/TierComparisonTable";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { PointRedemptionConfigView } from "@/components/loyalty/PointRedemptionConfigView";
 import { cn } from "@/lib/utils";
@@ -1359,65 +1360,69 @@ export function LoyaltyView() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="space-y-8"
           >
             {activeTab === "tiers" && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
-                  <GamificationProgress currentPoints={1420} nextTierPoints={2500} currentTier="Essential" nextTier="Icon" />
-                  <CustomerProgressGrid customers={customers} tiers={tiers} />
-                  <TierManagementView />
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2 space-y-6">
+                    <GamificationProgress currentPoints={1420} nextTierPoints={2500} currentTier="Essential" nextTier="Icon" />
+                    <CustomerProgressGrid customers={customers} tiers={tiers} />
+                    <TierManagementView />
+                  </div>
+                  
+                  <div className="lg:col-span-1 space-y-6">
+                    {/* Program Health Card */}
+                    <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-3xl shadow-lg text-left">
+                      <h3 className="text-lg font-bold font-heading flex items-center gap-2 mb-4">
+                        <TrendingUp className="w-5 h-5 text-emerald-500" /> Sức khỏe Chương trình (Program Health)
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="bg-background/45 border border-border/50 p-4 rounded-2xl">
+                          <p className="text-xs text-muted-foreground uppercase font-black tracking-wider mb-1">Điểm Trung Bình / Hội Viên</p>
+                          <p className="text-2xl font-black text-foreground tracking-tight">
+                            {programHealthStats.avgPoints.toLocaleString(undefined, { maximumFractionDigits: 1 })} <span className="text-sm font-semibold text-muted-foreground">pts</span>
+                          </p>
+                        </div>
+
+                        <div className="bg-background/45 border border-border/50 p-4 rounded-2xl">
+                          <p className="text-xs text-muted-foreground uppercase font-black tracking-wider mb-1">Tỷ Lệ Đổi Thưởng (Redemption Rate)</p>
+                          <p className="text-2xl font-black text-foreground tracking-tight">
+                            {programHealthStats.redemptionRate.toLocaleString(undefined, { maximumFractionDigits: 1 })}%
+                          </p>
+                          {/* Progress Bar */}
+                          <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+                            <div 
+                              className="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" 
+                              style={{ width: `${Math.min(programHealthStats.redemptionRate, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 pt-2 text-[11px] font-semibold text-muted-foreground">
+                          <div>
+                            <p className="uppercase text-[9px] font-black opacity-80 mb-0.5">Tổng điểm hiện tại</p>
+                            <p className="text-foreground font-bold text-xs">{programHealthStats.totalPoints.toLocaleString()} pts</p>
+                          </div>
+                          <div>
+                            <p className="uppercase text-[9px] font-black opacity-80 mb-0.5">Tổng điểm đã đổi</p>
+                            <p className="text-foreground font-bold text-xs">{programHealthStats.totalRedeemed.toLocaleString()} pts</p>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+
+                    <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-3xl shadow-lg">
+                      <LoyaltyProgressionTimeline currentPoints={1420} tierName="Essential" />
+                    </Card>
+                  </div>
                 </div>
-                
-                <div className="lg:col-span-1 space-y-6">
-                  {/* Program Health Card */}
-                  <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-3xl shadow-lg text-left">
-                    <h3 className="text-lg font-bold font-heading flex items-center gap-2 mb-4">
-                      <TrendingUp className="w-5 h-5 text-emerald-500" /> Sức khỏe Chương trình (Program Health)
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="bg-background/45 border border-border/50 p-4 rounded-2xl">
-                        <p className="text-xs text-muted-foreground uppercase font-black tracking-wider mb-1">Điểm Trung Bình / Hội Viên</p>
-                        <p className="text-2xl font-black text-foreground tracking-tight">
-                          {programHealthStats.avgPoints.toLocaleString(undefined, { maximumFractionDigits: 1 })} <span className="text-sm font-semibold text-muted-foreground">pts</span>
-                        </p>
-                      </div>
 
-                      <div className="bg-background/45 border border-border/50 p-4 rounded-2xl">
-                        <p className="text-xs text-muted-foreground uppercase font-black tracking-wider mb-1">Tỷ Lệ Đổi Thưởng (Redemption Rate)</p>
-                        <p className="text-2xl font-black text-foreground tracking-tight">
-                          {programHealthStats.redemptionRate.toLocaleString(undefined, { maximumFractionDigits: 1 })}%
-                        </p>
-                        {/* Progress Bar */}
-                        <div className="w-full bg-muted rounded-full h-1.5 mt-2">
-                          <div 
-                            className="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" 
-                            style={{ width: `${Math.min(programHealthStats.redemptionRate, 100)}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3 pt-2 text-[11px] font-semibold text-muted-foreground">
-                        <div>
-                          <p className="uppercase text-[9px] font-black opacity-80 mb-0.5">Tổng điểm hiện tại</p>
-                          <p className="text-foreground font-bold text-xs">{programHealthStats.totalPoints.toLocaleString()} pts</p>
-                        </div>
-                        <div>
-                          <p className="uppercase text-[9px] font-black opacity-80 mb-0.5">Tổng điểm đã đổi</p>
-                          <p className="text-foreground font-bold text-xs">{programHealthStats.totalRedeemed.toLocaleString()} pts</p>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-
-                  <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-3xl shadow-lg">
-                    <LoyaltyProgressionTimeline currentPoints={1420} tierName="Essential" />
-                  </Card>
-                </div>
+                <TierComparisonTable />
               </div>
             )}
 

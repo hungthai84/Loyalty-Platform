@@ -66,8 +66,8 @@ export function TierManagementView() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between bg-white/50 backdrop-blur-sm p-6 rounded-3xl border border-border/50 sticky top-0 z-10 shadow-sm">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex items-center justify-between bg-background/95 dark:bg-zinc-950/95 backdrop-blur-md p-6 rounded-3xl border border-border sticky top-0 z-20 shadow-md">
         <div>
           <h3 className="text-xl font-bold font-heading flex items-center gap-2">
             <Star className="w-5 h-5 text-amber-500" /> Cấu hình Cấp bậc Hội viên
