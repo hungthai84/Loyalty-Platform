@@ -102,16 +102,12 @@ export function TierManagementView() {
             </div>
           </div>
         ) : (
-          tiers.map((tier, idx) => (
-            <motion.div
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
+          tiers.map((tier) => (
+            <div
               key={tier.id}
               className="h-full"
             >
-              <Card className="group h-full border-none bg-card hover:shadow-2xl transition-all duration-300 rounded-3xl overflow-hidden relative border-t-8 flex flex-col" style={{ borderTopColor: tier.color }}>
+              <Card className="h-full border border-border bg-card shadow-sm rounded-3xl overflow-hidden relative border-t-8 flex flex-col" style={{ borderTopColor: tier.color }}>
                 <CardContent className="p-0 flex-1 flex flex-col">
                   {/* Header Section */}
                   <div className="p-6 pb-4 bg-muted/5 border-b border-border/50">
@@ -184,7 +180,7 @@ export function TierManagementView() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           ))
         )}
       </div>

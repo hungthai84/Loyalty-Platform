@@ -31,7 +31,9 @@ import {
  ShoppingBag,
  Gem,
  Zap,
- Trophy
+ Trophy,
+ BookOpen,
+ X
 } from 'lucide-react';
 import { 
  AreaChart, 
@@ -267,9 +269,352 @@ const INITIAL_VOUCHER_CAMPAIGNS = [
  { id: 'VCH-03', name: 'Welcome Essential Tier', sent: 1200, used: 310, revenue: 620000000, cost: 15000000, active: false },
 ];
 
+const ANALYSIS_DOCS: Record<string, {
+  title: string;
+  subtitle: string;
+  badge: string;
+  description: string;
+  metrics: { label: string; value: string; desc: string }[];
+  details: { label: string; desc: string }[];
+  advice: string[];
+  themeColor: {
+    bg: string;
+    border: string;
+    text: string;
+    accent: string;
+    iconBg: string;
+  };
+}> = {
+  dashboard: {
+    title: "Phân tích Tổng quan Campaign & Loyalty (Dashboard)",
+    subtitle: "Chẩn đoán sức khỏe tổng quát của chương trình Loyalty, hiệu quả tích lũy và chuyển dịch doanh thu.",
+    badge: "Tổng Quan",
+    description: "Cung cấp cái nhìn toàn diện từ trên xuống về dòng chảy điểm số, cấu trúc hội viên, và tỷ suất đóng góp doanh thu của tệp VIP để tối ưu hóa ngân sách chung.",
+    metrics: [
+      { label: "Doanh thu VIP đóng góp", value: "65.4%", desc: "Tài khóa phát sinh bởi hội viên danh bạ" },
+      { label: "Point Burn/Earn Ratio", value: "0.82", desc: "Tỉ lệ đổi điểm / tích luỹ điểm lý tưởng" },
+      { label: "Chi phí vận hành thực tế", value: "2.1%", desc: "Đầu tư duy trì dịch vụ & quà tặng trên doanh thu" }
+    ],
+    details: [
+      { label: "Dòng chảy Điểm số (Points Cycle)", desc: "Giám sát hiệu số giữa điểm phát hành và điểm thu hồi để đề xuất hoạt động giải phóng điểm dư." },
+      { label: "Mô hình Phân lớp Thành viên", desc: "Đo lường tỷ lệ tăng trưởng cơ học của từng cấp hạng (Atelier/Icon/Essential)." },
+      { label: "Kênh Chuyển đổi chính", desc: "Xác định điểm chạm tích lũy tạo đơn tốt nhất (Showroom, Online Web, hoặc Boutique)." }
+    ],
+    advice: [
+      "Duy trì Point Burn Rate ở mức ~80% để đảm bảo khách không cảm thấy điểm thưởng trực quan kém giá trị hay gây gánh nặng công nợ cho boutique.",
+      "Tập trung ngân sách tri ân vào tệp 20% thành viên cốt lõi mang tới 80% doanh thu dồn tích."
+    ],
+    themeColor: {
+      bg: "bg-blue-500/5 dark:bg-blue-950/10",
+      border: "border-blue-500/15 dark:border-blue-900/30",
+      text: "text-blue-950 dark:text-blue-300",
+      accent: "text-blue-600 dark:text-blue-400",
+      iconBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+    }
+  },
+  cross_branch: {
+    title: "Phân tích Điểm chung Chi nhánh (Multi-branch Matrix)",
+    subtitle: "Lượng hóa hành vi di chuyển chéo của khách hàng VIP giữa các showroom vật lý và kênh online.",
+    badge: "Chi Nhánh",
+    description: "Nhận diện xu hướng di chuyển mua sắm tự do của khách hàng trên toàn mạng lưới cửa hàng. Thấu hiểu dòng chảy địa lý để quản trị chuỗi cung ứng cục bộ.",
+    metrics: [
+      { label: "Tỷ lệ di chuyển chéo", value: "34.2%", desc: "Khách mua hàng ở từ 2 chi nhánh trở lên" },
+      { label: "Showroom đón khách hăng hái nhất", value: "Sài Gòn Boutique", desc: "Chi nhánh tiếp nhận lượng VIP chéo cao nhất" },
+      { label: "Tốc độ dịch chuyển kênh", value: "+18%", desc: "Gia tăng chuyển đổi đặt giữ hàng tại Boutique" }
+    ],
+    details: [
+      { label: "Hành vi sắm chéo (Cross-purchasing)", desc: "Khách hàng mua Trang sức tại Flagship và bảo dưỡng, làm mới tại các Boutique phụ cận." },
+      { label: "Ưu thế Phân bổ Địa lý", desc: "Hỗ trợ định vị khu vực tiềm năng để mở rộng dòng boutique hoặc showroom đón đầu tệp VIP." },
+      { label: "Tái định ngạch Doanh số", desc: "Ghi nhận công sức giới thiệu của chi nhánh khai sinh thẻ và chi nhánh chăm sóc thực tế." }
+    ],
+    advice: [
+      "Thiết lập cơ chế chia sẻ KPI hoa hồng thông minh giữa các chi nhánh để tạo động lực phối hợp chăm sóc tệp VIP tốt hơn.",
+      "Luân chuyển linh hoạt vật phẩm đặc sắc dòng Atelier giới hạn tới các showroom ghi nhận nhu cầu trải nghiệm chéo đột biến."
+    ],
+    themeColor: {
+      bg: "bg-emerald-500/5 dark:bg-emerald-950/10",
+      border: "border-emerald-500/15 dark:border-emerald-900/30",
+      text: "text-emerald-950 dark:text-emerald-300",
+      accent: "text-emerald-600 dark:text-emerald-400",
+      iconBg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+    }
+  },
+  shopping_behavior: {
+    title: "Phân tích Hành vi mua sắm (Shopping Behavior)",
+    subtitle: "Chẩn đoán thói quen chi tiêu trang sức mảnh, kim cương nước D dựa trên kích cỡ rổ đồ & chu kỳ hóa đơn.",
+    badge: "Hành Vi",
+    description: "Tận dụng AI chẩn đoán mẫu hình giỏ hàng mua sắm, nhận diện thói quen đặt sắm trọn bộ trang sức hay đơn sắm rời rạc để xúc tiến khuyến nghị tức thời.",
+    metrics: [
+      { label: "Tỷ lệ mua theo Bộ (Set)", value: "42.8%", desc: "Tần suất mua rổ hàng đính kèm nhẫn + khuyên tai đồng bộ" },
+      { label: "Khoảng cách đơn mua (AOV)", value: "155 triệu ₫", desc: "Mức chi tiêu trung bình trên mỗi hóa đơn của nhóm VIP" },
+      { label: "Tỷ lệ giỏ hàng lai (Hybrid)", value: "29.5%", desc: "Kết hợp giữa vàng di sản thủ công và bạch kim tối giản" }
+    ],
+    details: [
+      { label: "Mẫu hình Giỏ hàng (Cart Patterns)", desc: "AI phân tích tần suất gộp hóa đơn và độ tương thích bổ sung giữa các nhóm chế tác." },
+      { label: "Tính thời vụ (Seasonality)", desc: "Chu kỳ đột phá rổ đồ tập trung cao điểm vào quý 4, mùa cưới hỏi và trước lễ tết." },
+      { label: "Thời gian chu kỳ tái sắm", desc: "Trung bình 145 ngày. Khoảng thời gian nghỉ giữa hai lần phát sinh thanh toán." }
+    ],
+    advice: [
+      "Tự động kích hoạt ưu đãi 'Đặc quyền gộp bộ' giảm ngay 5-8% khi giỏ hàng có trên 2 danh mục trang sức bổ khuyết cho nhau.",
+      "Gợi ý chiến dịch chăm sóc định kỳ trước 15 ngày kỷ niệm ngày cưới của VIP với gợi ý bộ lễ vật riêng."
+    ],
+    themeColor: {
+      bg: "bg-sky-500/5 dark:bg-sky-950/10",
+      border: "border-sky-500/15 dark:border-sky-900/30",
+      text: "text-sky-950 dark:text-sky-300",
+      accent: "text-sky-600 dark:text-sky-400",
+      iconBg: "bg-sky-500/10 text-sky-600 dark:text-sky-400"
+    }
+  },
+  tier_point_analysis: {
+    title: "Phân tích Phân hạng & Phân phối Điểm (Tiers & Points)",
+    subtitle: "Giám sát cán cen phân bổ điểm thưởng của toàn hệ thống dữ liệu khách hàng VIP CRM.",
+    badge: "VIP & Điểm",
+    description: "Nhận thức mật độ điểm số khả dụng để kiểm tra rủi ro nợ tài chính (Loyalty Liability). Định vị những 'Quý khách hàng ngủ đông' đang ôm trữ lượng lớn điểm số.",
+    metrics: [
+      { label: "Tổng quỹ điểm lưu hành", value: "48.2M pts", desc: "Điểm khả dụng hiện tại khách hàng đang nắm giữ" },
+      { label: "Nợ tài chính quy đổi quy đổi", value: "9.64 tỷ ₫", desc: "Nghĩa vụ quy đổi thưởng dự phóng đối ứng" },
+      { label: "Tỷ lệ điểm chết trôi", value: "7.4%", desc: "Tỷ lệ điểm hết thời hạn hiệu lực bị bốc hơi kỳ trước" }
+    ],
+    details: [
+      { label: "Giám sát Mật độ Điểm số", desc: "Xác minh các dải điểm số tập trung số lượng đông đảo người dùng nhất." },
+      { label: "Dự phóng Điểm Hết hạn", desc: "Hệ thống tự động điểm mặt nhóm điểm sắp bốc hơi trong 30-60 ngày tới để kích hoạt SMS." },
+      { label: "Hiệu năng Điểm Thặng dư", desc: "Xem xét thói quen tích trữ của lớp VIP để tạo ra các giải pháp đốt điểm hấp dẫn." }
+    ],
+    advice: [
+      "Triển khai các sự kiện quy đổi quà giới hạn (Flash-Redeem) mỗi quý để hạ dòng điểm lưu ký tiềm ẩn rủi ro tài chính.",
+      "Không siết thời hạn thẻ quá ngặt nghèo tạo phản cảm cho lớp Diamond, Atelier VIP."
+    ],
+    themeColor: {
+      bg: "bg-amber-500/5 dark:bg-amber-950/10",
+      border: "border-amber-500/15 dark:border-amber-900/30",
+      text: "text-amber-950 dark:text-amber-300",
+      accent: "text-amber-600 dark:text-amber-400",
+      iconBg: "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+    }
+  },
+  aesthetic_segmentation: {
+    title: "Phân khúc Gu Thẩm mỹ & Đề xuất AI (Aesthetic Style)",
+    subtitle: "Khám phá gu thời trang thẩm mỹ sâu kín qua lịch sử giao dịch để tạo chiến hạm tiếp thị chính xác.",
+    badge: "AI Gu Thẩm Mỹ",
+    description: "Phân tách tệp khách hàng dựa trên hành vi mua sắm thuộc các trường phái riêng biệt đại diện cho gu sống đỉnh cao (Classic Elegant, Minimalist, Luxury Glamour, Avant-Garde).",
+    metrics: [
+      { label: "Độ chính xác AI gắn tag", value: "94.5%", desc: "Mức trùng khớp giữa dự đoán AI và lựa chọn thực tế" },
+      { label: "Tăng trưởng chuyển từ gợi ý", value: "+38%", desc: "Hiệu quả gia tăng đơn khi tiếp thị bằng catalog đúng gu" },
+      { label: "Nhóm phong cách phổ biến", value: "Classic Elegant", desc: "Phong cách được ưa chuộng áp đảo tại miền Bắc" }
+    ],
+    details: [
+      { label: "AI Đề xuất Tối ưu (Smart Matching)", desc: "Tự động phân nhóm và khớp mã Catalog trang sức thích hợp nhất." },
+      { label: "Phân nhóm Theo Gu (Style Cohorts)", desc: "Rời bỏ lối phân nhóm tuổi tác thô sơ, tập trung thuần khiết vào gu thẩm mỹ tinh tế." },
+      { label: "Điểm Chuyển đổi Gu", desc: "Đón đầu xu hướng chuyển dịch khi túi tiền nâng hạng." }
+    ],
+    advice: [
+      "Tránh gửi tin nhắn rao bán sản phẩm đại trà. Khách có gu Minimalist tuyệt đối chỉ nhận Catalog trang sức dẹt, mảnh tinh xảo đơn thuần.",
+      "Huấn luyện nhân viên showroom hiểu rõ gu khách hàng đang hiển thị trên app trước khi đón tiếp tại cửa."
+    ],
+    themeColor: {
+      bg: "bg-purple-500/5 dark:bg-purple-950/10",
+      border: "border-purple-500/15 dark:border-purple-900/30",
+      text: "text-purple-950 dark:text-purple-300",
+      accent: "text-purple-600 dark:text-purple-400",
+      iconBg: "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+    }
+  },
+  tier_projection: {
+    title: "Mô hình Dự phóng Tiến trình Thăng hạng (Tier Elevation)",
+    subtitle: "Mô hình hoá và dự đoán thời điểm vàng nâng cấp đặc quyền VIP của toàn bộ tệp thành viên.",
+    badge: "Dự Phóng",
+    description: "Nhìn thấu tiến độ bứt tốc thăng hạng, dự phóng lượng khách chuẩn bị vượt sào thăng cấp Icon, Atelier trong 90 ngày tới để chủ động chuẩn bị quà cáp tri ân.",
+    metrics: [
+      { label: "Khách chuẩn bị thăng cấp (Cận biên)", value: "112 hội viên", desc: "Số lượng khách đã đạt trên 85% ngưỡng thăng hạng kế tiếp" },
+      { label: "Tỷ lệ thăng hạng tự động", value: "15.4%/năm", desc: "Chu kỳ thăng cấp cơ học của người tiêu dùng không kích cầu" },
+      { label: "Doanh thu cận biên dự tính", value: "2.4 tỷ ₫", desc: "Doanh số bổ sung nếu toàn bộ khách cận biên thăng hạng" }
+    ],
+    details: [
+      { label: "Quản trị Khoảng cách Ngưỡng (Threshold Gap)", desc: "Đo đạc chính xác số tiền cần chi thêm của từng VIP." },
+      { label: "Vòng xoáy Thâm hụt Thăng hạng", desc: "Theo dõi lượng khách sắp bị tụt hạng (Demotion Risk) vì không duy trì mức chi tối thiểu." },
+      { label: "Biểu đồ Phân bổ Tiến trình", desc: "Hình dung tỷ mẩn bản đồ phân tán biểu thị tình trạng thăng tiến." }
+    ],
+    advice: [
+      "Khởi chạy chiến dịch SMS thông minh: 'Chỉ còn thiếu 15 triệu để duy trì vị thế Atelier trọn đời'.",
+      "Triển khai hoạt động 'Double Spend Weekend' cho nhóm khách cận biên để kéo họ thăng hạng nhanh chóng."
+    ],
+    themeColor: {
+      bg: "bg-rose-500/5 dark:bg-rose-950/10",
+      border: "border-rose-500/15 dark:border-rose-900/30",
+      text: "text-rose-950 dark:text-rose-300",
+      accent: "text-rose-600 dark:text-rose-400",
+      iconBg: "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+    }
+  },
+  loyalty_cost: {
+    title: "Quản trị Chi phí Loyalty & Chỉ số hoàn vốn ROI (Loyalty Cost)",
+    subtitle: "Đảm bảo tính lành mạnh tài khóa của hệ thống Marketing, xác nhận hiệu quả đầu tư thực chất.",
+    badge: "Tài Chính & ROI",
+    description: "Hiển thị trực quan bức tranh chi phí cứng và chi phí mềm của chương trình tích điểm đổi quà. Tính toán chính xác xem 1 đồng chi phí bỏ ra đem lại bao nhiêu đồng doanh số VIP tăng thêm.",
+    metrics: [
+      { label: "Tỷ suất hoàn vốn ROI chung", value: "3.8x", desc: "Cứ 1 đồng chi phí chăm sóc tạo ra 3.8 đồng doanh số tăng thêm" },
+      { label: "Chi phí đổi điểm bình quân (Cost/Point)", value: "125 ₫", desc: "Mức trích lập thực chi khi khách hàng quy đổi 1 điểm" },
+      { label: "Ngân sách tiếp khách VIP Lounge", value: "1.2%", desc: "Tài khóa trích lập phục vụ tiệc trà Atelier" }
+    ],
+    details: [
+      { label: "ROI Kênh Tích lũy (Earn ROI)", desc: "Theo dõi doanh số biên tạo lập từ các hoạt động tặng điểm thưởng." },
+      { label: "Bảo hiểm Trích lập Công nợ", desc: "Dự phòng rủi ro dồn cục đổi quà thời điểm tết nguyên đán làm cạn dòng tiền." },
+      { label: "Chi phí Hàng tồn quy đổi (Voucher Costs)", desc: "Giá trị chiết khấu thực tế sau khi đã tối ưu biên lợi nhuận gốc." }
+    ],
+    advice: [
+      "Luôn giữ chỉ số ROI Loyalty lớn hơn 2.5x để đảm bảo chương trình không rơi vào bẫy chi phí vô dưỡng.",
+      "Ưu tiên quy đổi bằng voucher dịch vụ hoặc vật phẩm thương hiệu của đối tác liên minh để nén chi phí quà tặng xuống thấp nhất."
+    ],
+    themeColor: {
+      bg: "bg-cyan-500/5 dark:bg-cyan-950/10",
+      border: "border-cyan-500/15 dark:border-cyan-900/30",
+      text: "text-cyan-950 dark:text-cyan-300",
+      accent: "text-cyan-600 dark:text-cyan-400",
+      iconBg: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400"
+    }
+  },
+  clv_repeat: {
+    title: "Giá trị Vòng đời & Tỷ lệ Tái mua hàng (CLV & Repurchase)",
+    subtitle: "Giám sát sức bền gắn kết bền bỉ theo năm tháng của tệp khách hàng thông qua RFM Matrix.",
+    badge: "Sức Bền CLV",
+    description: "Giám định tuổi đời khách hàng (Customer Lifespan) và tần suất quay lại mua hàng định kỳ. Xác định chính xác xem tệp VIP có ngủ đông, thoái trào hay tiếp tục gia tăng giá trị.",
+    metrics: [
+      { label: "Tỷ lệ tái mua kỳ (180 ngày)", value: "58.7%", desc: "Hội viên VIP quay lại mua đơn hàng thứ hai trong vòng nửa năm" },
+      { label: "Chỉ số CLV trung bình", value: "480 triệu ₫", desc: "Doanh số tích lũy một khách hàng đóng góp trọn đời trên hệ thống" },
+      { label: "Retention Rate (VIP)", value: "82.4%", desc: "Tỷ lệ gìn giữ giữ chân thành viên cao tuổi tiếp tục trung thành" }
+    ],
+    details: [
+      { label: "RFM Cohort Analytics", desc: "Phân bón dữ liệu dựa trên: Recency (gần nhất), Frequency (tần suất), Monetary (giá trị đơn)." },
+      { label: "Tuổi thọ trung bình (Customer Lifespan)", desc: "Chu kỳ sống của một thành viên tính từ lúc mở thẻ đến đơn sắm cuối cùng." },
+      { label: "Predictive Churn Detection", desc: "Cảnh báo sớm khi VIP không phát sinh tương tác quá 180 ngày." }
+    ],
+    advice: [
+      "Khách hàng VIP lâu năm có CLV cao cần được kết nối trực tiếp bởi Quản lý vùng thay vì nhân viên thông thường.",
+      "Thiết lập kịch bản Re-activation (Tập trung kích hoạt lại) lập tức cho khách hàng lọt nhóm 'Sleepy VIP' trên RFM."
+    ],
+    themeColor: {
+      bg: "bg-teal-500/5 dark:bg-teal-950/10",
+      border: "border-teal-500/15 dark:border-teal-900/30",
+      text: "text-teal-950 dark:text-teal-300",
+      accent: "text-teal-600 dark:text-teal-400",
+      iconBg: "bg-teal-500/10 text-teal-600 dark:text-teal-400"
+    }
+  },
+  vip_crm: {
+    title: "Chăm sóc VIP CRM & Đặt lịch tư vấn độc bản (Private Lounge)",
+    subtitle: "Vận hành chu đáo quy trình VIP Lounge, phòng tư vấn 1-kèm-1 và kịch bản chăm sóc cá nhân hóa.",
+    badge: "CRM Thượng Lưu",
+    description: "Quản lý lượt đặt Private Room, bố trí thợ kim hoàn tư vấn trực diện cho khách hàng có kế hoạch đám cưới hoàng gia hoặc chế tác trang sức gia bảo độc bản.",
+    metrics: [
+      { label: "Lượt đặt Private Lounge", value: "85/tháng", desc: "Tổng lượt sử dụng dịch vụ tiếp khách khép kín tại chi nhánh" },
+      { label: "NPS (Điểm số hài lòng)", value: "98.2/100", desc: "Mức độ hài lòng cực độ của thượng khách sau khi trải nghiệm đặt VIP" },
+      { label: "Chuyển đơn từ Private Lounge", value: "80%", desc: "Tỷ lệ khách hàng chốt mua sau buổi tư vấn cá nhân tại Lounge" }
+    ],
+    details: [
+      { label: "Bố trí Phòng Private & Thợ Cả", desc: "Nhân viên Boutique chủ động giữ giờ phòng tư vấn, điều phối trà bánh theo khẩu vị." },
+      { label: "Nhắc nhở Ngày Kỷ Niệm (Life Events)", desc: "Hệ thống nhắc nhở boutique manager chúc mừng sinh nhật, ngày cưới, mừng thọ của người thân VIP." },
+      { label: "Đặt Lịch Bảo Trì Trang Sức", desc: "Mời VIP đem trang sức quý quay lại Boutique đánh bóng hoặc kiểm tra kim cương miễn phí." }
+    ],
+    advice: [
+      "Chuẩn bị nước uống, hương tinh dầu dịu nhẹ dựa trên thông tin sở thích lưu trữ trên CRM để tạo độ siêu cá nhân hóa.",
+      "Tối ưu phòng chờ: Tránh để hai khách hàng VIP quen biết nhau chung phòng lounge nếu họ yêu cầu sự kín tiếng tuyệt mật."
+    ],
+    themeColor: {
+      bg: "bg-indigo-500/5 dark:bg-indigo-950/10",
+      border: "border-indigo-500/15 dark:border-indigo-900/30",
+      text: "text-indigo-950 dark:text-indigo-300",
+      accent: "text-indigo-600 dark:text-indigo-400",
+      iconBg: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+    }
+  },
+  ai_advisor: {
+    title: "Cố vấn Chiến lược thông minh AI Advisor (Intelligence Copilot)",
+    subtitle: "Khai thác tối đa trí tuệ nhân tạo Gemini để chẩn đoán lỗ hổng chính sách và tự soạn thảo chiến dịch.",
+    badge: "AI Cố Vấn",
+    description: "AI Advisor giám sát liên tục luồng dữ liệu mua sắm và thăng hạng chéo, tự động đưa ra các dự báo sắc bén và dự phòng rủi ro ngân sách tiếp thị.",
+    metrics: [
+      { label: "Gợi ý AI được áp dụng", value: "72.4%", desc: "Tỷ lệ các đề xuất hữu ích được ban quản trị đưa vào thực thi" },
+      { label: "Giảm hao hụt ngân sách", value: "-14%", desc: "Hao phí tiếp thị giảm thiểu tối đa nhờ AI tối ưu đúng đối tượng" },
+      { label: "Thời gian tạo lập chiến dịch", value: "< 2 phút", desc: "Thời gian soạn thảo kịch bách chi tiết cho tệp khách mục tiêu" }
+    ],
+    details: [
+      { label: "Phát hiện Dị Thường tự động", desc: "Báo cáo khẩn cấp khi xuất hiện lỗi cộng dồn điểm ảo hoặc rò rỉ voucher ở kênh Online." },
+      { label: "Tạo lập Chiến Dịch Sáng Tạo", desc: "AI lên văn bản nháp SMS/ZNS cá nhân hóa tối đa bám đuổi gu trang sức từng nhóm khách." },
+      { label: "Dự phóng Trend Thẩm Mỹ", desc: "Dự đoán xu thế dịch chuyển gu thời trang từ Cổ điển sang Tối giản trong kỳ tới." }
+    ],
+    advice: [
+      "Thực hiện rà soát các đề nghị đề xuất của AI Advisor vào mỗi sáng Thứ Hai để lên khung vận hành chiến dịch tuần nhanh gọn.",
+      "Cung cấp phản hồi ngược lại cho AI khi một chiến dịch thành công để máy học tốt hơn gu thẩm mỹ tối thượng của quý khách."
+    ],
+    themeColor: {
+      bg: "bg-fuchsia-500/5 dark:bg-fuchsia-950/10",
+      border: "border-fuchsia-500/15 dark:border-fuchsia-900/30",
+      text: "text-fuchsia-950 dark:text-fuchsia-300",
+      accent: "text-fuchsia-600 dark:text-fuchsia-400",
+      iconBg: "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400"
+    }
+  },
+  offer_analysis: {
+    title: "Hiệu suất Chiến dịch & Tối ưu hóa Ưu đãi (Offers Optimization)",
+    subtitle: "Phân tích mức độ chấp nhận, tỷ lệ quy đổi và giá trị thặng dư rải thảm voucher Loyalty.",
+    badge: "Tối Ưu Ưu Đãi",
+    description: "Lượng hóa tỷ mỉ tác động tài chính của từng chiến dịch phát phát hành ưu đãi. Đo lường xem khuyến mãi có thực sự lôi kéo khách hàng hay chỉ làm giảm biên lợi nhuận đáng tiếc.",
+    metrics: [
+      { label: "Tỷ lệ quy đổi voucher (Redeem)", value: "32.5%", desc: "Voucher phát ra được áp dụng thành công trên hóa đơn thực tế" },
+      { label: "Biên doanh số tăng thêm (Lift)", value: "+22.4%", desc: "Giá trị đơn tăng thêm khi khách được thúc đẩy bằng coupon ưu đãi" },
+      { label: "Tỷ lệ bỏ quên voucher", value: "48%", desc: "Lượng voucher hết hiệu lực trôi qua đáng tiếc không được khách sài" }
+    ],
+    details: [
+      { label: "Độ Nhạy bén Giảm giá (Discount Sensitivity)", desc: "Xác minh các ngưỡng giảm giá kích thích chuyển đổi mạnh nhất (10%, 15% hay bớp tiền phẳng)." },
+      { label: "Hao phí Biên lợi nhuận", desc: "Đảm bảo mã quy đổi quà tặng không 'ăn lẹm' vào giá vốn nhập khẩu của bộ trang sức." },
+      { label: "Kênh Phân phát Đón nhận cao", desc: "SMS truyền thống so với Zalo ZNS và thông báo ứng dụng di động." }
+    ],
+    advice: [
+      "Sử dụng ưu đãi có điều kiện: Ví dụ 'Tặng Voucher 500k chỉ áp dụng cho đơn Trang sức Bạch Kim từ 10 triệu trở lên' để giữ biên lợi nhuận an toàn.",
+      "Chỉ tự động phát voucher cho nhóm khách hàng có dấu hiệu nguội lạnh chi tiêu, nhóm trung thành cao nên tri ân bằng đặc quyền phi tài chính."
+    ],
+    themeColor: {
+      bg: "bg-zinc-500/5 dark:bg-zinc-950/10",
+      border: "border-zinc-500/15 dark:border-zinc-900/30",
+      text: "text-zinc-950 dark:text-zinc-300",
+      accent: "text-zinc-600 dark:text-zinc-400",
+      iconBg: "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400"
+    }
+  },
+  rules: {
+    title: "Vận hành Bộ Máy Quy tắc Tích/Đổi Điểm (Rules Engine Manual)",
+    subtitle: "Tận dụng cấu hình quy tắc linh động để tự động hóa toàn diện hoạt động kích cầu VIP.",
+    badge: "Hệ Thống Rules",
+    description: "Bộ Máy Rules thực thi một cách thầm lặng phía sau hậu trường. Khi khách hàng thoả mãn hành vi (ví dụ: mua hàng ngày sinh nhật, check-in boutique, khảo sát) hệ thống lập tức tính toán nhân điểm tự động dựa trên thặng số hạng thẻ.",
+    metrics: [
+      { label: "Số lượng quy tắc vận hành", value: "18 luật", desc: "Các quy lý vận hành và đổi thưởng đang chạy ngầm" },
+      { label: "Thời gian phản hồi luật", value: "< 50ms", desc: "Tốc độ xử lý cộng điểm thực tế sau khi thanh toán hóa đơn" },
+      { label: "Luật tạo đột biến điểm tốt nhất", value: "Sinh Nhật Vàng", desc: "Sự kiện được khách hàng thực hiện quy tích lũy siêng năng nhất" }
+    ],
+    details: [
+      { label: "Sự Phối Hợp Giữa Thể Lực Hạng", desc: "Các luật cộng điểm (Earn Rules) tự động kết hợp với hệ số nhân Multiplier của hạng thẻ." },
+      { label: "Ràng buộc Loại trừ", desc: "Quy ước ngăn chặn khách hàng gộp nhiều chương trình khuyến mãi cùng một hóa đơn." },
+      { label: "Cơ chế Thử nghiệm Luật (A/B Testing Rules)", desc: "Cho phép mô phỏng chạy thử luật cộng điểm mới trên một nhóm nhỏ khách hàng trước khi bùng nổ diện rộng." }
+    ],
+    advice: [
+      "Luôn kiểm tra kỹ lưỡng tỷ lệ chiết khấu tích hợp trước khi bật các luật kích thích mùa lễ lớn gộp chung.",
+      "Sử dụng công cụ Mô phỏng tích điểm (Simulator) trong hệ thống Rules để thẩm định rủi ro phân phối điểm ảo."
+    ],
+    themeColor: {
+      bg: "bg-orange-500/5 dark:bg-orange-950/10",
+      border: "border-orange-500/15 dark:border-orange-900/30",
+      text: "text-orange-950 dark:text-orange-300",
+      accent: "text-orange-600 dark:text-orange-400",
+      iconBg: "bg-orange-500/10 text-orange-600 dark:text-orange-400"
+    }
+  }
+};
+
 export function AnalysisView() {
  const { user } = useFirebase();
  const [activeTab, setActiveTab] = useState('dashboard'); 
+ const [showDoc, setShowDoc] = useState(false);
  const [toastMessage, setToastMessage] = useState<string | null>(null);
  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
  const [dbCustomers, setDbCustomers] = useState<Customer[]>([]);
@@ -840,18 +1185,116 @@ export function AnalysisView() {
  </div>
 
  <div className="flex items-center gap-3">
- 
- <button 
- onClick={() => {
- triggerToast('Đồng bộ thành công dữ liệu đa kênh!');
- }}
- className="p-2 border rounded-xl hover:bg-muted bg-card text-muted-foreground transition-all"
- title="Đồng bộ"
- >
- <RefreshCw className="w-4 h-4" />
- </button>
+  <button
+    onClick={() => setShowDoc(!showDoc)}
+    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
+      showDoc
+        ? "bg-amber-500/10 border-amber-500/25 text-amber-600 dark:text-amber-400"
+        : "bg-card border-border hover:bg-muted text-muted-foreground"
+    }`}
+  >
+    <BookOpen className={`w-4 h-4 ${showDoc ? 'text-amber-500' : 'text-muted-foreground'}`} />
+    Tài liệu phân tích
+  </button>
+
+  <button 
+  onClick={() => {
+  triggerToast('Đồng bộ thành công dữ liệu đa kênh!');
+  }}
+  className="p-2 border rounded-xl hover:bg-muted bg-card text-muted-foreground transition-all"
+  title="Đồng bộ"
+  >
+  <RefreshCw className="w-4 h-4" />
+  </button>
  </div>
  </div>
+
+ {/* Collapsible Document Panel for Analysis Tabs */}
+ {showDoc && (() => {
+  const docData = ANALYSIS_DOCS[activeTab] || ANALYSIS_DOCS.dashboard;
+  const colors = docData.themeColor;
+  return (
+   <motion.div
+    initial={{ opacity: 0, y: -10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className={`border rounded-3xl p-6 space-y-6 overflow-hidden shadow-sm transition-all text-left ${colors.bg} ${colors.border}`}
+   >
+    <div className="flex items-start justify-between">
+     <div className="flex items-center gap-3">
+      <div className={`p-2.5 rounded-xl ${colors.iconBg}`}>
+       <BookOpen className="w-5 h-5" />
+      </div>
+      <div className="text-left">
+       <div className="flex items-center gap-2">
+        <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full ${colors.iconBg}`}>
+         {docData.badge}
+        </span>
+        <span className="text-[10px] text-muted-foreground">• Tài liệu Hướng dẫn phân tích</span>
+       </div>
+       <h3 className={`text-base font-bold mt-1 ${colors.text}`}>
+        {docData.title}
+       </h3>
+       <p className="text-xs text-muted-foreground mt-0.5">
+        {docData.subtitle}
+       </p>
+      </div>
+     </div>
+     <button
+      onClick={() => setShowDoc(false)}
+      className="p-1.5 hover:bg-muted/80 text-muted-foreground rounded-lg transition-colors cursor-pointer"
+     >
+      <X className="w-4 h-4" />
+     </button>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+     {docData.metrics.map((m, idx) => (
+      <div key={idx} className="bg-card/65 p-4 rounded-xl border border-border/10">
+       <span className="text-[10px] text-muted-foreground block uppercase font-bold tracking-wider">{m.label}</span>
+       <strong className="text-xl font-bold font-heading mt-1 block text-foreground">{m.value}</strong>
+       <span className="text-[10px] text-muted-foreground/80 leading-relaxed block mt-0.5">{m.desc}</span>
+      </div>
+     ))}
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left border-t border-border/10 pt-5">
+     <div>
+      <h4 className="text-xs font-extrabold text-foreground uppercase tracking-wider mb-3">
+       🔍 Các yếu tố cốt lõi phân tích
+      </h4>
+      <div className="space-y-2.5">
+       {docData.details.map((d, idx) => (
+        <div key={idx} className="p-3 bg-card/40 rounded-xl border border-border/10 text-xs">
+         <span className="font-bold text-foreground block">{idx + 1}. {d.label}</span>
+         <p className="text-muted-foreground text-[11px] leading-relaxed mt-0.5">{d.desc}</p>
+        </div>
+       ))}
+      </div>
+     </div>
+
+     <div className="space-y-4">
+      <div className="p-4 bg-muted/40 rounded-2xl border border-border/10">
+       <h4 className="text-xs font-extrabold text-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+        <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+        Khuyến nghị chiến lược tiếp thị (AI advice)
+       </h4>
+       <ul className="space-y-2 text-[11px] text-muted-foreground leading-relaxed">
+        {docData.advice.map((a, idx) => (
+         <li key={idx} className="relative pl-3 text-left">
+          <span className="absolute left-0 top-1.5 w-1 h-1 rounded-full bg-primary" />
+          {a}
+         </li>
+        ))}
+       </ul>
+      </div>
+      <div className="text-[10px] text-muted-foreground/80 italic pl-1 text-left">
+       * Lưu ý: Tài liệu này được biên soạn tức thời dựa trên cấu hình hoạt động thực tế của tab <strong>{docData.badge}</strong>. Bất kỳ khi nào tối ưu chính sách, hệ thống thông tin sẽ tự động điều chỉnh.
+      </div>
+     </div>
+    </div>
+   </motion.div>
+  );
+ })()}
 
  {/* Internal Navigation Tabs inside the View */}
  <div className="flex flex-wrap items-center gap-1.5 bg-muted/40 p-1 rounded-2xl border max-w-full overflow-x-auto whitespace-nowrap">

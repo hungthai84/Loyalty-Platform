@@ -32,6 +32,7 @@ import {
   Diamond,
   User,
   Sliders,
+  BookOpen,
 } from "lucide-react";
 import { formatCurrency, getCurrency, CURRENCIES } from "@/lib/currency";
 import * as motion from "motion/react-client";
@@ -218,6 +219,7 @@ function getFallbackBenefits(tierName: string): {name: string, value: string}[] 
 export function LoyaltyView() {
   const { user, loading: authLoading, signIn } = useFirebase();
   const [activeTab, setActiveTab] = useState<TabType>("tiers");
+  const [showDoc, setShowDoc] = useState(false);
   const [tiers, setTiers] = useState<TierConfig[]>([]);
   const [rules, setRules] = useState<RedemptionRule[]>([]);
   const [earnRules, setEarnRules] = useState<EarnRule[]>([]);
@@ -1080,6 +1082,16 @@ export function LoyaltyView() {
               </div>
             </div>
             <button
+              onClick={() => setShowDoc(!showDoc)}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer border ${
+                showDoc 
+                  ? "bg-amber-500/10 border-amber-500/25 text-amber-700 dark:text-amber-400 dark:bg-amber-950/20" 
+                  : "bg-sidebar border-border hover:bg-muted text-foreground"
+              }`}
+            >
+              <BookOpen className="w-4 h-4 mr-2 text-amber-500" /> Tài liệu Cấu hình
+            </button>
+            <button
               onClick={handleExportActivities}
               className="px-5 py-2.5 bg-sidebar border border-border hover:bg-muted text-foreground rounded-xl text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer"
             >
@@ -1120,6 +1132,230 @@ export function LoyaltyView() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-8 pt-6 pb-20 custom-scrollbar">
+        <AnimatePresence>
+          {showDoc && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-sky-500/5 dark:bg-sky-950/10 border border-sky-500/10 dark:border-sky-900/30 rounded-3xl p-6 mb-8 space-y-6 overflow-hidden shadow-sm"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-sky-500/10 rounded-xl text-sky-600 dark:text-sky-400">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-base font-bold text-sky-950 dark:text-sky-300">
+                      Tài Liệu Hướng Dẫn Cấu Hình Hệ Thống Loyalty & Ưu Đãi
+                    </h3>
+                    <p className="text-xs text-sky-700/70 dark:text-sky-400/70 mt-0.5">
+                      Hệ thống tự động theo dõi, tính toán và đồng bộ dựa trên các quy tắc thực tế bên dưới.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDoc(false)}
+                  className="p-1.5 hover:bg-sky-500/10 text-sky-700 dark:text-sky-400 rounded-lg transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4 animate-none" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+                {/* CẤU HÌNH PHÂN HẠNG VIP */}
+                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      1. Cấp bậc Hội viên (Tiers)
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+                      Cấp bậc khách hàng được nâng hạng dựa trên tích lũy chi tiêu đạt ngưỡng yêu cầu. Hạng càng cao hệ số nhân điểm (Multiplier) càng lớn:
+                    </p>
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    {tiers && tiers.length > 0 ? (
+                      tiers.map((t) => (
+                        <div key={t.id} className="flex items-center justify-between p-2.5 bg-muted/20 rounded-xl border border-border/10 text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: t.color || "#94a3b8" }} />
+                            <span className="font-bold text-foreground">{t.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <span>Ngưỡng: <strong className="text-foreground">{t.threshold.toLocaleString()} pts</strong></span>
+                            <span className="bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold text-[10px]">
+                              x{t.multiplier || 1.0}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic">Chưa tải được thông tin cấp bậc.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* QUY TẮC TÍCH LŨY ĐIỂM */}
+                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
+                      <Zap className="w-4 h-4 text-sky-500 fill-sky-500" />
+                      2. Tích lũy Điểm thưởng (Earn Rules)
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+                      Điểm thực cộng = Điểm quy định x Hệ số Multiplier hạng thành viên. Danh sách quy tắc tích lũy:
+                    </p>
+                  </div>
+                  <div className="space-y-2 max-h-[180px] overflow-y-auto custom-scrollbar flex-1">
+                    {earnRules && earnRules.length > 0 ? (
+                      earnRules.filter(r => r.isActive).map((r) => (
+                        <div key={r.id} className="flex items-center justify-between p-2.5 bg-muted/20 rounded-xl border border-border/10 text-xs gap-2">
+                          <span className="font-semibold text-muted-foreground text-left truncate" title={r.name}>{r.name}</span>
+                          <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded font-bold text-[10px] shrink-0">
+                            +{r.points} pts
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic">Chưa có quy tắc tích lũy nào hoạt động.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* QUY TẮC PHÂN KHÚC */}
+                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
+                      <Tag className="w-4 h-4 text-purple-500 fill-purple-500" />
+                      3. Quy tắc Phân khúc (Segmentation)
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+                      Phân lớp tệp & Gán nhãn CRM tự động khi khách hàng thỏa mãn các điều kiện quy luật đặc thù:
+                    </p>
+                  </div>
+                  <div className="space-y-2 max-h-[180px] overflow-y-auto custom-scrollbar flex-1">
+                    {segmentationRules && segmentationRules.length > 0 ? (
+                      segmentationRules.filter(r => r.isActive).map((r) => {
+                        const condType = r.criteriaType === 'total_spend' 
+                          ? "Chi tiêu" 
+                          : r.criteriaType === 'time_since_last_purchase' 
+                            ? "Mất tương tác" 
+                            : "Số dư điểm";
+                        const condVal = r.criteriaType === 'total_spend' 
+                          ? formatCurrency(r.value, currentCurrency) 
+                          : r.criteriaType === 'time_since_last_purchase' 
+                            ? `${r.value} ngày` 
+                            : `${r.value} pts`;
+                        const operatorStr = r.operator === 'gte' ? '≥' : r.operator === 'lte' ? '≤' : r.operator === 'gt' ? '>' : r.operator === 'lt' ? '<' : '=';
+
+                        return (
+                          <div key={r.id} className="p-2.5 bg-muted/20 rounded-xl border border-border/10 text-xs flex flex-col gap-1 text-left">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-foreground text-[11px] truncate">{r.name}</span>
+                              <span className="bg-purple-500/15 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-black text-[9px] uppercase tracking-wider">
+                                {r.tag}
+                              </span>
+                            </div>
+                            <div className="text-[10px] text-muted-foreground">
+                              Điều kiện: <strong className="text-foreground">{condType} {operatorStr} {condVal}</strong>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic">Chưa cấu hình quy tắc phân khúc tự động nào.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* ĐỔI QUÀ VÀ ƯU ĐÃI */}
+                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
+                      <Gift className="w-4 h-4 text-rose-500 fill-rose-500" />
+                      4. Đổi quà & Ưu đãi (Redemption)
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+                      Khách sài điểm thưởng nhận các mã voucher chiết khấu hóa đơn, sản phẩm hoặc coupon:
+                    </p>
+                  </div>
+                  <div className="space-y-2 max-h-[180px] overflow-y-auto custom-scrollbar flex-1">
+                    {rules && rules.length > 0 ? (
+                      rules.map((r) => (
+                        <div key={r.id} className="flex items-center justify-between p-2.5 bg-muted/20 rounded-xl border border-border/10 text-xs gap-2">
+                          <div className="flex flex-col text-left min-w-0 flex-1">
+                            <span className="font-bold text-foreground truncate">{r.name}</span>
+                            <span className="text-[10px] text-muted-foreground">
+                              Trị giá: <strong className="text-foreground">{r.rewardType === 'discount' ? 'Bớt tiền' : r.rewardType === 'voucher' ? 'Voucher' : 'Quà tặng'} {r.rewardValue ? r.rewardValue.toLocaleString() : ''}</strong>
+                            </span>
+                          </div>
+                          <span className="bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2 py-0.5 rounded font-extrabold text-[10px] shrink-0">
+                            {r.pointsRequired} pts
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic">Chưa tải được quy tắc đổi quà & ưu đãi.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* ĐẶC QUYỀN VIP */}
+                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between lg:col-span-2">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
+                      <Crown className="w-4 h-4 text-amber-500 fill-amber-300" />
+                      5. Đặc quyền phân hạng VIP (VIP Privileges)
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+                      Các dịch vụ đặc quyền cao cấp được cá nhân hóa chặt chẽ theo lớp tầng hội viên thực thụ:
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
+                    {tiers && tiers.length > 0 ? (
+                      tiers.slice(0, 4).map((t) => {
+                        const tierBenefits = t.benefits && t.benefits.length > 0
+                          ? t.benefits
+                          : getFallbackBenefits(t.name);
+                        return (
+                          <div key={t.id} className="p-3 bg-muted/20 rounded-xl border border-border/10 text-left space-y-2 flex flex-col justify-between">
+                            <div className="flex items-center justify-between border-b border-border/5 pb-1.5 mb-1 shrink-0">
+                              <span className="font-bold text-xs uppercase tracking-wide" style={{ color: t.color || "#1e293b" }}>
+                                {t.name}
+                              </span>
+                              <span className="text-[10px] font-medium text-muted-foreground">
+                                ({tierBenefits.length} đặc quyền)
+                              </span>
+                            </div>
+                            <div className="space-y-1 flex-1 overflow-y-auto max-h-[90px] custom-scrollbar">
+                              {tierBenefits.slice(0, 3).map((b, idx) => (
+                                <div key={idx} className="flex justify-between items-start text-[10px] gap-2">
+                                  <span className="text-muted-foreground truncate" title={b.name}>• {b.name}</span>
+                                  <span className="text-foreground shrink-0 font-semibold">{b.value}</span>
+                                </div>
+                              ))}
+                              {tierBenefits.length > 3 && (
+                                <div className="text-[9px] text-[#2f6cf5] italic font-medium pt-1">+ {tierBenefits.length - 3} đặc quyền khác</div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic col-span-2">Chưa cấu hình đặc quyền VIP nào.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-sky-500/10 flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-muted-foreground leading-relaxed text-left">
+                <p>📌 <strong>Thực tế áp dụng:</strong> Khi một khách hàng sở hữu hạng <span className="bg-amber-500/10 text-amber-700 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded">Essential (Multiplier x1.25)</span> thực hiện bài Khảo sát sự hài lòng (+30 điểm cơ bản), hệ thống thông tri & cộng điểm thực tế là: <span className="font-extrabold text-foreground">30 x 1.25 = 37.5 điểm</span>.</p>
+                <p>💡 <em>Tips:</em> Toàn bộ tài liệu được đọc đồng bộ từ cấu hình hệ thống thực tế khách hàng, bất kỳ chỉnh sửa nào sẽ lập tức phản ánh tại đây.</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
