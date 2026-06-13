@@ -1,13 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
-    --font-sans: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
+    --font-heading: "Play", "Inter", system-ui, -apple-system, sans-serif;
+    --font-sans: "Play", "Inter", system-ui, -apple-system, sans-serif;
     --font-mono: "JetBrains Mono", monospace;
     
     /* Fluid Typography Config (320px to 1440px) */
@@ -97,37 +97,37 @@
 }
 
 .dark {
-    --background: #f8fafc;
-    --foreground: #000000;
-    --card: #ffffff;
-    --card-foreground: #000000;
-    --popover: rgba(255, 255, 255, 0.95);
-    --popover-foreground: #000000;
+    --background: #09090b;
+    --foreground: #fafafa;
+    --card: #09090b;
+    --card-foreground: #fafafa;
+    --popover: rgba(9, 9, 11, 0.95);
+    --popover-foreground: #fafafa;
     --primary: #eb7a2e;       /* Brand Logo Orange ACCENT */
     --primary-foreground: #ffffff;
-    --secondary: #e2e8f0;
-    --secondary-foreground: #000000;
-    --muted: #f1f5f9;
-    --muted-foreground: #1e293b; /* Much more prominent gray for dark mode (Slate 300) */
-    --accent: #f1f5f9;
-    --accent-foreground: #000000;
-    --destructive: #ef4444;
-    --destructive-foreground: #ffffff;
-    --border: #e2e8f0;
-    --input: #e2e8f0;
+    --secondary: #27272a;
+    --secondary-foreground: #fafafa;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa; 
+    --accent: #27272a;
+    --accent-foreground: #fafafa;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #fafafa;
+    --border: #27272a;
+    --input: #27272a;
     --ring: #eb7a2e;
     --chart-1: #eb7a2e;
     --chart-2: #3b82f6;
     --chart-3: #10b981;
     --chart-4: #f59e0b;
-    --chart-5: #64748b;
-    --sidebar: #ffffff;
-    --sidebar-foreground: #000000;
+    --chart-5: #a1a1aa;
+    --sidebar: #09090b;
+    --sidebar-foreground: #fafafa;
     --sidebar-primary: #eb7a2e;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #f1f5f9;
-    --sidebar-accent-foreground: #000000;
-    --sidebar-border: #e2e8f0;
+    --sidebar-accent: #27272a;
+    --sidebar-accent-foreground: #fafafa;
+    --sidebar-border: #27272a;
     --sidebar-ring: #eb7a2e;
 }
 
@@ -141,7 +141,7 @@
     display: none !important; /* Chrome, Safari, Opera */
   }
   html {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
+    font-family: 'Play', 'Inter', system-ui, -apple-system, sans-serif !important;
     font-size: 16px; 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -152,8 +152,9 @@
     padding: 0;
     height: 100vh;
     @apply text-foreground bg-background;
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
+    font-family: 'Play', 'Inter', system-ui, -apple-system, sans-serif !important;
     font-size: var(--font-size-base);
+    font-weight: 700;
     line-height: 1.6; /* Balanced line height for Plus Jakarta Sans */
     display: flex;
     justify-content: center;
@@ -164,7 +165,7 @@
   p {
     max-width: 70ch; /* Optimal line length for reading */
     line-height: 1.6;
-    font-weight: 500; /* Darker, slightly bolder look for easy reading */
+    font-weight: 700; /* Bold font weight to make it stand out */
   }
 
   input, button, select, textarea {
@@ -174,7 +175,7 @@
 
   h1 {
     font-size: var(--font-size-h1);
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.2;
     @apply tracking-tight font-heading;
   }
@@ -188,7 +189,7 @@
 
   h3 {
     font-size: var(--font-size-h3);
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.2;
     @apply tracking-tight font-heading;
   }

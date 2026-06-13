@@ -33,8 +33,16 @@ import {
  Zap,
  Trophy,
  BookOpen,
- X
+ X,
+ ChevronDown,
+ MoreHorizontal
 } from 'lucide-react';
+import { 
+ DropdownMenu,
+ DropdownMenuContent,
+ DropdownMenuItem,
+ DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
  AreaChart, 
  Area, 
@@ -1297,34 +1305,76 @@ export function AnalysisView() {
  })()}
 
  {/* Internal Navigation Tabs inside the View */}
- <div className="flex flex-wrap items-center gap-1.5 bg-muted/40 p-1 rounded-2xl border max-w-full overflow-x-auto whitespace-nowrap">
- {[
- { id: 'dashboard', name: 'Tổng quan', icon: Layers },
- { id: 'cross_branch', name: 'Điểm chung chi nhánh', icon: Network },
- { id: 'shopping_behavior', name: 'Hành vi mua sắm', icon: ShoppingBag },
- { id: 'tier_point_analysis', name: 'Phân tích hạng & điểm', icon: Calculator },
- { id: 'aesthetic_segmentation', name: 'Phân khúc Thẩm mỹ', icon: Sparkles },
- { id: 'tier_projection', name: 'Tiến trình Thăng hạng', icon: Zap },
- { id: 'loyalty_cost', name: 'Loyalty Cost & ROI', icon: DollarSign },
- { id: 'clv_repeat', name: 'CLV & Repeat Purchase', icon: TrendingUp },
- { id: 'vip_crm', name: 'VIP CRM & Booking', icon: Users },
- { id: 'ai_advisor', name: 'AI Analytics Advisor', icon: Sparkles },
- { id: 'offer_analysis', name: 'Phân tích & Tối ưu Ưu đãi', icon: Award },
- { id: 'rules', name: 'Hệ thống Rules', icon: Settings },
- ].map((tab) => (
- <button
- key={tab.id}
- onClick={() => setActiveTab(tab.id)}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
- activeTab === tab.id
- ? 'bg-primary text-primary-foreground shadow-lg'
- : 'text-muted-foreground hover:bg-muted hover:text-foreground'
- }`}
- >
- <tab.icon className="w-4 h-4" />
- {tab.name}
- </button>
- ))}
+ <div className="flex items-center bg-muted/40 p-1 rounded-2xl border max-w-full w-full relative">
+  {(() => {
+   const tabs = [
+    { id: 'dashboard', name: 'Tổng quan', icon: Layers },
+    { id: 'cross_branch', name: 'Điểm chung chi nhánh', icon: Network },
+    { id: 'shopping_behavior', name: 'Hành vi mua sắm', icon: ShoppingBag },
+    { id: 'tier_point_analysis', name: 'Phân tích hạng & điểm', icon: Calculator },
+    { id: 'aesthetic_segmentation', name: 'Phân khúc Thẩm mỹ', icon: Sparkles },
+    { id: 'tier_projection', name: 'Tiến trình Thăng hạng', icon: Zap },
+    { id: 'loyalty_cost', name: 'Loyalty Cost & ROI', icon: DollarSign },
+    { id: 'clv_repeat', name: 'CLV & Repeat Purchase', icon: TrendingUp },
+    { id: 'vip_crm', name: 'VIP CRM & Booking', icon: Users },
+    { id: 'ai_advisor', name: 'AI Analytics Advisor', icon: Sparkles },
+    { id: 'offer_analysis', name: 'Phân tích & Tối ưu Ưu đãi', icon: Award },
+    { id: 'rules', name: 'Hệ thống Rules', icon: Settings },
+   ];
+   const activeTabData = tabs.find(t => t.id === activeTab) || tabs[0];
+   const ActiveIcon = activeTabData.icon;
+
+   return (
+    <>
+     {/* Mobile/Compact View with DropdownMenu */}
+     <div className="xl:hidden w-full flex items-center justify-between px-1">
+      <DropdownMenu>
+       <DropdownMenuTrigger>
+        <div className="flex w-[calc(100vw-3rem)] sm:w-full items-center justify-between gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-background text-foreground shadow-sm border border-border outline-none transition-all hover:bg-muted/50 cursor-pointer">
+         <div className="flex items-center gap-2">
+          <ActiveIcon className="w-4 h-4 text-primary" />
+          {activeTabData.name}
+         </div>
+         <ChevronDown className="w-4 h-4 text-muted-foreground" />
+        </div>
+       </DropdownMenuTrigger>
+       <DropdownMenuContent align="start" className="w-[calc(100vw-4rem)] sm:w-[350px] max-h-[60vh] overflow-y-auto">
+        {tabs.map((tab) => (
+         <DropdownMenuItem
+          key={tab.id}
+          onClick={() => setActiveTab(tab.id)}
+          className={`flex items-center gap-2 mb-1 last:mb-0 rounded-lg p-3 cursor-pointer ${
+           activeTab === tab.id ? 'bg-primary/10 text-primary font-bold' : 'font-medium'
+          }`}
+         >
+          <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-primary' : 'text-muted-foreground'}`} />
+          {tab.name}
+         </DropdownMenuItem>
+        ))}
+       </DropdownMenuContent>
+      </DropdownMenu>
+     </div>
+
+     {/* Desktop/Expanded View */}
+     <div className="hidden xl:flex flex-wrap items-center gap-1.5 w-full">
+      {tabs.map((tab) => (
+       <button
+        key={tab.id}
+        onClick={() => setActiveTab(tab.id)}
+        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+         activeTab === tab.id
+          ? 'bg-primary text-primary-foreground shadow-lg'
+          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        }`}
+       >
+        <tab.icon className="w-4 h-4" />
+        {tab.name}
+       </button>
+      ))}
+     </div>
+    </>
+   );
+  })()}
  </div>
 
  {/* Dynamic Toast Display */}

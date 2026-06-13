@@ -67,7 +67,7 @@ export function TierManagementView() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between bg-background/95 dark:bg-zinc-950/95 backdrop-blur-md p-6 rounded-3xl border border-border sticky top-0 z-20 shadow-md">
+      <div className="flex items-center justify-between bg-background/95 dark:bg-zinc-950/95 backdrop-blur-md p-6 rounded-3xl border border-border shadow-md">
         <div>
           <h3 className="text-xl font-bold font-heading flex items-center gap-2">
             <Star className="w-5 h-5 text-amber-500" /> Cấu hình Cấp bậc Hội viên
@@ -134,9 +134,9 @@ export function TierManagementView() {
                     {/* Threshold */}
                     <div>
                       <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-2 opacity-60">Điều kiện thăng hạng</h5>
-                      <div className="p-4 bg-muted/30 rounded-2xl border border-border/50 flex items-center justify-between">
-                        <span className="text-xs font-bold text-muted-foreground">Tích lũy</span>
-                        <span className="text-xl font-black text-primary">{tier.threshold.toLocaleString()} PTS</span>
+                      <div className="p-4 bg-muted/30 rounded-2xl border border-border/50 flex items-center justify-between gap-4">
+                        <span className="text-xs font-bold text-muted-foreground shrink-0">Tích lũy</span>
+                        <span className="text-lg sm:text-xl font-black text-primary truncate" title={`${tier.threshold.toLocaleString()} PTS`}>{tier.threshold.toLocaleString()} PTS</span>
                       </div>
                     </div>
                     
@@ -158,9 +158,9 @@ export function TierManagementView() {
                         <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-2 opacity-60">Đặc quyền cấp bậc</h5>
                         <div className="grid grid-cols-1 gap-1.5">
                           {tier.benefits.slice(0, 3).map((benefit, i) => (
-                            <div key={i} className="flex justify-between items-center bg-muted/10 px-3 py-1.5 rounded-lg border border-border/20">
-                              <span className="text-[10px] font-bold text-foreground line-clamp-1">{benefit.name}</span>
-                              <span className="text-[10px] text-muted-foreground font-medium shrink-0 ml-2">{benefit.value}</span>
+                            <div key={i} className="flex justify-between items-start bg-muted/10 px-3 py-2 rounded-lg border border-border/20 gap-2">
+                              <span className="text-xs font-bold text-foreground break-words flex-1 leading-tight">{benefit.name}</span>
+                              <span className="text-xs text-muted-foreground font-medium shrink-0 max-w-[50%] text-right break-words leading-tight" title={benefit.value}>{benefit.value}</span>
                             </div>
                           ))}
                           {tier.benefits.length > 3 && (

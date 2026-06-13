@@ -1036,7 +1036,7 @@ export function LoyaltyView() {
   ];
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-muted/10">
+    <div className="flex-1 overflow-y-auto h-screen custom-scrollbar bg-muted/10">
       <div className="px-8 pt-6 pb-6 border-b border-border/50 shrink-0 space-y-6">
         <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full">
           <div className="flex items-center gap-4 text-left">
@@ -1132,7 +1132,7 @@ export function LoyaltyView() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-8 pt-6 pb-20 custom-scrollbar">
+      <div className="p-8 pt-6 pb-20">
         <AnimatePresence>
           {showDoc && (
             <motion.div
