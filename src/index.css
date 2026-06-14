@@ -142,13 +142,13 @@
   }
   html {
     font-family: 'Play', 'Inter', system-ui, -apple-system, sans-serif !important;
-    font-size: 16px; 
+    font-size: 17px; 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   @media (min-width: 1024px) {
     html {
-      font-size: 17px;
+      font-size: 18px;
     }
   }
 

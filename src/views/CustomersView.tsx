@@ -26,11 +26,13 @@ import {
   SlidersHorizontal,
   RotateCcw,
   FileText,
+  X,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { cn } from "@/lib/utils";
 import * as motion from "motion/react-client";
+import { AnimatePresence } from "motion/react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import {
@@ -1181,19 +1183,9 @@ export function CustomersView() {
   if (authLoading) return <div className="p-8 text-center">Đang tải...</div>;
 
   return (
-    <div className="flex-1 space-y-6 p-8 pt-6">
-      {currentCustomerData ? (
-        <CustomerDashboard
-          customer={currentCustomerData}
-          userId={user?.uid || "guest"}
-          companies={companies}
-          attributes={attributes}
-          tierConfigs={tierConfigs}
-          onBack={() => setSelectedCustomer(null)}
-        />
-      ) : (
-        <>
-          <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col gap-5 relative z-30 backdrop-blur-md w-full">
+    <div className="flex-1 space-y-6 p-8 pt-6 relative">
+      <div className={cn("w-full space-y-6 transition-all duration-300", currentCustomerData ? "blur-[2px] opacity-55 pointer-events-none select-none" : "")}>
+        <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col gap-5 relative z-30 backdrop-blur-md w-full">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 w-full">
               <div className="flex items-center gap-4 text-left">
                 <div className="p-3 bg-primary/10 rounded-2xl text-primary flex items-center justify-center relative bg-primary/10 shadow-xs shrink-0">
@@ -2588,8 +2580,47 @@ export function CustomersView() {
             </div>
           </div>
         )}
-      </>
-      )}
+      </div>
+
+      {/* Popup chi tiết khách hàng chiếm 90% diện tích trang web */}
+      <AnimatePresence>
+        {currentCustomerData && (
+          <div 
+            className="fixed inset-0 bg-black/60 dark:bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4 md:p-8"
+            onClick={() => setSelectedCustomer(null)}
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.96, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 15 }}
+              transition={{ type: "spring", duration: 0.45, bounce: 0.1 }}
+              className="bg-background border border-border shadow-2xl rounded-2xl w-[92vw] h-[90vh] max-w-[1700px] flex flex-col relative overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Nút đóng nổi bật ở góc phải trên cùng */}
+              <button
+                onClick={() => setSelectedCustomer(null)}
+                className="absolute top-4 right-4 p-2.5 rounded-xl bg-card border border-border hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 transition-all z-50 cursor-pointer shadow-md"
+                title="Đóng cửa sổ"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Phần nội dung có scroll riêng lẻ */}
+              <div className="flex-1 overflow-y-auto p-6 md:p-10 scrollbar-thin">
+                <CustomerDashboard
+                  customer={currentCustomerData}
+                  userId={user?.uid || "guest"}
+                  companies={companies}
+                  attributes={attributes}
+                  tierConfigs={tierConfigs}
+                  onBack={() => setSelectedCustomer(null)}
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {showAddDialog && (
         <AddCustomerDialog

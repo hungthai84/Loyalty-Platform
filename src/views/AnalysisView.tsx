@@ -43,6 +43,13 @@ import {
  DropdownMenuItem,
  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+ Select,
+ SelectContent,
+ SelectItem,
+ SelectTrigger,
+ SelectValue,
+} from "@/components/ui/select";
 import { 
  AreaChart, 
  Area, 
@@ -1204,16 +1211,6 @@ export function AnalysisView() {
     <BookOpen className={`w-4 h-4 ${showDoc ? 'text-amber-500' : 'text-muted-foreground'}`} />
     Tài liệu phân tích
   </button>
-
-  <button 
-  onClick={() => {
-  triggerToast('Đồng bộ thành công dữ liệu đa kênh!');
-  }}
-  className="p-2 border rounded-xl hover:bg-muted bg-card text-muted-foreground transition-all"
-  title="Đồng bộ"
-  >
-  <RefreshCw className="w-4 h-4" />
-  </button>
  </div>
  </div>
 
@@ -1304,10 +1301,10 @@ export function AnalysisView() {
   );
  })()}
 
- {/* Internal Navigation Tabs inside the View */}
- <div className="flex items-center bg-muted/40 p-1 rounded-2xl border max-w-full w-full relative">
+ {/* Internal Navigation Tabs inside the View - NEW SELECT BOX MODULE */}
+ <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-muted/40 p-4 rounded-3xl border border-border/80 max-w-full w-full relative">
   {(() => {
-   const tabs = [
+   const tabsList = [
     { id: 'dashboard', name: 'Tổng quan', icon: Layers },
     { id: 'cross_branch', name: 'Điểm chung chi nhánh', icon: Network },
     { id: 'shopping_behavior', name: 'Hành vi mua sắm', icon: ShoppingBag },
@@ -1321,56 +1318,40 @@ export function AnalysisView() {
     { id: 'offer_analysis', name: 'Phân tích & Tối ưu Ưu đãi', icon: Award },
     { id: 'rules', name: 'Hệ thống Rules', icon: Settings },
    ];
-   const activeTabData = tabs.find(t => t.id === activeTab) || tabs[0];
-   const ActiveIcon = activeTabData.icon;
-
    return (
     <>
-     {/* Mobile/Compact View with DropdownMenu */}
-     <div className="xl:hidden w-full flex items-center justify-between px-1">
-      <DropdownMenu>
-       <DropdownMenuTrigger>
-        <div className="flex w-[calc(100vw-3rem)] sm:w-full items-center justify-between gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-background text-foreground shadow-sm border border-border outline-none transition-all hover:bg-muted/50 cursor-pointer">
-         <div className="flex items-center gap-2">
-          <ActiveIcon className="w-4 h-4 text-primary" />
-          {activeTabData.name}
-         </div>
-         <ChevronDown className="w-4 h-4 text-muted-foreground" />
-        </div>
-       </DropdownMenuTrigger>
-       <DropdownMenuContent align="start" className="w-[calc(100vw-4rem)] sm:w-[350px] max-h-[60vh] overflow-y-auto">
-        {tabs.map((tab) => (
-         <DropdownMenuItem
-          key={tab.id}
-          onClick={() => setActiveTab(tab.id)}
-          className={`flex items-center gap-2 mb-1 last:mb-0 rounded-lg p-3 cursor-pointer ${
-           activeTab === tab.id ? 'bg-primary/10 text-primary font-bold' : 'font-medium'
-          }`}
-         >
-          <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-primary' : 'text-muted-foreground'}`} />
-          {tab.name}
-         </DropdownMenuItem>
-        ))}
-       </DropdownMenuContent>
-      </DropdownMenu>
+     <div className="flex items-center gap-3">
+      <div className="p-3 bg-[#2f6cf5]/10 rounded-2xl text-[#2f6cf5] shrink-0">
+       <Layers className="w-6 h-6" />
+      </div>
+      <div className="text-left">
+       <h4 className="text-sm font-extrabold text-foreground tracking-tight font-heading">Chỉ mục Phân tích & Báo cáo</h4>
+       <p className="text-[11px] text-muted-foreground mt-0.5">Chọn một phân hệ dữ liệu Loyalty dưới đây để xem báo cáo thống kê chi tiết</p>
+      </div>
      </div>
 
-     {/* Desktop/Expanded View */}
-     <div className="hidden xl:flex flex-wrap items-center gap-1.5 w-full">
-      {tabs.map((tab) => (
-       <button
-        key={tab.id}
-        onClick={() => setActiveTab(tab.id)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-         activeTab === tab.id
-          ? 'bg-primary text-primary-foreground shadow-lg'
-          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-        }`}
-       >
-        <tab.icon className="w-4 h-4" />
-        {tab.name}
-       </button>
-      ))}
+     <div className="relative z-40 shrink-0 w-full md:w-auto">
+      <Select value={activeTab} onValueChange={(val) => {
+       if (val) {
+        setActiveTab(val);
+        const name = tabsList.find(t => t.id === val)?.name || val;
+        toast.success(`Đã chuyển sang phân hệ: ${name}`);
+       }
+      }}>
+       <SelectTrigger className="w-full md:w-[280px] h-10 px-3 bg-background border border-input rounded-xl text-xs font-bold font-heading text-foreground shadow-sm hover:bg-muted/70 flex items-center justify-between cursor-pointer">
+        <SelectValue placeholder="Chọn nội dung phân tích" />
+       </SelectTrigger>
+       <SelectContent className="rounded-xl w-[280px] max-h-[320px] overflow-y-auto">
+        {tabsList.map((tab) => (
+         <SelectItem key={tab.id} value={tab.id} className="rounded-lg p-2.5 cursor-pointer">
+          <div className="flex items-center gap-2.5">
+           <tab.icon className="w-4 h-4 text-muted-foreground shrink-0" />
+           <span className="text-xs font-semibold text-foreground">{tab.name}</span>
+          </div>
+         </SelectItem>
+        ))}
+       </SelectContent>
+      </Select>
      </div>
     </>
    );
@@ -1739,24 +1720,6 @@ export function AnalysisView() {
  {/* 1. TAB: DASHBOARD */}
  {activeTab === 'dashboard' && (
  <div className="space-y-6">
- {/* Proactive Insight banner */}
- <div className="bg-[#2f6cf5]/10 border border-[#2f6cf5]/30 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
- <div className="flex items-start gap-3">
- <div className="p-2 bg-[#2f6cf5]/20 rounded-xl text-[#2f6cf5] shrink-0 mt-0.5">
- <Sparkles className="w-4 h-4 animate-pulse" />
- </div>
- <div>
- <h4 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-wider">Premium Insights & Churn Signal Alert</h4>
- <p className="text-xs text-muted-foreground mt-0.5">Tỷ lệ giữ chân khách VIP tháng này đạt 89% (vượt target 85%). Hệ thống phát hiện khách hàng Lê Thúy Diễm đang hoạt động suy giảm nhẹ.</p>
- </div>
- </div>
- <button 
- onClick={() => { setActiveTab('ai_advisor'); setSelectedAIVip('SVG-5510'); }}
- className="text-xs font-bold tracking-wider text-[#2f6cf5] border border-[#2f6cf5]/40 rounded-xl px-4 py-2 hover:bg-[#2f6cf5]/10 transition-all text-nowrap"
- >
- CHĂM SÓC KHÁCH HÀNG AI
- </button>
- </div>
 
  {/* Primary Cards Grid */}
  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

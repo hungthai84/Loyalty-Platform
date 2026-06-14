@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { cn } from "@/lib/utils";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { motion, AnimatePresence } from "motion/react";
@@ -22,7 +22,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className, activeView, setActiveView }: SidebarProps) {
-  const [isHovered, setIsHovered] = useState(false);
+  const isHovered = true;
 
   const allMenuItems: { name: string; view: string; icon: any; isSecondary?: boolean }[] = [
     { name: "Tổng quan", view: "dashboard", icon: LayoutDashboard },
@@ -38,15 +38,13 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
 
   return (
     <motion.div 
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       initial={false}
       animate={{ 
-        width: isHovered ? "auto" : 80,
+        width: 240,
       }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className={cn(
-        "h-full border-r bg-sidebar backdrop-blur-xl flex flex-col relative z-50 shadow-xl", 
+        "h-full border-r bg-sidebar backdrop-blur-xl flex flex-col relative z-50 shadow-xl w-[240px]", 
         className
       )}
     >

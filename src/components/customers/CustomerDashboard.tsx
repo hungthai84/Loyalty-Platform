@@ -1067,27 +1067,13 @@ export function CustomerDashboard({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border/80 bg-sidebar-accent text-sm font-semibold hover:bg-muted transition-all"
-        >
-          <ArrowLeft className="w-4 h-4 text-muted-foreground" /> Trở lại danh
-          sách KH
-        </button>
-
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportPDF}
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-blue-500/20 bg-blue-500/5 text-blue-600 text-sm font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm"
           >
             <Download className="w-3.5 h-3.5" /> Xuất PDF
-          </button>
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/5 text-rose-500 text-sm font-bold hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-          >
-            <Trash2 className="w-3.5 h-3.5" /> Xóa khách hàng
           </button>
           <div className="text-xs text-muted-foreground ">
             ID: {customer.id} (Tạo:{" "}

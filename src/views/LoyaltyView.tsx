@@ -1038,10 +1038,10 @@ export function LoyaltyView() {
   return (
     <div className="flex-1 overflow-y-auto h-screen custom-scrollbar bg-muted/10">
       <div className="px-8 pt-6 pb-6 border-b border-border/50 shrink-0 space-y-6">
-        <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full">
-          <div className="flex items-center gap-4 text-left">
-            <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-500 flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+        <div className="bg-gradient-to-r from-amber-500/10 via-background to-[#2f6cf5]/5 border border-amber-500/20 p-6 rounded-3xl shadow-lg flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-30 backdrop-blur-xl w-full">
+          <div className="flex items-center gap-5 text-left">
+            <div className="p-4 bg-amber-500/20 rounded-2xl text-amber-600 flex items-center justify-center relative overflow-hidden shadow-sm shrink-0 group">
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
               <motion.div
                 animate={{
                   scale: [1, 1.15, 0.95, 1.05, 1],
@@ -1053,48 +1053,48 @@ export function LoyaltyView() {
                   ease: "easeInOut",
                 }}
               >
-                <Trophy className="w-8 h-8 text-amber-500" />
+                <Trophy className="w-9 h-9 text-amber-500" />
               </motion.div>
             </div>
             <div>
-              <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
-                Chương trình Ưu đãi
+              <h2 className="text-3xl font-extrabold tracking-tight font-heading bg-gradient-to-r from-amber-500 to-[#eb7a2e] bg-clip-text text-transparent">
+                Banner Chương trình Ưu đãi
               </h2>
-              <p className="text-muted-foreground text-sm mt-1">
+              <p className="text-muted-foreground text-sm mt-1.5 font-medium">
                 Xây dựng trọn vẹn đặc quyền và trải nghiệm VIP cho khách hàng.
               </p>
             </div>
           </div>
 
-          <div className="flex gap-4">
-            <div className="hidden lg:flex items-center gap-6 px-6 py-3 bg-muted/40 rounded-xl border border-border/50">
+          <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 bg-white/50 dark:bg-black/20 p-2 rounded-2xl border border-white/20 dark:border-white/5 shadow-inner backdrop-blur-sm">
+            <div className="hidden lg:flex items-center gap-6 px-5 py-2.5 bg-background/50 rounded-xl border border-border/50 shadow-sm mr-2">
               <div className="text-center">
-                <p className="text-xs uppercase tracking-widest text-[#2f6cf5] font-extrabold leading-none mb-1">
+                <p className="text-[10px] uppercase tracking-widest text-[#2f6cf5] font-extrabold leading-none mb-1">
                   Retention
                 </p>
-                <p className="text-lg font-extrabold text-foreground">84%</p>
+                <p className="text-base font-extrabold text-foreground">84%</p>
               </div>
-              <div className="w-px h-8 bg-border/50" />
+              <div className="w-px h-6 bg-border/50" />
               <div className="text-center">
-                <p className="text-xs uppercase tracking-widest text-[#2f6cf5] font-extrabold leading-none mb-1">
+                <p className="text-[10px] uppercase tracking-widest text-[#2f6cf5] font-extrabold leading-none mb-1">
                   Referrals
                 </p>
-                <p className="text-lg font-extrabold text-foreground">124</p>
+                <p className="text-base font-extrabold text-foreground">124</p>
               </div>
             </div>
             <button
               onClick={() => setShowDoc(!showDoc)}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer border ${
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer border ${
                 showDoc 
-                  ? "bg-amber-500/10 border-amber-500/25 text-amber-700 dark:text-amber-400 dark:bg-amber-950/20" 
-                  : "bg-sidebar border-border hover:bg-muted text-foreground"
+                  ? "bg-amber-500/20 border-amber-500/40 text-amber-700 dark:text-amber-400" 
+                  : "bg-background border-border hover:bg-muted text-foreground"
               }`}
             >
               <BookOpen className="w-4 h-4 mr-2 text-amber-500" /> Tài liệu Cấu hình
             </button>
             <button
               onClick={handleExportActivities}
-              className="px-5 py-2.5 bg-sidebar border border-border hover:bg-muted text-foreground rounded-xl text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer"
+              className="px-4 py-2.5 bg-background border border-border hover:bg-muted text-foreground rounded-xl text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer"
             >
               <Download className="w-4 h-4 mr-2" /> Xuất CSV
             </button>
@@ -1103,7 +1103,7 @@ export function LoyaltyView() {
                 setSelectedEarnRule(undefined);
                 setShowEarnDialog(true);
               }}
-              className="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center shrink-0 cursor-pointer"
+              className="px-5 py-2.5 bg-gradient-to-r from-[#2f6cf5] to-blue-600 text-white rounded-xl text-xs font-bold hover:shadow-lg transition-all shadow-md shadow-blue-500/30 flex items-center shrink-0 cursor-pointer"
             >
               <Plus className="w-4 h-4 mr-2" /> Thiết lập mới
             </button>
