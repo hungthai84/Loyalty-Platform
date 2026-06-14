@@ -11,10 +11,10 @@
     --font-mono: "JetBrains Mono", monospace;
     
     /* Fluid Typography Config (320px to 1440px) */
-    --font-size-base: clamp(0.875rem, calc(0.85rem + 0.1vw), 1rem); /* Compact modern body scaling */
-    --font-size-h1: clamp(1.75rem, calc(1.5rem + 1vw), 2.75rem);
-    --font-size-h2: clamp(1.35rem, calc(1.2rem + 0.75vw), 2rem);
-    --font-size-h3: clamp(1.1rem, calc(1rem + 0.5vw), 1.5rem);
+    --font-size-base: clamp(0.95rem, calc(0.9rem + 0.2vw), 1.125rem); /* Extremely clear and readable */
+    --font-size-h1: clamp(1.85rem, calc(1.6rem + 1.2vw), 3rem);
+    --font-size-h2: clamp(1.45rem, calc(1.3rem + 0.8vw), 2.25rem);
+    --font-size-h3: clamp(1.2rem, calc(1.1rem + 0.6vw), 1.625rem);
     
     --font-size-xl: var(--font-size-h3);
     --font-size-2xl: var(--font-size-h2);
@@ -145,6 +145,11 @@
     font-size: 16px; 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  @media (min-width: 1024px) {
+    html {
+      font-size: 17px;
+    }
   }
 
   body {
