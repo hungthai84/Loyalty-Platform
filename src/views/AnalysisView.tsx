@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from "react-dom";
 import * as motion from "motion/react-client";
 import { 
  Card, 
@@ -301,7 +302,7 @@ const ANALYSIS_DOCS: Record<string, {
   };
 }> = {
   dashboard: {
-    title: "Phân tích Tổng quan Campaign & Loyalty (Dashboard)",
+    title: "Chọn mục cần phân tích",
     subtitle: "Chẩn đoán sức khỏe tổng quát của chương trình Loyalty, hiệu quả tích lũy và chuyển dịch doanh thu.",
     badge: "Tổng Quan",
     description: "Cung cấp cái nhìn toàn diện từ trên xuống về dòng chảy điểm số, cấu trúc hội viên, và tỷ suất đóng góp doanh thu của tệp VIP để tối ưu hóa ngân sách chung.",
@@ -328,7 +329,7 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   cross_branch: {
-    title: "Phân tích Điểm chung Chi nhánh (Multi-branch Matrix)",
+    title: "Điểm chung chi nhánh",
     subtitle: "Lượng hóa hành vi di chuyển chéo của khách hàng VIP giữa các showroom vật lý và kênh online.",
     badge: "Chi Nhánh",
     description: "Nhận diện xu hướng di chuyển mua sắm tự do của khách hàng trên toàn mạng lưới cửa hàng. Thấu hiểu dòng chảy địa lý để quản trị chuỗi cung ứng cục bộ.",
@@ -355,7 +356,7 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   shopping_behavior: {
-    title: "Phân tích Hành vi mua sắm (Shopping Behavior)",
+    title: "Hành vi mua sắm",
     subtitle: "Chẩn đoán thói quen chi tiêu trang sức mảnh, kim cương nước D dựa trên kích cỡ rổ đồ & chu kỳ hóa đơn.",
     badge: "Hành Vi",
     description: "Tận dụng AI chẩn đoán mẫu hình giỏ hàng mua sắm, nhận diện thói quen đặt sắm trọn bộ trang sức hay đơn sắm rời rạc để xúc tiến khuyến nghị tức thời.",
@@ -382,7 +383,7 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   tier_point_analysis: {
-    title: "Phân tích Phân hạng & Phân phối Điểm (Tiers & Points)",
+    title: "Phân tích hạng & điểm",
     subtitle: "Giám sát cán cen phân bổ điểm thưởng của toàn hệ thống dữ liệu khách hàng VIP CRM.",
     badge: "VIP & Điểm",
     description: "Nhận thức mật độ điểm số khả dụng để kiểm tra rủi ro nợ tài chính (Loyalty Liability). Định vị những 'Quý khách hàng ngủ đông' đang ôm trữ lượng lớn điểm số.",
@@ -409,7 +410,7 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   aesthetic_segmentation: {
-    title: "Phân khúc Gu Thẩm mỹ & Đề xuất AI (Aesthetic Style)",
+    title: "Phân khúc Thẩm mỹ",
     subtitle: "Khám phá gu thời trang thẩm mỹ sâu kín qua lịch sử giao dịch để tạo chiến hạm tiếp thị chính xác.",
     badge: "AI Gu Thẩm Mỹ",
     description: "Phân tách tệp khách hàng dựa trên hành vi mua sắm thuộc các trường phái riêng biệt đại diện cho gu sống đỉnh cao (Classic Elegant, Minimalist, Luxury Glamour, Avant-Garde).",
@@ -436,7 +437,7 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   tier_projection: {
-    title: "Mô hình Dự phóng Tiến trình Thăng hạng (Tier Elevation)",
+    title: "Tiến trình Thăng hạng",
     subtitle: "Mô hình hoá và dự đoán thời điểm vàng nâng cấp đặc quyền VIP của toàn bộ tệp thành viên.",
     badge: "Dự Phóng",
     description: "Nhìn thấu tiến độ bứt tốc thăng hạng, dự phóng lượng khách chuẩn bị vượt sào thăng cấp Icon, Atelier trong 90 ngày tới để chủ động chuẩn bị quà cáp tri ân.",
@@ -463,7 +464,7 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   loyalty_cost: {
-    title: "Quản trị Chi phí Loyalty & Chỉ số hoàn vốn ROI (Loyalty Cost)",
+    title: "Loyalty Cost & ROI",
     subtitle: "Đảm bảo tính lành mạnh tài khóa của hệ thống Marketing, xác nhận hiệu quả đầu tư thực chất.",
     badge: "Tài Chính & ROI",
     description: "Hiển thị trực quan bức tranh chi phí cứng và chi phí mềm của chương trình tích điểm đổi quà. Tính toán chính xác xem 1 đồng chi phí bỏ ra đem lại bao nhiêu đồng doanh số VIP tăng thêm.",
@@ -490,7 +491,7 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   clv_repeat: {
-    title: "Giá trị Vòng đời & Tỷ lệ Tái mua hàng (CLV & Repurchase)",
+    title: "CLV & Repeat Purchase",
     subtitle: "Giám sát sức bền gắn kết bền bỉ theo năm tháng của tệp khách hàng thông qua RFM Matrix.",
     badge: "Sức Bền CLV",
     description: "Giám định tuổi đời khách hàng (Customer Lifespan) và tần suất quay lại mua hàng định kỳ. Xác định chính xác xem tệp VIP có ngủ đông, thoái trào hay tiếp tục gia tăng giá trị.",
@@ -517,7 +518,7 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   vip_crm: {
-    title: "Chăm sóc VIP CRM & Đặt lịch tư vấn độc bản (Private Lounge)",
+    title: "VIP CRM & Booking",
     subtitle: "Vận hành chu đáo quy trình VIP Lounge, phòng tư vấn 1-kèm-1 và kịch bản chăm sóc cá nhân hóa.",
     badge: "CRM Thượng Lưu",
     description: "Quản lý lượt đặt Private Room, bố trí thợ kim hoàn tư vấn trực diện cho khách hàng có kế hoạch đám cưới hoàng gia hoặc chế tác trang sức gia bảo độc bản.",
@@ -544,7 +545,7 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   ai_advisor: {
-    title: "Cố vấn Chiến lược thông minh AI Advisor (Intelligence Copilot)",
+    title: "AI Analytics Advisor",
     subtitle: "Khai thác tối đa trí tuệ nhân tạo Gemini để chẩn đoán lỗ hổng chính sách và tự soạn thảo chiến dịch.",
     badge: "AI Cố Vấn",
     description: "AI Advisor giám sát liên tục luồng dữ liệu mua sắm và thăng hạng chéo, tự động đưa ra các dự báo sắc bén và dự phòng rủi ro ngân sách tiếp thị.",
@@ -571,7 +572,7 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   offer_analysis: {
-    title: "Hiệu suất Chiến dịch & Tối ưu hóa Ưu đãi (Offers Optimization)",
+    title: "Phân tích & Tối ưu Ưu đãi",
     subtitle: "Phân tích mức độ chấp nhận, tỷ lệ quy đổi và giá trị thặng dư rải thảm voucher Loyalty.",
     badge: "Tối Ưu Ưu Đãi",
     description: "Lượng hóa tỷ mỉ tác động tài chính của từng chiến dịch phát phát hành ưu đãi. Đo lường xem khuyến mãi có thực sự lôi kéo khách hàng hay chỉ làm giảm biên lợi nhuận đáng tiếc.",
@@ -1167,52 +1168,63 @@ export function AnalysisView() {
  })).sort((a, b) => b.revenue - a.revenue);
  }, [customers]);
 
- return (
- <div className="flex-1 p-8 pt-6 space-y-6 overflow-y-auto max-h-[calc(100vh-64px)]">
- 
- {/* Title & Metadata Header */}
- <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md">
- <div className="flex items-center gap-4 text-left">
- <div className="p-3 bg-primary/10 rounded-2xl text-primary flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
- <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
- <motion.div
- animate={{ 
- scale: [1, 1.15, 0.95, 1.05, 1],
- rotate: [0, 10, -10, 5, 0]
- }}
- transition={{ 
- repeat: Infinity,
- duration: 5,
- ease: "easeInOut"
- }}
- >
- <Sparkles className="w-8 h-8 text-[#2f6cf5]" />
- </motion.div>
- </div>
- <div>
- <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground flex items-center gap-2">
- Phân tích Hành vi & Hiệu quả Loyalty
- </h2>
- <p className="text-muted-foreground text-sm mt-1">
- Chẩn đoán sức sống của tệp khách hàng VIP, đo lường chi phí Loyalty và tính toán chỉ số tỷ suất hoàn vốn ROI.
- </p>
- </div>
- </div>
+  const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
 
- <div className="flex items-center gap-3">
-  <button
-    onClick={() => setShowDoc(!showDoc)}
-    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
-      showDoc
-        ? "bg-amber-500/10 border-amber-500/25 text-amber-600 dark:text-amber-400"
-        : "bg-card border-border hover:bg-muted text-muted-foreground"
-    }`}
-  >
-    <BookOpen className={`w-4 h-4 ${showDoc ? 'text-amber-500' : 'text-muted-foreground'}`} />
-    Tài liệu phân tích
-  </button>
- </div>
- </div>
+  const bannerContent = (
+    <motion.div
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      className="bg-card/45 border border-[#6366f1]/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#6366f1]/50"
+    >
+      <div className="flex items-center gap-4 text-left">
+        <div className="p-3 bg-[#6366f1]/10 rounded-[10px] text-[#6366f1] flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+          <motion.div
+            animate={{
+              scale: [1, 1.15, 0.95, 1.05, 1],
+              rotate: [0, 8, -8, 4, 0],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 5.5,
+              ease: "easeInOut",
+            }}
+          >
+            <Sparkles className="w-8 h-8 text-[#6366f1]" />
+          </motion.div>
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground uppercase">
+              Phân tích Hành vi & Hiệu quả Loyalty
+            </h2>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Chẩn đoán sức sống của tệp khách hàng VIP, đo lường chi phí Loyalty và tính toán ROI.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setShowDoc(!showDoc)}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
+            showDoc
+              ? "bg-amber-500/10 border-amber-500/25 text-amber-600 dark:text-amber-400"
+              : "bg-card border-border hover:bg-muted text-muted-foreground"
+          }`}
+        >
+          <BookOpen className={`w-4 h-4 ${showDoc ? 'text-amber-500' : 'text-muted-foreground'}`} />
+          Tài liệu phân tích
+        </button>
+      </div>
+    </motion.div>
+  );
+
+  return (
+    <div className="flex-1 space-y-6">
+      {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
+
+      <div className="pt-6 space-y-6">
 
  {/* Collapsible Document Panel for Analysis Tabs */}
  {showDoc && (() => {
@@ -1305,7 +1317,7 @@ export function AnalysisView() {
  <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-muted/40 p-4 rounded-3xl border border-border/80 max-w-full w-full relative">
   {(() => {
    const tabsList = [
-    { id: 'dashboard', name: 'Tổng quan', icon: Layers },
+    { id: 'dashboard', name: 'Chọn mục cần phân tích', icon: Layers },
     { id: 'cross_branch', name: 'Điểm chung chi nhánh', icon: Network },
     { id: 'shopping_behavior', name: 'Hành vi mua sắm', icon: ShoppingBag },
     { id: 'tier_point_analysis', name: 'Phân tích hạng & điểm', icon: Calculator },
@@ -2136,26 +2148,54 @@ export function AnalysisView() {
  <div className="lg:col-span-2 space-y-6">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  <div className="bg-sidebar border border-border/50 rounded-2xl p-5 flex flex-col justify-between">
- <span className="text-xs text-muted-foreground font-bold uppercase">Ngân sách Loyalty cho phép</span>
- <h3 className="text-3xl font-extrabold text-[#2f6cf5] mt-1">{formatMillionVND(loyaltyBudget)}</h3>
- <span className="text-xs text-muted-foreground mt-2 block border-t pt-2">Tính trên: Lợi nhuận gộp x {loyaltyRatio}%</span>
+ <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block text-left">Ngân sách Loyalty cho phép</span>
+ <div className="p-2 bg-[#2f6cf5]/10 text-[#2f6cf5] rounded-xl shrink-0 mt-2 self-start">
+  <DollarSign className="w-4 h-4" />
+ </div>
+ <h3 className="text-2xl font-black text-[#2f6cf5] tracking-tight mt-3 text-left">{formatMillionVND(loyaltyBudget)}</h3>
+ <div className="text-[11px] text-muted-foreground mt-4 pt-2.5 border-t border-border/40 flex items-center justify-between">
+  <span>Cơ chế trích quỹ:</span>
+  <span className="font-bold text-foreground bg-muted px-2 py-0.5 rounded-lg border text-[10px]">Lợi nhuận gộp x {loyaltyRatio}%</span>
+ </div>
  </div>
  <div className="bg-sidebar border border-border/50 rounded-2xl p-5 flex flex-col justify-between">
- <span className="text-xs text-muted-foreground font-bold uppercase">Chi phí thực tế phân bổ</span>
- <h3 className="text-3xl font-extrabold text-[#2f6cf5] mt-1">{formatMillionVND(actualCost)}</h3>
- <span className="text-xs text-muted-foreground mt-2 block border-t pt-2">Tổng vouchers, điểm, event và quà tặng</span>
+ <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block text-left">Chi phí thực tế phân bổ</span>
+ <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl shrink-0 mt-2 self-start">
+  <Layers className="w-4 h-4 text-amber-500" />
+ </div>
+ <h3 className="text-2xl font-black text-[#2f6cf5] tracking-tight mt-3 text-left">{formatMillionVND(actualCost)}</h3>
+ <div className="text-[11px] text-muted-foreground mt-4 pt-2.5 border-t border-border/40 flex items-center justify-between">
+  <span>Cấu trúc phân phối:</span>
+  <span className="font-semibold text-foreground italic text-[10px]">Voucher, điểm, quà tặng & event</span>
+ </div>
  </div>
  <div className="bg-sidebar border border-border/50 rounded-2xl p-5 flex flex-col justify-between">
- <span className="text-xs text-muted-foreground font-bold uppercase">Hạn mức ngân sách thặng dư</span>
+ <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block text-left">Hạn mức ngân sách thặng dư</span>
+<div className={`p-2 rounded-xl shrink-0 mt-2 self-start w-fit ${remainingBudget >= 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 text-rose-600 dark:text-rose-400"}`}>
+ {remainingBudget >= 0 ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+</div>
  <h3 className={`text-3xl font-extrabold mt-1 ${remainingBudget >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
  {formatMillionVND(remainingBudget)}
  </h3>
- <span className="text-xs text-muted-foreground mt-2 block border-t pt-2">{remainingBudget >= 0 ? "Quỹ thặng dư an toàn" : "Nguy cơ vượt hạn mức"}</span>
+ <div className="text-[11px] text-muted-foreground mt-4 pt-2.5 border-t border-border/40 flex items-center justify-between">
+ <span>Trạng thái dòng ngân quỹ:</span>
+ <span className={`px-2 py-0.5 rounded-lg border font-bold text-[9px] ${remainingBudget >= 0 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"}`}>
+  {remainingBudget >= 0 ? "Thặng dư an toàn" : "Nguy cơ vượt hạn mức"}
+ </span>
+</div>
  </div>
  <div className="bg-sidebar border border-border/50 rounded-2xl p-5 flex flex-col justify-between">
- <span className="text-xs text-muted-foreground font-bold uppercase">Tỷ lệ Chi phí / Doanh thu</span>
+ <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block text-left">Tỷ lệ Chi phí / Doanh thu</span>
+<div className={`p-2 rounded-xl shrink-0 mt-2 self-start w-fit ${costRatioOfRevenue < 5 ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"}`}>
+ <Percent className="w-4 h-4" />
+</div>
  <h3 className="text-3xl font-extrabold text-foreground mt-1">{costRatioOfRevenue.toFixed(2)}%</h3>
- <span className="text-xs text-muted-foreground mt-2 block border-t pt-2">Target lý tưởng: &lt; 5% Doanh số</span>
+ <div className="text-[11px] text-muted-foreground mt-4 pt-2.5 border-t border-border/40 flex items-center justify-between">
+ <span>Hiệu số chi tiêu (Target &lt; 5%):</span>
+ <span className={`px-2 py-0.5 rounded-lg border font-bold text-[9px] ${costRatioOfRevenue < 5 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"}`}>
+  {costRatioOfRevenue < 5 ? "Đạt chỉ số vàng" : "Cần kiểm soát"}
+ </span>
+</div>
  </div>
 
  {/* Conditional budget utilization card */}
@@ -2924,6 +2964,7 @@ export function AnalysisView() {
  </div>
  )}
 
+  </div>
  </div>
  );
 }

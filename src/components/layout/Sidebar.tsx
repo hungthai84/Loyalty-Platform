@@ -3,17 +3,19 @@ import { cn } from "@/lib/utils";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { motion, AnimatePresence } from "motion/react";
 import { BrandLogo } from "@/components/layout/BrandLogo";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import {
   LayoutDashboard,
   Users,
   Award,
   BarChart,
   Settings,
-  Bell,
+  Megaphone,
   Fingerprint,
   Sparkles,
-  Plug
+  Search
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface SidebarProps {
   activeView: string;
@@ -28,7 +30,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
     { name: "Tổng quan", view: "dashboard", icon: LayoutDashboard },
     { name: "Khách hàng", view: "customers", icon: Users },
     { name: "Ưu đãi", view: "loyalty", icon: Award },
-    { name: "Tương tác", view: "marketing", icon: Bell },
+    { name: "Tương tác", view: "marketing", icon: Megaphone },
     { name: "Phân tích", view: "analysis", icon: Sparkles },
     { name: "Cổng Loyalty", view: "portal", icon: Fingerprint },
     { name: "Báo cáo", view: "analytics", icon: BarChart },
@@ -54,19 +56,51 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
         isHovered ? "px-6 justify-start" : "justify-center"
       )}>
         <BrandLogo className="w-9 h-9 shrink-0 hover:scale-105 transition-transform duration-300" />
-        <AnimatePresence>
-          {isHovered && (
-            <motion.h2 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="text-lg font-extrabold tracking-tight font-heading ml-2 whitespace-nowrap bg-gradient-to-r from-[#eb7a2e] via-[#f59e0b] to-[#131924] bg-clip-text text-transparent"
-            >
-              Power Service
-            </motion.h2>
-          )}
-        </AnimatePresence>
+        <div className="flex flex-col ml-3">
+          <AnimatePresence>
+            {isHovered && (
+              <>
+                <motion.h2 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  className="text-lg font-bold tracking-tight font-heading whitespace-nowrap text-[#eb7a2e]"
+                >
+                  Power Service
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-[10px] font-extrabold tracking-[0.2em] text-black uppercase -mt-1"
+                >
+                  CLP Platform
+                </motion.p>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
+
+      {/* Global Search */}
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="px-4 mb-2 overflow-hidden"
+          >
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Tìm kiếm mọi thứ..."
+                className="pl-9 bg-muted/40 border-border/50 h-9 text-xs focus-visible:ring-1"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Middle: Centered Menu Items */}
       <div className="flex-1 flex flex-col justify-center px-3 py-4 min-h-0 overflow-y-auto overflow-x-hidden">
@@ -116,9 +150,11 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
 
       {/* Bottom: Settings */}
       <div className={cn(
-        "px-3 py-6 border-t border-border/50 transition-all shrink-0 flex flex-col items-center",
+        "px-3 py-6 border-t border-border/50 transition-all shrink-0 flex flex-col items-center gap-3",
         isHovered && "items-stretch"
       )}>
+        <NotificationBell isSidebar collapsed={!isHovered} />
+
         <button
           onClick={() => setActiveView("settings")}
           className={cn(

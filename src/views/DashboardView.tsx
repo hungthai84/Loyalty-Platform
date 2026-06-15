@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   Card,
@@ -827,222 +828,228 @@ export function DashboardView() {
     return data;
   }, [allCustomers]);
 
-  return (
-    <div className="flex-1 space-y-6 p-8 pt-6">
-      <motion.div
-        whileHover={{ y: -2, transition: { duration: 0.2 } }}
-        className="relative z-30 flex w-full flex-col justify-between gap-5 rounded-[10px] border border-border/60 bg-card/45 p-5 shadow-xs transition-all backdrop-blur-md md:flex-row md:items-center md:p-6 hover:shadow-md hover:border-primary/25"
-      >
-        {/* Title container + Date Range Picker right next to it */}
-        <div className="flex items-center gap-4 text-left">
-          <div className="p-3 bg-primary/10 rounded-[10px] text-primary flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
-            <motion.div
-              animate={{
-                scale: [1, 1.15, 0.95, 1.05, 1],
-                rotate: [0, 8, -8, 4, 0],
-              }}
-              transition={{
-                repeat: Infinity,
-                duration: 5.5,
-                ease: "easeInOut",
-              }}
-            >
-              <LayoutDashboard className="w-8 h-8 text-[#2f6cf5]" />
-            </motion.div>
-          </div>
-          <div>
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
-                Tổng quan
-              </h2>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Số liệu thống kê và thông tin tổng quan hệ thống.
-            </p>
-          </div>
+  const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
+
+  const bannerContent = (
+    <motion.div
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-primary/25"
+    >
+      {/* Title container + Date Range Picker right next to it */}
+      <div className="flex items-center gap-4 text-left">
+        <div className="p-3 bg-primary/10 rounded-[10px] text-primary flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+          <motion.div
+            animate={{
+              scale: [1, 1.15, 0.95, 1.05, 1],
+              rotate: [0, 8, -8, 4, 0],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 5.5,
+              ease: "easeInOut",
+            }}
+          >
+            <LayoutDashboard className="w-8 h-8 text-[#2f6cf5]" />
+          </motion.div>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Date Range Picker dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setIsOpen(!isOpen);
-                setIsTierOpen(false);
-              }}
-              className="flex items-center gap-2 px-3.5 py-2 bg-card hover:bg-muted/50 text-foreground border border-border rounded-[10px] text-xs font-bold transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-primary/20 outline-none"
-            >
-              <Calendar className="w-4 h-4 text-[#2f6cf5]" />
-              <span className="">{formatRangeText()}</span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {isOpen && (
-              <>
-                {/* Backdrop handle for closing */}
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setIsOpen(false)}
-                />
-                <div className="absolute left-0 mt-2 w-72 bg-card border border-border shadow-2xl rounded-[10px] p-4.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150">
-                  <div className="space-y-4">
-                    <div className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest flex items-center gap-1.5">
-                      <Filter className="w-3.5 h-3.5" />
-                      <span>Chọn khoảng lọc thời gian</span>
-                    </div>
-
-                    {/* Presets */}
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {presets.map((p) => {
-                        const range = p.getRange();
-                        const isActive = activePreset === p.id;
-                        return (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() =>
-                              handlePresetSelect(p.id, range.start, range.end)
-                            }
-                            className={`px-3 py-2 text-xs font-bold rounded-[10px] text-left transition-all cursor-pointer ${
-                              isActive
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "bg-muted/40 hover:bg-muted text-foreground"
-                            }`}
-                          >
-                            {p.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Custom boundaries */}
-                    <div className="pt-3.5 border-t border-border/80 space-y-2.5">
-                      <span className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest block">
-                        Khoảng ngày tùy chỉnh
-                      </span>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <label className="text-xs font-bold text-muted-foreground uppercase block">
-                            Từ ngày
-                          </label>
-                          <input
-                            type="date"
-                            value={startDate}
-                            onChange={(e) =>
-                              handleCustomDateChange("start", e.target.value)
-                            }
-                            className="w-full bg-background border border-border rounded-[10px] p-2 text-xs outline-none focus:border-primary/50 text-foreground"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-bold text-muted-foreground uppercase block">
-                            Đến ngày
-                          </label>
-                          <input
-                            type="date"
-                            value={endDate}
-                            onChange={(e) =>
-                              handleCustomDateChange("end", e.target.value)
-                            }
-                            className="w-full bg-background border border-border rounded-[10px] p-2 text-xs outline-none focus:border-primary/50 text-foreground"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end gap-1.5 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setIsOpen(false)}
-                        className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-primary/95 shadow-sm"
-                      >
-                        Áp dụng
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+        <div>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
+              Tổng quan
+            </h2>
           </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Số liệu thống kê và thông tin tổng quan hệ thống.
+          </p>
+        </div>
+      </div>
 
-          {/* Membership Tier Dropdown Menu */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setIsTierOpen(!isTierOpen);
-                setIsOpen(false);
-              }}
-              className="flex items-center gap-2 px-3.5 py-2 bg-card hover:bg-muted/50 text-foreground border border-border rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-primary/20 outline-none"
-            >
-              <Award className="w-4 h-4 text-amber-500" />
-              <span>
-                Hạng:{" "}
-                <span className="text-[#2f6cf5] font-extrabold">
-                  {tierOptions.find((t) => t.id === selectedTier)?.label ||
-                    selectedTier}
-                </span>
-              </span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${isTierOpen ? "rotate-180" : ""}`}
+      <div className="flex flex-wrap items-center gap-2.5">
+        {/* Date Range Picker dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setIsOpen(!isOpen);
+              setIsTierOpen(false);
+            }}
+            className="flex items-center gap-2 px-3.5 py-2 bg-card hover:bg-muted/50 text-foreground border border-border rounded-[10px] text-xs font-bold transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-primary/20 outline-none"
+          >
+            <Calendar className="w-4 h-4 text-[#2f6cf5]" />
+            <span className="">{formatRangeText()}</span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {isOpen && (
+            <>
+              {/* Backdrop handle for closing */}
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setIsOpen(false)}
               />
-            </button>
-
-            {isTierOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setIsTierOpen(false)}
-                />
-                <div className="absolute left-0 mt-2 w-48 bg-card border border-border shadow-2xl rounded-[10px] p-2.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150">
-                  <div className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest px-2.5 py-1.5 border-b border-border/60">
-                    Chọn hạng thành viên
+              <div className="absolute left-0 mt-2 w-72 bg-card border border-border shadow-2xl rounded-[10px] p-4.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150">
+                <div className="space-y-4">
+                  <div className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest flex items-center gap-1.5">
+                    <Filter className="w-3.5 h-3.5" />
+                    <span>Chọn khoảng lọc thời gian</span>
                   </div>
-                  <div className="space-y-0.5 pt-1.5">
-                    {tierOptions.map((opt) => {
-                      const isSel = selectedTier === opt.id;
+
+                  {/* Presets */}
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {presets.map((p) => {
+                      const range = p.getRange();
+                      const isActive = activePreset === p.id;
                       return (
                         <button
-                          key={opt.id}
+                          key={p.id}
                           type="button"
-                          onClick={() => {
-                            setSelectedTier(opt.id);
-                            setIsTierOpen(false);
-                          }}
-                          className={`w-full px-2.5 py-1.5 text-xs font-bold rounded-lg text-left transition-all cursor-pointer flex items-center justify-between ${
-                            isSel
+                          onClick={() =>
+                            handlePresetSelect(p.id, range.start, range.end)
+                          }
+                          className={`px-3 py-2 text-xs font-bold rounded-[10px] text-left transition-all cursor-pointer ${
+                            isActive
                               ? "bg-primary text-primary-foreground shadow-sm"
-                              : "hover:bg-muted text-foreground"
+                              : "bg-muted/40 hover:bg-muted text-foreground"
                           }`}
                         >
-                          <span>{opt.label}</span>
-                          {isSel && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-current font-black" />
-                          )}
+                          {p.label}
                         </button>
                       );
                     })}
                   </div>
-                </div>
-              </>
-            )}
-          </div>
 
-          {/* Clear Filters Button */}
-          {(selectedTier !== "all" || activePreset !== "30days") && (
-            <button
-              onClick={handleClearFilters}
-              className="flex items-center gap-1.5 px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer animate-in fade-in duration-200"
-              id="clear-filters-btn"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Xóa bộ lọc</span>
-            </button>
+                  {/* Custom boundaries */}
+                  <div className="pt-3.5 border-t border-border/80 space-y-2.5">
+                    <span className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest block">
+                      Khoảng ngày tùy chỉnh
+                    </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground uppercase block">
+                          Từ ngày
+                        </label>
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) =>
+                            handleCustomDateChange("start", e.target.value)
+                          }
+                          className="w-full bg-background border border-border rounded-[10px] p-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground uppercase block">
+                          Đến ngày
+                        </label>
+                        <input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) =>
+                            handleCustomDateChange("end", e.target.value)
+                          }
+                          className="w-full bg-background border border-border rounded-[10px] p-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-1.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsOpen(false)}
+                      className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-primary/95 shadow-sm"
+                    >
+                      Áp dụng
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </div>
-      </motion.div>
+
+        {/* Membership Tier Dropdown Menu */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setIsTierOpen(!isTierOpen);
+              setIsOpen(false);
+            }}
+            className="flex items-center gap-2 px-3.5 py-2 bg-card hover:bg-muted/50 text-foreground border border-border rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-primary/20 outline-none"
+          >
+            <Award className="w-4 h-4 text-amber-500" />
+            <span>
+              Hạng:{" "}
+              <span className="text-[#2f6cf5] font-extrabold">
+                {tierOptions.find((t) => t.id === selectedTier)?.label ||
+                  selectedTier}
+              </span>
+            </span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${isTierOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {isTierOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setIsTierOpen(false)}
+              />
+              <div className="absolute left-0 mt-2 w-48 bg-card border border-border shadow-2xl rounded-[10px] p-2.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150">
+                <div className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest px-2.5 py-1.5 border-b border-border/60">
+                  Chọn hạng thành viên
+                </div>
+                <div className="space-y-0.5 pt-1.5">
+                  {tierOptions.map((opt) => {
+                    const isSel = selectedTier === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedTier(opt.id);
+                          setIsTierOpen(false);
+                        }}
+                        className={`w-full px-2.5 py-1.5 text-xs font-bold rounded-lg text-left transition-all cursor-pointer flex items-center justify-between ${
+                          isSel
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "hover:bg-muted text-foreground"
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {isSel && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-current font-black" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Clear Filters Button */}
+        {(selectedTier !== "all" || activePreset !== "30days") && (
+          <button
+            onClick={handleClearFilters}
+            className="flex items-center gap-1.5 px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer animate-in fade-in duration-200"
+            id="clear-filters-btn"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Xóa bộ lọc</span>
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
+
+  return (
+    <div className="flex-1 space-y-6">
+      {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {filteredKpis.map((kpi, i) => (

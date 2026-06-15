@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,6 +23,9 @@ import {
   Instagram,
   ArrowRight,
   User,
+  Users,
+  Cloud,
+  CloudOff,
   Upload,
   SlidersHorizontal,
   RotateCcw,
@@ -1182,109 +1186,129 @@ export function CustomersView() {
 
   if (authLoading) return <div className="p-8 text-center">Đang tải...</div>;
 
+  const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
+
+  const bannerContent = (
+    <motion.div
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      className="bg-card/45 border border-emerald-500/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-emerald-500/50"
+    >
+      <div className="flex items-center gap-4 text-left">
+        <div className="p-3 bg-emerald-500/10 rounded-[10px] text-emerald-500 flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+          <motion.div
+            animate={{
+              scale: [1, 1.15, 0.95, 1.05, 1],
+              rotate: [0, 8, -8, 4, 0],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 5.5,
+              ease: "easeInOut",
+            }}
+          >
+            <Users className="w-8 h-8 text-emerald-500" />
+          </motion.div>
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
+              Danh sách Khách hàng
+            </h2>
+            {forceOffline && (
+              <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10.5px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                <CloudOff className="w-3 h-3" /> Chế độ Offline
+              </Badge>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Quản lý hồ sơ cá nhân, liên kết mạng xã hội đa điểm và điểm số.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {forceOffline && (
+          <button
+            onClick={() => {
+              setForceOffline(false);
+              setLoading(true);
+              toast.success("Đang kết nối lại Cloud Firestore...");
+            }}
+            className="flex items-center justify-center px-4 py-2 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-white rounded-xl text-sm font-medium bg-amber-500/10 transition-colors cursor-pointer"
+          >
+            <Cloud className="w-4 h-4 mr-2" /> Kết nối Cloud
+          </button>
+        )}
+        <button
+          onClick={() => setShowCrmSettings(true)}
+          className="flex items-center justify-center px-4 py-2 border border-[#6366f1]/20 bg-[#6366f1]/5 text-[#6366f1] hover:bg-[#6366f1]/10 rounded-xl text-sm font-bold transition-all cursor-pointer"
+        >
+          <Settings className="w-4 h-4 mr-2 text-[#6366f1]" /> Cài đặt khách hàng
+        </button>
+        <button
+          onClick={handleExportCSV}
+          className="flex items-center justify-center px-4 py-2 border border-[#2f6cf5]/20 rounded-xl text-sm font-bold bg-[#2f6cf5]/10 text-[#2f6cf5] hover:bg-[#2f6cf5]/20 transition-colors cursor-pointer"
+        >
+          <Download className="w-4 h-4 mr-2" /> Xuất CSV
+        </button>
+        <button
+          onClick={handleExportPDF}
+          className="flex items-center justify-center px-4 py-2 border border-blue-500/20 rounded-xl text-sm font-bold bg-blue-500/5 text-blue-600 hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
+        >
+          <FileText className="w-4 h-4 mr-2" /> Xuất PDF
+        </button>
+        <button
+          onClick={() => setShowImportDialog(true)}
+          className="flex items-center justify-center px-4 py-2 bg-card border border-border rounded-xl text-sm font-medium hover:bg-muted transition-colors text-foreground"
+        >
+          <Upload className="w-4 h-4 mr-2 text-[#2f6cf5]" /> Nhập CSV
+        </button>
+        <button
+          onClick={() => setShowAddDialog(true)}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors flex items-center shadow-lg shadow-primary/25 font-bold cursor-pointer"
+        >
+          <Plus className="w-4 h-4 mr-2" /> Thêm khách hàng
+        </button>
+      </div>
+    </motion.div>
+  );
+
   return (
-    <div className="flex-1 space-y-6 p-8 pt-6 relative">
+    <div className="flex-1 space-y-6 relative">
+      {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
+
       <div className={cn("w-full space-y-6 transition-all duration-300", currentCustomerData ? "blur-[2px] opacity-55 pointer-events-none select-none" : "")}>
-        <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col gap-5 relative z-30 backdrop-blur-md w-full">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 w-full">
-              <div className="flex items-center gap-4 text-left">
-                <div className="p-3 bg-primary/10 rounded-2xl text-primary flex items-center justify-center relative bg-primary/10 shadow-xs shrink-0">
-                  <User className="w-8 h-8 text-[#2f6cf5]" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
-                      Danh sách Khách hàng
-                    </h2>
-                    {forceOffline && (
-                      <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10.5px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
-                        <CloudOff className="w-3 h-3" /> Chế độ Offline
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    Quản lý hồ sơ cá nhân, liên kết mạng xã hội đa điểm và điểm
-                    số.
-                  </p>
+        {/* Main Tab Navigation relocated from banner */}
+        <div className="flex bg-muted/40 p-1.5 rounded-2xl border border-border/40 max-w-fit select-none shrink-0 mb-6">
+          <button
+            onClick={() => setActiveViewTab("list")}
+            className={cn(
+              "px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer",
+              activeViewTab === "list"
+                ? "bg-white dark:bg-zinc-800 text-[#2f6cf5] shadow-sm border border-border/20 font-black scale-[1.02]"
+                : "text-muted-foreground hover:text-foreground border border-transparent"
+            )}
+          >
+            <User className="w-4 h-4" /> Danh sách Hội viên
+          </button>
+          <button
+            onClick={() => setActiveViewTab("segments")}
+            className={cn(
+              "px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer",
+              activeViewTab === "segments"
+                ? "bg-white dark:bg-zinc-800 text-[#2f6cf5] shadow-sm border border-border/20 font-black scale-[1.02]"
+                : "text-muted-foreground hover:text-foreground border border-transparent"
+            )}
+          >
+            <Layers className="w-4 h-4" /> Phân khúc (Segments)
+          </button>
+        </div>
 
-                  <div className="flex bg-muted/60 p-1.5 rounded-2xl border border-border/40 mt-4 max-w-fit select-none shrink-0">
-                    <button
-                      onClick={() => setActiveViewTab("list")}
-                      className={cn(
-                        "px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
-                        activeViewTab === "list"
-                          ? "bg-white dark:bg-zinc-800 text-[#2f6cf5] shadow-xs border border-border/20 font-black"
-                          : "text-muted-foreground hover:text-foreground border border-transparent"
-                      )}
-                    >
-                      <User className="w-3.5 h-3.5" /> Danh sách Hội viên
-                    </button>
-                    <button
-                      onClick={() => setActiveViewTab("segments")}
-                      className={cn(
-                        "px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
-                        activeViewTab === "segments"
-                          ? "bg-white dark:bg-zinc-800 text-[#2f6cf5] shadow-xs border border-border/20 font-black"
-                          : "text-muted-foreground hover:text-foreground border border-transparent"
-                      )}
-                    >
-                      <Layers className="w-3.5 h-3.5" /> Phân khúc (Segments)
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {forceOffline && (
-                  <button
-                    onClick={() => {
-                      setForceOffline(false);
-                      setLoading(true);
-                      toast.success("Đang kết nối lại Cloud Firestore...");
-                    }}
-                    className="flex items-center justify-center px-4 py-2 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-white rounded-xl text-sm font-medium bg-amber-500/10 transition-colors cursor-pointer"
-                  >
-                    <Cloud className="w-4 h-4 mr-2" /> Kết nối Cloud
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowCrmSettings(true)}
-                  className="flex items-center justify-center px-4 py-2 border border-[#6366f1]/20 bg-[#6366f1]/5 text-[#6366f1] hover:bg-[#6366f1]/10 rounded-xl text-sm font-bold transition-all cursor-pointer"
-                >
-                  <Settings className="w-4 h-4 mr-2 text-[#6366f1]" /> Cài đặt
-                  khách hàng
-                </button>
-                <button
-                  onClick={handleExportCSV}
-                  className="flex items-center justify-center px-4 py-2 border border-[#2f6cf5]/20 rounded-xl text-sm font-bold bg-[#2f6cf5]/10 text-[#2f6cf5] hover:bg-[#2f6cf5]/20 transition-colors cursor-pointer"
-                >
-                  <Download className="w-4 h-4 mr-2" /> Xuất CSV
-                </button>
-                <button
-                  onClick={handleExportPDF}
-                  className="flex items-center justify-center px-4 py-2 border border-blue-500/20 rounded-xl text-sm font-bold bg-blue-500/5 text-blue-600 hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
-                >
-                  <FileText className="w-4 h-4 mr-2" /> Xuất PDF
-                </button>
-                <button
-                  onClick={() => setShowImportDialog(true)}
-                  className="flex items-center justify-center px-4 py-2 bg-card border border-border rounded-xl text-sm font-medium hover:bg-muted transition-colors text-foreground"
-                >
-                  <Upload className="w-4 h-4 mr-2 text-[#2f6cf5]" /> Nhập CSV
-                </button>
-                <button
-                  onClick={() => setShowAddDialog(true)}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors flex items-center shadow-lg shadow-primary/25 font-bold cursor-pointer"
-                >
-                  <Plus className="w-4 h-4 mr-2" /> Thêm khách hàng
-                </button>
-              </div>
-            </div>
-            {/* Divider line separating upper actions and filters inside the banner */}
-            <div className="border-t border-border/50 w-full mt-2" />
-
-            {/* Row 2: Deep nested search and query filters inside the banner */}
-            <div className="flex flex-col md:flex-row gap-4 w-full justify-between items-start md:items-center mt-2">
+        {activeViewTab === "list" ? (
+          <>
+            <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col gap-5 relative z-30 backdrop-blur-md w-full">
+            {/* Filter Section */}
               <div className="flex flex-wrap gap-2.5 items-center w-full md:w-auto">
                 <CustomerSearch
                   customers={customers}
@@ -1421,11 +1445,10 @@ export function CustomersView() {
                   )}
                 </button>
               </div>
-            </div>
 
-            {/* Advanced Filters Panel */}
-            {showAdvancedFilters && (
-              <motion.div
+              {/* Advanced Filters Panel */}
+              {showAdvancedFilters && (
+                <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="border border-dashed border-border p-4 rounded-xl mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-left w-full h-full"
@@ -1565,8 +1588,7 @@ export function CustomersView() {
             )}
           </div>
 
-          {activeViewTab === "list" ? (
-            <Card className="border border-border/50 bg-background/55 shadow-xs relative">
+          <Card className="border border-border/50 bg-background/55 shadow-xs relative">
             {/* Bulk Action Floating Banner */}
             {selectedCustomerIds.length > 0 && (
               <div className="absolute top-0 left-0 right-0 z-50 bg-[#2f6cf5] text-white px-6 py-3 rounded-t-xl shadow-md flex items-center justify-between border-b border-[#2f6cf5]/20 animate-in fade-in slide-in-from-top-2">
@@ -2346,7 +2368,8 @@ export function CustomersView() {
                 </TableBody>
               </Table>
             </CardContent>
-          </Card>
+            </Card>
+          </>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full text-left">
             {/* LEFT SIDE: Segment management and builder */}

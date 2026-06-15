@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Badge } from "@/components/ui/badge";
 import { 
   Mail, 
-  Zap, 
+  Zap,
+  Megaphone, 
   CheckCircle2, 
   Activity, 
   Send, 
@@ -399,29 +401,51 @@ export function MarketingView() {
     }, 1000);
   };
 
-  return (
-    <div className="flex-1 h-[calc(100vh-64px)] flex flex-col p-8 pt-6 overflow-hidden max-h-screen">
-      {/* Tab Switcher Header */}
-      <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mb-6 shrink-0 text-left">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500 flex items-center justify-center shrink-0">
-            <Zap className="w-8 h-8" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground font-heading">Hành trình Tương tác & Chiến dịch</h2>
-            <p className="text-muted-foreground text-sm mt-1">Thiết kế đa kênh và kiến tạo chương trình tích lũy thúc đẩy doanh thu.</p>
-          </div>
-        </div>
+  const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
 
-        {/* Beautiful Segmented Tab Selector */}
-        <div className="flex bg-muted/80 p-1.5 rounded-2xl border border-border/60 shadow-inner shrink-0 self-start lg:self-auto">
+  const bannerContent = (
+    <motion.div
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      className="bg-card/45 border border-rose-500/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-rose-500/50"
+    >
+      <div className="flex items-center gap-4 text-left">
+        <div className="p-3 bg-rose-500/10 rounded-[10px] text-rose-500 flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+          <motion.div
+            animate={{
+              scale: [1, 1.15, 0.95, 1.05, 1],
+              rotate: [0, 8, -8, 4, 0],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 5.5,
+              ease: "easeInOut",
+            }}
+          >
+            <Megaphone className="w-8 h-8 text-rose-500" />
+          </motion.div>
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
+              Hành trình Tương tác & Chiến dịch
+            </h2>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Thiết kế đa kênh và kiến tạo chương trình tích lũy thúc đẩy doanh thu.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex bg-muted/80 p-1 rounded-xl border border-border/60 shadow-inner shrink-0">
           <button
             onClick={() => setActiveTab2("messages")}
             className={cn(
-              "px-4 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center gap-2 cursor-pointer",
+              "px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer",
               activeTab2 === "messages"
-                ? "bg-background text-primary shadow-xs scale-102 font-bold"
-                : "text-muted-foreground hover:text-foreground hover:bg-background/20"
+                ? "bg-background text-primary shadow-xs font-extrabold"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Mail className="w-4 h-4" />
@@ -430,10 +454,10 @@ export function MarketingView() {
           <button
             onClick={() => setActiveTab2("campaigns")}
             className={cn(
-              "px-4 py-2 text-xs font-extrabold rounded-xl transition-all flex items-center gap-2 cursor-pointer",
+              "px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer",
               activeTab2 === "campaigns"
-                ? "bg-background text-primary shadow-xs scale-102 font-bold"
-                : "text-muted-foreground hover:text-foreground hover:bg-background/20"
+                ? "bg-background text-primary shadow-xs font-extrabold"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Sliders className="w-4 h-4" />
@@ -441,8 +465,14 @@ export function MarketingView() {
           </button>
         </div>
       </div>
+    </motion.div>
+  );
 
-      <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar pr-2">
+  return (
+    <div className="flex-1 flex flex-col space-y-6">
+      {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
+
+      <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar pr-2 pt-6">
         <AnimatePresence mode="wait">
           {activeTab2 === "messages" ? (
             <motion.div

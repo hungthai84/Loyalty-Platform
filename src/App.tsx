@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { Topbar } from "@/components/layout/Topbar";
 import { DashboardView } from "@/views/DashboardView";
 import { CustomersView } from "@/views/CustomersView";
 import { LoyaltyView } from "@/views/LoyaltyView";
@@ -36,26 +35,30 @@ function AppContent() {
       />
       
       <div className="flex-1 flex flex-col w-full min-w-0 transition-all duration-300">
-        <Topbar setActiveView={setActiveView} />
-        
         <main className="flex-1 overflow-auto bg-background/60">
-          {safeActiveView === "dashboard" && <DashboardView />}
-          {safeActiveView === "customers" && <CustomersView />}
-          {safeActiveView === "loyalty" && <LoyaltyView />}
-          {safeActiveView === "marketing" && <MarketingView />}
-          {safeActiveView === "analytics" && <AnalyticsView />}
-          {safeActiveView === "analysis" && <AnalysisView />}
-          {safeActiveView === "settings" && <SettingsView />}
-          {safeActiveView === "portal" && <CustomerPortalView />}
+          <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6">
+            <div id="dashboard-upper-portal" />
+          </div>
           
-          {["support", "billing"].includes(safeActiveView) && (
-            <div className="flex-1 flex items-center justify-center p-8 h-[80vh]">
-              <div className="text-center space-y-4">
-                <h3 className="text-2xl font-bold text-muted-foreground font-heading capitalize">Phân hệ {safeActiveView}</h3>
-                <p className="text-muted-foreground/60 max-w-sm mx-auto">Phân hệ doanh nghiệp này đang được phát triển.</p>
+          <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6 py-6">
+            {safeActiveView === "dashboard" && <DashboardView />}
+            {safeActiveView === "customers" && <CustomersView />}
+            {safeActiveView === "loyalty" && <LoyaltyView />}
+            {safeActiveView === "marketing" && <MarketingView />}
+            {safeActiveView === "analytics" && <AnalyticsView />}
+            {safeActiveView === "analysis" && <AnalysisView />}
+            {safeActiveView === "settings" && <SettingsView />}
+            {safeActiveView === "portal" && <CustomerPortalView />}
+            
+            {["support", "billing"].includes(safeActiveView) && (
+              <div className="flex-1 flex items-center justify-center p-8 h-[80vh]">
+                <div className="text-center space-y-4">
+                  <h3 className="text-2xl font-bold text-muted-foreground font-heading capitalize">Phân hệ {safeActiveView}</h3>
+                  <p className="text-muted-foreground/60 max-w-sm mx-auto">Phân hệ doanh nghiệp này đang được phát triển.</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </main>
       </div>
     </div>

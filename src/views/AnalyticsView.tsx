@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { 
  Card, 
  CardContent, 
@@ -468,202 +469,216 @@ const heatmapData = [
    minimalist: 98,
    glamorous: 64,
    "avant-garde": 33,
-   romantic: 78
-  };
-  return (baseOffsets[selectedSegment] || 25) + liveMatch.length;
- }, [dbCustomers, selectedSegment]);
+    romantic: 78
+   };
+   return (baseOffsets[selectedSegment] || 25) + liveMatch.length;
+  }, [dbCustomers, selectedSegment]);
 
- const predictedSpendData = [
-  { month: "Tháng 7", spend: 42000000, confidence: 95 },
-  { month: "Tháng 8", spend: 48000000, confidence: 92 },
-  { month: "Tháng 9", spend: 55000000, confidence: 88 },
-  { month: "Tháng 10", spend: 62000000, confidence: 85 },
-  { month: "Tháng 11", spend: 74000000, confidence: 80 },
-  { month: "Tháng 12", spend: 85000000, confidence: 75 },
- ];
+  const predictedSpendData = [
+   { month: "Tháng 7", spend: 42000000, confidence: 95 },
+   { month: "Tháng 8", spend: 48000000, confidence: 92 },
+   { month: "Tháng 9", spend: 55000000, confidence: 88 },
+   { month: "Tháng 10", spend: 62000000, confidence: 85 },
+   { month: "Tháng 11", spend: 74000000, confidence: 80 },
+   { month: "Tháng 12", spend: 85000000, confidence: 75 },
+  ];
 
- return (
- <div className="flex-1 p-8 pt-6 space-y-8 overflow-y-auto max-h-[calc(100vh-64px)]">
- <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full text-left">
- <div className="flex items-center gap-4 text-left">
- <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-500 flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
- <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
- <motion.div
- animate={{ 
- scale: [1, 1.15, 0.95, 1.05, 1],
- y: [0, -3, 3, -1, 0]
- }}
- transition={{ 
- repeat: Infinity,
- duration: 5,
- ease: "easeInOut"
- }}
- >
- <TrendingUp className="w-8 h-8 text-emerald-500" />
- </motion.div>
- </div>
- <div>
- <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">Báo cáo & Thống kê</h2>
- <p className="text-muted-foreground text-sm mt-1">
- Theo dõi hiệu quả chương trình ưu đãi của bạn.
- </p>
- </div>
- </div>
- <div className="flex items-center gap-2">
- <button 
-   onClick={() => {
-     const reportTitle = "BÁO CÁO TOÀN DIỆN CHƯƠNG TRÌNH LOYALTY - SEVA CRM";
-     const timestamp = new Date().toLocaleString("vi-VN");
-     const content = `==================================================\n        ${reportTitle}\n        Xuất ngày: ${timestamp}\n==================================================\n\n1. CHỒ BIỂU ĐẠI SỐ ĐỒNG BỘ DOANH NGHIỆP:\n----------------------------------\n- Tổng số khách hàng thành viên: 1.284 (+12.5% so với tháng trước)\n- Doanh thu CLV trung bình: 142.500.000 ₫ (+8.2%)\n- Khách hàng đã thăng hạng: 326 (+15.4%)\n- Tỷ lệ quay lại mua sắm (Repeat Rate): 68.2% (+3.1%)\n\n2. PHÂN BỔ HẠNG THÀNH VIÊN (LOYALTY TIERS):\n----------------------------------\n- Hạng Atelier (Hoàng Gia): 124 thành viên\n- Hạng Icon (Vàng VIP): 386 thành viên\n- Hạng Essential (Cơ Bản): 524 thành viên\n- Hạng Member (Khởi Tạo): 250 thành viên\n\n3. CHIẾN DỊCH KHUYẾN GỬI (COMMUNICATION AUTO-PILOT):\n----------------------------------\n- Chúc mừng Sinh nhật Đặc Quyền: Đã gửi 542 | Tỷ lệ mở: 88.5% | Tỷ lệ Click: 24.2%\n- Win-back Phục hồi Khách hàng: Đã gửi 186 | Tỷ lệ mở: 74.0% | Tỷ lệ Click: 12.8%\n\n4. PHÂN TÍCH SỞ TRƯỜNG & PHONG CÁCH (PREDICTIVE STYLE):\n----------------------------------\n- Cổ điển Sang trọng (Classic): 42%\n- Tối giản Tinh khôi (Minimalist): 28%\n- Quý phái Kiêu sa (Glamorous): 18%\n- Tiên phong Phá cách (Avant-Garde): 12%\n\nBáo cáo được khởi tạo tự động từ hệ thống quản trị SEVAGO VIP Loyalty. \nTrân trọng cảm ơn quý doanh nghiệp!\n`;
-     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-     const url = URL.createObjectURL(blob);
-     const link = document.createElement("a");
-     link.href = url;
-     link.download = `SEVA_Loyalty_Executive_Report_${new Date().toISOString().split('T')[0]}.txt`;
-     document.body.appendChild(link);
-     link.click();
-     document.body.removeChild(link);
-     URL.revokeObjectURL(url);
-     import("sonner").then(module => module.toast.success("Báo cáo Executive Report (.txt) đã được tải xuống!"));
-   }}
-   className="px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-muted transition-all bg-card cursor-pointer">
- Xuất báo cáo (Report)
- </button>
- <button 
-   onClick={() => {
-     const headers = ["Mã KH", "Họ và Tên", "Hạng Thành Viên", "Điểm Thành Viên", "Doanh Thu CLV (VND)", "Vị Trí", "Tần Suất"];
-     const rows = [
-       ["cust_1", "Thái Hồng Hưng", "Atelier", "125000", "12500000000", "TP.HCM", "98%"],
-       ["cust_2", "Nguyễn Minh Anh", "Icon", "4800", "480000000", "Hà Nội", "64%"],
-       ["cust_3", "Trần Khánh Nhung", "Essential", "1250", "125000000", "Nha Trang", "45%"],
-       ["cust_4", "Lê Gia Bảo", "Member", "420", "42000000", "Đà Nẵng", "22%"],
-       ["cust_5", "Vũ Hoàng Diệp", "Atelier", "18200", "1820000000", "TP.HCM", "89%"]
-     ];
-     
-     const csvRows = [headers.join(",")];
-     rows.forEach(r => csvRows.push(r.join(",")));
-     const csvString = "\uFEFF" + csvRows.join("\n");
-     const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-     const url = URL.createObjectURL(blob);
-     const link = document.createElement("a");
-     link.href = url;
-     link.download = `SEVA_Customers_Metrics_${new Date().toISOString().split('T')[0]}.csv`;
-     document.body.appendChild(link);
-     link.click();
-     document.body.removeChild(link);
-     URL.revokeObjectURL(url);
-     import("sonner").then(module => module.toast.success("Hệ thống đã kết xuất dữ liệu CSV thành công!"));
-   }}
-   className="px-4 py-2 border border-blue-500/30 text-blue-500 rounded-xl text-sm font-medium hover:bg-blue-500/10 transition-all bg-blue-500/5 cursor-pointer">
- Xuất dữ liệu (CSV)
- </button>
- <div className="relative">
-  <button 
-    onClick={() => setIsOpen(!isOpen)}
-    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all cursor-pointer font-bold shadow-lg shadow-primary/20 focus:ring-2 focus:ring-primary/20 outline-none"
-  >
-    <Calendar className="w-4 h-4 text-primary-foreground" />
-    <span>{formatRangeText()}</span>
-    <ChevronDown
-      className={`w-3.5 h-3.5 text-primary-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-    />
-  </button>
+  const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
 
-  {isOpen && (
-    <>
-      {/* Backdrop handle for closing */}
-      <div
-        className="fixed inset-0 z-10"
-        onClick={() => setIsOpen(false)}
-      />
-      <div className="absolute right-0 mt-2 w-72 bg-card border border-border/80 shadow-2xl rounded-2xl p-4.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150">
-        <div className="space-y-4">
-          <div className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5" />
-            <span>Chọn khoảng lọc thời gian</span>
+  const bannerContent = (
+    <motion.div
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      className="bg-card/45 border border-[#2f6cf5]/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#2f6cf5]/50"
+    >
+      <div className="flex items-center gap-4 text-left">
+        <div className="p-3 bg-[#2f6cf5]/10 rounded-[10px] text-[#2f6cf5] flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+          <motion.div
+            animate={{
+              scale: [1, 1.15, 0.95, 1.05, 1],
+              rotate: [0, 8, -8, 4, 0],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 5.5,
+              ease: "easeInOut",
+            }}
+          >
+            <TrendingUp className="w-8 h-8 text-[#2f6cf5]" />
+          </motion.div>
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
+              Báo cáo & Thống kê
+            </h2>
           </div>
-
-          {/* Presets */}
-          <div className="grid grid-cols-2 gap-1.5">
-            {presets.map((p) => {
-              const range = p.getRange();
-              const isActive = activePreset === p.id;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() =>
-                    handlePresetSelect(p.id, range.start, range.end)
-                  }
-                  className={`px-3 py-2 text-xs font-bold rounded-xl text-left transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-muted/40 hover:bg-muted text-foreground"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Custom boundaries */}
-          <div className="pt-3.5 border-t border-border/80 space-y-2.5">
-            <span className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest block font-heading">
-              Khoảng ngày tùy chỉnh
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase block text-left">
-                  Từ ngày
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) =>
-                    handleCustomDateChange("start", e.target.value)
-                  }
-                  className="w-full bg-background border border-border/80 rounded-xl p-2 text-xs outline-none focus:border-primary/50 text-foreground"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase block text-left">
-                  Đến ngày
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) =>
-                    handleCustomDateChange("end", e.target.value)
-                  }
-                  className="w-full bg-background border border-border/80 rounded-xl p-2 text-xs outline-none focus:border-primary/50 text-foreground"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-1.5 pt-1">
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-primary/95 shadow-sm"
-            >
-              Áp dụng
-            </button>
-          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Theo dõi hiệu quả chương trình ưu đãi của bạn.
+          </p>
         </div>
       </div>
-    </>
-  )}
- </div>
- </div>
- </div>
 
-  <div className="mb-8">
-     <ChurnRiskList customers={dbCustomers} />
-  </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <button 
+          onClick={() => {
+            const reportTitle = "BÁO CÁO TOÀN DIỆN CHƯƠNG TRÌNH LOYALTY - SEVA CRM";
+            const timestamp = new Date().toLocaleString("vi-VN");
+            const content = `==================================================\n        ${reportTitle}\n        Xuất ngày: ${timestamp}\n==================================================\n\n1. CHỒ BIỂU ĐẠI SỐ ĐỒNG BỘ DOANH NGHIỆP:\n----------------------------------\n- Tổng số khách hàng thành viên: 1.284 (+12.5% so với tháng trước)\n- Doanh thu CLV trung bình: 142.500.000 ₫ (+8.2%)\n- Khách hàng đã thăng hạng: 326 (+15.4%)\n- Tỷ lệ quay lại mua sắm (Repeat Rate): 68.2% (+3.1%)\n\n2. PHÂN BỔ HẠNG THÀNH VIÊN (LOYALTY TIERS):\n----------------------------------\n- Hạng Atelier (Hoàng Gia): 124 thành viên\n- Hạng Icon (Vàng VIP): 386 thành viên\n- Hạng Essential (Cơ Bản): 524 thành viên\n- Hạng Member (Khởi Tạo): 250 thành viên\n\n3. CHIẾN DỊCH KHUYẾN GỬI (COMMUNICATION AUTO-PILOT):\n----------------------------------\n- Chúc mừng Sinh nhật Đặc Quyền: Đã gửi 542 | Tỷ lệ mở: 88.5% | Tỷ lệ Click: 24.2%\n- Win-back Phục hồi Khách hàng: Đã gửi 186 | Tỷ lệ mở: 74.0% | Tỷ lệ Click: 12.8%\n\n4. PHÂN TÍCH SỞ TRƯỜNG & PHONG CÁCH (PREDICTIVE STYLE):\n----------------------------------\n- Cổ điển Sang trọng (Classic): 42%\n- Tối giản Tinh khôi (Minimalist): 28%\n- Quý phái Kiêu sa (Glamorous): 18%\n- Tiên phong Phá cách (Avant-Garde): 12%\n\nBáo cáo được khởi tạo tự động từ hệ thống quản trị SEVAGO VIP Loyalty. \nTrân trọng cảm ơn quý doanh nghiệp!\n`;
+            const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `SEVA_Loyalty_Executive_Report_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            import("sonner").then(module => module.toast.success("Báo cáo Executive Report (.txt) đã được tải xuống!"));
+          }}
+          className="px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-muted transition-all bg-card cursor-pointer"
+        >
+          Xuất báo cáo (Report)
+        </button>
+        <button 
+          onClick={() => {
+            const headers = ["Mã KH", "Họ và Tên", "Hạng Thành Viên", "Điểm Thành Viên", "Doanh Thu CLV (VND)", "Vị Trí", "Tần Suất"];
+            const rows = [
+              ["cust_1", "Thái Hồng Hưng", "Atelier", "125000", "12500000000", "TP.HCM", "98%"],
+              ["cust_2", "Nguyễn Minh Anh", "Icon", "4800", "480000000", "Hà Nội", "64%"],
+              ["cust_3", "Trần Khánh Nhung", "Essential", "1250", "125000000", "Nha Trang", "45%"],
+              ["cust_4", "Lê Gia Bảo", "Member", "420", "42000000", "Đà Nẵng", "22%"],
+              ["cust_5", "Vũ Hoàng Diệp", "Atelier", "18200", "1820000000", "TP.HCM", "89%"]
+            ];
+            
+            const csvRows = [headers.join(",")];
+            rows.forEach(r => csvRows.push(r.join(",")));
+            const csvString = "\uFEFF" + csvRows.join("\n");
+            const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `SEVA_Customers_Metrics_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            import("sonner").then(module => module.toast.success("Hệ thống đã kết xuất dữ liệu CSV thành công!"));
+          }}
+          className="px-4 py-2 border border-blue-500/30 text-blue-500 rounded-xl text-sm font-medium hover:bg-blue-500/10 transition-all bg-blue-500/5 cursor-pointer"
+        >
+          Xuất dữ liệu (CSV)
+        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all cursor-pointer font-bold shadow-lg shadow-primary/20 focus:ring-2 focus:ring-primary/20 outline-none"
+          >
+            <Calendar className="w-4 h-4 text-primary-foreground" />
+            <span>{formatRangeText()}</span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-primary-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            />
+          </button>
 
-  {/* KPI Stats */}
+          {isOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setIsOpen(false)}
+              />
+              <div className="absolute right-0 mt-2 w-72 bg-card border border-border/80 shadow-2xl rounded-2xl p-4.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150">
+                <div className="space-y-4">
+                  <div className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest flex items-center gap-1.5">
+                    <Filter className="w-3.5 h-3.5" />
+                    <span>Chọn khoảng lọc thời gian</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {presets.map((p) => {
+                      const range = p.getRange();
+                      const isActive = activePreset === p.id;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() =>
+                            handlePresetSelect(p.id, range.start, range.end)
+                          }
+                          className={`px-3 py-2 text-xs font-bold rounded-xl text-left transition-all cursor-pointer ${
+                            isActive
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "bg-muted/40 hover:bg-muted text-foreground"
+                          }`}
+                        >
+                          {p.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="pt-3.5 border-t border-border/80 space-y-2.5">
+                    <span className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest block font-heading">
+                      Khoảng ngày tùy chỉnh
+                    </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground uppercase block text-left">
+                          Từ ngày
+                        </label>
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) =>
+                            handleCustomDateChange("start", e.target.value)
+                          }
+                          className="w-full bg-background border border-border/80 rounded-xl p-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground uppercase block text-left">
+                          Đến ngày
+                        </label>
+                        <input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) =>
+                            handleCustomDateChange("end", e.target.value)
+                          }
+                          className="w-full bg-background border border-border/80 rounded-xl p-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-1.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsOpen(false)}
+                      className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-primary/95 shadow-sm"
+                    >
+                      Áp dụng
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  return (
+    <div className="flex-1 space-y-8">
+      {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
+
+      <div className="pt-6 space-y-8">
+        <div className="mb-8">
+          <ChurnRiskList customers={dbCustomers} />
+        </div>
+
+        {/* KPI Stats */}
  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
  {statCards.map((stat, i) => (
  <motion.div
@@ -1468,4 +1483,10 @@ const heatmapData = [
  </div>
  ))}
  </div>
- </CardContent></Card></div><ActivityHeatmap /></div>);}
+  </CardContent>
+ </Card>
+  </div>
+ </div>
+ </div>
+ );
+}

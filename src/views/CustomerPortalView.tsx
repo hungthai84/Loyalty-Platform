@@ -242,7 +242,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
           : "Member";
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 min-h-screen space-y-6">
+    <div className="flex-1 flex flex-col items-center justify-center space-y-6">
       {/* Dynamic Theme Settings Control Panel for Showroom Manager */}
       <div className="w-full max-w-[800px] grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-card border border-border/70 rounded-2xl p-5 shadow-lg space-y-4">

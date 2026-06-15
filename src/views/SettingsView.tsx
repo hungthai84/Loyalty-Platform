@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Badge } from "@/components/ui/badge";
 import {
   Building2,
@@ -126,43 +127,55 @@ export function SettingsView() {
     { id: "monitor", label: "Giám sát Hệ thống", icon: Activity },
   ];
 
-  return (
-    <div className="flex-1 space-y-6 p-8 pt-6">
-      <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs hover:shadow-sm hover:border-primary/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full">
-        <div className="flex items-center gap-4 text-left">
-          <div className="p-3 bg-[#2f6cf5]/10 rounded-2xl text-[#2f6cf5] flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
-            <motion.div
-              animate={{
-                rotate: 360,
-              }}
-              transition={{
-                repeat: Infinity,
-                duration: 8,
-                ease: "linear",
-              }}
-            >
-              <SettingsIcon className="w-8 h-8 text-[#2f6cf5]" />
-            </motion.div>
-          </div>
-          <div>
+  const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
+
+  const bannerContent = (
+    <motion.div
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      className="bg-card/45 border border-[#2f6cf5]/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#2f6cf5]/50"
+    >
+      <div className="flex items-center gap-4 text-left">
+        <div className="p-3 bg-[#2f6cf5]/10 rounded-[10px] text-[#2f6cf5] flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+          <motion.div
+            animate={{
+              rotate: 360,
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 8,
+              ease: "linear",
+            }}
+          >
+            <SettingsIcon className="w-8 h-8 text-[#2f6cf5]" />
+          </motion.div>
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
               Cấu hình Hệ thống
             </h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              Quản lý các thiết lập nền tảng cho hệ thống ưu đãi và CRM.
-            </p>
           </div>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-muted/40 rounded-xl border border-border shrink-0 self-start lg:self-auto">
-          <Shield className="w-4 h-4 text-[#2f6cf5]" />
-          <span className="text-xs font-bold uppercase tracking-widest text-foreground">
-            Enterprise Access
-          </span>
+          <p className="text-sm text-muted-foreground mt-1">
+            Quản lý các thiết lập nền tảng cho hệ thống ưu đãi và CRM.
+          </p>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex items-center gap-2 px-4 py-2 bg-muted/40 rounded-xl border border-border shrink-0 self-start lg:self-auto">
+        <Shield className="w-4 h-4 text-[#2f6cf5]" />
+        <span className="text-xs font-bold uppercase tracking-widest text-foreground">
+          Enterprise Access
+        </span>
+      </div>
+    </motion.div>
+  );
+
+  return (
+    <div className="flex-1 space-y-6">
+      {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
+
+      <div className="pt-6 flex flex-col lg:flex-row gap-6">
         {/* Left Side: Vertical Tabs */}
         <div className="w-full lg:w-72 bg-card/45 backdrop-blur-md border border-border/60 rounded-2xl flex flex-col p-4 shrink-0 gap-1 h-fit">
           <span className="text-xs font-extrabold text-muted-foreground/60 uppercase tracking-widest px-3 mb-2 block">
