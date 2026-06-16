@@ -24,7 +24,6 @@ import {
  Cell,
  Legend
 } from "recharts";
-import { ActivityHeatmap } from "@/components/dashboard/ActivityHeatmap";
 import { ChurnRiskList } from "@/components/analytics/ChurnRiskList";
 import { 
   TrendingUp, 
@@ -34,12 +33,8 @@ import {
  ArrowUpRight,
  ArrowDownRight,
  Sparkles,
- Compass,
- HelpCircle,
  Gem,
- Award,
  Zap,
- Trophy,
  CheckCircle2,
  Calendar,
  ChevronDown
@@ -56,7 +51,7 @@ import { formatCurrency, getCurrency } from "@/lib/currency";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Clock, Send } from "lucide-react";
+import { Clock, Send } from "lucide-react";
 
 const SUGGESTIONS_MAP: Record<string, {
   vibe: string;
@@ -508,71 +503,34 @@ const heatmapData = [
           </motion.div>
         </div>
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
-              Báo cáo & Thống kê
-            </h2>
-          </div>
+          <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground font-sans">
+            Báo cáo & Thống kê
+          </h2>
           <p className="text-sm text-muted-foreground mt-1">
             Theo dõi hiệu quả chương trình ưu đãi của bạn.
           </p>
         </div>
       </div>
+    </motion.div>
+  );
+
+  const actionControls = (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-card/65 border border-border/80 rounded-3xl backdrop-blur-md">
+      <div className="text-left">
+        <h3 className="text-base font-bold font-heading text-foreground">
+          Bộ lọc báo cáo & Thao tác
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1">
+          Lọc dữ liệu theo mốc thời gian và xuất các tệp thống kê nội bộ.
+        </p>
+      </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <button 
-          onClick={() => {
-            const reportTitle = "BÁO CÁO TOÀN DIỆN CHƯƠNG TRÌNH LOYALTY - SEVA CRM";
-            const timestamp = new Date().toLocaleString("vi-VN");
-            const content = `==================================================\n        ${reportTitle}\n        Xuất ngày: ${timestamp}\n==================================================\n\n1. CHỒ BIỂU ĐẠI SỐ ĐỒNG BỘ DOANH NGHIỆP:\n----------------------------------\n- Tổng số khách hàng thành viên: 1.284 (+12.5% so với tháng trước)\n- Doanh thu CLV trung bình: 142.500.000 ₫ (+8.2%)\n- Khách hàng đã thăng hạng: 326 (+15.4%)\n- Tỷ lệ quay lại mua sắm (Repeat Rate): 68.2% (+3.1%)\n\n2. PHÂN BỔ HẠNG THÀNH VIÊN (LOYALTY TIERS):\n----------------------------------\n- Hạng Atelier (Hoàng Gia): 124 thành viên\n- Hạng Icon (Vàng VIP): 386 thành viên\n- Hạng Essential (Cơ Bản): 524 thành viên\n- Hạng Member (Khởi Tạo): 250 thành viên\n\n3. CHIẾN DỊCH KHUYẾN GỬI (COMMUNICATION AUTO-PILOT):\n----------------------------------\n- Chúc mừng Sinh nhật Đặc Quyền: Đã gửi 542 | Tỷ lệ mở: 88.5% | Tỷ lệ Click: 24.2%\n- Win-back Phục hồi Khách hàng: Đã gửi 186 | Tỷ lệ mở: 74.0% | Tỷ lệ Click: 12.8%\n\n4. PHÂN TÍCH SỞ TRƯỜNG & PHONG CÁCH (PREDICTIVE STYLE):\n----------------------------------\n- Cổ điển Sang trọng (Classic): 42%\n- Tối giản Tinh khôi (Minimalist): 28%\n- Quý phái Kiêu sa (Glamorous): 18%\n- Tiên phong Phá cách (Avant-Garde): 12%\n\nBáo cáo được khởi tạo tự động từ hệ thống quản trị SEVAGO VIP Loyalty. \nTrân trọng cảm ơn quý doanh nghiệp!\n`;
-            const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `SEVA_Loyalty_Executive_Report_${new Date().toISOString().split('T')[0]}.txt`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            import("sonner").then(module => module.toast.success("Báo cáo Executive Report (.txt) đã được tải xuống!"));
-          }}
-          className="px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-muted transition-all bg-card cursor-pointer"
-        >
-          Xuất báo cáo (Report)
-        </button>
-        <button 
-          onClick={() => {
-            const headers = ["Mã KH", "Họ và Tên", "Hạng Thành Viên", "Điểm Thành Viên", "Doanh Thu CLV (VND)", "Vị Trí", "Tần Suất"];
-            const rows = [
-              ["cust_1", "Thái Hồng Hưng", "Atelier", "125000", "12500000000", "TP.HCM", "98%"],
-              ["cust_2", "Nguyễn Minh Anh", "Icon", "4800", "480000000", "Hà Nội", "64%"],
-              ["cust_3", "Trần Khánh Nhung", "Essential", "1250", "125000000", "Nha Trang", "45%"],
-              ["cust_4", "Lê Gia Bảo", "Member", "420", "42000000", "Đà Nẵng", "22%"],
-              ["cust_5", "Vũ Hoàng Diệp", "Atelier", "18200", "1820000000", "TP.HCM", "89%"]
-            ];
-            
-            const csvRows = [headers.join(",")];
-            rows.forEach(r => csvRows.push(r.join(",")));
-            const csvString = "\uFEFF" + csvRows.join("\n");
-            const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `SEVA_Customers_Metrics_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            import("sonner").then(module => module.toast.success("Hệ thống đã kết xuất dữ liệu CSV thành công!"));
-          }}
-          className="px-4 py-2 border border-blue-500/30 text-blue-500 rounded-xl text-sm font-medium hover:bg-blue-500/10 transition-all bg-blue-500/5 cursor-pointer"
-        >
-          Xuất dữ liệu (CSV)
-        </button>
+
         <div className="relative">
           <button 
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all cursor-pointer font-bold shadow-lg shadow-primary/20 focus:ring-2 focus:ring-primary/20 outline-none"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-bold hover:bg-primary/95 transition-all cursor-pointer shadow-lg shadow-primary/20 focus:ring-2 focus:ring-primary/20 outline-none"
           >
             <Calendar className="w-4 h-4 text-primary-foreground" />
             <span>{formatRangeText()}</span>
@@ -587,7 +545,7 @@ const heatmapData = [
                 className="fixed inset-0 z-10"
                 onClick={() => setIsOpen(false)}
               />
-              <div className="absolute right-0 mt-2 w-72 bg-card border border-border/80 shadow-2xl rounded-2xl p-4.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150">
+              <div className="absolute right-0 mt-2 w-72 bg-card border border-border/80 shadow-2xl rounded-2xl p-4.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150 font-sans">
                 <div className="space-y-4">
                   <div className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest flex items-center gap-1.5">
                     <Filter className="w-3.5 h-3.5" />
@@ -666,12 +624,14 @@ const heatmapData = [
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 
   return (
-    <div className="flex-1 space-y-8">
+    <div className="flex-1 space-y-8 font-sans">
       {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
+
+      {actionControls}
 
       <div className="pt-6 space-y-8">
         <div className="mb-8">
@@ -887,7 +847,7 @@ const heatmapData = [
   <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
   <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
    <div>
-    <CardTitle className="font-heading">Tăng trưởng hội viên mới ({daysDiff} ngày)</CardTitle>
+    <CardTitle className="font-heading">Tăng trưởng thành viên mới ({daysDiff} ngày)</CardTitle>
     <CardDescription>
      Theo dõi số lượng đăng ký tham gia chương trình Loyalty hàng ngày.
     </CardDescription>
@@ -922,13 +882,13 @@ const heatmapData = [
       }}
       itemStyle={{ fontSize: "13px" }}
       labelStyle={{ fontSize: "11px", fontWeight: "bold", color: "#64748b", marginBottom: "4px" }}
-      formatter={(value: number) => [`${value} hội viên`, "Đăng ký mới"]}
+      formatter={(value: number) => [`${value} thành viên`, "Đăng ký mới"]}
      />
      <Legend iconType="circle" wrapperStyle={{ paddingTop: "20px", fontSize: "12px", fontWeight: "bold" }} />
      <Line 
       type="monotone" 
       dataKey="signups" 
-      name="Hội viên mới"
+      name="Thành viên mới"
       stroke="#10b981" 
       strokeWidth={3} 
       dot={{ r: 0 }}
@@ -1124,7 +1084,7 @@ const heatmapData = [
           <div className="p-4 rounded-xl border border-dashed border-border bg-muted/10 space-y-2">
              <p className="text-[10px] font-bold text-muted-foreground uppercase">Nội dung bao gồm:</p>
              <ul className="text-[11px] space-y-1.5 list-disc pl-4 text-foreground/80">
-                <li>Biểu đồ tăng trưởng hội viên mới</li>
+                <li>Biểu đồ tăng trưởng thành viên mới</li>
                 <li>Thống kê Top 5 quà tặng được quy đổi</li>
                 <li>Dự báo doanh thu tháng tiếp theo</li>
                 <li>Danh sách khách hàng "At-Risk" cần chăm sóc</li>
@@ -1234,7 +1194,7 @@ const heatmapData = [
  <CardHeader className="border-b border-border/40 pb-5">
  <CardTitle className="font-heading text-lg">Phân bổ Hạng thành viên</CardTitle>
  <CardDescription>
- Tỷ lệ khách hàng theo từng cấp độ hội viên.
+ Tỷ lệ khách hàng theo từng cấp độ thành viên.
  </CardDescription>
  </CardHeader>
  <CardContent className="h-[350px] flex flex-col items-center justify-center pt-6">
@@ -1271,7 +1231,7 @@ const heatmapData = [
  </ResponsiveContainer>
  <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-[45%] text-center pointer-events-none mt-4">
  <p className="text-3xl font-black font-heading tracking-tight drop-shadow-sm">915</p>
- <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">HV Hoạt động</p>
+ <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">TV Hoạt động</p>
  </div>
  </CardContent>
  </Card>
@@ -1285,9 +1245,9 @@ const heatmapData = [
  >
  <Card className="border border-border/50 bg-sidebar backdrop-blur-sm shadow-sm relative overflow-hidden">
  <CardHeader className="border-b border-border/40 pb-5">
- <CardTitle className="font-heading text-lg">Quy mô tệp khách hàng theo Hạng hội viên</CardTitle>
+ <CardTitle className="font-heading text-lg">Quy mô tệp khách hàng theo Hạng thành viên</CardTitle>
  <CardDescription>
- Số lượng hội viên thuộc các phân tầng Atelier, Icon, Essential và Member đang hoạt động trong hệ thống.
+ Số lượng thành viên thuộc các phân tầng Atelier, Icon, Essential và Member đang hoạt động trong hệ thống.
  </CardDescription>
  </CardHeader>
  <CardContent className="h-[320px] pt-6">

@@ -1,8 +1,95 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // 0. Default Deny
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
+    }
+
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Helper for system_users update check
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isSystemAdmin() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/system_users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/system_users/$(request.auth.uid)).data.role == 'Admin';
+    }
+
+    // Rules for system_users
+    match /system_users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isSystemAdmin());
+      allow list: if isSignedIn() && isSystemAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId && incoming().status == 'pending' && incoming().email == request.auth.token.email;
+      allow update: if isSignedIn() && (
+        isSystemAdmin() || 
+        (request.auth.uid == userId && incoming().status == 'pending' && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'updatedAt']))
+      );
+      allow delete: if isSignedIn() && isSystemAdmin();
+    }
+
+    // Rules for root collections
+    match /customers/{customerId} {
+      allow read, write: if isSignedIn() && isValidId(customerId);
+    }
+
+    match /attribute_definitions/{attributeId} {
+      allow read, write: if isSignedIn() && isValidId(attributeId);
+    }
+
+    match /tier_configs/{tierId} {
+      allow read, write: if isSignedIn() && isValidId(tierId);
+    }
+
+    match /redemption_rules/{ruleId} {
+      allow read, write: if isSignedIn() && isValidId(ruleId);
+    }
+
+    match /earn_rules/{ruleId} {
+      allow read, write: if isSignedIn() && isValidId(ruleId);
+    }
+
+    match /loyalty_campaigns/{campaignId} {
+      allow read, write: if isSignedIn() && isValidId(campaignId);
+    }
+
+    match /loyalty_settings/{settingsId} {
+      allow read, write: if isSignedIn() && isValidId(settingsId);
+    }
+
+    match /companies/{companyId} {
+      allow read, write: if isSignedIn() && isValidId(companyId);
+    }
+
+    match /segmentation_rules/{ruleId} {
+      allow read, write: if isSignedIn() && isValidId(ruleId);
+    }
+
+    match /system_metadata/{metadataId} {
+      allow read, write: if isSignedIn() && isValidId(metadataId);
+    }
+
+    // Added match rule for redemptions to resolve permission errors
+    match /redemptions/{redemptionId} {
+      allow read, write: if isSignedIn() && isValidId(redemptionId);
     }
   }
 }

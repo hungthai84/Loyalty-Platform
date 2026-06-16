@@ -1,13 +1,12 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { db } from "@/lib/firebase";
-import { doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { Customer, Company, AttributeDefinition, TierConfig } from "@/types";
 import { StatusService, CustomerActivityMetrics } from "@/services/StatusService";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import {
-  ArrowLeft,
   Phone,
   Mail,
   Facebook,
@@ -24,7 +23,6 @@ import {
   Upload,
   TrendingUp,
   Zap,
-  Trash2,
   AlertTriangle,
   Gem,
   Compass,
@@ -34,6 +32,8 @@ import {
   Download,
   Smile,
   MessageSquare,
+  Package,
+  Globe,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,7 @@ import {
   CardDescription 
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, getCustomerCode } from "@/lib/utils";
 import {
   AreaChart,
   Area,
@@ -987,7 +987,33 @@ export function CustomerDashboard({
         toast.dismiss(toastId);
       }
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === "not-found" || error.message?.includes("not-found") || error.message?.includes("No document to update")) {
+        try {
+          const fullCustomer = {
+            ...customer,
+            ...updatedData,
+            customFields: {
+              ...(customer.customFields || {}),
+              ...(updatedData.customFields || {}),
+            },
+            userId: userId,
+            createdAt: customer.createdAt instanceof Date || typeof customer.createdAt === "string" ? customer.createdAt : serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          };
+          await setDoc(docRef, fullCustomer);
+          if (successMessage) {
+            toast.success(successMessage, { id: toastId });
+          } else {
+            toast.dismiss(toastId);
+          }
+          return true;
+        } catch (setErr: any) {
+          console.error("Error creating customer document: ", setErr);
+          toast.error("Không thể lưu cấu hình đến cloud", { id: toastId });
+          return false;
+        }
+      }
       console.error("Error updating customer config: ", error);
       toast.error("Không thể lưu cấu hình đến cloud", { id: toastId });
       return false;
@@ -1067,20 +1093,20 @@ export function CustomerDashboard({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between border-b border-border/30 pb-3">
+        <div className="text-xs text-muted-foreground font-semibold">
+          Mã KH: {getCustomerCode(customer, companies)} (Tạo:{" "}
+          {customer.createdAt?.toDate?.()?.toLocaleDateString("vi-VN") ||
+            "Vừa xong"}
+          )
+        </div>
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-blue-500/20 bg-blue-500/5 text-blue-600 text-sm font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-blue-500/20 bg-blue-500/5 text-blue-600 text-sm font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" /> Xuất PDF
           </button>
-          <div className="text-xs text-muted-foreground ">
-            ID: {customer.id} (Tạo:{" "}
-            {customer.createdAt?.toDate?.()?.toLocaleDateString("vi-VN") ||
-              "Vừa xong"}
-            )
-          </div>
         </div>
       </div>
 
@@ -1117,7 +1143,7 @@ export function CustomerDashboard({
         </DialogContent>
       </Dialog>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* CỘT TRÁI - CRM PROFILE CARD */}
         <div className="space-y-6 lg:col-span-1">
           <motion.div
@@ -1130,7 +1156,7 @@ export function CustomerDashboard({
 
             <div className="flex flex-col items-center text-center space-y-4 pt-4">
               <div className="relative group">
-                <div className="w-24 h-24 rounded-3xl border-2 border-[#2f6cf5]/30 overflow-hidden bg-primary/10 text-primary shadow-lg transition-transform hover:scale-105 duration-300 flex items-center justify-center text-2xl font-bold uppercase shrink-0">
+                <div className="w-28 h-28 rounded-3xl border-2 border-[#2f6cf5]/30 overflow-hidden bg-primary/10 text-primary shadow-lg transition-transform hover:scale-105 duration-300 flex items-center justify-center text-3xl font-bold uppercase shrink-0">
                   {avatar ? (
                     <img
                       src={avatar}
@@ -1152,10 +1178,10 @@ export function CustomerDashboard({
               </div>
 
               <div>
-                <h3 className="text-xl font-extrabold text-foreground tracking-tight">
+                <h3 className="text-2xl font-extrabold text-foreground tracking-tight">
                   {customer.name}
                 </h3>
-                <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                <p className="text-sm text-muted-foreground font-semibold mt-1">
                   {company?.name || "Thành viên Cá nhân"}
                 </p>
               </div>
@@ -1360,18 +1386,302 @@ export function CustomerDashboard({
                   <span className="truncate">{email || "Chưa có email"}</span>
                 </div>
                 {company && (
-                  <div className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors border-t border-border/30 pt-3">
-                    <Landmark className="w-4 h-4 shrink-0 text-[#2f6cf5]" />
-                    <div className="min-w-0">
-                      <p className="font-bold text-foreground truncate">
-                        {company.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {company.address || "Không địa chỉ"}
-                      </p>
+                  <div className="flex items-start gap-4 text-muted-foreground hover:text-foreground transition-colors border-t border-border/30 pt-4">
+                    <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shrink-0 border border-border/40 overflow-hidden shadow-sm">
+                      {company.logoUrl ? (
+                        <img
+                          src={company.logoUrl}
+                          alt={company.name}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Package className="w-6 h-6 text-muted-foreground" />
+                      )}
+                    </div>
+                    
+                    <div className="min-w-0 space-y-2 flex-1">
+                      <div>
+                        <span className="text-[10px] font-extrabold text-[#2f6cf5] bg-[#2f6cf5]/10 px-2 py-0.5 rounded uppercase tracking-wider block w-max mb-1">
+                          Tên sản phẩm
+                        </span>
+                        <p className="font-extrabold text-foreground truncate text-sm">
+                          {company.name}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <span className="text-[10px] font-extrabold text-muted-foreground bg-muted px-2 py-0.5 rounded uppercase tracking-wider block w-max mb-1">
+                          Thông tin sản phẩm
+                        </span>
+                        <p className="text-xs text-muted-foreground leading-normal">
+                          {company.address || "Không có thông tin chi tiết"}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 pt-1">
+                        <Globe className="w-4 h-4 text-[#2f6cf5]" />
+                        <a 
+                          href="https://seva.premium/products" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-xs text-[#2f6cf5] hover:underline font-extrabold"
+                        >
+                          Website sản phẩm ➜
+                        </a>
+                      </div>
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+          </motion.div>
+
+          {/* SOCIAL NETWORK INTEGRATION GRAPH & LINKS (MỤC LIÊN KẾT TẤT CẢ NỀN TẢNG) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-4 text-left"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-xs font-bold text-foreground uppercase tracking-widest">
+                  KỸ THUẬT SỐ & MẠNG XÃ HỘI CONNECTED
+                </h4>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Xác thực tài khoản và liên kết dữ liệu đa điểm của khách hàng.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  if (isEditingSocial) {
+                    handleSaveSocialLinks();
+                  } else {
+                    setIsEditingSocial(true);
+                  }
+                }}
+                className={`px-3 py-1 rounded-xl text-xs font-bold border transition-all ${
+                  isEditingSocial
+                    ? "bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600"
+                    : "bg-background hover:bg-muted border-border"
+                }`}
+              >
+                {isEditingSocial ? "Lưu ✓" : "Sửa ✎"}
+              </button>
+            </div>
+
+            {isEditingSocial ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2 bg-muted/20 p-3 rounded-xl border text-left">
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase">
+                    FB / Messenger Link
+                  </span>
+                  <input
+                    className="w-full p-2 h-8 text-xs bg-background border rounded-lg focus:ring-1 outline-none"
+                    value={fb}
+                    onChange={(e) => setFb(e.target.value)}
+                    placeholder="Link Facebook"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase">
+                    Zalo Sđt / Profile URL
+                  </span>
+                  <input
+                    className="w-full p-2 h-8 text-xs bg-background border rounded-lg focus:ring-1 outline-none"
+                    value={zl}
+                    onChange={(e) => setZl(e.target.value)}
+                    placeholder="0901234567 hoặc link"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase">
+                    LinkedIn URL
+                  </span>
+                  <input
+                    className="w-full p-2 h-8 text-xs bg-background border rounded-lg focus:ring-1 outline-none"
+                    value={li}
+                    onChange={(e) => setLi(e.target.value)}
+                    placeholder="Link LinkedIn"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase">
+                    Instagram Handler
+                  </span>
+                  <input
+                    className="w-full p-2 h-8 text-xs bg-background border rounded-lg focus:ring-1 outline-none"
+                    value={ig}
+                    onChange={(e) => setIg(e.target.value)}
+                    placeholder="Link Instagram"
+                  />
+                </div>
+                <div className="space-y-1 sm:col-span-2 lg:col-span-1">
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase">
+                    TikTok Profile
+                  </span>
+                  <input
+                    className="w-full p-2 h-8 text-xs bg-background border rounded-lg focus:ring-1 outline-none"
+                    value={tt}
+                    onChange={(e) => setTt(e.target.value)}
+                    placeholder="Link TikTok"
+                  />
+                </div>
+              </div>
+            ) : (
+              /* High-fidelity interconnected visual graph of socials */
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+                {/* Facebook Node */}
+                <motion.div
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  className={`flex flex-col items-center justify-between rounded-2xl border p-2 text-center transition-all shadow-2xs hover:shadow-md ${
+                    fb
+                      ? "bg-blue-600/5 border-blue-600/20 text-blue-600 hover:border-blue-600/40"
+                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
+                  }`}
+                >
+                  <Facebook className="w-5 h-5 mb-1" />
+                  <span className="text-[10px] font-bold block truncate max-w-full">
+                    Facebook
+                  </span>
+                  {fb ? (
+                    <a
+                      href={fb.startsWith("http") ? fb : `https://${fb}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 text-[9px] font-extrabold flex items-center gap-0.5 hover:underline uppercase text-blue-700"
+                    >
+                      Kết nối <ExternalLink className="w-2 h-2" />
+                    </a>
+                  ) : (
+                    <span className="mt-1 text-[9px] font-extrabold uppercase opacity-40">
+                      Trống
+                    </span>
+                  )}
+                </motion.div>
+
+                {/* Zalo Node */}
+                <motion.div
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  className={`flex flex-col items-center justify-between rounded-2xl border p-2 text-center transition-all shadow-2xs hover:shadow-md ${
+                    zl
+                      ? "bg-sky-500/5 border-sky-500/20 text-sky-600 hover:border-sky-500/40"
+                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
+                  }`}
+                >
+                  <div className="w-5 h-5 rounded-full bg-sky-500 text-white font-bold text-[10px] flex items-center justify-center mb-1 font-sans">
+                    Z
+                  </div>
+                  <span className="text-[10px] font-bold block truncate max-w-full">
+                    Zalo Chat
+                  </span>
+                  {zl ? (
+                    <a
+                      href={
+                        zl.startsWith("http") ? zl : `https://zalo.me/${zl}`
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 text-[9px] font-extrabold flex items-center gap-0.5 hover:underline uppercase text-sky-700"
+                    >
+                      Mở Zalo <ExternalLink className="w-2 h-2" />
+                    </a>
+                  ) : (
+                    <span className="mt-1 text-[9px] font-extrabold uppercase opacity-40">
+                      Trống
+                    </span>
+                  )}
+                </motion.div>
+
+                {/* LinkedIn Node */}
+                <motion.div
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  className={`flex flex-col items-center justify-between rounded-2xl border p-2 text-center transition-all shadow-2xs hover:shadow-md ${
+                    li
+                      ? "bg-blue-700/5 border-blue-700/20 text-blue-700 hover:border-blue-700/40"
+                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
+                  }`}
+                >
+                  <Linkedin className="w-5 h-5 mb-1" />
+                  <span className="text-[10px] font-bold block truncate max-w-full">
+                    LinkedIn
+                  </span>
+                  {li ? (
+                    <a
+                      href={li.startsWith("http") ? li : `https://${li}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 text-[9px] font-extrabold flex items-center gap-0.5 hover:underline uppercase text-blue-800"
+                    >
+                      Hồ sơ <ExternalLink className="w-2 h-2" />
+                    </a>
+                  ) : (
+                    <span className="mt-1 text-[9px] font-extrabold uppercase opacity-40">
+                      Trống
+                    </span>
+                  )}
+                </motion.div>
+
+                {/* Instagram Node */}
+                <motion.div
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  className={`flex flex-col items-center justify-between rounded-2xl border p-2 text-center transition-all shadow-2xs hover:shadow-md ${
+                    ig
+                      ? "bg-pink-600/5 border-pink-600/20 text-pink-600 hover:border-pink-600/40"
+                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
+                  }`}
+                >
+                  <Instagram className="w-5 h-5 mb-1" />
+                  <span className="text-[10px] font-bold block truncate max-w-full">
+                    Instagram
+                  </span>
+                  {ig ? (
+                    <a
+                      href={ig.startsWith("http") ? ig : `https://${ig}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 text-[9px] font-extrabold flex items-center gap-0.5 hover:underline uppercase text-pink-700"
+                    >
+                      Kênh <ExternalLink className="w-2 h-2" />
+                    </a>
+                  ) : (
+                    <span className="mt-1 text-[9px] font-extrabold uppercase opacity-40">
+                      Trống
+                    </span>
+                  )}
+                </motion.div>
+
+                {/* TikTok Node */}
+                <motion.div
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  className={`flex flex-col items-center justify-between rounded-2xl border p-2 text-center transition-all shadow-2xs hover:shadow-md ${
+                    tt
+                      ? "bg-slate-900/5 border-slate-900/20 text-slate-800 dark:text-slate-200 hover:border-slate-900/40"
+                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
+                  }`}
+                >
+                  <div className="w-5 h-5 rounded-full bg-slate-800 dark:bg-slate-200 text-white dark:text-black font-extrabold text-[10px] flex items-center justify-center mb-1 ">
+                     ♬
+                  </div>
+                  <span className="text-[10px] font-bold block truncate max-w-full">
+                    TikTok
+                  </span>
+                  {tt ? (
+                    <a
+                      href={tt.startsWith("http") ? tt : `https://${tt}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 text-[9px] font-extrabold flex items-center gap-0.5 hover:underline uppercase text-slate-900"
+                    >
+                      Kênh <ExternalLink className="w-2 h-2" />
+                    </a>
+                  ) : (
+                    <span className="mt-1 text-[9px] font-extrabold uppercase opacity-40">
+                      Trống
+                    </span>
+                  )}
+                </motion.div>
               </div>
             )}
           </motion.div>
@@ -2002,255 +2312,6 @@ export function CustomerDashboard({
               </div>
             </motion.div>
           </div>
-
-          {/* SOCIAL NETWORK INTEGRATION GRAPH & LINKS (MỤC LIÊN KẾT TẤT CẢ NỀN TẢNG) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-4"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-bold text-foreground uppercase tracking-widest">
-                  KỸ THUẬT SỐ & MẠNG XÃ HỘI CONNECTED
-                </h4>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Xác thực tài khoản và liên kết dữ liệu đa điểm của khách hàng.
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  if (isEditingSocial) {
-                    handleSaveSocialLinks();
-                  } else {
-                    setIsEditingSocial(true);
-                  }
-                }}
-                className={`px-3 py-1 rounded-xl text-xs font-bold border transition-all ${
-                  isEditingSocial
-                    ? "bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600"
-                    : "bg-background hover:bg-muted border-border"
-                }`}
-              >
-                {isEditingSocial ? "Lưu chỉnh sửa ✓" : "Sửa liên kết ✎"}
-              </button>
-            </div>
-
-            {isEditingSocial ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/20 p-4 rounded-2xl border">
-                <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground font-bold uppercase">
-                    FB / Messenger Link
-                  </span>
-                  <input
-                    className="w-full p-2 text-xs bg-background border rounded-lg"
-                    value={fb}
-                    onChange={(e) => setFb(e.target.value)}
-                    placeholder="Link Facebook"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground font-bold uppercase">
-                    Zalo Sđt / Profile URL
-                  </span>
-                  <input
-                    className="w-full p-2 text-xs bg-background border rounded-lg"
-                    value={zl}
-                    onChange={(e) => setZl(e.target.value)}
-                    placeholder="0901234567 hoặc link"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground font-bold uppercase">
-                    LinkedIn URL
-                  </span>
-                  <input
-                    className="w-full p-2 text-xs bg-background border rounded-lg"
-                    value={li}
-                    onChange={(e) => setLi(e.target.value)}
-                    placeholder="Link LinkedIn"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground font-bold uppercase">
-                    Instagram Handler
-                  </span>
-                  <input
-                    className="w-full p-2 text-xs bg-background border rounded-lg"
-                    value={ig}
-                    onChange={(e) => setIg(e.target.value)}
-                    placeholder="Link Instagram"
-                  />
-                </div>
-                <div className="space-y-1 md:col-span-2">
-                  <span className="text-xs text-muted-foreground font-bold uppercase">
-                    TikTok Profile
-                  </span>
-                  <input
-                    className="w-full p-2 text-xs bg-background border rounded-lg"
-                    value={tt}
-                    onChange={(e) => setTt(e.target.value)}
-                    placeholder="Link TikTok"
-                  />
-                </div>
-              </div>
-            ) : (
-              /* High-fidelity interconnected visual graph of socials */
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {/* Facebook Node */}
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  className={`flex flex-col items-center justify-between rounded-2xl border p-4 text-center transition-all shadow-2xs hover:shadow-md ${
-                    fb
-                      ? "bg-blue-600/5 border-blue-600/20 text-blue-600 hover:border-blue-600/40"
-                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
-                  }`}
-                >
-                  <Facebook className="w-6 h-6 mb-2" />
-                  <span className="text-xs font-bold block truncate max-w-full">
-                    Facebook
-                  </span>
-                  {fb ? (
-                    <a
-                      href={fb.startsWith("http") ? fb : `https://${fb}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 text-xs font-extrabold flex items-center gap-0.5 hover:underline uppercase text-blue-700"
-                    >
-                      Liên kết <ExternalLink className="w-2 h-2" />
-                    </a>
-                  ) : (
-                    <span className="mt-2 text-xs font-extrabold uppercase opacity-40">
-                      Trống
-                    </span>
-                  )}
-                </motion.div>
-
-                {/* Zalo Node */}
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  className={`flex flex-col items-center justify-between rounded-2xl border p-4 text-center transition-all shadow-2xs hover:shadow-md ${
-                    zl
-                      ? "bg-sky-500/5 border-sky-500/20 text-sky-600 hover:border-sky-500/40"
-                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
-                  }`}
-                >
-                  <div className="w-6 h-6 rounded-full bg-sky-500 text-white font-bold text-xs flex items-center justify-center mb-2 font-sans">
-                    Z
-                  </div>
-                  <span className="text-xs font-bold block truncate max-w-full">
-                    Zalo Chat
-                  </span>
-                  {zl ? (
-                    <a
-                      href={
-                        zl.startsWith("http") ? zl : `https://zalo.me/${zl}`
-                      }
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 text-xs font-extrabold flex items-center gap-0.5 hover:underline uppercase text-sky-700"
-                    >
-                      Mở Zalo <ExternalLink className="w-2 h-2" />
-                    </a>
-                  ) : (
-                    <span className="mt-2 text-xs font-extrabold uppercase opacity-40">
-                      Trống
-                    </span>
-                  )}
-                </motion.div>
-
-                {/* LinkedIn Node */}
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  className={`flex flex-col items-center justify-between rounded-2xl border p-4 text-center transition-all shadow-2xs hover:shadow-md ${
-                    li
-                      ? "bg-blue-700/5 border-blue-700/20 text-blue-700 hover:border-blue-700/40"
-                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
-                  }`}
-                >
-                  <Linkedin className="w-6 h-6 mb-2" />
-                  <span className="text-xs font-bold block truncate max-w-full">
-                    LinkedIn
-                  </span>
-                  {li ? (
-                    <a
-                      href={li.startsWith("http") ? li : `https://${li}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 text-xs font-extrabold flex items-center gap-0.5 hover:underline uppercase text-blue-800"
-                    >
-                      Hồ sơ <ExternalLink className="w-2 h-2" />
-                    </a>
-                  ) : (
-                    <span className="mt-2 text-xs font-extrabold uppercase opacity-40">
-                      Trống
-                    </span>
-                  )}
-                </motion.div>
-
-                {/* Instagram Node */}
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  className={`flex flex-col items-center justify-between rounded-2xl border p-4 text-center transition-all shadow-2xs hover:shadow-md ${
-                    ig
-                      ? "bg-pink-600/5 border-pink-600/20 text-pink-600 hover:border-pink-600/40"
-                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
-                  }`}
-                >
-                  <Instagram className="w-6 h-6 mb-2" />
-                  <span className="text-xs font-bold block truncate max-w-full">
-                    Instagram
-                  </span>
-                  {ig ? (
-                    <a
-                      href={ig.startsWith("http") ? ig : `https://${ig}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 text-xs font-extrabold flex items-center gap-0.5 hover:underline uppercase text-pink-700"
-                    >
-                      Kênh <ExternalLink className="w-2 h-2" />
-                    </a>
-                  ) : (
-                    <span className="mt-2 text-xs font-extrabold uppercase opacity-40">
-                      Trống
-                    </span>
-                  )}
-                </motion.div>
-
-                {/* TikTok Node */}
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  className={`flex flex-col items-center justify-between rounded-2xl border p-4 text-center transition-all shadow-2xs hover:shadow-md ${
-                    tt
-                      ? "bg-slate-900/5 border-slate-900/20 text-slate-800 dark:text-slate-200 hover:border-slate-900/40"
-                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
-                  }`}
-                >
-                  <div className="w-6 h-6 rounded-full bg-slate-800 dark:bg-slate-200 text-white dark:text-black font-extrabold text-xs flex items-center justify-center mb-2 ">
-                    ♬
-                  </div>
-                  <span className="text-xs font-bold block truncate max-w-full">
-                    TikTok
-                  </span>
-                  {tt ? (
-                    <a
-                      href={tt.startsWith("http") ? tt : `https://${tt}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 text-xs font-extrabold flex items-center gap-0.5 hover:underline uppercase text-slate-900"
-                    >
-                      Xem k.h <ExternalLink className="w-2 h-2" />
-                    </a>
-                  ) : (
-                    <span className="mt-2 text-xs font-extrabold uppercase opacity-40">
-                      Trống
-                    </span>
-                  )}
-                </motion.div>
-              </div>
-            )}
-          </motion.div>
 
           {/* BIỂU ĐỒ DỰ BÁO GIÁ TRỊ VÒNG ĐỜI KHÁCH HÀNG (FORECAST CUSTOMER LIFETIME VALUE) */}
           <motion.div

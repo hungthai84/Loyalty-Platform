@@ -60,7 +60,7 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
  const handleSubmit = async (e: React.FormEvent) => {
  e.preventDefault();
  if (!name.trim()) {
- toast.error("Vui lòng điền tên quy tắc phân khúc");
+ toast.error("Vui lòng điền tên quy tắc phân loại trạng thái");
  return;
  }
  if (!tag.trim()) {
@@ -90,7 +90,7 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
  try {
  if (!user) {
  saveGuestSegmentationRule(ruleData);
- toast.success(rule ? "Đã cập nhật quy tắc phân khúc (dùng thử)" : "Đã thiết lập quy tắc phân khúc mới (dùng thử)");
+ toast.success(rule ? "Đã cập nhật quy tắc phân loại trạng thái (dùng thử)" : "Đã thiết lập quy tắc phân loại trạng thái mới (dùng thử)");
  onClose();
  return;
  }
@@ -99,11 +99,11 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
  ...ruleData,
  createdAt: rule?.createdAt || serverTimestamp(),
  });
- toast.success(rule ? "Đã cập nhật quy tắc phân khúc" : "Đã thiết lập quy tắc phân khúc mới");
+ toast.success(rule ? "Đã cập nhật quy tắc phân loại trạng thái" : "Đã thiết lập quy tắc phân loại trạng thái mới");
  onClose();
  } catch (error) {
  console.error(error);
- toast.error("Lỗi khi lưu quy tắc phân khúc");
+ toast.error("Lỗi khi lưu quy tắc phân loại trạng thái");
  } finally {
  setSubmitting(false);
  }
@@ -111,23 +111,23 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
 
  const handleDelete = async () => {
  if (!rule) return;
- if (!confirm("Bạn có chắc chắn muốn xóa quy tắc phân khúc này?")) return;
+ if (!confirm("Bạn có chắc chắn muốn xóa quy tắc phân loại trạng thái này?")) return;
 
  setSubmitting(true);
  try {
  if (!user) {
  deleteGuestSegmentationRule(rule.id);
- toast.success("Đã xóa quy tắc phân khúc (dùng thử)");
+ toast.success("Đã xóa quy tắc phân loại trạng thái (dùng thử)");
  onClose();
  return;
  }
 
  await deleteDoc(doc(db, `segmentation_rules`, rule.id));
- toast.success("Đã xóa quy tắc phân khúc");
+ toast.success("Đã xóa quy tắc phân loại trạng thái");
  onClose();
  } catch (error) {
  console.error(error);
- toast.error("Lỗi khi xóa quy tắc phân khúc");
+ toast.error("Lỗi khi xóa quy tắc phân loại trạng thái");
  } finally {
  setSubmitting(false);
  }
@@ -143,7 +143,7 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
  <div>
  <h3 className="text-lg font-bold font-heading flex items-center gap-2">
  <Sliders className="w-5 h-5 text-primary" />
- {rule ? "Sửa Quy tắc Phân khúc" : "Thêm Quy tắc Phân khúc mới"}
+ {rule ? "Sửa Quy tắc Phân loại trạng thái" : "Thêm Quy tắc Phân loại trạng thái mới"}
  </h3>
  <p className="text-xs text-muted-foreground mt-0.5">
  Thiết lập quy luật tự động gán nhãn khách hàng dựa trên dữ liệu CRM
@@ -161,7 +161,7 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
  <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
  {/* Rule Name */}
  <div className="space-y-1.5">
- <label className="text-xs font-bold uppercase text-muted-foreground">Tên quy tắc phân khúc</label>
+ <label className="text-xs font-bold uppercase text-muted-foreground">Tên quy tắc phân loại trạng thái</label>
  <input
  type="text"
  required

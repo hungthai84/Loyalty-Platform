@@ -3,13 +3,10 @@ import { createPortal } from "react-dom";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Mail, 
-  Zap,
+  Mail,
   Megaphone, 
-  CheckCircle2, 
   Activity, 
   Send, 
-  Laptop, 
   History, 
   CheckCircle, 
   Eye, 
@@ -26,7 +23,8 @@ import {
   Plus,
   Trash2,
   Gift,
-  AlertTriangle
+  AlertTriangle,
+  BookOpen
 } from "lucide-react";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -210,14 +208,14 @@ export function MarketingView() {
   const [pointEarningSubject, setPointEarningSubject] = useState("🎯 Gửi Thông Báo Tích Điểm: Số dư tài khoản Seva Club đã được cập nhật!");
   const [pointEarningContent, setPointEarningContent] = useState("<p>Kính gửi quý khách,</p><p>Hóa đơn mua sắm trang sức vừa qua của bạn đã được ghi nhận tích điểm thành công vào hệ thống Seva Retail. Số điểm vừa tích lũy thêm là <b>+550 điểm</b>.</p><p>Hiện tại số dư điểm khả dụng của bạn đã được cập nhật chính thức trên ví điện tử. Bạn có thể sử dụng điểm này để đổi lấy các eVoucher ưu đãi đặc biệt hoặc bộ quà tặng tại chi nhánh <b>HeartLock</b> và <b>Memorient</b>.</p>");
 
-  const [shareThankyouSubject, setShareThankyouSubject] = useState("💖 Cám Ơn Hội Viên Đã Chia Sẻ: Đặc quyền tri ân từ Seva Retail!");
+  const [shareThankyouSubject, setShareThankyouSubject] = useState("💖 Cám Ơn Thành Viên Đã Chia Sẻ: Đặc quyền tri ân từ Seva Retail!");
   const [shareThankyouContent, setShareThankyouContent] = useState("<p>Chào Bạn,</p><p>Seva Retail xin gửi lời cảm ơn chân thành nhất vì bạn đã chia sẻ bài viết trải nghiệm lộng lẫy cùng trang phục của chúng tôi lên trang cá nhân mạng xã hội.</p><p>Mỗi chia sẻ của bạn là nguồn cảm hứng lớn giúp Seva lan tỏa phong cách tinh hoa. Chúng tôi vừa cộng trực tiếp <b>+100 điểm thưởng</b> vào tài khoản Seva Club của bạn như một lời tri ân sâu sắc.</p>");
 
   const [tierUpgradeSubject, setTierUpgradeSubject] = useState("👑 Thông Báo Nâng Hạng: Chào đón Quý thượng khách thăng cấp hạng thành viên VIP mới!");
-  const [tierUpgradeContent, setTierUpgradeContent] = useState("<p>Kính gửi Quý hội viên thân thiết,</p><p>Seva Retail vô cùng tự hào và hân hoan thông báo tổng số điểm tích lũy của bạn đã chính thức đạt điều kiện nâng hạng thành viên mới vượt bậc.</p><p>Chúc mừng bạn đã nâng hạng thành công! Kể từ khoảnh khắc này, các đặc khu xa xỉ như tiếp đón Private Lounge, spa làm gia trang sức chu đáo trọn đời, và sự đồng hành của chuyên gia tư vấn thiết kế độc bản 1:1 đã sẵn sàng phục vụ chào đón quý hội viên.</p>");
+  const [tierUpgradeContent, setTierUpgradeContent] = useState("<p>Kính gửi Quý thành viên thân thiết,</p><p>Seva Retail vô cùng tự hào và hân hoan thông báo tổng số điểm tích lũy của bạn đã chính thức đạt điều kiện nâng hạng thành viên mới vượt bậc.</p><p>Chúc mừng bạn đã nâng hạng thành công! Kể từ khoảnh khắc này, các đặc quyền xa xỉ như tiếp đón Private Lounge, spa làm gia trang sức chu đáo trọn đời, và sự đồng hành của chuyên gia tư vấn thiết kế độc bản 1:1 đã sẵn sàng phục vụ chào đón quý thành viên.</p>");
 
   const [newMemberSubject, setNewMemberSubject] = useState("✨ Chào Mừng Thành Viên Mới: Khởi nguồn chặng đường lấp lánh tại Seva Club!");
-  const [newMemberContent, setNewMemberContent] = useState("<p>Kính chào quý hội viên mới,</p><p>Chúng tôi vô cùng vui mừng và tự hào khi bạn chính thức đăng ký gia nhập Seva Club - Cộng đồng của những phong cách tinh anh và đẳng cấp lôi cuốn.</p><p>Một món quà khởi hành trang nghiêm trị giá <b>+150 điểm thưởng chào mừng</b> đã được cộng trực tiếp vào ví hội viên của bạn. Vệ sinh bảo dưỡng sương mai trang sức miễn phí trọn đời của bạn tại hai chi nhánh HeartLock & Memorient đã sẵn sàng kích hoạt phục vụ.</p>");
+  const [newMemberContent, setNewMemberContent] = useState("<p>Kính chào quý thành viên mới,</p><p>Chúng tôi vô cùng vui mừng và tự hào khi bạn chính thức đăng ký gia nhập Seva Club - Cộng đồng của những phong cách tinh anh và đẳng cấp lôi cuốn.</p><p>Một món quà khởi hành trang nghiêm trị giá <b>+150 điểm thưởng chào mừng</b> đã được cộng trực tiếp vào ví thành viên của bạn. Vệ sinh bảo dưỡng sương mai trang sức miễn phí trọn đời của bạn tại hai chi nhánh HeartLock & Memorient đã sẵn sàng kích hoạt phục vụ.</p>");
 
   const [winbackSubject, setWinbackSubject] = useState("💔 Chúng tôi nhớ bạn - Ưu đãi đặc quyền dành riêng cho bạn");
   const [winbackContent, setWinbackContent] = useState("<p>Đã lâu không gặp, Seva Retail rất nhớ bạn!</p><p>Chúng tôi vừa ra mắt Bộ Sưu Tập mới với những thiết kế tinh xảo nhất. Để chào mừng bạn trở lại, chúng tôi dành tặng bạn ưu đãi giảm 20% cho đơn hàng tiếp theo.</p>");
@@ -437,33 +435,17 @@ export function MarketingView() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex bg-muted/80 p-1 rounded-xl border border-border/60 shadow-inner shrink-0">
-          <button
-            onClick={() => setActiveTab2("messages")}
-            className={cn(
-              "px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer",
-              activeTab2 === "messages"
-                ? "bg-background text-primary shadow-xs font-extrabold"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Mail className="w-4 h-4" />
-            Hành trình đa kênh
-          </button>
-          <button
-            onClick={() => setActiveTab2("campaigns")}
-            className={cn(
-              "px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer",
-              activeTab2 === "campaigns"
-                ? "bg-background text-primary shadow-xs font-extrabold"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Sliders className="w-4 h-4" />
-            Sự kiện Nhân điểm
-          </button>
-        </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          onClick={() => {}}
+          className={cn(
+            "flex items-center px-4 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer",
+            "bg-background border-border hover:bg-muted text-foreground"
+          )}
+        >
+          <BookOpen className="w-4 h-4 mr-2 text-rose-500" />
+          {activeTab2 === "messages" ? "Tài liệu Trình tương tác" : "Tài liệu Chiến dịch Sự kiện"}
+        </button>
       </div>
     </motion.div>
   );
@@ -472,7 +454,36 @@ export function MarketingView() {
     <div className="flex-1 flex flex-col space-y-6">
       {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
 
-      <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar pr-2 pt-6">
+      <div className="px-4 md:px-0 pt-4">
+        <div className="flex gap-1 p-1 bg-muted/40 rounded-2xl w-fit">
+          <button
+            onClick={() => setActiveTab2("messages")}
+            className={cn(
+              "flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-all gap-2 cursor-pointer",
+              activeTab2 === "messages"
+                ? "bg-background text-primary shadow-sm font-extrabold"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+            )}
+          >
+            <Mail className="w-4 h-4" />
+            Trình tương tác
+          </button>
+          <button
+            onClick={() => setActiveTab2("campaigns")}
+            className={cn(
+              "flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-all gap-2 cursor-pointer",
+              activeTab2 === "campaigns"
+                ? "bg-background text-primary shadow-sm font-extrabold"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+            )}
+          >
+            <Sliders className="w-4 h-4" />
+            Sự kiện
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar pr-2 pt-2">
         <AnimatePresence mode="wait">
           {activeTab2 === "messages" ? (
             <motion.div
@@ -903,7 +914,7 @@ export function MarketingView() {
                           onChange={(e) => setNewCampAudience(e.target.value)}
                           className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
                         >
-                          <option value="Tất cả hội viên">Tất cả hội viên</option>
+                          <option value="Tất cả hội viên">Tất cả thành viên</option>
                           <option value="Chỉ hạng Essential">Chỉ hạng Essential</option>
                           <option value="Hạng Vàng & Atelier">Hạng Vàng & Atelier</option>
                           <option value="Diamond VIP Elite">Diamond VIP Elite</option>
@@ -973,7 +984,7 @@ export function MarketingView() {
                     </Badge>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-4 border-l-2 border-border/60 ml-3 pl-6 relative">
                     {campaigns.length === 0 ? (
                       <div className="p-12 text-center border border-dashed rounded-2xl bg-muted/20">
                         <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto opacity-50 mb-3" />
@@ -981,7 +992,7 @@ export function MarketingView() {
                         <p className="text-[10px] text-muted-foreground/80 mt-1">Sử dụng bảng bên trái để kiến tạo chiến dịch kích cầu.</p>
                       </div>
                     ) : (
-                      campaigns.map((camp) => {
+                      campaigns.sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map((camp) => {
                         const isLive = new Date() >= new Date(camp.startDate) && new Date() <= new Date(camp.endDate);
                         const isUpcoming = new Date() < new Date(camp.startDate);
                         
@@ -989,12 +1000,15 @@ export function MarketingView() {
                           <div
                             key={camp.id}
                             className={cn(
-                              "p-5 rounded-2xl border transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-left",
+                              "relative p-5 rounded-2xl border transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-left shadow-sm",
                               camp.isActive 
-                                ? "bg-card hover:bg-muted/10 border-border/70 text-card-foreground"
-                                : "bg-muted/10 border-dashed border-border/40 opacity-70"
+                                ? "bg-card hover:bg-muted/10 border-border md:border-l-4 md:border-l-primary text-card-foreground"
+                                : "bg-muted/30 border-dashed border-border/40 opacity-70"
                             )}
                           >
+                             {/* Timeline dot */}
+                             <div className="absolute -left-[31px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-4 border-background bg-primary" />
+                             
                             <div className="space-y-2 flex-1 text-left">
                               <div className="flex items-center gap-2.5 flex-wrap">
                                 <h4 className="font-bold text-sm text-foreground">{camp.name}</h4>

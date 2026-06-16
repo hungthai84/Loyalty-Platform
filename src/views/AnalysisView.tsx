@@ -8,7 +8,6 @@ import {
  CardTitle, 
  CardDescription 
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { 
  DollarSign, 
  TrendingUp, 
@@ -34,16 +33,10 @@ import {
  Zap,
  Trophy,
  BookOpen,
- X,
- ChevronDown,
- MoreHorizontal
+ X
 } from 'lucide-react';
-import { 
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
+
 import {
  Select,
  SelectContent,
@@ -599,7 +592,7 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   rules: {
-    title: "Vận hành Bộ Máy Quy tắc Tích/Đổi Điểm (Rules Engine Manual)",
+    title: "Hệ thống Rules",
     subtitle: "Tận dụng cấu hình quy tắc linh động để tự động hóa toàn diện hoạt động kích cầu VIP.",
     badge: "Hệ Thống Rules",
     description: "Bộ Máy Rules thực thi một cách thầm lặng phía sau hậu trường. Khi khách hàng thoả mãn hành vi (ví dụ: mua hàng ngày sinh nhật, check-in boutique, khảo sát) hệ thống lập tức tính toán nhân điểm tự động dựa trên thặng số hạng thẻ.",
@@ -1168,6 +1161,21 @@ export function AnalysisView() {
  })).sort((a, b) => b.revenue - a.revenue);
  }, [customers]);
 
+  const TABS_LIST_ANALYSIS = [
+    { id: 'dashboard', name: 'Chọn mục cần phân tích', icon: Layers },
+    { id: 'cross_branch', name: 'Hành vi đa chi nhánh', icon: Network },
+    { id: 'shopping_behavior', name: 'Hành vi mua sắm', icon: ShoppingBag },
+    { id: 'tier_point_analysis', name: 'Phân tích hạng & điểm', icon: Calculator },
+    { id: 'aesthetic_segmentation', name: 'Phân khúc sắc đẹp', icon: Sparkles },
+    { id: 'tier_projection', name: 'Tiến trình thăng hạng', icon: TrendingUp },
+    { id: 'loyalty_cost', name: 'Chi phí Loyalty & Hiệu suất', icon: DollarSign },
+    { id: 'clv_repeat', name: 'Giá trị vòng đời & Tái mua', icon: RefreshCw },
+    { id: 'vip_crm', name: 'Chăm sóc khách VIP & Đặt lịch', icon: Briefcase },
+    { id: 'ai_advisor', name: 'Cố vấn phân tích AI', icon: Zap },
+    { id: 'offer_analysis', name: 'Phân tích & Tối ưu Ưu đãi', icon: Trophy },
+    { id: 'rules', name: 'Quy tắc hệ thống', icon: Settings },
+  ];
+
   const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
 
   const bannerContent = (
@@ -1214,7 +1222,7 @@ export function AnalysisView() {
           }`}
         >
           <BookOpen className={`w-4 h-4 ${showDoc ? 'text-amber-500' : 'text-muted-foreground'}`} />
-          Tài liệu phân tích
+          Tài liệu {TABS_LIST_ANALYSIS.find(t => t.id === activeTab)?.name || 'phân tích'}
         </button>
       </div>
     </motion.div>
@@ -1316,20 +1324,7 @@ export function AnalysisView() {
  {/* Internal Navigation Tabs inside the View - NEW SELECT BOX MODULE */}
  <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-muted/40 p-4 rounded-3xl border border-border/80 max-w-full w-full relative">
   {(() => {
-   const tabsList = [
-    { id: 'dashboard', name: 'Chọn mục cần phân tích', icon: Layers },
-    { id: 'cross_branch', name: 'Điểm chung chi nhánh', icon: Network },
-    { id: 'shopping_behavior', name: 'Hành vi mua sắm', icon: ShoppingBag },
-    { id: 'tier_point_analysis', name: 'Phân tích hạng & điểm', icon: Calculator },
-    { id: 'aesthetic_segmentation', name: 'Phân khúc Thẩm mỹ', icon: Sparkles },
-    { id: 'tier_projection', name: 'Tiến trình Thăng hạng', icon: Zap },
-    { id: 'loyalty_cost', name: 'Loyalty Cost & ROI', icon: DollarSign },
-    { id: 'clv_repeat', name: 'CLV & Repeat Purchase', icon: TrendingUp },
-    { id: 'vip_crm', name: 'VIP CRM & Booking', icon: Users },
-    { id: 'ai_advisor', name: 'AI Analytics Advisor', icon: Sparkles },
-    { id: 'offer_analysis', name: 'Phân tích & Tối ưu Ưu đãi', icon: Award },
-    { id: 'rules', name: 'Hệ thống Rules', icon: Settings },
-   ];
+   const tabsList = TABS_LIST_ANALYSIS;
    return (
     <>
      <div className="flex items-center gap-3">
@@ -1462,7 +1457,7 @@ export function AnalysisView() {
            <div className="bg-background/40 border border-border/40 p-4 rounded-xl flex items-center justify-between">
             <div>
              <span className="text-2xl font-black text-foreground">{matchingCustomersCount}</span>
-             <span className="text-xs text-muted-foreground ml-1.5">hội viên</span>
+             <span className="text-xs text-muted-foreground ml-1.5">thành viên</span>
             </div>
             <span className="text-[10px] bg-[#2f6cf5]/10 text-[#2f6cf5] border border-[#2f6cf5]/20 font-bold px-2 py-0.5 rounded-full">
              Tỉ lệ: {((matchingCustomersCount / (customers.length || 1284)) * 100).toFixed(1)}%

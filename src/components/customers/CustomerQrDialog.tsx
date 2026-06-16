@@ -1,7 +1,7 @@
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Customer } from "@/types";
-import { QrCode, ScanFace } from "lucide-react";
+import { QrCode } from "lucide-react";
 
 export function CustomerQrDialog({ customer, onClose }: { customer: Customer | null; onClose: () => void }) {
   if (!customer) return null;

@@ -1,6 +1,5 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { useFirebase } from "@/components/FirebaseProvider";
 import { motion, AnimatePresence } from "motion/react";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { NotificationBell } from "@/components/layout/NotificationBell";
@@ -32,7 +31,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
     { name: "Ưu đãi", view: "loyalty", icon: Award },
     { name: "Tương tác", view: "marketing", icon: Megaphone },
     { name: "Phân tích", view: "analysis", icon: Sparkles },
-    { name: "Cổng Loyalty", view: "portal", icon: Fingerprint },
+    { name: "Điểm chạm", view: "portal", icon: Fingerprint },
     { name: "Báo cáo", view: "analytics", icon: BarChart },
   ];
 
@@ -64,7 +63,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="text-lg font-bold tracking-tight font-heading whitespace-nowrap text-[#eb7a2e]"
+                  className="text-lg font-bold tracking-tight font-heading whitespace-nowrap text-[#6E62E5]"
                 >
                   Power Service
                 </motion.h2>
@@ -73,7 +72,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-[10px] font-extrabold tracking-[0.2em] text-black uppercase -mt-1"
                 >
-                  CLP Platform
+                  CLP Platfrom
                 </motion.p>
               </>
             )}
@@ -94,7 +93,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Tìm kiếm mọi thứ..."
+                placeholder="Tìm kiếm"
                 className="pl-9 bg-muted/40 border-border/50 h-9 text-xs focus-visible:ring-1"
               />
             </div>

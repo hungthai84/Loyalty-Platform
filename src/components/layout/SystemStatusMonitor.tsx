@@ -8,11 +8,7 @@ import {
  Play,
  RefreshCw,
  XCircle,
- AlertTriangle,
- CheckCircle2,
- Clock,
- Trash2,
- Loader2
+ Clock
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";

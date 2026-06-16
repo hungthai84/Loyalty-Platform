@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, File as FileIcon, Folder, Map, FileText, Image as ImageIcon, Search, LogOut, ChevronRight, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { X, File as FileIcon, Folder, Map, FileText, Image as ImageIcon, Search, LogOut, ChevronRight, ShieldCheck } from 'lucide-react';
 import { googleSignIn, initAuth, getAccessToken, logout } from '../../lib/workspace';
 import firebaseConfig from '../../../firebase-applet-config.json';
 import { toast } from 'sonner';

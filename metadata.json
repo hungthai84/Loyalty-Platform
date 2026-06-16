@@ -1,6 +1,1 @@
-{
-  "name": "Power Service CLP Platform",
-  "description": "Enterprise-grade Jewelry & Retail Loyalty CRM Platform featuring Customer Management, Loyalty Rules, Analytics, and Omnichannel capabilities.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API", "MAJOR_CAPABILITY_CLOUDSQL"]
-}
+{"name":"Power Service CLP Platfrom","description":"Enterprise-grade Jewelry \u0026 Retail Loyalty CRM Platform featuring Customer Management, Loyalty Rules, Analytics, and Omnichannel capabilities.","requestFramePermissions":[],"majorCapabilities":["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API","MAJOR_CAPABILITY_CLOUDSQL"]}

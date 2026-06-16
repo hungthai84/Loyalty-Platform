@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 // import { Progress } from "@/components/ui/progress";
 // Simple div-based progress bar below
-import { Trophy, Star, ShieldCheck, Crown } from "lucide-react";
+import { Trophy, Star, ShieldCheck } from "lucide-react";
 
 const ACHIEVEMENTS = [
   { id: "a1", name: "Top Spender", description: "Chi tiêu vượt mốc 100M trong tháng", icon: "💎", unlocked: true, color: "from-blue-500 to-indigo-600" },

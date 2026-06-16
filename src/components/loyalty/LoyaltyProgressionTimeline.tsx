@@ -74,10 +74,10 @@ export function LoyaltyProgressionTimeline({ currentPoints, tierName }: LoyaltyP
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between mb-8">
+    <div className="space-y-6 overflow-x-auto pb-4">
+      <div className="flex items-center justify-between mb-8 min-w-[700px]">
         <div>
-          <h3 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+          <h3 className="text-base font-bold text-foreground flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary" /> Lộ trình thăng cấp (Loyalty Journey)
           </h3>
           <p className="text-xs text-muted-foreground">Theo dõi tiến trình từ khách hàng mới đến thượng khách.</p>
@@ -88,67 +88,67 @@ export function LoyaltyProgressionTimeline({ currentPoints, tierName }: LoyaltyP
         </div>
       </div>
 
-      <div className="relative">
+      <div className="relative min-w-[700px] pt-5">
         {/* Progress Line Background */}
-        <div className="absolute left-[19px] top-4 bottom-4 w-1 bg-muted rounded-full" />
+        <div className="absolute top-[40px] left-[10%] right-[10%] h-1 bg-muted rounded-full -translate-y-1/2" />
         
         {/* Actual Progress Line */}
         <motion.div 
-          initial={{ height: 0 }}
-          animate={{ height: `${Math.min(100, (currentPoints / 5000) * 100)}%` }}
-          className="absolute left-[19px] top-4 w-1 bg-primary rounded-full z-10"
+          initial={{ width: 0 }}
+          animate={{ width: `calc(${Math.min(100, (currentPoints / 5000) * 100)}% * 0.8)` }}
+          className="absolute top-[40px] left-[10%] h-1 bg-primary rounded-full z-10 -translate-y-1/2"
         />
 
-        <div className="space-y-12">
+        <div className="flex justify-between relative">
           {milestones.map((ms, idx) => (
             <motion.div 
               key={ms.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className="relative pl-12 flex items-start gap-4 group"
+              className="relative flex flex-col items-center flex-1 group"
             >
               {/* Point Indicator */}
               <div className={cn(
-                "absolute left-0 w-10 h-10 rounded-full border-4 border-background flex items-center justify-center z-20 transition-all duration-500 shadow-sm",
+                "w-10 h-10 rounded-full border-4 border-background flex items-center justify-center z-20 transition-all duration-500 shadow-sm",
                 ms.isUnlocked ? "bg-primary text-white scale-110 shadow-lg shadow-primary/20" : "bg-muted text-muted-foreground"
               )}>
                 {ms.isUnlocked ? <CheckCircle2 className="w-5 h-5" /> : ms.icon}
               </div>
 
-              <div className="pt-1.5 flex-1">
-                <div className="flex items-center justify-between">
-                  <h4 className={cn(
-                    "text-sm font-black tracking-tight",
-                    ms.isUnlocked ? "text-foreground" : "text-muted-foreground"
-                  )}>
-                    {ms.label}
-                  </h4>
-                  <span className="text-[10px] font-mono font-bold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">
-                    {ms.points} pts
-                  </span>
-                </div>
+              <div className="flex flex-col items-center justify-center text-center mt-3 px-2 w-full">
+                <h4 className={cn(
+                  "text-xs font-black tracking-tight mb-1 line-clamp-1",
+                  ms.isUnlocked ? "text-foreground" : "text-muted-foreground"
+                )}>
+                  {ms.label}
+                </h4>
+                <span className="text-[10px] font-mono font-bold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded min-w-max">
+                  {ms.points} pts
+                </span>
                 
-                <div className="flex flex-wrap items-center gap-3 mt-1">
+                <div className="flex flex-col items-center gap-1.5 mt-2 h-[70px]">
                    {ms.date && (
-                     <span className="text-[10px] font-bold text-[#2f6cf5] flex items-center gap-1 bg-blue-500/5 px-2 py-0.5 rounded">
-                       <ChevronRight className="w-2.5 h-2.5" /> Đạt được lúc: {ms.date}
+                     <span className="text-[9px] font-bold text-[#2f6cf5] flex flex-col items-center bg-blue-500/5 px-2 py-1 rounded w-full line-clamp-2">
+                       <span>Đạt được lúc:</span>
+                       <span>{ms.date}</span>
                      </span>
                    )}
                    {ms.reward && (
                      <span className={cn(
-                       "text-[10px] font-bold flex items-center gap-1 px-2 py-0.5 rounded",
+                       "text-[9px] font-bold flex flex-col items-center px-2 py-1 rounded w-full line-clamp-2",
                        ms.isUnlocked ? "text-emerald-500 bg-emerald-500/5" : "text-muted-foreground/60 bg-muted/30"
                      )}>
-                       🎁 Quà: {ms.reward} {ms.isUnlocked ? "(Đã mở)" : "(Khóa)"}
+                       <span>🎁 Quà:</span>
+                       <span>{ms.reward} {ms.isUnlocked ? "(Đã mở)" : "(Khóa)"}</span>
                      </span>
                    )}
                 </div>
 
                 {idx < milestones.length - 1 && !milestones[idx+1].isUnlocked && ms.isUnlocked && (
-                  <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-2xl animate-pulse">
-                    <p className="text-[11px] font-bold text-primary flex items-center gap-2">
-                       <ChevronRight className="w-3 h-3" /> Cần thêm {(milestones[idx+1].points - currentPoints).toLocaleString()} điểm để thăng hạng {milestones[idx+1].label}
+                  <div className="mt-3 p-2 bg-primary/5 border border-primary/20 rounded-xl animate-pulse absolute -bottom-[4.5rem] w-[180%] z-20 shadow-md">
+                    <p className="text-[10px] font-bold text-primary flex items-center justify-center gap-1 text-center">
+                       <ChevronRight className="w-3 h-3 shrink-0" /> Cần {(milestones[idx+1].points - currentPoints).toLocaleString()} điểm để lên hạng
                     </p>
                   </div>
                 )}

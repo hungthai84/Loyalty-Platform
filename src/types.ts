@@ -27,6 +27,8 @@ export interface Customer {
  tickets?: any[];
  statusHistory?: any[];
  redemptions?: any[];
+ dynamicSegments?: { tag: string; color: string }[];
+ lastOrderDate?: string | any;
  createdAt: any; // ServerTimestamp
  updatedAt: any; // ServerTimestamp
 }

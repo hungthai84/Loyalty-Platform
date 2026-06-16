@@ -12,29 +12,27 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import {
-  Search,
   Filter,
-  Download,
   Plus,
   Layers,
   Settings,
   Facebook,
   Linkedin,
   Instagram,
-  ArrowRight,
   User,
   Users,
   Cloud,
   CloudOff,
-  Upload,
   SlidersHorizontal,
   RotateCcw,
-  FileText,
   X,
+  ChevronDown,
+  BookOpen,
+  Package,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
-import { cn } from "@/lib/utils";
+import { cn, getCustomerCode } from "@/lib/utils";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
 import { useFirebase } from "@/components/FirebaseProvider";
@@ -47,13 +45,11 @@ import {
   doc,
   writeBatch,
   serverTimestamp,
-  where,
 } from "firebase/firestore";
 import { Customer, AttributeDefinition, Company, TierConfig } from "@/types";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
 import { AddCustomerDialog } from "@/components/customers/AddCustomerDialog";
 import { ImportCustomersDialog } from "@/components/customers/ImportCustomersDialog";
-import { AttributeManager } from "@/components/customers/AttributeManager";
 import { CrmSettingsDialog } from "@/components/customers/CrmSettingsDialog";
 import { CustomerDashboard } from "@/components/customers/CustomerDashboard";
 import { CustomerSearch } from "@/components/customers/CustomerSearch";
@@ -63,8 +59,6 @@ import { CustomerActivityLog } from "@/components/customers/CustomerActivityLog"
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import {
   Building2,
-  Cloud,
-  CloudOff,
   ShieldAlert,
   Award,
   QrCode,
@@ -74,7 +68,6 @@ import {
   History,
   Crown,
   Mail,
-  Info,
   AlertCircle
 } from "lucide-react";
 import {
@@ -84,12 +77,27 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { BulkEmailDialog } from "@/components/customers/BulkEmailDialog";
+import { AddSegmentDialog } from "@/components/customers/AddSegmentDialog";
+import { SegmentationView } from "@/components/customers/SegmentationView";
 import { toast } from "sonner";
 import {
   getGuestCustomers,
   getGuestAttributes,
   getGuestCompanies,
 } from "@/data/guestData";
+
+interface SavedFilter {
+  id: string;
+  name: string;
+  minPoints: string;
+  maxPoints: string;
+  selectedSocialType: string;
+  selectedHasCompany: string;
+  selectedTag: string;
+  startDate: string;
+  endDate: string;
+  sortBy: string;
+}
 
 const COLOR_PRESET_MAP_SHORT: Record<string, string> = {
   gold: "bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/20",
@@ -103,7 +111,7 @@ const COLOR_PRESET_MAP_SHORT: Record<string, string> = {
 
 const COLUMN_LABELS: Record<string, string> = {
   id: "Mã KH",
-  nameEmail: "Họ tên & Email",
+  nameEmail: "Họ tên & SĐT",
   social: "Mạng xã hội",
   company: "Công ty / Chi nhánh",
   status: "Trạng thái",
@@ -133,12 +141,42 @@ export function CustomersView() {
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   // Segment tab navigation states
-  const [activeViewTab, setActiveViewTab] = useState<"list" | "segments">("list");
+  const [activeViewTab, setActiveViewTab] = useState<"list" | "segments" | "status_rules">("list");
+  const [showDoc, setShowDoc] = useState(false);
+  const [showAddSegmentDialog, setShowAddSegmentDialog] = useState(false);
+  const [showSegmentSettingsDialog, setShowSegmentSettingsDialog] = useState(false);
+
+  // States for isolated segments tab filtering
+  const [segmentSearch, setSegmentSearch] = useState("");
+  const [selectedSegmentFilter, setSelectedSegmentFilter] = useState("all");
+  const [segmentSelectedCompanyId, setSegmentSelectedCompanyId] = useState("all");
+  const [segmentSelectedTier, setSegmentSelectedTier] = useState("all");
+  const [segmentSelectedStatus, setSegmentSelectedStatus] = useState("all");
+  const [segmentMinPoints, setSegmentMinPoints] = useState("");
+  const [segmentMaxPoints, setSegmentMaxPoints] = useState("");
+  const [showSegmentAdvancedFilters, setShowSegmentAdvancedFilters] = useState(false);
+  const [showSegmentColumnSettings, setShowSegmentColumnSettings] = useState(false);
+
+  // Reset helper for segments
+  const resetSegmentFilters = () => {
+    setSegmentSearch("");
+    setSelectedSegmentFilter("all");
+    setSegmentSelectedCompanyId("all");
+    setSegmentSelectedTier("all");
+    setSegmentSelectedStatus("all");
+    setSegmentMinPoints("");
+    setSegmentMaxPoints("");
+  };
+
   const [selectedSegmentId, setSelectedSegmentId] = useState<string>("seg_whales");
   const [segmentBuilderName, setSegmentBuilderName] = useState("");
   const [segmentBuilderMinSpend, setSegmentBuilderMinSpend] = useState<number>(10000000);
   const [segmentBuilderMinFrequency, setSegmentBuilderMinFrequency] = useState<number>(2);
   const [segmentBuilderColor, setSegmentBuilderColor] = useState<"emerald" | "blue" | "amber" | "rose" | "violet">("blue");
+  
+  const [segmentBuilderType, setSegmentBuilderType] = useState<"criteria" | "file">("criteria");
+  const [uploadedFileEntries, setUploadedFileEntries] = useState<string[]>([]);
+  const [uploadedFileName, setUploadedFileName] = useState("");
 
   // Load custom segments from local storage if available, default to pre-populated cohorts
   const [customSegments, setCustomSegments] = useState<Array<{
@@ -148,6 +186,10 @@ export function CustomersView() {
     minFrequency: number;
     color: "emerald" | "blue" | "amber" | "rose" | "violet";
     isCustom?: boolean;
+    type?: "criteria" | "file";
+    fileEntries?: string[];
+    fileName?: string;
+    conditions?: any[];
   }>>(() => {
     const saved = localStorage.getItem("crm_custom_segments_v1");
     if (saved) {
@@ -164,20 +206,23 @@ export function CustomersView() {
         minSpend: 50000000,
         minFrequency: 3,
         color: "emerald",
+        type: "criteria"
       },
       {
         id: "seg_loyal",
-        name: "Hội viên Thường Xuyên (Mua Sắm Đều Đặn)",
+        name: "Thành viên Thường Xuyên (Mua Sắm Đều Đặn)",
         minSpend: 20000000,
         minFrequency: 2,
         color: "blue",
+        type: "criteria"
       },
       {
         id: "seg_promising",
-        name: "Hội viên Thường Thức (Casual Shoppers)",
+        name: "Thành viên Thường Thức (Casual Shoppers)",
         minSpend: 5000000,
         minFrequency: 1,
         color: "amber",
+        type: "criteria"
       },
       {
         id: "seg_at_risk",
@@ -185,6 +230,7 @@ export function CustomersView() {
         minSpend: 0,
         minFrequency: 0,
         color: "rose",
+        type: "criteria"
       },
     ];
   });
@@ -224,10 +270,25 @@ export function CustomersView() {
 
         selectedCustomerIds.forEach((id) => {
           const docRef = doc(customersCol, id);
-          batch.update(docRef, {
-            ...updateData,
-            updatedAt: serverTimestamp(),
-          });
+          const customer = customers.find((c) => c.id === id);
+          if (customer) {
+            batch.set(
+              docRef,
+              {
+                ...customer,
+                ...updateData,
+                userId: user.uid,
+                createdAt: customer.createdAt instanceof Date || typeof customer.createdAt === "string" ? customer.createdAt : serverTimestamp(),
+                updatedAt: serverTimestamp(),
+              },
+              { merge: true },
+            );
+          } else {
+            batch.update(docRef, {
+              ...updateData,
+              updatedAt: serverTimestamp(),
+            });
+          }
         });
 
         await batch.commit();
@@ -249,15 +310,27 @@ export function CustomersView() {
 
   // Custom column toggle configuration
   const [showColumnSettings, setShowColumnSettings] = useState(false);
+  
+  // Saved filters state
+  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>(() => {
+    try {
+      const saved = localStorage.getItem("clp_saved_filters");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [newFilterName, setNewFilterName] = useState("");
+
   const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
     {
       id: true,
       nameEmail: true,
       social: false,
-      company: true,
+      company: false,
       status: true,
       points: false,
-      churnRisk: true,
+      churnRisk: false,
       customAttributes: false,
       actions: true,
     },
@@ -265,6 +338,8 @@ export function CustomersView() {
 
   // Advanced filters toggle state & custom criteria values
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [showImportExport, setShowImportExport] = useState(false);
+  const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [minPoints, setMinPoints] = useState<string>("");
   const [maxPoints, setMaxPoints] = useState<string>("");
   const [selectedSocialType, setSelectedSocialType] = useState<string>("all"); // 'all', 'facebook', 'zalo', 'linkedin', 'instagram', 'tiktok'
@@ -273,6 +348,17 @@ export function CustomersView() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("createdAt_desc"); // sorting option
+
+  // Cohort Builder conditions and edit modes
+  const [segmentConditions, setSegmentConditions] = useState<Array<{
+    field: 'spend' | 'frequency' | 'points' | 'risk';
+    operator: 'gte' | 'lte' | 'eq';
+    value: string;
+  }>>([
+    { field: 'spend', operator: 'gte', value: '10000000' }
+  ]);
+  const [editingSegmentId, setEditingSegmentId] = useState<string | null>(null);
+  const [visibleLimit, setVisibleLimit] = useState(20);
 
   // New state to view a single customer details dashboard
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -284,6 +370,43 @@ export function CustomersView() {
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<string[]>([]);
   const [forceOffline, setForceOffline] = useState(false);
   const [seeding, setSeeding] = useState(false);
+
+  // Infinite Scroll limit loader on scroll reach bottom
+  useEffect(() => {
+    const handleInfiniteScroll = () => {
+      const threshold = 150; // px
+      const scrollHeight = document.documentElement.scrollHeight;
+      const currentScroll = window.innerHeight + window.scrollY;
+      
+      if (scrollHeight - currentScroll < threshold) {
+        // Load next batch
+        setVisibleLimit((prev) => prev + 20);
+      }
+    };
+
+    window.addEventListener("scroll", handleInfiniteScroll);
+    return () => window.removeEventListener("scroll", handleInfiniteScroll);
+  }, []);
+
+  // Reset limit whenever navigation, query, or active tab changes
+  useEffect(() => {
+    setVisibleLimit(20);
+  }, [
+    search,
+    selectedCompanyId,
+    selectedStatus,
+    selectedTier,
+    minPoints,
+    maxPoints,
+    selectedSocialType,
+    selectedHasCompany,
+    selectedTag,
+    startDate,
+    endDate,
+    sortBy,
+    activeViewTab,
+    selectedSegmentId
+  ]);
 
   useEffect(() => {
     if (!user || user.isLocal || forceOffline) {
@@ -708,120 +831,366 @@ export function CustomersView() {
     }
   };
 
+  const handleSegmentFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadedFileName(file.name);
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (text) {
+        // Split by commas, semi-colons, newlines, tabs
+        const lines = text.split(/[\n\r,;\t]+/)
+          .map(line => line.trim())
+          .filter(Boolean);
+        setUploadedFileEntries(lines);
+        toast.success(`Đã đọc ${lines.length} dòng dữ liệu từ file ${file.name}`);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleEditCohort = (seg: any) => {
+    setEditingSegmentId(seg.id);
+    setSegmentBuilderName(seg.name);
+    setSegmentBuilderType(seg.type || "criteria");
+    setSegmentBuilderColor(seg.color || "blue");
+    setUploadedFileEntries(seg.fileEntries || []);
+    setUploadedFileName(seg.fileName || "");
+
+    if (seg.conditions && seg.conditions.length > 0) {
+      setSegmentConditions(seg.conditions);
+    } else {
+      const derived: any[] = [];
+      if (seg.id === "seg_at_risk") {
+        derived.push({ field: 'risk', operator: 'gte', value: '70' });
+      } else {
+        if (seg.minSpend) {
+          derived.push({ field: 'spend', operator: 'gte', value: String(seg.minSpend) });
+        }
+        if (seg.minFrequency) {
+          derived.push({ field: 'frequency', operator: 'gte', value: String(seg.minFrequency) });
+        }
+      }
+      if (derived.length === 0) {
+        derived.push({ field: 'spend', operator: 'gte', value: '1000000' });
+      }
+      setSegmentConditions(derived);
+    }
+    toast.info(`Vui lòng chỉnh sửa cấu hình nhóm "${seg.name}" hoặc bổ sung thêm khách hàng bằng File hoặc điều kiện mới.`);
+  };
+
   const handleSaveCustomSegment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!segmentBuilderName.trim()) {
-      toast.error("Vui lòng nhập tên phân khúc!");
+      toast.error("Vui lòng nhập tên nhóm thành viên!");
       return;
     }
 
-    const newSegment = {
-      id: `seg_${Date.now()}`,
-      name: segmentBuilderName.trim(),
-      minSpend: Number(segmentBuilderMinSpend),
-      minFrequency: Number(segmentBuilderMinFrequency),
-      color: segmentBuilderColor,
-      isCustom: true
-    };
+    if (segmentBuilderType === "file" && uploadedFileEntries.length === 0) {
+      toast.error("Vui lòng tải lên file danh sách có dữ liệu hợp lệ!");
+      return;
+    }
 
-    const updated = [...customSegments, newSegment];
-    setCustomSegments(updated);
-    localStorage.setItem("crm_custom_segments_v1", JSON.stringify(updated));
-    setSelectedSegmentId(newSegment.id);
-    
-    // Reset Form
+    if (editingSegmentId) {
+      const updated = customSegments.map(seg => {
+        if (seg.id === editingSegmentId) {
+          return {
+            ...seg,
+            name: segmentBuilderName.trim(),
+            minSpend: segmentBuilderType === "criteria" ? 0 : 0,
+            minFrequency: segmentBuilderType === "criteria" ? 0 : 0,
+            color: segmentBuilderColor,
+            type: segmentBuilderType,
+            conditions: segmentBuilderType === "criteria" ? segmentConditions : [],
+            fileEntries: segmentBuilderType === "file" ? uploadedFileEntries : undefined,
+            fileName: segmentBuilderType === "file" ? uploadedFileName : undefined,
+          };
+        }
+        return seg;
+      });
+      setCustomSegments(updated);
+      localStorage.setItem("crm_custom_segments_v1", JSON.stringify(updated));
+      setSelectedSegmentId(editingSegmentId);
+      setEditingSegmentId(null);
+      toast.success(`Đã cập nhật thành công nhóm thành viên ${segmentBuilderName}!`);
+    } else {
+      const newSegment = {
+        id: `seg_${Date.now()}`,
+        name: segmentBuilderName.trim(),
+        minSpend: 0,
+        minFrequency: 0,
+        color: segmentBuilderColor,
+        isCustom: true,
+        type: segmentBuilderType,
+        conditions: segmentBuilderType === "criteria" ? segmentConditions : [],
+        fileEntries: segmentBuilderType === "file" ? uploadedFileEntries : undefined,
+        fileName: segmentBuilderType === "file" ? uploadedFileName : undefined,
+      };
+
+      const updated = [...customSegments, newSegment];
+      setCustomSegments(updated);
+      localStorage.setItem("crm_custom_segments_v1", JSON.stringify(updated));
+      setSelectedSegmentId(newSegment.id);
+      toast.success(`Đã tạo thành công nhóm thành viên ${newSegment.name}!`);
+    }
+
+    // Reset Form State
     setSegmentBuilderName("");
-    setSegmentBuilderMinSpend(10000000);
-    setSegmentBuilderMinFrequency(2);
+    setSegmentConditions([{ field: 'spend', operator: 'gte', value: '10000000' }]);
     setSegmentBuilderColor("blue");
-    toast.success(`Đã tạo thành công phân khúc ${newSegment.name}!`);
+    setSegmentBuilderType("criteria");
+    setUploadedFileEntries([]);
+    setUploadedFileName("");
   };
 
   const handleDeleteCustomSegment = (segId: string) => {
-    if (confirm("Bạn có chắc chắn muốn xóa phân khúc khách hàng tự định nghĩa này?")) {
+    if (confirm("Bạn có chắc chắn muốn xóa nhóm thành viên tự định nghĩa này?")) {
       const updated = customSegments.filter(s => s.id !== segId);
       setCustomSegments(updated);
       localStorage.setItem("crm_custom_segments_v1", JSON.stringify(updated));
       
-      // If we deleted the active one, redirect to first standard cohort
       if (selectedSegmentId === segId) {
         setSelectedSegmentId("seg_whales");
       }
-      toast.success("Đã xóa phân khúc thành công!");
+      if (editingSegmentId === segId) {
+        setEditingSegmentId(null);
+      }
+      toast.success("Đã xóa nhóm thành viên thành công!");
     }
+  };
+
+  const getCustomersInSegment = (segment: any, listToFilter: Customer[]): Customer[] => {
+    if (!segment) return [];
+    
+    if (segment.type === "file") {
+      const entries = segment.fileEntries || [];
+      const cleanEntries = entries.map((e: string) => e.toLowerCase().trim()).filter(Boolean);
+      return listToFilter.filter(c => {
+        const phone = c.phone?.trim();
+        const email = c.email?.trim().toLowerCase();
+        const customerId = c.id?.trim().toLowerCase();
+        return cleanEntries.some(e => 
+          (phone && e.includes(phone)) || 
+          (email && e === email) || 
+          (customerId && e === customerId) ||
+          (c.name && e.includes(c.name.toLowerCase().trim()))
+        );
+      });
+    }
+
+    if (segment.conditions && segment.conditions.length > 0) {
+      return listToFilter.filter(c => {
+        const spend = c.customFields?.spend || 0;
+        const freq = c.orders?.length || 0;
+        const pts = c.points || 0;
+        const riskScore = c.customFields?.risk_score || 0;
+
+        return segment.conditions!.every((cond: any) => {
+          const valNum = Number(cond.value) || 0;
+          if (cond.field === 'spend') {
+            if (cond.operator === 'gte') return spend >= valNum;
+            if (cond.operator === 'lte') return spend <= valNum;
+            return spend === valNum;
+          }
+          if (cond.field === 'frequency') {
+            if (cond.operator === 'gte') return freq >= valNum;
+            if (cond.operator === 'lte') return freq <= valNum;
+            return freq === valNum;
+          }
+          if (cond.field === 'points') {
+            if (cond.operator === 'gte') return pts >= valNum;
+            if (cond.operator === 'lte') return pts <= valNum;
+            return pts === valNum;
+          }
+          if (cond.field === 'risk') {
+            if (cond.operator === 'gte') return riskScore >= valNum;
+            if (cond.operator === 'lte') return riskScore <= valNum;
+            return riskScore === valNum;
+          }
+          
+          if (cond.field === 'product_name') {
+            const val = cond.value.toLowerCase().trim();
+            if (!val) return true;
+            
+            // split by comma or word " và "
+            const keywords = val.split(/,|\bvà\b/).map((t: string) => t.trim()).filter(Boolean);
+            if (keywords.length === 0) return true;
+            
+            const orders = c.orders || [];
+            
+            if (cond.operator === 'eq') {
+              return orders.some(o => 
+                keywords.some(kw => (o.items || o.description || '').toLowerCase().trim() === kw)
+              );
+            }
+            
+            // contains: match all keywords anywhere in order items history
+            const allProductsText = orders.map(o => 
+              ((o.items || '') + ' ' + (o.description || '')).toLowerCase()
+            ).join(' ');
+            
+            return keywords.every(kw => allProductsText.includes(kw));
+          }
+          
+          if (cond.field === 'purchase_date') {
+            const val = cond.value;
+            if (!val) return true;
+            
+            let startDate: Date | null = null;
+            let endDate: Date | null = null;
+            
+            if (val === '6_thang_cuoi_2026') {
+              startDate = new Date('2026-07-01T00:00:00');
+              endDate = new Date('2026-12-31T23:59:59');
+            } else if (val === '6_thang_dau_2026') {
+              startDate = new Date('2026-01-01T00:00:00');
+              endDate = new Date('2026-06-30T23:59:59');
+            } else if (val === 'ca_nam_2026') {
+              startDate = new Date('2026-01-01T00:00:00');
+              endDate = new Date('2026-12-31T23:59:59');
+            } else if (val === 'last_30_days') {
+              startDate = new Date();
+              startDate.setDate(startDate.getDate() - 30);
+              endDate = new Date();
+            } else if (val === 'last_180_days') {
+              startDate = new Date();
+              startDate.setDate(startDate.getDate() - 180);
+              endDate = new Date();
+            } else if (val.startsWith('custom:')) {
+              const parts = val.split(':');
+              if (parts[1]) startDate = new Date(parts[1] + 'T00:00:00');
+              if (parts[2]) endDate = new Date(parts[2] + 'T23:59:59');
+            } else {
+              const parsedDate = new Date(val + 'T00:00:00');
+              if (cond.operator === 'gte') {
+                startDate = parsedDate;
+              } else if (cond.operator === 'lte') {
+                endDate = new Date(val + 'T23:59:59');
+              }
+            }
+            
+            const parseOrderDate = (dateVal: any): number => {
+              if (!dateVal) return 0;
+              if (dateVal instanceof Date) return dateVal.getTime();
+              if (dateVal && typeof dateVal.toDate === "function") return dateVal.toDate().getTime();
+              if (dateVal && typeof dateVal.seconds === "number") return dateVal.seconds * 1000;
+              if (typeof dateVal === "number") return dateVal;
+              
+              const dateStr = String(dateVal).trim();
+              try {
+                const parts = dateStr.split(" ");
+                const datePart = parts[0];
+                const [day, month, year] = datePart.split("/").map(Number);
+                if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                  const timePart = parts[1] || "00:00";
+                  const [hour, minute] = timePart.split(":").map(Number);
+                  return new Date(year, month - 1, day, hour || 0, minute || 0, 0, 0).getTime();
+                }
+              } catch (e) {}
+              
+              const parsed = Date.parse(dateStr);
+              return isNaN(parsed) ? 0 : parsed;
+            };
+            
+            const orders = c.orders || [];
+            return orders.some(o => {
+              const oTime = parseOrderDate(o.date);
+              if (oTime === 0) return false;
+              
+              let match = true;
+              if (startDate) match = match && oTime >= startDate.getTime();
+              if (endDate) match = match && oTime <= endDate.getTime();
+              return match;
+            });
+          }
+          
+          return true;
+        });
+      });
+    }
+
+    return listToFilter.filter(c => {
+      const spend = c.customFields?.spend || 0;
+      const freq = c.orders?.length || 0;
+      
+      if (segment.id === "seg_at_risk") {
+        return c.activityStatus === "churn_risk" || (c.customFields?.risk_score || 0) >= 70;
+      }
+      
+      return spend >= (segment.minSpend ?? 0) && freq >= (segment.minFrequency ?? 0);
+    });
   };
 
   const currentSegmentData = customSegments.find(s => s.id === selectedSegmentId) || customSegments[0];
 
   const matchedCustomersInSegment = useMemo(() => {
-    if (!currentSegmentData) return [];
-    
-    return customers.filter(c => {
-      const spend = c.customFields?.spend || 0;
-      const freq = c.orders?.length || 0;
-      
-      // At Risk Churn special criteria logic
-      if (currentSegmentData.id === "seg_at_risk") {
-        return c.activityStatus === "churn_risk" || c.customFields?.risk_score >= 70;
-      }
-      
-      return spend >= currentSegmentData.minSpend && freq >= currentSegmentData.minFrequency;
-    });
+    return getCustomersInSegment(currentSegmentData, customers);
   }, [customers, currentSegmentData]);
 
-  const handleExportSegmentCSV = () => {
-    try {
-      if (matchedCustomersInSegment.length === 0) {
-        toast.error("Phân khúc này hiện chưa có khách hàng để xuất!");
-        return;
+  const filteredSegmentCustomers = useMemo(() => {
+    let baseList = customers;
+    if (selectedSegmentFilter !== "all") {
+      const activeSeg = customSegments.find(s => s.id === selectedSegmentFilter);
+      if (activeSeg) {
+        baseList = getCustomersInSegment(activeSeg, customers);
       }
-
-      const headers = [
-        "Mã KH",
-        "Họ và Tên",
-        "Email",
-        "Số điện thoại",
-        "Giá trị trọn đời (VND)",
-        "Tần suất mua hàng",
-        "Điểm tích lũy"
-      ];
-
-      const csvRows = [headers.join(",")];
-      matchedCustomersInSegment.forEach((c) => {
-        const spend = c.customFields?.spend || 0;
-        const freq = c.orders?.length || 0;
-        const row = [
-          c.id || "",
-          c.name || "",
-          c.email || "",
-          c.phone || "",
-          spend,
-          freq,
-          c.points || 0
-        ].map((val) => {
-          const strVal = String(val).replace(/"/g, '""');
-          return strVal.includes(",") || strVal.includes("\n") || strVal.includes('"')
-            ? `"${strVal}"`
-            : strVal;
-        });
-        csvRows.push(row.join(","));
-      });
-
-      const csvContent = "\uFEFF" + csvRows.join("\n");
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `Phan-khuc-${currentSegmentData.name.replace(/\s+/g, "-")}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success(`Đã xuất phân khúc ${currentSegmentData.name} với ${matchedCustomersInSegment.length} hội viên!`);
-    } catch (e: any) {
-      toast.error(`Xuất dữ liệu thất bại: ${e.message}`);
     }
-  };
+
+    return baseList.filter((c) => {
+      const matchesSearch =
+        !segmentSearch.trim() ||
+        (c.name && c.name.toLowerCase().includes(segmentSearch.toLowerCase())) ||
+        (c.email && c.email.toLowerCase().includes(segmentSearch.toLowerCase())) ||
+        (c.id && c.id.toLowerCase().includes(segmentSearch.toLowerCase())) ||
+        (c.phone && c.phone.includes(segmentSearch));
+
+      const matchesCompany =
+        segmentSelectedCompanyId === "all" || c.companyId === segmentSelectedCompanyId;
+
+      const ptsForTier = c.points || 0;
+      let customTier = "Member";
+      if (ptsForTier >= 10000) {
+        customTier = "Atelier";
+      } else if (ptsForTier >= 5000) {
+        customTier = "Icon";
+      } else if (ptsForTier >= 2000) {
+        customTier = "Essential";
+      }
+      const matchesTier =
+        segmentSelectedTier === "all" || customTier === segmentSelectedTier;
+
+      const matchesStatus =
+        segmentSelectedStatus === "all" || c.activityStatus === segmentSelectedStatus;
+
+      const matchesMinPoints =
+        !segmentMinPoints || (c.points || 0) >= Number(segmentMinPoints);
+      const matchesMaxPoints =
+        !segmentMaxPoints || (c.points || 0) <= Number(segmentMaxPoints);
+
+      return (
+        matchesSearch &&
+        matchesCompany &&
+        matchesTier &&
+        matchesStatus &&
+        matchesMinPoints &&
+        matchesMaxPoints
+      );
+    });
+  }, [
+    customers,
+    selectedSegmentFilter,
+    segmentSearch,
+    segmentSelectedCompanyId,
+    segmentSelectedTier,
+    segmentSelectedStatus,
+    segmentMinPoints,
+    segmentMaxPoints,
+    customSegments
+  ]);
+
+
 
   const handleExportPDF = () => {
     try {
@@ -1184,6 +1553,45 @@ export function CustomersView() {
     );
   };
 
+  const renderMemberTierBadge = (points: number = 0, tier?: string) => {
+    let tierName = tier || "Member";
+    let badgeClass = "bg-slate-500/5 text-slate-500 border-slate-500/15";
+    
+    const norm = tierName.trim().toLowerCase();
+    if (norm === "atelier") {
+      tierName = "Atelier";
+      badgeClass = "bg-indigo-500/10 text-indigo-600 border-indigo-500/20";
+    } else if (norm === "icon") {
+      tierName = "Icon";
+      badgeClass = "bg-amber-500/10 text-amber-600 border-amber-500/20";
+    } else if (norm === "essential") {
+      tierName = "Essential";
+      badgeClass = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    } else if (norm === "member") {
+      tierName = "Member";
+      badgeClass = "bg-slate-500/5 text-slate-500 border-slate-500/15";
+    } else {
+      if (points >= 10000) {
+        tierName = "Atelier";
+        badgeClass = "bg-indigo-500/10 text-indigo-600 border-indigo-500/20";
+      } else if (points >= 2500) {
+        tierName = "Icon";
+        badgeClass = "bg-amber-500/10 text-amber-600 border-amber-500/20";
+      } else if (points >= 500) {
+        tierName = "Essential";
+        badgeClass = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+      } else {
+        tierName = tier || "Member";
+        badgeClass = "bg-slate-500/5 text-slate-500 border-slate-500/15";
+      }
+    }
+    return (
+      <Badge className={cn("text-[11px] font-bold py-0.5 px-2 rounded-full inline-flex items-center shadow-none select-none whitespace-nowrap border", badgeClass)}>
+        {tierName}
+      </Badge>
+    );
+  };
+
   if (authLoading) return <div className="p-8 text-center">Đang tải...</div>;
 
   const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
@@ -1227,48 +1635,18 @@ export function CustomersView() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {forceOffline && (
-          <button
-            onClick={() => {
-              setForceOffline(false);
-              setLoading(true);
-              toast.success("Đang kết nối lại Cloud Firestore...");
-            }}
-            className="flex items-center justify-center px-4 py-2 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-white rounded-xl text-sm font-medium bg-amber-500/10 transition-colors cursor-pointer"
-          >
-            <Cloud className="w-4 h-4 mr-2" /> Kết nối Cloud
-          </button>
-        )}
+      <div className="flex items-center gap-2 shrink-0">
         <button
-          onClick={() => setShowCrmSettings(true)}
-          className="flex items-center justify-center px-4 py-2 border border-[#6366f1]/20 bg-[#6366f1]/5 text-[#6366f1] hover:bg-[#6366f1]/10 rounded-xl text-sm font-bold transition-all cursor-pointer"
+          onClick={() => setShowDoc(!showDoc)}
+          className={cn(
+            "px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer border",
+            showDoc
+              ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+              : "bg-background border-border hover:bg-muted text-foreground"
+          )}
         >
-          <Settings className="w-4 h-4 mr-2 text-[#6366f1]" /> Cài đặt khách hàng
-        </button>
-        <button
-          onClick={handleExportCSV}
-          className="flex items-center justify-center px-4 py-2 border border-[#2f6cf5]/20 rounded-xl text-sm font-bold bg-[#2f6cf5]/10 text-[#2f6cf5] hover:bg-[#2f6cf5]/20 transition-colors cursor-pointer"
-        >
-          <Download className="w-4 h-4 mr-2" /> Xuất CSV
-        </button>
-        <button
-          onClick={handleExportPDF}
-          className="flex items-center justify-center px-4 py-2 border border-blue-500/20 rounded-xl text-sm font-bold bg-blue-500/5 text-blue-600 hover:bg-blue-600 hover:text-white transition-all cursor-pointer"
-        >
-          <FileText className="w-4 h-4 mr-2" /> Xuất PDF
-        </button>
-        <button
-          onClick={() => setShowImportDialog(true)}
-          className="flex items-center justify-center px-4 py-2 bg-card border border-border rounded-xl text-sm font-medium hover:bg-muted transition-colors text-foreground"
-        >
-          <Upload className="w-4 h-4 mr-2 text-[#2f6cf5]" /> Nhập CSV
-        </button>
-        <button
-          onClick={() => setShowAddDialog(true)}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors flex items-center shadow-lg shadow-primary/25 font-bold cursor-pointer"
-        >
-          <Plus className="w-4 h-4 mr-2" /> Thêm khách hàng
+          <BookOpen className="w-4 h-4 mr-2 text-emerald-500" />
+          {activeViewTab === "list" ? "Tài liệu Thành viên" : activeViewTab === "segments" ? "Tài liệu Nhóm tùy chỉnh" : "Tài liệu Phân loại khách hàng"}
         </button>
       </div>
     </motion.div>
@@ -1290,7 +1668,7 @@ export function CustomersView() {
                 : "text-muted-foreground hover:text-foreground border border-transparent"
             )}
           >
-            <User className="w-4 h-4" /> Danh sách Hội viên
+            <User className="w-4 h-4" /> Danh sách thành viên
           </button>
           <button
             onClick={() => setActiveViewTab("segments")}
@@ -1301,149 +1679,347 @@ export function CustomersView() {
                 : "text-muted-foreground hover:text-foreground border border-transparent"
             )}
           >
-            <Layers className="w-4 h-4" /> Phân khúc (Segments)
+            <Layers className="w-4 h-4" /> Nhóm thành viên tùy chỉnh
+          </button>
+          <button
+            onClick={() => setActiveViewTab("status_rules")}
+            className={cn(
+              "px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer",
+              activeViewTab === "status_rules"
+                ? "bg-white dark:bg-zinc-800 text-[#2f6cf5] shadow-sm border border-border/20 font-black scale-[1.02]"
+                : "text-muted-foreground hover:text-foreground border border-transparent"
+            )}
+          >
+            <Tag className="w-4 h-4" /> Phân loại trạng thái
           </button>
         </div>
 
-        {activeViewTab === "list" ? (
-          <>
-            <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col gap-5 relative z-30 backdrop-blur-md w-full">
-            {/* Filter Section */}
-              <div className="flex flex-wrap gap-2.5 items-center w-full md:w-auto">
-                <CustomerSearch
-                  customers={customers}
-                  value={search}
-                  onChange={setSearch}
-                  onSelectCustomer={(customer) => {
-                    // In a real app we might open their profile or filter specifically to them
-                    setSearch(customer.name);
-                  }}
-                />
-
-                <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
-                  <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
-                  <select
-                    className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
-                    value={selectedCompanyId}
-                    onChange={(e) => setSelectedCompanyId(e.target.value)}
-                  >
-                    <option value="all">Tất cả chi nhánh</option>
-                    {companies.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+        <AnimatePresence>
+          {showDoc && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="border border-emerald-500/20 bg-emerald-500/[0.02] dark:bg-emerald-500/[0.01] p-6 rounded-2xl flex flex-col gap-4 text-left font-sans mb-6 backdrop-blur-xs relative overflow-hidden"
+            >
+              <button
+                onClick={() => setShowDoc(false)}
+                className="absolute top-4 right-4 p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-500 shrink-0">
+                  <BookOpen className="w-5 h-5" />
                 </div>
-
-                <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
-                  <Filter className="w-3.5 h-3.5 text-muted-foreground" />
-                  <select
-                    className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                  >
-                    <option value="all">Tất cả trạng thái</option>
-                    {CUSTOMER_STATUSES.map((s) => (
-                      <option key={s.code} value={s.code}>
-                        {s.classification}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
-                  <Award className="w-3.5 h-3.5 text-muted-foreground" />
-                  <select
-                    className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
-                    value={selectedTier}
-                    onChange={(e) => setSelectedTier(e.target.value)}
-                  >
-                    <option value="all">Tất cả thứ hạng (Tier)</option>
-                    <option value="Atelier">Thành viên Atelier</option>
-                    <option value="Icon">Thành viên Icon</option>
-                    <option value="Essential">Thành viên Essential</option>
-                    <option value="Member">Thành viên Member</option>
-                  </select>
+                <div>
+                  <h4 className="text-sm font-black text-foreground uppercase tracking-wider">
+                    {activeViewTab === "list" ? "Tài liệu Hướng dẫn Quản lý Thành viên" : activeViewTab === "segments" ? "Tài liệu Hướng dẫn Phân rã Nhóm tùy chỉnh" : "Tài liệu Phân loại trạng thái tự động"}
+                  </h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {activeViewTab === "list" 
+                      ? "Tìm hiểu về cách cấu trúc tìm kiếm, bộ lọc nâng cao và cập nhật hàng loạt trạng thái hội viên." 
+                      : activeViewTab === "segments" 
+                        ? "Xây dựng các tệp khách hàng mục tiêu thông qua hoạt động mua sắm, tích lũy điểm và tải danh sách trực tiếp." 
+                        : "Cài đặt các quy tắc tự động chuyển trạng thái khách hàng dựa trên hành vi chi tiêu và tần suất tương tác."}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                {/* Column Visibility Configuration dropdown */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowColumnSettings(!showColumnSettings)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold bg-card hover:bg-muted/70 cursor-pointer text-foreground select-none transition-colors"
-                  >
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span>Cột hiển thị</span>
-                  </button>
-                  {showColumnSettings && (
-                    <div className="absolute right-0 mt-2 w-56 bg-card border border-border hover:border-primary/20 shadow-xl rounded-xl p-3.5 z-50 text-left backdrop-blur-xl">
-                      <div className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-2">
-                        Ẩn/hiện cột bảng
-                      </div>
-                      <div className="space-y-1.5 max-h-[190px] overflow-y-auto pr-1">
-                        {Object.keys(visibleColumns).map((colKey) => (
-                          <label
-                            key={colKey}
-                            className="flex items-center gap-2 px-2 py-1 hover:bg-muted rounded-md cursor-pointer text-xs font-semibold select-none"
-                          >
-                            <input
-                              type="checkbox"
-                              className="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5"
-                              checked={visibleColumns[colKey]}
-                              onChange={() =>
-                                setVisibleColumns((prev) => ({
-                                  ...prev,
-                                  [colKey]: !prev[colKey],
-                                }))
-                              }
-                            />
-                            <span>{COLUMN_LABELS[colKey]}</span>
-                          </label>
-                        ))}
-                      </div>
-                      <div className="border-t border-border mt-3 pt-2.5 flex justify-between gap-1">
-                        <button
-                          onClick={() =>
-                            setVisibleColumns({
-                              id: true,
-                              nameEmail: true,
-                              social: false,
-                              company: true,
-                              status: true,
-                              points: false,
-                              customAttributes: false,
-                              actions: true,
-                            })
-                          }
-                          className="text-xs text-[#2f6cf5] hover:underline font-extrabold"
-                        >
-                          Mặc định
-                        </button>
-                        <button
-                          onClick={() => setShowColumnSettings(false)}
-                          className="text-xs text-muted-foreground hover:text-foreground font-extrabold"
-                        >
-                          Đóng
-                        </button>
-                      </div>
+              {activeViewTab === "list" ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                    <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> phân cấp xếp hạng
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed font-semibold">
+                      Thành viên tự động đồng bộ theo điểm CRM tích lũy:
+                      <br />• <strong>Member</strong>: Dưới 2,000 điểm crm.
+                      <br />• <strong>Essential</strong>: 2,000 – 4,999 điểm crm.
+                      <br />• <strong>Icon</strong>: 5,000 – 9,999 điểm crm.
+                      <br />• <strong>Atelier</strong>: Trên 10,000 điểm crm.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                    <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#2f6cf5]" /> bộc lọc đa chiều
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed font-semibold">
+                      Hệ thống hỗ trợ tìm kiếm theo Họ tên, Email, SĐT, ID liên kết của Zalo, Facebook và thuộc tính động. Đồng thời lọc nâng cao theo mốc ngày tham gia, công ty đại diện và khoảng tích lũy điểm CRM.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                    <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> tính năng cập nhật
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed font-semibold">
+                      Hỗ trợ tạo nhãn động tùy chỉnh, nạp/rút điểm Loyalty trực tiếp cho hội viên được chọn. Bạn có thể sử dụng phương thức CSV Export để trích xuất báo cáo nhanh hoặc In ấn trực tiếp qua PDF hóa đơn.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                    <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> nhóm tiêu chí cơ bản
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed font-semibold">
+                      Nhóm tiêu chí tự động quét và phân hội viên theo các mốc cấu hình mặc định (VD: Whales - Chi tiêu &gt; 10M, Churn Risk - Cảnh báo rời bỏ hệ thống khi ngắt tương tác trên 30 ngày).
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                    <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500" /> ghép nhóm đa điều kiện
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed font-semibold">
+                      Cho phép liên kết nhiều điều kiện khác nhau đồng thời: doanh thu trọn đời, số lượt đơn đặt hàng, tích lũy điểm CRM và chỉ số đo lường rủi ro rời bỏ để tạo nhóm khách hàng cực kỳ chi tiết.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                    <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500" /> nhập danh sách file
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed font-semibold">
+                      Phân rã tệp bằng cách tải lên file Text hoặc CSV chứa danh sách ID, Số điện thoại hoặc Email. Hệ thống sẽ tự động đối chiếu cơ sở dữ liệu thời gian thực và gom nhóm các thảnh viên có mặt trong danh sách.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {activeViewTab === "status_rules" && <SegmentationView />}
+
+        {activeViewTab === "list" ? (
+          <>
+            <div className={cn(
+              "bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col gap-5 relative backdrop-blur-md w-full",
+              showColumnSettings ? "z-[100]" : "z-30"
+            )}>
+              {/* Filter & Action Section - Arranged into Row 1 & Row 2 */}
+              <div className="flex flex-col gap-5 w-full">
+                {/* Dòng 1 : Tìm kiếm khách hàng, Thêm khách hàng, Cài đặt khách hàng */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border/40 w-full">
+                  <div className="w-full md:max-w-md flex-1">
+                    <CustomerSearch
+                      customers={customers}
+                      value={search}
+                      onChange={setSearch}
+                      onSelectCustomer={(customer) => {
+                        setSearch(customer.name);
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Thêm khách hàng */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowAddDropdown(!showAddDropdown)}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors flex items-center shadow-lg shadow-primary/25 cursor-pointer select-none"
+                      >
+                        <Plus className="w-4 h-4 mr-2" /> Thêm khách hàng
+                        <ChevronDown className="w-4 h-4 ml-1" />
+                      </button>
+                      {showAddDropdown && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-40" 
+                            onClick={() => setShowAddDropdown(false)} 
+                          />
+                          <div className="absolute right-0 mt-2 w-52 bg-card border border-border shadow-xl rounded-xl p-2 z-50 text-left backdrop-blur-xl">
+                            <button
+                              onClick={() => {
+                                setShowAddDropdown(false);
+                                setShowAddDialog(true);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5 text-primary" />
+                              <span>Thêm khách hàng</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowAddDropdown(false);
+                                setActiveViewTab("list");
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Users className="w-3.5 h-3.5 text-blue-500" />
+                              <span>Danh sách</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowAddDropdown(false);
+                                setShowCrmSettings(true);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Settings className="w-3.5 h-3.5 text-indigo-500" />
+                              <span>Hệ thống tự động</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
-                  )}
+
+                    {/* Cài đặt khách hàng */}
+                    <button
+                      onClick={() => setShowCrmSettings(true)}
+                      className="flex items-center justify-center px-4 py-2 border border-[#6366f1]/20 bg-[#6366f1]/5 text-[#6366f1] hover:bg-[#6366f1]/10 rounded-xl text-sm font-bold transition-all cursor-pointer"
+                    >
+                      <Settings className="w-4 h-4 mr-2 text-[#6366f1]" /> Cài đặt khách hàng
+                    </button>
+
+                    {forceOffline && (
+                      <button
+                        onClick={() => {
+                          setForceOffline(false);
+                          setLoading(true);
+                          toast.success("Đang kết nối lại Cloud Firestore...");
+                        }}
+                        className="flex items-center justify-center px-4 py-2 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-white rounded-xl text-sm font-medium bg-amber-500/10 transition-colors cursor-pointer animate-pulse"
+                      >
+                        <Cloud className="w-4 h-4 mr-2" /> Kết nối Cloud
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* Toggle Advanced Filters */}
-                <button
-                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold bg-card hover:bg-muted/70 cursor-pointer text-foreground select-none transition-colors"
-                >
-                  <Filter className="w-3.5 h-3.5 text-[#2f6cf5]" />
-                  <span>Smart Filter</span>
-                  {hasActiveFilters && (
-                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse inline-block" />
-                  )}
-                </button>
+                {/* Dòng 2 : Tất cả chi nhánh, Tất cả thứ hạng, Tất cả trạng thái, Cột hiển thị và tùy chỉnh bộ lọc */}
+                <div className="flex flex-wrap items-center gap-3 w-full">
+                  {/* Tất cả chi nhánh */}
+                  <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+                    <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+                    <select
+                      className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
+                      value={selectedCompanyId}
+                      onChange={(e) => setSelectedCompanyId(e.target.value)}
+                    >
+                      <option value="all">Tất cả chi nhánh</option>
+                      {companies.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Tất cả thứ hạng */}
+                  <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+                    <Award className="w-3.5 h-3.5 text-muted-foreground" />
+                    <select
+                      className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
+                      value={selectedTier}
+                      onChange={(e) => setSelectedTier(e.target.value)}
+                    >
+                      <option value="all">Tất cả thứ hạng</option>
+                      <option value="Atelier">Thành viên Atelier</option>
+                      <option value="Icon">Thành viên Icon</option>
+                      <option value="Essential">Thành viên Essential</option>
+                      <option value="Member">Thành viên Member</option>
+                    </select>
+                  </div>
+
+                  {/* Tất cả trạng thái */}
+                  <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+                    <Filter className="w-3.5 h-3.5 text-muted-foreground" />
+                    <select
+                      className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
+                      value={selectedStatus}
+                      onChange={(e) => setSelectedStatus(e.target.value)}
+                    >
+                      <option value="all">Tất cả trạng thái</option>
+                      {CUSTOMER_STATUSES.map((s) => (
+                        <option key={s.code} value={s.code}>
+                          {s.classification}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Cột hiển thị */}
+                  <div className={cn("relative", showColumnSettings ? "z-[110]" : "z-auto")}>
+                    <button
+                      onClick={() => setShowColumnSettings(!showColumnSettings)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold bg-card hover:bg-muted/70 cursor-pointer text-foreground select-none transition-colors"
+                    >
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
+                      <span>Cột hiển thị</span>
+                    </button>
+                    {showColumnSettings && (
+                      <div className="absolute right-0 mt-2 w-56 bg-card border border-border hover:border-primary/20 shadow-xl rounded-xl p-3.5 z-[120] text-left backdrop-blur-xl">
+                        <div className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-2">
+                          Ẩn/hiện cột bảng
+                        </div>
+                        <div className="space-y-1.5 max-h-[190px] overflow-y-auto pr-1">
+                          {Object.keys(visibleColumns).map((colKey) => (
+                            <label
+                              key={colKey}
+                              className="flex items-center gap-2 px-2 py-1 hover:bg-muted rounded-md cursor-pointer text-xs font-semibold select-none"
+                            >
+                              <input
+                                type="checkbox"
+                                className="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5"
+                                checked={visibleColumns[colKey]}
+                                onChange={() =>
+                                  setVisibleColumns((prev) => ({
+                                    ...prev,
+                                    [colKey]: !prev[colKey],
+                                  }))
+                                }
+                              />
+                              <span>{COLUMN_LABELS[colKey]}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className="border-t border-border mt-3 pt-2.5 flex justify-between gap-1">
+                          <button
+                            onClick={() =>
+                              setVisibleColumns({
+                                id: true,
+                                nameEmail: true,
+                                social: false,
+                                company: true,
+                                status: true,
+                                points: false,
+                                customAttributes: false,
+                                actions: true,
+                              })
+                            }
+                            className="text-xs text-[#2f6cf5] hover:underline font-extrabold"
+                          >
+                            Mặc định
+                          </button>
+                          <button
+                            onClick={() => setShowColumnSettings(false)}
+                            className="text-xs text-muted-foreground hover:text-foreground font-extrabold"
+                          >
+                            Đóng
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Tùy chỉnh bộ lọc */}
+                  <button
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold bg-card hover:bg-muted/70 cursor-pointer text-foreground select-none transition-colors"
+                  >
+                    <Filter className="w-3.5 h-3.5 text-[#2f6cf5]" />
+                    <span>Tùy chỉnh bộ lọc</span>
+                    {hasActiveFilters && (
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse inline-block" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Advanced Filters Panel */}
@@ -1455,14 +2031,14 @@ export function CustomersView() {
               >
                 <div className="space-y-1">
                   <label className="text-xs uppercase font-black text-muted-foreground tracking-wider">
-                    Phân khúc khách hàng
+                    Nhóm hội viên
                   </label>
                   <select
                     className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
                     value={selectedTag}
                     onChange={(e) => setSelectedTag(e.target.value)}
                   >
-                    <option value="all">Tất cả phân khúc</option>
+                    <option value="all">Tất cả nhóm</option>
                     {allTags.map((tag) => (
                       <option key={tag} value={tag}>
                         {tag}
@@ -1576,7 +2152,98 @@ export function CustomersView() {
                   </div>
                 </div>
 
-                <div className="flex items-end justify-end">
+                <div className="sm:col-span-2 md:col-span-4 border-t border-border mt-3 pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 w-full">
+                  <div className="space-y-1.5 flex-1 select-none">
+                    <span className="text-xs font-bold text-muted-foreground block">Bộ lọc đã lưu:</span>
+                    {savedFilters.length === 0 ? (
+                      <span className="text-xs text-muted-foreground italic block">Chưa có bộ lọc nào được lưu</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto pr-1">
+                        {savedFilters.map((f) => (
+                          <div
+                            key={f.id}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted hover:bg-muted-hover border border-border rounded-lg text-xs font-semibold"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMinPoints(f.minPoints || "");
+                                setMaxPoints(f.maxPoints || "");
+                                setSelectedSocialType(f.selectedSocialType || "all");
+                                setSelectedHasCompany(f.selectedHasCompany || "all");
+                                setSelectedTag(f.selectedTag || "all");
+                                setStartDate(f.startDate || "");
+                                setEndDate(f.endDate || "");
+                                setSortBy(f.sortBy || "createdAt_desc");
+                                toast.success(`Đã áp dụng bộ lọc: ${f.name}`);
+                              }}
+                              className="hover:text-[#2f6cf5] transition-colors text-left"
+                            >
+                              {f.name}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const updated = savedFilters.filter((item) => item.id !== f.id);
+                                setSavedFilters(updated);
+                                localStorage.setItem("clp_saved_filters", JSON.stringify(updated));
+                                toast.success(`Đã xóa bộ lọc: ${f.name}`);
+                              }}
+                              className="text-muted-foreground hover:text-rose-500 transition-colors ml-1 font-black"
+                            >
+                              &times;
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-auto">
+                    <span className="text-xs font-bold text-muted-foreground">Lưu bộ lọc hiện tại:</span>
+                    <div className="flex items-center gap-2 bg-background p-1 rounded-lg border border-border">
+                      <Input
+                        type="text"
+                        placeholder="Tên bộ lọc..."
+                        value={newFilterName}
+                        onChange={(e) => setNewFilterName(e.target.value)}
+                        className="border-0 bg-transparent h-7 text-xs focus-visible:ring-0 px-2 w-[140px] focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!newFilterName.trim()) {
+                            toast.error("Vui lòng nhập tên bộ lọc!");
+                            return;
+                          }
+                          const nFilter: SavedFilter = {
+                            id: "filter_" + Date.now(),
+                            name: newFilterName.trim(),
+                            minPoints,
+                            maxPoints,
+                            selectedSocialType,
+                            selectedHasCompany,
+                            selectedTag: selectedTag,
+                            startDate,
+                            endDate,
+                            sortBy,
+                          };
+                          const updated = [...savedFilters, nFilter];
+                          setSavedFilters(updated);
+                          localStorage.setItem("clp_saved_filters", JSON.stringify(updated));
+                          setNewFilterName("");
+                          toast.success(`Đã lưu bộ lọc: ${nFilter.name}`);
+                        }}
+                        className="h-7 px-3 bg-[#2f6cf5] text-white text-xs font-bold rounded-md hover:bg-[#2f6cf5]/90 transition-all cursor-pointer flex items-center justify-center"
+                      >
+                        Lưu
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2 md:col-span-4 flex items-end justify-end border-t border-border/40 pt-2">
                   <button
                     onClick={resetFilters}
                     className="flex items-center gap-1 px-3 py-1.5 text-xs text-rose-500 hover:text-white hover:bg-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-lg font-bold transition-all shrink-0 cursor-pointer"
@@ -1724,7 +2391,7 @@ export function CustomersView() {
 
                 <div className="flex items-center gap-2 shrink-0">
                   {/* Column Visibility Configuration dropdown */}
-                  <div className="relative">
+                  <div className={cn("relative", showColumnSettings ? "z-[110]" : "z-auto")}>
                     <button
                       onClick={() => setShowColumnSettings(!showColumnSettings)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold hover:bg-muted transition-colors select-none ${showColumnSettings ? "bg-primary/10 border-primary/30 text-primary" : "bg-card text-foreground"}`}
@@ -1733,7 +2400,7 @@ export function CustomersView() {
                       <span>Cột hiển thị</span>
                     </button>
                     {showColumnSettings && (
-                      <div className="absolute right-0 mt-2 w-56 bg-card border border-border hover:border-primary/20 shadow-xl rounded-xl p-3.5 z-50 text-left backdrop-blur-xl">
+                      <div className="absolute right-0 mt-2 w-56 bg-card border border-border hover:border-primary/20 shadow-xl rounded-xl p-3.5 z-[120] text-left backdrop-blur-xl">
                         <div className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-2">
                           Ẩn/hiện cột bảng
                         </div>
@@ -1795,7 +2462,7 @@ export function CustomersView() {
                     <Filter
                       className={`w-3.5 h-3.5 ${hasActiveFilters ? "text-primary" : "text-muted-foreground"}`}
                     />
-                    <span>Smart Filter</span>
+                    <span>Tùy chỉnh bộ lọc</span>
                     {hasActiveFilters && (
                       <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse inline-block" />
                     )}
@@ -1812,14 +2479,14 @@ export function CustomersView() {
                 >
                   <div className="space-y-1">
                     <label className="text-xs uppercase font-black text-muted-foreground tracking-wider">
-                      Phân khúc khách hàng
+                      Nhóm hội viên
                     </label>
                     <select
                       className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
                       value={selectedTag}
                       onChange={(e) => setSelectedTag(e.target.value)}
                     >
-                      <option value="all">Tất cả phân khúc</option>
+                      <option value="all">Tất cả nhóm</option>
                       {allTags.map((tag) => (
                         <option key={tag} value={tag}>
                           {tag}
@@ -1947,13 +2614,14 @@ export function CustomersView() {
                     </TableHead>
                     {visibleColumns.id && <TableHead>Mã KH</TableHead>}
                     {visibleColumns.nameEmail && (
-                      <TableHead>Họ tên / Email</TableHead>
+                      <TableHead>Họ tên / Số điện thoại</TableHead>
                     )}
                     {visibleColumns.social && (
                       <TableHead>Mạng xã hội</TableHead>
                     )}
                     {visibleColumns.company && <TableHead>Công ty</TableHead>}
                     {visibleColumns.status && <TableHead>Trạng thái</TableHead>}
+                    {visibleColumns.status && <TableHead>Trạng thái thành viên</TableHead>}
                     {visibleColumns.churnRisk && (
                       <TableHead>Rủi ro rời bỏ</TableHead>
                     )}
@@ -1964,7 +2632,7 @@ export function CustomersView() {
                         .map((attr) => (
                           <TableHead key={attr.id}>{attr.label}</TableHead>
                         ))}
-                    {visibleColumns.actions && <TableHead>Hành động</TableHead>}
+                    {visibleColumns.actions && <TableHead className="text-center">Hành động</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -2051,7 +2719,7 @@ export function CustomersView() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    sortedAndFilteredCustomers.map((customer) => (
+                    sortedAndFilteredCustomers.slice(0, visibleLimit).map((customer) => (
                       <TableRow
                         key={customer.id}
                         onClick={() => {
@@ -2063,7 +2731,7 @@ export function CustomersView() {
                           }
                           setSelectedCustomer(customer);
                         }}
-                        className={`cursor-pointer transition-all duration-200 group/row border-b ${selectedCustomerIds.includes(customer.id) ? "bg-[#2f6cf5]/5 border-[#2f6cf5]/20" : "hover:bg-muted/40 active:bg-muted/60 border-border/50"}`}
+                        className={`cursor-pointer transition-all duration-200 group/row border-b ${selectedCustomerIds.includes(customer.id) ? "bg-[#2f6cf5]/5 border-[#2f6cf5]/20" : "hover:bg-transparent active:bg-muted/60 border-border/50"}`}
                       >
                         <TableCell
                           onClick={(e) => e.stopPropagation()}
@@ -2089,24 +2757,25 @@ export function CustomersView() {
                         </TableCell>
                         {/* ID */}
                         {visibleColumns.id && (
-                          <TableCell className="text-xs text-muted-foreground">
-                            {customer.id}
+                          <TableCell className="text-xs font-mono text-muted-foreground">
+                            {getCustomerCode(customer, companies)}
                           </TableCell>
                         )}
 
-                        {/* AVATAR + NAME */}
+                        {/* PRODUCT LOGO + NAME */}
                         {visibleColumns.nameEmail && (
                           <TableCell className="font-medium">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-xl overflow-hidden border border-border bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-xs font-bold text-xs uppercase">
-                                {customer.avatarUrl ? (
+                            <div className="flex items-center gap-3 text-left">
+                              <div className="w-9 h-9 rounded-xl overflow-hidden border border-border/40 bg-muted flex items-center justify-center shrink-0 shadow-xs">
+                                {customer.companyId && companies.find((comp) => comp.id === customer.companyId)?.logoUrl ? (
                                   <img
-                                    src={customer.avatarUrl}
+                                    src={companies.find((comp) => comp.id === customer.companyId)?.logoUrl}
+                                    referrerPolicy="no-referrer"
                                     className="w-full h-full object-cover"
-                                    alt={customer.name}
+                                    alt="Product Logo"
                                   />
                                 ) : (
-                                  customer.name.slice(0, 2)
+                                  <Package className="w-5 h-5 text-muted-foreground" />
                                 )}
                               </div>
                               <div>
@@ -2134,7 +2803,7 @@ export function CustomersView() {
                                   )}
                                 </div>
                                 <p className="text-xs text-muted-foreground font-normal">
-                                  {customer.email || "Không có email"}
+                                  {customer.phone || "Không có SĐT"}
                                 </p>
                               </div>
                             </div>
@@ -2271,6 +2940,13 @@ export function CustomersView() {
                           </TableCell>
                         )}
 
+                        {/* MEMBER STATUS */}
+                        {visibleColumns.status && (
+                          <TableCell>
+                            {renderMemberTierBadge(customer.points, customer.tier)}
+                          </TableCell>
+                        )}
+
                         {/* CHURN RISK */}
                         {visibleColumns.churnRisk && (
                           <TableCell onClick={(e) => e.stopPropagation()}>
@@ -2327,37 +3003,26 @@ export function CustomersView() {
                             </TableCell>
                           ))}
 
-                        {/* ACTION */}
+                        {/* ACTIONS */}
                         {visibleColumns.actions && (
-                          <TableCell>
-                            <div className="flex items-center gap-2">
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1 font-sans" onClick={(e) => e.stopPropagation()}>
                               <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedQrCustomer(customer);
-                                }}
-                                className="p-1 px-2.5 bg-muted/60 group-hover/row:bg-muted rounded-lg text-xs font-bold text-foreground flex items-center gap-1 transition-all duration-200"
-                                title="QR Check-in"
+                                onClick={() => setSelectedQrCustomer(customer)}
+                                className="p-1.5 text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-lg transition-all cursor-pointer"
+                                title="Xuất mã Định danh QR"
                               >
-                                <QrCode className="w-3 h-3 text-muted-foreground" />
+                                <QrCode className="w-3.5 h-3.5" />
                               </button>
                               <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
+                                onClick={() => {
                                   setLogCustomer(customer);
                                   setShowActivityLog(true);
                                 }}
-                                className="p-1 px-2.5 bg-muted/60 group-hover/row:bg-muted rounded-lg text-xs font-bold text-foreground flex items-center gap-1 transition-all duration-200"
+                                className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
                                 title="Lịch sử hoạt động"
                               >
-                                <History className="w-3 h-3 text-muted-foreground" />
-                              </button>
-                              <button
-                                onClick={() => setSelectedCustomer(customer)}
-                                className="p-1 px-2.5 bg-primary/10 group-hover/row:bg-primary group-hover/row:text-primary-foreground rounded-lg text-xs font-bold text-primary flex items-center gap-1 transition-all duration-200"
-                              >
-                                Xem Dashboard{" "}
-                                <ArrowRight className="w-2.5 h-2.5 transition-transform duration-200 group-hover/row:translate-x-0.5" />
+                                <History className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </TableCell>
@@ -2368,240 +3033,538 @@ export function CustomersView() {
                 </TableBody>
               </Table>
             </CardContent>
+          </Card>
+        </>
+      ) : (
+          <>
+            <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col gap-5 relative backdrop-blur-md w-full">
+              {/* DONG 1: Tìm kiếm khách hàng, Thêm Nhóm thành viên, Cài đặt nhóm thành viên */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
+                {/* Tìm kiếm khách hàng */}
+                <div className="relative flex-1 max-w-md text-left">
+                  <CustomerSearch
+                    customers={customers}
+                    value={segmentSearch}
+                    onChange={setSegmentSearch}
+                    onSelectCustomer={(c) => setSegmentSearch(c.name)}
+                  />
+                </div>
+
+                {/* Thêm Nhóm thành viên & Cài đặt nhóm thành viên */}
+                <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
+                  <button
+                    onClick={() => {
+                      setEditingSegmentId(null);
+                      setSegmentBuilderName("");
+                      setSegmentConditions([{ field: 'spend', operator: 'gte', value: '10000000' }]);
+                      setSegmentBuilderColor("blue");
+                      setSegmentBuilderType("criteria");
+                      setUploadedFileEntries([]);
+                      setUploadedFileName("");
+                      setShowAddSegmentDialog(true);
+                    }}
+                    className="flex items-center justify-center px-4 py-2 bg-[#2f6cf5] text-white rounded-xl text-xs font-bold shadow-xs hover:bg-[#2f6cf5]/90 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 mr-1.5" /> Thêm Nhóm thành viên
+                  </button>
+
+                  <button
+                    onClick={() => setShowSegmentSettingsDialog(true)}
+                    className="flex items-center justify-center px-4 py-2 border border-border bg-card text-foreground hover:bg-muted rounded-xl text-xs font-bold transition-all cursor-pointer"
+                  >
+                    <Settings className="w-4 h-4 mr-1.5 text-muted-foreground" /> Cài đặt nhóm thành viên
+                  </button>
+                </div>
+              </div>
+
+              {/* DONG 2: Tất cả các nhóm, Tất cả trạng thái, cột hiển thị, Tùy chỉnh bộ lọc */}
+              <div className="flex flex-wrap items-center gap-3 w-full">
+                {/* Tất cả các nhóm */}
+                <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+                  <Layers className="w-3.5 h-3.5 text-[#2f6cf5]" />
+                  <select
+                    className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer text-foreground"
+                    value={selectedSegmentFilter}
+                    onChange={(e) => setSelectedSegmentFilter(e.target.value)}
+                  >
+                    <option value="all" className="bg-card">Tất cả các nhóm</option>
+                    {customSegments.map((seg) => (
+                      <option key={seg.id} value={seg.id} className="bg-card">
+                        {seg.name} ({getCustomersInSegment(seg, customers).length} KH)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Tất cả trạng thái */}
+                <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+                  <UserCheck className="w-3.5 h-3.5 text-muted-foreground" />
+                  <select
+                    className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer text-foreground"
+                    value={segmentSelectedStatus}
+                    onChange={(e) => setSegmentSelectedStatus(e.target.value)}
+                  >
+                    <option value="all" className="bg-card">Tất cả trạng thái</option>
+                    {CUSTOMER_STATUSES.map((s) => (
+                      <option key={s.code} value={s.code} className="bg-card">
+                        {s.classification}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Cột hiển thị */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowSegmentColumnSettings(!showSegmentColumnSettings)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold hover:bg-muted transition-colors select-none cursor-pointer",
+                      showSegmentColumnSettings ? "bg-primary/10 border-primary/30 text-primary" : "bg-card text-foreground"
+                    )}
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span>Cột hiển thị</span>
+                  </button>
+                  {showSegmentColumnSettings && (
+                    <div className="absolute left-0 mt-2 w-56 bg-card border border-border hover:border-primary/20 shadow-xl rounded-xl p-3.5 z-[120] text-left backdrop-blur-xl">
+                      <div className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-2">
+                        Ẩn/hiện cột bảng
+                      </div>
+                      <div className="space-y-1.5 max-h-[190px] overflow-y-auto pr-1">
+                        {Object.keys(visibleColumns).map((colKey) => (
+                          <label
+                            key={colKey}
+                            className="flex items-center gap-2 px-1.5 py-1 hover:bg-muted rounded-md text-[11px] font-bold cursor-pointer text-foreground select-none"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={(visibleColumns as any)[colKey]}
+                              className="rounded border-border text-[#2f6cf5] focus:ring-[#2f6cf5] h-3.5 w-3.5"
+                              onChange={(e) => {
+                                setVisibleColumns((prev) => ({
+                                  ...prev,
+                                  [colKey]: e.target.checked,
+                                }));
+                              }}
+                            />
+                            <span className="capitalize font-sans">
+                              {colKey === "nameEmail"
+                                ? "Danh tính hội viên"
+                                : colKey === "churnRisk"
+                                  ? "Rủi ro Churn"
+                                  : colKey === "customAttributes"
+                                    ? "Thuộc tính mở rộng"
+                                    : colKey === "social"
+                                      ? "Kênh MXH"
+                                      : colKey === "company"
+                                        ? "Công ty"
+                                        : colKey === "status"
+                                          ? "Trạng thái"
+                                          : colKey === "points"
+                                            ? "Điểm dán nhãn"
+                                            : colKey === "actions"
+                                              ? "Tác vụ"
+                                              : colKey}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tùy chỉnh bộ lọc */}
+                <button
+                  onClick={() => setShowSegmentAdvancedFilters(!showSegmentAdvancedFilters)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold hover:bg-muted transition-colors select-none cursor-pointer",
+                    showSegmentAdvancedFilters ? "bg-primary/10 border-primary/30 text-primary" : "bg-card text-foreground"
+                  )}
+                >
+                  <Filter className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>Tùy chỉnh bộ lọc</span>
+                </button>
+              </div>
+
+              {/* Advanced filter panels for segments */}
+              {showSegmentAdvancedFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-4 border-t border-border/60 text-left"
+                >
+                  {/* Tất cả chi nhánh */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-black text-muted-foreground tracking-wider block">
+                      Đoàn thể / Chi nhánh
+                    </label>
+                    <select
+                      className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer text-foreground"
+                      value={segmentSelectedCompanyId}
+                      onChange={(e) => setSegmentSelectedCompanyId(e.target.value)}
+                    >
+                      <option value="all">Tất cả chi nhánh</option>
+                      {companies.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Tất cả thứ hạng */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-black text-muted-foreground tracking-wider block">
+                      Phân cấp thứ hạng
+                    </label>
+                    <select
+                      className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer text-foreground"
+                      value={segmentSelectedTier}
+                      onChange={(e) => setSegmentSelectedTier(e.target.value)}
+                    >
+                      <option value="all">Tất cả thứ hạng</option>
+                      <option value="Atelier">Atelier (≥ 10,000 pts)</option>
+                      <option value="Icon">Icon (≥ 5,000 pts)</option>
+                      <option value="Essential">Essential (≥ 2,000 pts)</option>
+                      <option value="Member">Member (&lt; 2,000 pts)</option>
+                    </select>
+                  </div>
+
+                  {/* Khoảng điểm CRM */}
+                  <div className="space-y-1 md:col-span-1">
+                    <label className="text-[10px] uppercase font-black text-muted-foreground tracking-wider block">
+                      Khoảng tích lũy điểm CRM
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <Input
+                        type="number"
+                        placeholder="Từ"
+                        className="bg-background h-8 text-xs font-semibold"
+                        value={segmentMinPoints}
+                        onChange={(e) => setSegmentMinPoints(e.target.value)}
+                      />
+                      <span className="text-xs text-muted-foreground font-black">-</span>
+                      <Input
+                        type="number"
+                        placeholder="Đến"
+                        className="bg-background h-8 text-xs font-semibold"
+                        value={segmentMaxPoints}
+                        onChange={(e) => setSegmentMaxPoints(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* RESET BUTTON */}
+                  <div className="flex items-end justify-end">
+                    <button
+                      onClick={resetSegmentFilters}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs text-rose-500 hover:text-white hover:bg-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-lg font-bold transition-all shrink-0 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3" /> Đặt lại tất cả
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+
+            {/* THẺ NHÓM CỤ THỂ ĐANG ĐƯỢC CHỌN */}
+            {selectedSegmentFilter !== "all" && (() => {
+              const activeSeg = customSegments.find(s => s.id === selectedSegmentFilter);
+              if (!activeSeg) return null;
+              return (
+                <Card className="border border-border/50 bg-card/45 backdrop-blur-md rounded-2xl shadow-xs overflow-hidden w-full mb-6 relative">
+                  <div className={`absolute top-0 left-0 w-1.5 h-full`} style={{ backgroundColor: `var(--${activeSeg.color || 'blue'}-500, #2f6cf5)` }} />
+                  <CardContent className="p-5 md:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="pl-2">
+                      <h3 className="text-lg font-black text-foreground">{activeSeg.name}</h3>
+                      <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                        <Badge variant="outline" className={`bg-primary/5 text-primary border-primary/20 uppercase font-black text-[10px]`}>
+                          {activeSeg.type === "file" ? "DS Tải Lên" : "Động (Điều Kiện)"}
+                        </Badge>
+                        {activeSeg.type === "criteria" && (activeSeg.minSpend ?? 0) > 0 && (
+                          <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-muted-foreground/50"></span>
+                            Chi tiêu ≥ {((activeSeg.minSpend ?? 0) / 1000000).toLocaleString()}tr
+                          </span>
+                        )}
+                        {activeSeg.type === "criteria" && (activeSeg.minFrequency ?? 0) > 0 && (
+                          <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-muted-foreground/50"></span>
+                            Tần suất ≥ {activeSeg.minFrequency}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setEditingSegmentId(activeSeg.id);
+                        setShowAddSegmentDialog(true);
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-amber-500 hover:text-white hover:bg-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-lg font-bold transition-all shrink-0 cursor-pointer"
+                    >
+                      <Settings className="w-3.5 h-3.5" /> Edit nhóm
+                    </button>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
+            {/* TAB TABLE CARD CONTAINER */}
+            <Card className="border border-border/50 bg-card/45 backdrop-blur-md rounded-2xl shadow-xs overflow-hidden w-full">
+              <CardHeader className="p-5 md:p-6 pb-2 select-none">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left">
+                  <div>
+                    <h3 className="text-sm font-black text-foreground tracking-tight uppercase flex items-center gap-2">
+                      <Users className="w-4 h-4 text-emerald-500" />
+                      Quy mô danh sách cohorts
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Phát hiện <strong>{filteredSegmentCustomers.length}</strong> khách hàng khớp các tiêu chí phân nhóm hiện thời.
+                    </p>
+                  </div>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      {visibleColumns.id && <TableHead className="pl-6">Mã KH</TableHead>}
+                      {visibleColumns.nameEmail && <TableHead>Họ tên / Số điện thoại</TableHead>}
+                      {visibleColumns.social && <TableHead>Mạng xã hội</TableHead>}
+                      {visibleColumns.company && <TableHead>Công ty</TableHead>}
+                      {visibleColumns.status && <TableHead>Trạng thái</TableHead>}
+                      {visibleColumns.status && <TableHead>Trạng thái thành viên</TableHead>}
+                      {visibleColumns.churnRisk && <TableHead>Rủi ro rời bỏ</TableHead>}
+                      {visibleColumns.points && <TableHead>Điểm CRM</TableHead>}
+                      {visibleColumns.customAttributes &&
+                        attributes
+                          .slice(0, 1)
+                          .map((attr) => (
+                            <TableHead key={attr.id}>{attr.label}</TableHead>
+                          ))}
+                      {visibleColumns.actions && <TableHead className="text-center">Hành động</TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSegmentCustomers.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={Object.values(visibleColumns).filter(Boolean).length + 2}
+                          className="text-center py-12 text-muted-foreground"
+                        >
+                          <Users className="w-8 h-8 opacity-25 mx-auto mb-2" />
+                          <p className="font-bold">Không tìm thấy thành viên thỏa mãn điều kiện</p>
+                          <p className="text-xs">Điều chỉnh lại bộ lọc hoặc tạo nhóm mới</p>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredSegmentCustomers.map((customer) => (
+                        <TableRow
+                          key={customer.id}
+                          onClick={() => setSelectedCustomer(customer)}
+                          className="cursor-pointer transition-all duration-200 group/row hover:bg-transparent border-b border-border/50"
+                        >
+                          {visibleColumns.id && (
+                            <TableCell className="pl-6 font-mono text-xs text-[#2f6cf5] font-semibold">
+                              {getCustomerCode(customer, companies)}
+                            </TableCell>
+                          )}
+                          {visibleColumns.nameEmail && (
+                            <TableCell>
+                              <div className="flex items-center gap-3 text-left">
+                                <div className="w-8 h-8 rounded-xl overflow-hidden border border-border/40 bg-muted flex items-center justify-center shrink-0 shadow-xs">
+                                  {customer.companyId && companies.find((comp) => comp.id === customer.companyId)?.logoUrl ? (
+                                    <img
+                                      src={companies.find((comp) => comp.id === customer.companyId)?.logoUrl}
+                                      referrerPolicy="no-referrer"
+                                      className="w-full h-full object-cover"
+                                      alt="Product Logo"
+                                    />
+                                  ) : (
+                                    <Package className="w-4 h-4 text-muted-foreground" />
+                                  )}
+                                </div>
+                                <div className="max-w-[190px] overflow-hidden">
+                                  <div className="flex items-center gap-1">
+                                    <p className="text-xs font-bold text-foreground truncate block font-sans">
+                                      {customer.name}
+                                    </p>
+                                    {customer.points && customer.points >= 10000 && (
+                                      <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-500/10 shrink-0" />
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-muted-foreground/80 truncate block">
+                                    {customer.phone || "Không có SĐT"}
+                                  </p>
+                                </div>
+                              </div>
+                            </TableCell>
+                          )}
+
+                          {visibleColumns.social && (
+                            <TableCell>
+                              <div className="flex items-center gap-1.5">
+                                {/* Facebook */}
+                                <span
+                                  title={customer.facebook || "Chưa liên kết Facebook"}
+                                  className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs shadow-2xs transition-all ${
+                                    customer.facebook
+                                      ? "bg-blue-600/10 text-blue-600 border-blue-600/30"
+                                      : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
+                                  }`}
+                                >
+                                  <Facebook className="w-3 h-3" />
+                                </span>
+
+                                {/* Zalo */}
+                                <span
+                                  title={customer.zalo || "Chưa liên kết Zalo"}
+                                  className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs font-extrabold shadow-2xs transition-all ${
+                                    customer.zalo
+                                      ? "bg-sky-500/10 text-sky-600 border-sky-500/35 font-sans"
+                                      : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
+                                  }`}
+                                >
+                                  Z
+                                </span>
+
+                                {/* LinkedIn */}
+                                <span
+                                  title={customer.linkedin || "Chưa liên kết LinkedIn"}
+                                  className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs shadow-2xs transition-all ${
+                                    customer.linkedin
+                                      ? "bg-blue-700/10 text-blue-700 border-blue-700/30"
+                                      : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
+                                  }`}
+                                >
+                                  <Linkedin className="w-3 h-3" />
+                                </span>
+
+                                {/* Instagram */}
+                                <span
+                                  title={customer.instagram || "Chưa liên kết Instagram"}
+                                  className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs shadow-2xs transition-all ${
+                                    customer.instagram
+                                      ? "bg-pink-600/10 text-pink-600 border-pink-600/30"
+                                      : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
+                                  }`}
+                                >
+                                  <Instagram className="w-3 h-3" />
+                                </span>
+                              </div>
+                            </TableCell>
+                          )}
+
+                          {visibleColumns.company && (
+                            <TableCell>
+                              {customer.companyId ? (
+                                <div className="flex items-center gap-1.5 text-left max-w-[170px] overflow-hidden">
+                                  <div className="w-5 h-5 rounded bg-muted flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
+                                    {companies.find((comp) => comp.id === customer.companyId)?.logoUrl ? (
+                                      <img
+                                        src={companies.find((comp) => comp.id === customer.companyId)?.logoUrl}
+                                        referrerPolicy="no-referrer"
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <Building2 className="w-3 h-3 text-muted-foreground" />
+                                    )}
+                                  </div>
+                                  <span className="text-[11px] font-bold text-foreground truncate block font-sans">
+                                    {companies.find((comp) => comp.id === customer.companyId)?.name || "—"}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-muted-foreground italic font-sans">Cá nhân</span>
+                              )}
+                            </TableCell>
+                          )}
+
+                          {visibleColumns.status && (
+                            <TableCell>
+                              {renderStatusBadge(customer.activityStatus)}
+                            </TableCell>
+                          )}
+
+                          {visibleColumns.status && (
+                            <TableCell>
+                              {renderMemberTierBadge(customer.points, customer.tier)}
+                            </TableCell>
+                          )}
+
+                          {visibleColumns.churnRisk && (
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 bg-muted rounded-full h-1.5 overflow-hidden max-w-[80px]">
+                                  <div
+                                    className={cn(
+                                      "h-full rounded-full",
+                                      (customer.customFields?.risk_score || 0) >= 70
+                                        ? "bg-rose-500"
+                                        : (customer.customFields?.risk_score || 0) >= 40
+                                          ? "bg-amber-500"
+                                          : "bg-emerald-500"
+                                    )}
+                                    style={{ width: `${customer.customFields?.risk_score || 0}%` }}
+                                  />
+                                </div>
+                                <span className="text-[10px] font-mono font-bold text-[#f43f5e]">
+                                  {customer.customFields?.risk_score || 0}%
+                                </span>
+                              </div>
+                            </TableCell>
+                          )}
+
+                          {visibleColumns.points && (
+                            <TableCell className="font-mono text-xs font-black text-[#2f6cf5]">
+                              {(customer.points || 0).toLocaleString()} pts
+                            </TableCell>
+                          )}
+
+                          {visibleColumns.customAttributes &&
+                            attributes
+                              .slice(0, 1)
+                              .map((attr) => {
+                                const val = customer.customFields?.[attr.id] || "—";
+                                return (
+                                  <TableCell key={attr.id} className="text-xs font-semibold text-muted-foreground">
+                                    {val}
+                                  </TableCell>
+                                );
+                              })}
+
+                          {visibleColumns.actions && (
+                            <TableCell className="text-center">
+                              <div className="flex items-center justify-center gap-1 font-sans" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                  onClick={() => setSelectedQrCustomer(customer)}
+                                  className="p-1.5 text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-lg transition-all cursor-pointer"
+                                  title="Xuất mã Định danh QR"
+                                >
+                                  <QrCode className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setLogCustomer(customer);
+                                    setShowActivityLog(true);
+                                  }}
+                                  className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
+                                  title="Lịch sử hoạt động"
+                                >
+                                  <History className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
             </Card>
           </>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full text-left">
-            {/* LEFT SIDE: Segment management and builder */}
-            <div className="lg:col-span-5 space-y-6">
-              <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-2xl shadow-md">
-                <h3 className="text-base font-bold font-heading flex items-center gap-2 text-foreground mb-4">
-                  <Layers className="w-5 h-5 text-[#2f6cf5]" /> Cấu hình Phân khúc Khách hàng
-                </h3>
-                
-                {/* Form to create segment */}
-                <form onSubmit={handleSaveCustomSegment} className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Tên Phân khúc</label>
-                    <Input
-                      type="text"
-                      placeholder="Ví dụ: VIP Vàng Thượng Lưu, Khách qua đường..."
-                      value={segmentBuilderName}
-                      onChange={(e) => setSegmentBuilderName(e.target.value)}
-                      className="bg-transparent text-xs font-semibold"
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Giá trị trọn đời nhỏ nhất (LTV)</label>
-                      <Input
-                        type="number"
-                        value={segmentBuilderMinSpend === 0 ? "" : segmentBuilderMinSpend}
-                        onChange={(e) => setSegmentBuilderMinSpend(Number(e.target.value))}
-                        className="bg-transparent text-xs font-semibold"
-                        min={0}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Số đơn hàng tối thiểu</label>
-                      <Input
-                        type="number"
-                        value={segmentBuilderMinFrequency === 0 ? "" : segmentBuilderMinFrequency}
-                        onChange={(e) => setSegmentBuilderMinFrequency(Number(e.target.value))}
-                        className="bg-transparent text-xs font-semibold"
-                        min={0}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Nhãn màu nhận diện</label>
-                    <div className="flex gap-2">
-                      {[
-                        { id: "emerald", colorClass: "bg-emerald-500", label: "Emerald" },
-                        { id: "blue", colorClass: "bg-blue-500", label: "Blue" },
-                        { id: "amber", colorClass: "bg-amber-500", label: "Amber" },
-                        { id: "rose", colorClass: "bg-rose-500", label: "Rose" },
-                        { id: "violet", colorClass: "bg-violet-500", label: "Violet" },
-                      ].map((col) => (
-                        <button
-                          key={col.id}
-                          type="button"
-                          onClick={() => setSegmentBuilderColor(col.id as any)}
-                          title={col.label}
-                          className={cn(
-                            "w-6 h-6 rounded-full border-2 transition-all cursor-pointer",
-                            segmentBuilderColor === col.id 
-                              ? "border-foreground scale-110 ring-2 ring-primary/20"
-                              : "border-transparent opacity-85 hover:opacity-100"
-                          )}
-                          style={{ backgroundColor: col.id === "violet" ? "#8b5cf6" : col.id === "emerald" ? "#10b981" : col.id === "blue" ? "#3b82f6" : col.id === "amber" ? "#f59e0b" : "#f43f5e" }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full text-xs font-bold py-2.5 bg-[#2f6cf5] text-white rounded-xl hover:bg-[#2f6cf5]/90 transition-all flex items-center justify-center cursor-pointer shadow-md"
-                  >
-                    <Plus className="w-4 h-4 mr-1.5" /> Tạo phân khúc mới
-                  </button>
-                </form>
-              </Card>
-
-              {/* Listing of all operational segment cohorts */}
-              <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-2xl shadow-md space-y-3">
-                <span className="text-xs uppercase font-extrabold text-muted-foreground tracking-wider block">
-                  Danh Sách Phân Khúc Đang Hoạt Động
-                </span>
-                
-                <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-                  {customSegments.map((seg) => {
-                    // Count matched in each segment dynamically
-                    const count = customers.filter(c => {
-                      const spend = c.customFields?.spend || 0;
-                      const freq = c.orders?.length || 0;
-                      if (seg.id === "seg_at_risk") {
-                        return c.activityStatus === "churn_risk" || c.customFields?.risk_score >= 70;
-                      }
-                      return spend >= seg.minSpend && freq >= seg.minFrequency;
-                    }).length;
-
-                    const isSelected = selectedSegmentId === seg.id;
-                    const badgeBg = seg.color === "emerald" ? "bg-emerald-500" : seg.color === "blue" ? "bg-blue-500" : seg.color === "amber" ? "bg-amber-500" : seg.color === "rose" ? "bg-rose-500" : "bg-violet-500";
-
-                    return (
-                      <div
-                        key={seg.id}
-                        onClick={() => setSelectedSegmentId(seg.id)}
-                        className={cn(
-                          "p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 text-left",
-                          isSelected 
-                            ? "bg-[#2f6cf5]/10 border-[#2f6cf5]/30 text-foreground" 
-                            : "bg-background/40 hover:bg-muted/50 border-border/60 text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        <div className="flex items-center gap-2 overflow-hidden">
-                          <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", badgeBg)} />
-                          <div className="overflow-hidden">
-                            <p className={cn("text-xs font-black truncate text-foreground", isSelected && "text-[#2f6cf5]")}>{seg.name}</p>
-                            {seg.id !== "seg_at_risk" ? (
-                              <p className="text-[10px] text-muted-foreground truncate">
-                                LTV ≥ {(seg.minSpend / 1000000).toFixed(1)}M VND, ≥ {seg.minFrequency} đơn
-                              </p>
-                            ) : (
-                              <p className="text-[10px] text-muted-foreground truncate">KH có cảnh báo rời bỏ / ngủ đông</p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <Badge variant="secondary" className="text-[11px] font-extrabold px-2 py-0.5 rounded-md">
-                            {count} KH
-                          </Badge>
-                          {seg.isCustom && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteCustomSegment(seg.id);
-                              }}
-                              className="p-1 text-rose-500 hover:bg-rose-500/10 rounded"
-                              title="Xóa phân khúc"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-            </div>
-
-            {/* RIGHT SIDE: Cohort summary & matched customer list */}
-            <div className="lg:col-span-7 space-y-6">
-              <Card className="p-6 border border-border/50 bg-background/55 rounded-2xl shadow-md">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-4 mb-4">
-                  <div className="text-left">
-                    <span className="text-[11px] font-black uppercase text-muted-foreground tracking-widest block font-sans">Thông tin Cohort đang lựa chọn</span>
-                    <h4 className="text-base font-black text-[#2f6cf5] flex items-center gap-1.5 mt-1">
-                      {currentSegmentData.name}
-                    </h4>
-                  </div>
-
-                  <button
-                    onClick={handleExportSegmentCSV}
-                    disabled={matchedCustomersInSegment.length === 0}
-                    className="px-3 py-1.5 text-xs font-black bg-[#2f6cf5]/10 text-[#2f6cf5] hover:bg-[#2f6cf5]/20 disabled:opacity-40 disabled:pointer-events-none rounded-xl transition-all cursor-pointer flex items-center gap-1 shrink-0"
-                  >
-                    <Download className="w-3.5 h-3.5" /> Xuất dữ liệu Cohort
-                  </button>
-                </div>
-
-                {/* Customer display table */}
-                {matchedCustomersInSegment.length === 0 ? (
-                  <div className="p-12 text-center text-muted-foreground text-xs space-y-2">
-                    <p className="font-extrabold text-foreground">Chưa tìm thấy khách hàng nào thỏa mãn điều kiện.</p>
-                    <p>Hãy điều chỉnh lại ngưỡng LTV hoặc Tần Số đơn hàng ở bộ cấu hình bên trái.</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="hover:bg-transparent">
-                          <TableHead className="text-xs font-bold uppercase">Hội viên</TableHead>
-                          <TableHead className="text-xs font-bold uppercase">LTV (Spend)</TableHead>
-                          <TableHead className="text-xs font-bold uppercase">Số Đơn Hàng</TableHead>
-                          <TableHead className="text-xs font-bold uppercase">Điểm thưởng</TableHead>
-                          <TableHead className="text-xs font-bold uppercase text-right">Chi tiết</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {matchedCustomersInSegment.map((mem) => {
-                          const spend = mem.customFields?.spend || 0;
-                          const freq = mem.orders?.length || 0;
-                          return (
-                            <TableRow key={mem.id} className="group/cohort-row hover:bg-muted/40 transition-colors">
-                              <TableCell>
-                                <div className="text-left">
-                                  <p className="text-xs font-bold text-foreground">{mem.name}</p>
-                                  <p className="text-[10.5px] text-muted-foreground/80">{mem.phone || mem.email}</p>
-                                </div>
-                              </TableCell>
-                              <TableCell className="font-extrabold text-foreground">
-                                {spend.toLocaleString()} VND
-                              </TableCell>
-                              <TableCell className="font-extrabold text-muted-foreground">
-                                {freq} đơn
-                              </TableCell>
-                              <TableCell className="font-black text-[#2f6cf5]">
-                                {(mem.points || 0).toLocaleString()} pts
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <button
-                                  onClick={() => setSelectedCustomer(mem)}
-                                  className="p-1 text-[#2f6cf5] hover:bg-primary/10 rounded-lg text-xs font-extrabold"
-                                >
-                                  Xem thông tin ➜
-                                </button>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </Card>
-            </div>
-          </div>
         )}
       </div>
 
@@ -2617,7 +3580,15 @@ export function CustomersView() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 15 }}
               transition={{ type: "spring", duration: 0.45, bounce: 0.1 }}
-              className="bg-background border border-border shadow-2xl rounded-2xl w-[92vw] h-[90vh] max-w-[1700px] flex flex-col relative overflow-hidden"
+              style={{
+                background: "rgba(255, 255, 255, 0.75)",
+                borderRadius: "16px",
+                boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
+                backdropFilter: "blur(9.3px)",
+                WebkitBackdropFilter: "blur(9.3px)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+              }}
+              className="w-[96vw] h-[94vh] max-w-[1850px] flex flex-col relative overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Nút đóng nổi bật ở góc phải trên cùng */}
@@ -2630,7 +3601,7 @@ export function CustomersView() {
               </button>
 
               {/* Phần nội dung có scroll riêng lẻ */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-10 scrollbar-thin">
+              <div className="flex-1 overflow-y-auto p-6 md:p-8 lg:p-12 scrollbar-thin">
                 <CustomerDashboard
                   customer={currentCustomerData}
                   userId={user?.uid || "guest"}
@@ -2687,6 +3658,30 @@ export function CustomersView() {
         onClose={() => {
           setShowActivityLog(false);
           setLogCustomer(null);
+        }}
+      />
+
+      <AddSegmentDialog
+        isOpen={showAddSegmentDialog}
+        onClose={() => {
+          setShowAddSegmentDialog(false);
+          setEditingSegmentId(null);
+        }}
+        editingSegment={editingSegmentId ? customSegments.find(s => s.id === editingSegmentId) : null}
+        onSave={(newSegment) => {
+          let updated;
+          if (editingSegmentId) {
+            updated = customSegments.map(s => s.id === editingSegmentId ? newSegment : s);
+            toast.success(`Đã cập nhật nhóm ${newSegment.name}!`);
+          } else {
+            updated = [...customSegments, newSegment];
+            toast.success(`Đã tạo nhóm ${newSegment.name}!`);
+            setSelectedSegmentFilter(newSegment.id);
+          }
+          setCustomSegments(updated);
+          localStorage.setItem("crm_custom_segments_v1", JSON.stringify(updated));
+          setShowAddSegmentDialog(false);
+          setEditingSegmentId(null);
         }}
       />
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Star, Building2, SlidersHorizontal, GitCompare } from "lucide-react";
+import { X, Building2, SlidersHorizontal, GitCompare } from "lucide-react";
 import * as motion from "motion/react-client";
 import { CompanyManager } from "@/components/settings/CompanyManager";
 import { AttributeManager } from "@/components/customers/AttributeManager";
@@ -48,7 +48,7 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
         <div className="flex border-b border-border bg-muted/10 px-6 py-2 gap-1 overflow-x-auto">
           {[
             { id: "companies", label: "Công ty & Chi nhánh", icon: Building2, color: "text-blue-500" },
-            { id: "transitions", label: "Quy luật trạng thái", icon: GitCompare, color: "text-purple-500" },
+            { id: "transitions", label: "Quy luật hạng thành viên", icon: GitCompare, color: "text-purple-500" },
             { id: "custom_fields", label: "Trường dữ liệu tùy chỉnh", icon: SlidersHorizontal, color: "text-emerald-500" },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -93,10 +93,10 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
               <div className="bg-white/50 backdrop-blur-sm p-6 rounded-3xl border border-border/50 mb-6 flex items-center justify-between text-left">
                 <div>
                   <h3 className="text-lg font-bold font-heading flex items-center gap-2">
-                    <GitCompare className="w-5 h-5 text-purple-500" /> Cấu hình Quy luật chuyển trạng thái
+                    <GitCompare className="w-5 h-5 text-purple-500" /> Cấu hình Quy luật chuyển đổi hạng thành viên
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Số ngày không phát sinh giao dịch để tự động chuyển khách hàng giữa các nhóm trạng thái (Chăm sóc, Rời bỏ, ...).
+                    Tạo các dòng điều kiện để tự động chuyển đổi Trạng thái thành viên (hạng hội viên) dựa trên tích lũy điểm, chi tiêu hoặc hoạt động.
                   </p>
                 </div>
               </div>

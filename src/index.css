@@ -61,13 +61,13 @@
 }
 
 :root {
-    --background: #f8fafc;
+    --background: #f3f0ff;     /* Soft lavender background matching the logo */
     --foreground: #000000;    
     --card: #ffffff;          
     --card-foreground: #000000;
     --popover: rgba(255, 255, 255, 0.95);
     --popover-foreground: #000000;
-    --primary: #eb7a2e;       /* Brand Logo Orange ACCENT */
+    --primary: #6E62E5;       /* Brand Logo Purple ACCENT */
     --primary-foreground: #ffffff;
     --secondary: #e2e8f0;     
     --secondary-foreground: #000000;
@@ -79,8 +79,8 @@
     --destructive-foreground: #ffffff;
     --border: #e2e8f0;
     --input: #e2e8f0;
-    --ring: #eb7a2e;
-    --chart-1: #eb7a2e;
+    --ring: #6E62E5;
+    --chart-1: #6E62E5;
     --chart-2: #3b82f6;
     --chart-3: #10b981;
     --chart-4: #f59e0b;
@@ -88,22 +88,22 @@
     --radius: 10px;
     --sidebar: #ffffff;       
     --sidebar-foreground: #000000; 
-    --sidebar-primary: #eb7a2e; 
+    --sidebar-primary: #6E62E5; 
     --sidebar-primary-foreground: #ffffff;
     --sidebar-accent: #f1f5f9;
     --sidebar-accent-foreground: #000000;
     --sidebar-border: #e2e8f0;
-    --sidebar-ring: #eb7a2e;
+    --sidebar-ring: #6E62E5;
 }
 
 .dark {
-    --background: #09090b;
+    --background: #0f0a1e;     /* Deep royal purple/indigo background */
     --foreground: #fafafa;
-    --card: #09090b;
+    --card: #140e2d;           /* Deep purple card background */
     --card-foreground: #fafafa;
-    --popover: rgba(9, 9, 11, 0.95);
+    --popover: rgba(20, 14, 45, 0.95);
     --popover-foreground: #fafafa;
-    --primary: #eb7a2e;       /* Brand Logo Orange ACCENT */
+    --primary: #8075F2;       /* Brand Logo Lighter Purple ACCENT for dark mode */
     --primary-foreground: #ffffff;
     --secondary: #27272a;
     --secondary-foreground: #fafafa;
@@ -115,20 +115,20 @@
     --destructive-foreground: #fafafa;
     --border: #27272a;
     --input: #27272a;
-    --ring: #eb7a2e;
-    --chart-1: #eb7a2e;
+    --ring: #8075F2;
+    --chart-1: #8075F2;
     --chart-2: #3b82f6;
     --chart-3: #10b981;
     --chart-4: #f59e0b;
     --chart-5: #a1a1aa;
-    --sidebar: #09090b;
+    --sidebar: #0f0a1e;
     --sidebar-foreground: #fafafa;
-    --sidebar-primary: #eb7a2e;
+    --sidebar-primary: #8075F2;
     --sidebar-primary-foreground: #ffffff;
     --sidebar-accent: #27272a;
     --sidebar-accent-foreground: #fafafa;
     --sidebar-border: #27272a;
-    --sidebar-ring: #eb7a2e;
+    --sidebar-ring: #8075F2;
 }
 
 @layer base {
@@ -310,4 +310,13 @@
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
+
+/* Global placeholder styling - italic and dimmed */
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  font-style: italic !important;
+  opacity: 0.6 !important;
+}
+
 

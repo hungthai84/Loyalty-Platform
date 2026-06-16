@@ -33,17 +33,62 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
  )
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
- return (
- <div
- data-slot="card-title"
- className={cn(
- "font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
- className
- )}
- {...props}
- />
- )
+function toSentenceCase(text: string): string {
+  if (!text || typeof text !== 'string') return text;
+  const trimmed = text.trim();
+  if (trimmed.length === 0) return text;
+  
+  let lower = trimmed.toLowerCase();
+  let sentence = lower.charAt(0).toUpperCase() + lower.slice(1);
+  
+  // Restore known abbreviations
+  const abbreviations = ["VIP", "CLV", "CRM", "ERP", "CSV", "QR", "TP.HCM", "VND"];
+  abbreviations.forEach(abbr => {
+    const regex = new RegExp(`\\b${abbr}\\b`, 'gi');
+    sentence = sentence.replace(regex, abbr);
+  });
+  
+  return sentence;
+}
+
+function transformChildren(children: React.ReactNode): React.ReactNode {
+  return React.Children.map(children, (child) => {
+    if (typeof child === "string") {
+      return toSentenceCase(child);
+    }
+    if (React.isValidElement(child)) {
+      const element = child as React.ReactElement<any>;
+      if (element.props && element.props.children) {
+        return React.cloneElement(element, {
+          children: transformChildren(element.props.children)
+        });
+      }
+    }
+    return child;
+  });
+}
+
+function CardTitle({ className, children, ...props }: React.ComponentProps<"div">) {
+  // Strip any font-size class or text-transform class passed down to enforce uniformity
+  const sanitizedClassName = className
+    ? className
+        .split(" ")
+        .filter((c) => !c.startsWith("text-") && !c.includes("text-[") && !c.startsWith("uppercase") && !c.startsWith("lowercase") && !c.startsWith("capitalize"))
+        .join(" ")
+    : "";
+
+  return (
+    <div
+      data-slot="card-title"
+      className={cn(
+        "font-heading text-base leading-snug font-bold text-foreground",
+        sanitizedClassName
+      )}
+      {...props}
+    >
+      {transformChildren(children)}
+    </div>
+  )
 }
 
 function CardDescription({ className, ...props }: React.ComponentProps<"div">) {

@@ -1,16 +1,12 @@
 import React, { useState } from "react";
 import { 
-  Building2, 
   ShoppingCart, 
   Ticket, 
   CheckCircle2, 
-  XCircle, 
   RefreshCw,
   Server,
-  ArrowRight,
   Settings2,
-  Activity,
-  KeyRound
+  Activity
 } from "lucide-react";
 import * as motion from "motion/react-client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";

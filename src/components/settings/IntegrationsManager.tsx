@@ -4,13 +4,11 @@ import {
   Ticket, 
   CheckCircle2, 
   RefreshCw,
-  Server,
   Settings2,
   Activity,
   Plug
 } from "lucide-react";
-import * as motion from "motion/react-client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";

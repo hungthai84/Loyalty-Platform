@@ -400,10 +400,25 @@ export function PointRedemptionConfigView() {
 
     try {
       const custRef = doc(db, `customers/${customer.id}`);
-      await updateDoc(custRef, {
-        points: finalPoints,
-        updatedAt: serverTimestamp(),
-      });
+      try {
+        await updateDoc(custRef, {
+          points: finalPoints,
+          updatedAt: serverTimestamp(),
+        });
+      } catch (err: any) {
+        if (err.code === "not-found" || err.message?.includes("not-found") || err.message?.includes("No document to update")) {
+          const fullCustomer = {
+            ...customer,
+            points: finalPoints,
+            userId: user.uid,
+            createdAt: customer.createdAt instanceof Date || typeof customer.createdAt === "string" ? customer.createdAt : serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          };
+          await setDoc(custRef, fullCustomer);
+        } else {
+          throw err;
+        }
+      }
       toast.success(
         `Đã cập nhật điểm cho khách hàng ${customer.name}: ${finalPoints.toLocaleString()} pts`,
       );
@@ -437,10 +452,25 @@ export function PointRedemptionConfigView() {
       // 1. Deduct points in Firestore for this Customer
       const custRef = doc(db, `customers/${customer.id}`);
       const newPoints = currentPoints - rule.pointsRequired;
-      await updateDoc(custRef, {
-        points: newPoints,
-        updatedAt: serverTimestamp(),
-      });
+      try {
+        await updateDoc(custRef, {
+          points: newPoints,
+          updatedAt: serverTimestamp(),
+        });
+      } catch (err: any) {
+        if (err.code === "not-found" || err.message?.includes("not-found") || err.message?.includes("No document to update")) {
+          const fullCustomer = {
+            ...customer,
+            points: newPoints,
+            userId: user.uid,
+            createdAt: customer.createdAt instanceof Date || typeof customer.createdAt === "string" ? customer.createdAt : serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          };
+          await setDoc(custRef, fullCustomer);
+        } else {
+          throw err;
+        }
+      }
 
       // 2. Log transaction to `users/${uid}/redemptions`
       const redemptionId = `REDEEM-${Date.now()}`;
@@ -589,9 +619,9 @@ export function PointRedemptionConfigView() {
 
       {/* SUBTAB 1: CREATE MASTER OFFERS */}
       {activeSubTab === "create_offers" && (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        <div className="space-y-6">
           {/* Rules List column */}
-          <div className="xl:col-span-8 space-y-4">
+          <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between px-1">
               <div className="text-left">
                 <h5 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest">
@@ -796,7 +826,7 @@ export function PointRedemptionConfigView() {
           </div>
 
           {/* Preset templates & Simulator Sidebar */}
-          <div className="xl:col-span-4 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border/40">
             <Card className="border border-border bg-card rounded-[1.5rem] shadow-sm text-left">
               <div className="p-5 border-b border-border">
                 <h5 className="font-bold text-sm tracking-tight flex items-center gap-1.5 text-foreground">

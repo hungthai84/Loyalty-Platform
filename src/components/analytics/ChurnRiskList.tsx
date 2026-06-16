@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Customer } from "@/types";
-import { AlertTriangle, User, Calendar, ExternalLink } from "lucide-react";
+import { AlertTriangle, Calendar, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChurnRiskListProps {

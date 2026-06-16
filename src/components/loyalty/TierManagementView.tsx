@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Plus, Settings, TrendingUp, Zap } from "lucide-react";
-import * as motion from "motion/react-client";
+import { Star, Settings, TrendingUp, Zap } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy, doc, setDoc, serverTimestamp } from "firebase/firestore";
@@ -16,6 +15,15 @@ export function TierManagementView() {
   const [loading, setLoading] = useState(true);
   const [selectedTier, setSelectedTier] = useState<TierConfig | undefined>(undefined);
   const [showDialog, setShowDialog] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => {
+      setSelectedTier(undefined);
+      setShowDialog(true);
+    };
+    window.addEventListener('open-add-tier-dialog', handleOpen);
+    return () => window.removeEventListener('open-add-tier-dialog', handleOpen);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -67,22 +75,7 @@ export function TierManagementView() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between bg-background/95 dark:bg-zinc-950/95 backdrop-blur-md p-6 rounded-3xl border border-border shadow-md">
-        <div>
-          <h3 className="text-xl font-bold font-heading flex items-center gap-2">
-            <Star className="w-5 h-5 text-amber-500" /> Cấu hình Cấp bậc Hội viên
-          </h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Xây dựng hệ thống hạng VIP với điều kiện thăng hạng động.</p>
-        </div>
-        <button 
-          onClick={() => { setSelectedTier(undefined); setShowDialog(true); }}
-          className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:bg-primary/90 transition-all flex items-center shadow-lg shadow-primary/20"
-        >
-          <Plus className="w-4 h-4 mr-2" /> Thêm hạng mới
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {loading ? (
           <div className="py-12 text-center text-muted-foreground col-span-full">Đang tải cấu hình...</div>
         ) : tiers.length === 0 ? (

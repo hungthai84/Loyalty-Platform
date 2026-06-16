@@ -2,40 +2,26 @@ import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Plus,
   Star,
   Gift,
-  ChevronRight,
   Zap,
   Trophy,
-  Scissors,
   Calendar,
-  Camera,
-  Share2,
   Gem,
-  TrendingUp,
   Tag,
-  AlertCircle,
   Sparkles,
   CheckCircle2,
-  Heart,
   Trash2,
   Crown,
   Award,
   Shield,
-  PlusCircle,
-  Download,
   X,
   Coins,
-  Settings2,
-  Diamond,
-  User,
-  Sliders,
   BookOpen,
 } from "lucide-react";
-import { formatCurrency, getCurrency, CURRENCIES } from "@/lib/currency";
+import { formatCurrency, getCurrency } from "@/lib/currency";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
 import { useFirebase } from "@/components/FirebaseProvider";
@@ -51,15 +37,8 @@ import {
   serverTimestamp,
   deleteDoc,
 } from "firebase/firestore";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from "recharts";
+
+
 import {
   TierConfig,
   RedemptionRule,
@@ -73,8 +52,6 @@ import { EarnRuleDialog } from "@/components/loyalty/EarnRuleDialog";
 import { LoyaltyCampaignDialog } from "@/components/loyalty/LoyaltyCampaignDialog";
 import { SegmentationRuleDialog } from "@/components/loyalty/SegmentationRuleDialog";
 import { TierManagementView } from "@/components/loyalty/TierManagementView";
-import { GamificationProgress } from "@/components/loyalty/GamificationProgress";
-import { CustomerProgressGrid } from "@/components/loyalty/CustomerProgressGrid";
 import { LoyaltyProgressionTimeline } from "@/components/loyalty/LoyaltyProgressionTimeline";
 import { TierComparisonTable } from "@/components/loyalty/TierComparisonTable";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
@@ -94,7 +71,7 @@ import {
   saveGuestCustomer,
 } from "@/data/guestData";
 
-type TabType = "tiers" | "segmentation" | "redemption" | "vip";
+type TabType = "tiers" | "points" | "gifts" | "redemption";
 
 const COLOR_PRESET_MAP: Record<
   string,
@@ -715,10 +692,17 @@ export function LoyaltyView() {
           autoTags: matchedTags,
         };
 
-        batch.update(custRef, {
-          customFields: updatedFields,
-          updatedAt: serverTimestamp(),
-        });
+        batch.set(
+          custRef,
+          {
+            ...customer,
+            customFields: updatedFields,
+            userId: user.uid,
+            createdAt: customer.createdAt instanceof Date || typeof customer.createdAt === "string" ? customer.createdAt : serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
         updatedCount++;
       }
 
@@ -1030,10 +1014,10 @@ export function LoyaltyView() {
   };
 
   const tabs = [
-    { id: "tiers", label: "Hạng & Tích điểm", icon: Star },
-    { id: "segmentation", label: "Quy tắc Phân khúc", icon: Tag },
-    { id: "redemption", label: "Đổi quà & Ưu đãi", icon: Gift },
-    { id: "vip", label: "Đặc quyền VIP", icon: Gem },
+    { id: "tiers", label: "Hạng thành viên", icon: Star },
+    { id: "points", label: "Điểm thưởng", icon: Award },
+    { id: "redemption", label: "Ưu đãi", icon: Gem },
+    { id: "gifts", label: "Đổi quà", icon: Gift },
   ];
 
   const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
@@ -1063,7 +1047,7 @@ export function LoyaltyView() {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
-              Chiến dịch & Quà tặng
+              Hạng và Ưu đãi
             </h2>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
@@ -1073,21 +1057,6 @@ export function LoyaltyView() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="hidden lg:flex items-center gap-4 px-4 py-2 bg-background/50 rounded-xl border border-border/50 shadow-sm mr-2">
-          <div className="text-center">
-            <p className="text-[10px] uppercase tracking-widest text-[#2f6cf5] font-extrabold leading-none mb-1">
-              Retention
-            </p>
-            <p className="text-sm font-extrabold text-foreground">84%</p>
-          </div>
-          <div className="w-px h-6 bg-border/50" />
-          <div className="text-center">
-            <p className="text-[10px] uppercase tracking-widest text-[#2f6cf5] font-extrabold leading-none mb-1">
-              Referrals
-            </p>
-            <p className="text-sm font-extrabold text-foreground">124</p>
-          </div>
-        </div>
         <button
           onClick={() => setShowDoc(!showDoc)}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer border ${
@@ -1096,22 +1065,7 @@ export function LoyaltyView() {
               : "bg-background border-border hover:bg-muted text-foreground"
           }`}
         >
-          <BookOpen className="w-4 h-4 mr-2 text-amber-500" /> Tài liệu Cấu hình
-        </button>
-        <button
-          onClick={handleExportActivities}
-          className="px-4 py-2.5 bg-background border border-border hover:bg-muted text-foreground rounded-xl text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer"
-        >
-          <Download className="w-4 h-4 mr-2" /> Xuất CSV
-        </button>
-        <button
-          onClick={() => {
-            setSelectedEarnRule(undefined);
-            setShowEarnDialog(true);
-          }}
-          className="px-5 py-2.5 bg-gradient-to-r from-[#2f6cf5] to-blue-600 text-white rounded-xl text-xs font-bold hover:shadow-lg transition-all shadow-md shadow-blue-500/30 flex items-center shrink-0 cursor-pointer"
-        >
-          <Plus className="w-4 h-4 mr-2" /> Thiết lập mới
+          <BookOpen className="w-4 h-4 mr-2 text-amber-500" /> Tài liệu {tabs.find(t => t.id === activeTab)?.label}
         </button>
       </div>
     </motion.div>
@@ -1241,7 +1195,7 @@ export function LoyaltyView() {
                   <div>
                     <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
                       <Tag className="w-4 h-4 text-purple-500 fill-purple-500" />
-                      3. Quy tắc Phân khúc (Segmentation)
+                      3. Quy tắc Phân loại trạng thái (Status)
                     </h4>
                     <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
                       Phân lớp tệp & Gán nhãn CRM tự động khi khách hàng thỏa mãn các điều kiện quy luật đặc thù:
@@ -1380,377 +1334,123 @@ export function LoyaltyView() {
           >
             {activeTab === "tiers" && (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 space-y-6">
-                    <GamificationProgress currentPoints={1420} nextTierPoints={2500} currentTier="Essential" nextTier="Icon" />
-                    <CustomerProgressGrid customers={customers} tiers={tiers} />
-                    <TierManagementView />
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-card/60 border border-border/80 rounded-3xl backdrop-blur-md">
+                  <div className="text-left w-full">
+                    <h3 className="text-lg font-bold font-heading flex items-center gap-2 text-foreground">
+                      <Star className="w-5 h-5 text-amber-500 fill-amber-500" /> Cấu hình Hạng thành viên
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Quản lý các cấp bậc thành viên và thiết lập điều kiện thăng hạng.
+                    </p>
                   </div>
-                  
-                  <div className="lg:col-span-1 space-y-6">
-                    {/* Program Health Card */}
-                    <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-3xl shadow-lg text-left">
-                      <h3 className="text-lg font-bold font-heading flex items-center gap-2 mb-4">
-                        <TrendingUp className="w-5 h-5 text-emerald-500" /> Sức khỏe Chương trình (Program Health)
-                      </h3>
-                      <div className="space-y-4">
-                        <div className="bg-background/45 border border-border/50 p-4 rounded-2xl">
-                          <p className="text-xs text-muted-foreground uppercase font-black tracking-wider mb-1">Điểm Trung Bình / Hội Viên</p>
-                          <p className="text-2xl font-black text-foreground tracking-tight">
-                            {programHealthStats.avgPoints.toLocaleString(undefined, { maximumFractionDigits: 1 })} <span className="text-sm font-semibold text-muted-foreground">pts</span>
-                          </p>
-                        </div>
+                  <button
+                    onClick={() => {
+                        window.dispatchEvent(new CustomEvent('open-add-tier-dialog'));
+                    }}
+                    className="px-5 py-2.5 bg-gradient-to-r from-[#2f6cf5] to-blue-600 text-white rounded-xl text-xs font-bold hover:shadow-lg transition-all shadow-md shadow-blue-500/30 flex items-center shrink-0 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Thêm hạng mới
+                  </button>
+                </div>
 
-                        <div className="bg-background/45 border border-border/50 p-4 rounded-2xl">
-                          <p className="text-xs text-muted-foreground uppercase font-black tracking-wider mb-1">Tỷ Lệ Đổi Thưởng (Redemption Rate)</p>
-                          <p className="text-2xl font-black text-foreground tracking-tight">
-                            {programHealthStats.redemptionRate.toLocaleString(undefined, { maximumFractionDigits: 1 })}%
-                          </p>
-                          {/* Progress Bar */}
-                          <div className="w-full bg-muted rounded-full h-1.5 mt-2">
-                            <div 
-                              className="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" 
-                              style={{ width: `${Math.min(programHealthStats.redemptionRate, 100)}%` }}
-                            />
-                          </div>
-                        </div>
+                {/* Thẻ Lộ trình thăng cấp (Loyalty Journey) */}
+                <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-3xl shadow-lg text-left overflow-hidden mt-4">
+                  <LoyaltyProgressionTimeline currentPoints={1420} tierName="Essential" />
+                </Card>
 
-                        <div className="grid grid-cols-2 gap-3 pt-2 text-[11px] font-semibold text-muted-foreground">
-                          <div>
-                            <p className="uppercase text-[9px] font-black opacity-80 mb-0.5">Tổng điểm hiện tại</p>
-                            <p className="text-foreground font-bold text-xs">{programHealthStats.totalPoints.toLocaleString()} pts</p>
-                          </div>
-                          <div>
-                            <p className="uppercase text-[9px] font-black opacity-80 mb-0.5">Tổng điểm đã đổi</p>
-                            <p className="text-foreground font-bold text-xs">{programHealthStats.totalRedeemed.toLocaleString()} pts</p>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-
-                    <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-3xl shadow-lg">
-                      <LoyaltyProgressionTimeline currentPoints={1420} tierName="Essential" />
-                    </Card>
-                  </div>
+                {/* Thẻ tương ứng 4 hạng thành viên */}
+                <div className="w-full mt-4">
+                  <TierManagementView />
                 </div>
 
                 <TierComparisonTable />
               </div>
             )}
 
-            {activeTab === "segmentation" && (
+            {activeTab === "points" && (
               <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 bg-sidebar/50 border border-border/80 rounded-3xl backdrop-blur-md">
-                  <div>
-                    <h3 className="text-xl font-bold font-heading flex items-center gap-2">
-                      <Tag className="w-5 h-5 text-primary" /> Quy tắc Phân khúc
-                      tự động
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-card/60 border border-border/80 rounded-3xl backdrop-blur-md">
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold font-heading flex items-center gap-2 text-foreground">
+                      <Award className="w-5 h-5 text-amber-500 fill-amber-500" /> Cấu hình Điểm Thưởng (Earn Rules)
                     </h3>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Thiết lập tiêu chí để gán nhãn CRM tự động khi khách hàng
-                      thỏa mãn tổng doanh thu chi tiêu hoặc ngày không mua sắm.
+                      Quản lý các quy tắc tích lũy điểm thưởng từ các hoạt động của khách hàng.
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-2 shrink-0">
-                    {segmentationRules.length === 0 && (
-                      <button
-                        onClick={handleBootstrapRules}
-                        className="px-4 py-2 border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <Sparkles className="w-4 h-4" /> Khởi tạo mẫu lọc nhanh
-                      </button>
-                    )}
-                    <button
-                      onClick={handleSyncTagsToCustomers}
-                      disabled={
-                        syncing ||
-                        customers.length === 0 ||
-                        segmentationRules.length === 0
-                      }
-                      className="px-4 py-2 bg-primary disabled:opacity-50 text-primary-foreground rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-primary/10 cursor-pointer"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />{" "}
-                      {syncing
-                        ? "Đang đồng bộ..."
-                        : "Chạy phân khúc & Gán nhãn"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedSegRule(undefined);
-                        setShowSegDialog(true);
-                      }}
-                      className="px-4 py-2 bg-sidebar border border-border hover:bg-muted text-foreground rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" /> Thêm quy tắc mới
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedEarnRule(undefined);
+                      setShowEarnDialog(true);
+                    }}
+                    className="px-5 py-2.5 bg-gradient-to-r from-[#2f6cf5] to-blue-600 text-white rounded-xl text-xs font-bold hover:shadow-lg transition-all shadow-md shadow-blue-500/30 flex items-center shrink-0 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Thiết lập mới
+                  </button>
                 </div>
 
-                {segmentationRules.length === 0 ? (
-                  <div className="p-12 text-center rounded-3xl border border-dashed border-border flex flex-col items-center justify-center max-w-xl mx-auto space-y-4">
-                    <div className="w-16 h-16 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
-                      <Tag className="w-8 h-8" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-base">
-                        Chưa có quy tắc phân khúc tự động
-                      </h4>
-                      <p className="text-xs text-muted-foreground max-w-sm">
-                        Tạo quy tắc mới hoặc bắt đầu nhanh bằng bộ quy tắc phân
-                        khúc chuẩn (Big Spender, Inactive, Churn Risk, VIP) của
-                        chúng tôi.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleBootstrapRules}
-                      className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl text-xs hover:bg-primary/95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Sparkles className="w-4 h-4" /> Tự động nạp mẫu lọc nhanh
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left column: rule card list */}
-                    <div className="lg:col-span-2 space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {segmentationRules.map((rule) => {
-                          const matchedPreset =
-                            COLOR_PRESET_MAP[rule.color || "gold"] ||
-                            COLOR_PRESET_MAP.gold;
-                          const matchedCount = customers.filter((c) =>
-                            evaluateCustomerSegment(c, rule),
-                          ).length;
-                          const isSelected = selectedSegId === rule.id;
-
-                          return (
-                            <Card
-                              key={rule.id}
-                              onClick={() => setSelectedSegId(rule.id)}
-                              className={cn(
-                                "p-5 relative overflow-hidden transition-all duration-300 border bg-sidebar/50 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.01] flex flex-col justify-between",
-                                matchedPreset.badge,
-                                isSelected
-                                  ? "ring-2 ring-primary border-transparent bg-sidebar-accent/40"
-                                  : "border-border/50",
-                                !rule.isActive && "opacity-60",
-                              )}
-                            >
-                              <div className="space-y-3">
-                                <div className="flex items-start justify-between">
-                                  <div className="space-y-0.5 animate-fade-in">
-                                    <span
-                                      className={cn(
-                                        "inline-block px-2.5 py-0.5 text-xs font-black uppercase tracking-wide rounded-full border mb-1.5",
-                                        matchedPreset.badge,
-                                      )}
-                                    >
-                                      {rule.tag}
-                                    </span>
-                                    <h4 className="font-extrabold text-sm tracking-tight leading-tight text-foreground">
-                                      {rule.name}
-                                    </h4>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedSegRule(rule);
-                                      setShowSegDialog(true);
-                                    }}
-                                    className="p-1 px-2.5 bg-background border border-border hover:bg-muted text-foreground text-xs font-semibold rounded-lg transition-all cursor-pointer"
-                                  >
-                                    Sửa
-                                  </button>
-                                </div>
-
-                                <div className="space-y-1 pt-1.5 text-xs text-muted-foreground border-t border-border/40">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="font-bold">Chỉ số:</span>
-                                    <span>
-                                      {rule.criteriaType === "total_spend"
-                                        ? "Tổng chi tiêu"
-                                        : rule.criteriaType ===
-                                            "time_since_last_purchase"
-                                          ? "Số ngày không giao dịch"
-                                          : "Điểm tích lũy"}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="font-bold">Nhóm lọc:</span>
-                                    <span className="text-foreground font-semibold">
-                                      {rule.operator === "gte"
-                                        ? ">= "
-                                        : rule.operator === "gt"
-                                          ? "> "
-                                          : rule.operator === "eq"
-                                            ? "= "
-                                            : rule.operator === "lte"
-                                              ? "<= "
-                                              : "< "}
-                                      {rule.criteriaType === "total_spend"
-                                        ? formatCurrency(rule.value, currentCurrency)
-                                        : rule.criteriaType ===
-                                            "time_since_last_purchase"
-                                          ? `${rule.value} ngày`
-                                          : `${rule.value} pts`}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between">
-                                <span className="text-xs text-muted-foreground font-medium">
-                                  Khách hàng đạt yêu cầu:
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {earnRules && earnRules.length > 0 ? (
+                    earnRules.map((r) => (
+                      <Card key={r.id} className="p-5 border border-border/60 bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-xl bg-orange-500/10 text-orange-500`}>
+                              <Zap className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                              <h4 className="font-bold text-foreground text-sm">{r.name}</h4>
+                              <p className="text-xs text-muted-foreground mt-0.5">{r.type === 'transaction' ? 'Giao dịch mua hàng' : 'Hành động tương tác'}</p>
+                            </div>
+                          </div>
+                            <div className="flex items-center gap-2">
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r.isActive ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
+                                    {r.isActive ? "Active" : "Inactive"}
                                 </span>
-                                <span className="text-xs font-bold font-heading bg-primary/10 text-primary px-2.5 py-0.5 rounded-full">
-                                  {matchedCount} KH (
-                                  {customers.length > 0
-                                    ? Math.round(
-                                        (matchedCount / customers.length) * 100,
-                                      )
-                                    : 0}
-                                  %)
-                                </span>
-                              </div>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    </div>
+                            </div>
+                        </div>
 
-                    {/* Right column: matched customers inspection panel */}
-                    <div className="lg:col-span-1">
-                      {selectedSegId ? (
-                        (() => {
-                          const activeRule = segmentationRules.find(
-                            (r) => r.id === selectedSegId,
-                          );
-                          if (!activeRule) return null;
-                          const matchedCustomers = customers.filter((c) =>
-                            evaluateCustomerSegment(c, activeRule),
-                          );
-                          const colorMeta =
-                            COLOR_PRESET_MAP[activeRule.color || "gold"] ||
-                            COLOR_PRESET_MAP.gold;
+                        <div className="mt-5 space-y-3">
+                          <div className="flex items-center justify-between text-xs p-2.5 bg-muted/40 rounded-xl border border-border/40">
+                            <span className="text-muted-foreground font-semibold">Điểm hệ số cơ bản:</span>
+                            <span className="font-black text-[#2f6cf5]">+{r.points} pts</span>
+                          </div>
+                          
+                           <div className="flex items-center justify-between text-xs p-2.5 bg-muted/40 rounded-xl border border-border/40">
+                             <span className="text-muted-foreground font-semibold">Ngày tạo:</span>
+                             <span className="font-medium text-foreground">{r.createdAt?.substring(0, 10) || 'Hệ thống'}</span>
+                           </div>
+                        </div>
 
-                          return (
-                            <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md flex flex-col h-full rounded-2xl">
-                              <div className="border-b pb-4 mb-4">
-                                <div className="flex justify-between items-center mb-1">
-                                  <span className="text-xs uppercase font-bold tracking-widest text-[#2f6cf5]">
-                                    Trình kiểm tra tệp
-                                  </span>
-                                  <span
-                                    className={cn(
-                                      "px-2 py-0.5 text-xs font-bold rounded shadow-2xs border",
-                                      colorMeta.badge,
-                                    )}
-                                  >
-                                    {activeRule.tag}
-                                  </span>
-                                </div>
-                                <h4 className="font-bold text-sm text-foreground truncate">
-                                  {activeRule.name}
-                                </h4>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  Tìm thấy {matchedCustomers.length} khách hàng
-                                  thỏa quy chuẩn.
-                                </p>
-                              </div>
-
-                              <div className="flex-1 overflow-y-auto max-h-[360px] space-y-3 pr-1">
-                                {matchedCustomers.length === 0 ? (
-                                  <div className="text-center py-10 text-muted-foreground space-y-2">
-                                    <AlertCircle className="w-8 h-8 mx-auto opacity-40 text-rose-500 animate-pulse" />
-                                    <p className="text-xs font-medium">
-                                      Chưa có khách hàng nào khớp tiêu chí lọc
-                                      này hiện hữu.
-                                    </p>
-                                  </div>
-                                ) : (
-                                  matchedCustomers.map((cust) => {
-                                    const spendValue =
-                                      cust.customFields?.spend ??
-                                      cust.customFields?.totalSpend ??
-                                      cust.customFields?.total_spend ??
-                                      (cust as any).spend ??
-                                      (cust.points ? cust.points * 50000 : 0);
-
-                                    const lastDate =
-                                      cust.lastTransactionAt?.toDate?.() ||
-                                      (cust.lastTransactionAt
-                                        ? new Date(cust.lastTransactionAt)
-                                        : null) ||
-                                      cust.createdAt?.toDate?.() ||
-                                      (cust.createdAt
-                                        ? new Date(cust.createdAt)
-                                        : null);
-
-                                    return (
-                                      <div
-                                        key={cust.id}
-                                        className="p-3 bg-muted/20 border border-border/40 rounded-xl flex items-center gap-3 hover:bg-muted/45 transition-all"
-                                      >
-                                        {cust.avatarUrl ? (
-                                          <img
-                                            src={cust.avatarUrl}
-                                            className="w-8 h-8 rounded-lg border border-border/20 shadow-xs object-cover"
-                                            alt=""
-                                          />
-                                        ) : (
-                                          <div className="w-8 h-8 rounded-lg border border-border/20 shadow-xs bg-primary/10 text-primary flex items-center justify-center text-xs font-bold uppercase shrink-0">
-                                            {cust.name.slice(0, 2)}
-                                          </div>
-                                        )}
-                                        <div className="flex-1 min-w-0">
-                                          <h5 className="text-xs font-bold text-foreground truncate">
-                                            {cust.name}
-                                          </h5>
-                                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                                            <span>
-                                              💰{" "}
-                                              {Number(
-                                                spendValue,
-                                              ).toLocaleString("vi-VN")}{" "}
-                                              đ
-                                            </span>
-                                            <span className="text-muted-foreground/30">
-                                              •
-                                            </span>
-                                            <span>
-                                              📅{" "}
-                                              {lastDate
-                                                ? lastDate.toLocaleDateString(
-                                                    "vi-VN",
-                                                  )
-                                                : "Mới"}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    );
-                                  })
-                                )}
-                              </div>
-                              </Card>
-                            );
-                          })()
-                        ) : (
-                          <Card className="p-8 border border-border/50 bg-sidebar/30 rounded-2xl text-center flex flex-col items-center justify-center min-h-[300px]">
-                            <Tag className="w-10 h-10 text-muted-foreground/50 animate-bounce mb-3" />
-                            <h5 className="font-bold text-sm text-foreground">
-                              Trình kiểm tra trực quan
-                            </h5>
-                            <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto leading-relaxed">
-                              Nhấp chọn bất kỳ thẻ Quy tắc Phân khúc bên trái để
-                              soi chi tiết tệp khách hàng thỏa mãn ngay lập tức.
-                            </p>
-                          </Card>
-                        )}
-                      </div>
+                        <div className="mt-5 flex items-center justify-end gap-2 pt-4 border-t border-border/40">
+                          <button
+                            onClick={() => {
+                              setSelectedEarnRule(r);
+                              setShowEarnDialog(true);
+                            }}
+                            className="px-3 py-1.5 text-xs font-bold text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer"
+                          >
+                            Chỉnh sửa
+                          </button>
+                        </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="col-span-full py-12 flex flex-col items-center justify-center text-center border-2 border-dashed border-border rounded-xl bg-muted/20">
+                      <Zap className="w-8 h-8 text-muted-foreground/30 mb-3" />
+                      <p className="text-sm font-semibold text-muted-foreground">Chưa có quy tắc tích điểm nào</p>
+                      <button
+                        onClick={() => {
+                          setSelectedEarnRule(undefined);
+                          setShowEarnDialog(true);
+                        }}
+                        className="mt-4 px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                      >
+                         Thiết lập quy tắc đầu tiên
+                      </button>
                     </div>
                   )}
+                </div>
               </div>
             )}
 
@@ -1760,7 +1460,13 @@ export function LoyaltyView() {
               </div>
             )}
 
-            {activeTab === "vip" && (
+            {activeTab === "gifts" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-left">
+                <PointRedemptionConfigView />
+              </div>
+            )}
+
+            {activeTab === "tiers" && (
               <div className="space-y-8">
                 {/* Visual Header card */}
                 <div className="relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-r from-primary/10 via-[#2f6cf5]/5 to-transparent p-6 md:p-8 backdrop-blur-md">

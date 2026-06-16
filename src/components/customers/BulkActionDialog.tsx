@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tag, UserCheck, Smartphone, Send, AlertTriangle, Award } from "lucide-react";
+import { Tag, UserCheck, Smartphone, AlertTriangle, Award } from "lucide-react";
 
 interface BulkActionDialogProps {
   isOpen: boolean;
