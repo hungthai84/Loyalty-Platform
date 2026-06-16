@@ -8,6 +8,7 @@ import {
  CardTitle, 
  CardDescription 
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
  DollarSign, 
  TrendingUp, 
@@ -33,10 +34,16 @@ import {
  Zap,
  Trophy,
  BookOpen,
- X
+ X,
+ ChevronDown,
+ MoreHorizontal
 } from 'lucide-react';
-
-
+import { 
+ DropdownMenu,
+ DropdownMenuContent,
+ DropdownMenuItem,
+ DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
  Select,
  SelectContent,

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import confetti from "canvas-confetti";
 import {
+  QrCode,
   Gift,
   History,
   User as UserIcon,
@@ -26,11 +27,11 @@ import {
   Database,
   Shield,
   Sliders,
-  Activity
 } from "lucide-react";
+import { Activity } from "lucide-react";
 import * as motion from "motion/react-client";
 import { useFirebase } from "@/components/FirebaseProvider";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { RedemptionRule } from "@/types";
 import { toast } from "sonner";
@@ -78,7 +79,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ["#6E62E5", "#ffffff"]
+          colors: ["#2f6cf5", "#ffffff"]
         });
         toast.success("Quét mã POS thành công!", {
           description: "Chúc mừng! Bạn vừa nhận được 100 điểm thưởng tức thì.",
@@ -106,7 +107,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
         particleCount: 150,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ["#6E62E5", "#10b981", "#f59e0b", "#ffffff"],
+        colors: ["#2f6cf5", "#10b981", "#f59e0b", "#ffffff"],
       });
       toast.success(`Chúc mừng! Bạn đã đạt hạng ${currentTier}`, {
         description: `Cảm ơn bạn đã đồng hành cùng SEVA. Tận hưởng các ưu đãi mới của hạng ${currentTier} ngay!`,
@@ -202,8 +203,8 @@ export function CustomerPortalView({ onBack }: PortalProps) {
         title: "Trở thành Atelier",
         description: `Chỉ còn ${(10000 - customerPoints).toLocaleString()} điểm nữa để chạm tay vào hạng Atelier cao quý nhất.`,
         icon: Gem,
-        color: "text-[#6E62E5]",
-        bg: "bg-[#6E62E5]/10",
+        color: "text-[#2f6cf5]",
+        bg: "bg-[#2f6cf5]/10",
       });
     }
 
@@ -254,10 +255,10 @@ export function CustomerPortalView({ onBack }: PortalProps) {
   const bannerContent = (
     <motion.div
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className="bg-card/45 border border-[#6E62E5]/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#6E62E5]/50"
+      className="bg-card/45 border border-[#2f6cf5]/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#2f6cf5]/50"
     >
       <div className="flex items-center gap-4 text-left">
-        <div className="p-3 bg-[#6E62E5]/10 rounded-[10px] text-[#6E62E5] flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+        <div className="p-3 bg-[#2f6cf5]/10 rounded-[10px] text-[#2f6cf5] flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
           <motion.div
             animate={{
@@ -270,13 +271,13 @@ export function CustomerPortalView({ onBack }: PortalProps) {
               ease: "easeInOut",
             }}
           >
-            <Fingerprint className="w-8 h-8 text-[#6E62E5]" />
+            <Fingerprint className="w-8 h-8 text-[#2f6cf5]" />
           </motion.div>
         </div>
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
-              Điểm chạm Thành Viên
+              Cổng Loyalty Thành Viên
             </h2>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
@@ -293,8 +294,8 @@ export function CustomerPortalView({ onBack }: PortalProps) {
             "bg-background border-border hover:bg-muted text-foreground"
           )}
         >
-          <BookOpen className="w-4 h-4 mr-2 text-[#6E62E5]" />
-          Tài liệu Chỉnh sửa giao diện Điểm chạm
+          <BookOpen className="w-4 h-4 mr-2 text-[#2f6cf5]" />
+          Tài liệu Chỉnh sửa giao diện Cổng Loyalty
         </button>
       </div>
     </motion.div>
@@ -305,7 +306,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
     setSavingPortal(true);
     setTimeout(() => {
       setSavingPortal(false);
-      toast.success("Đã lưu cấu hình Điểm chạm!");
+      toast.success("Đã lưu cấu hình Cổng Loyalty!");
     }, 850);
   };
 
@@ -317,7 +318,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
         <div className="bg-card border border-border/70 rounded-2xl p-5 shadow-lg space-y-4">
           <div className="flex items-center justify-between border-b pb-3 border-border/40">
             <div className="flex items-center gap-2">
-              <Palette className="w-5 h-5 text-[#6E62E5]" />
+              <Palette className="w-5 h-5 text-[#2f6cf5]" />
               <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
                 Định dạng hiển thị cổng VIP
               </span>
@@ -330,7 +331,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
               onClick={() => setPortalThemeOption("system")}
               className={`py-3 px-4 border rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 portalThemeOption === "system"
-                  ? "border-[#6E62E5] bg-[#6E62E5]/5 text-[#6E62E5] font-extrabold shadow-sm"
+                  ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
                   : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
               }`}
             >
@@ -355,7 +356,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
         <div className="bg-card border border-border/70 rounded-2xl p-5 shadow-lg space-y-4">
           <div className="flex items-center justify-between border-b pb-3 border-border/40">
             <div className="flex items-center gap-2">
-              <Monitor className="w-5 h-5 text-[#6E62E5]" />
+              <Monitor className="w-5 h-5 text-[#2f6cf5]" />
               <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
                 Thiết bị hiển thị
               </span>
@@ -368,7 +369,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
               onClick={() => setPortalDeviceOption("mobile")}
               className={`py-3 px-4 border rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 portalDeviceOption === "mobile"
-                  ? "border-[#6E62E5] bg-[#6E62E5]/5 text-[#6E62E5] font-extrabold shadow-sm"
+                  ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
                   : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
               }`}
             >
@@ -380,7 +381,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
               onClick={() => setPortalDeviceOption("desktop")}
               className={`py-3 px-4 border rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 portalDeviceOption === "desktop"
-                  ? "border-[#6E62E5] bg-[#6E62E5]/5 text-[#6E62E5] font-extrabold shadow-sm"
+                  ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
                   : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
               }`}
             >
@@ -393,7 +394,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
         <div className="bg-card border border-border/70 rounded-2xl p-5 shadow-lg space-y-4 md:col-span-2 text-left">
           <div className="flex items-center justify-between border-b pb-3 border-border/40">
             <div className="flex items-center gap-2">
-              <Sliders className="w-5 h-5 text-[#6E62E5]" />
+              <Sliders className="w-5 h-5 text-[#2f6cf5]" />
               <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
                 Tuy chỉnh chung
               </span>
@@ -406,7 +407,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                   Màu sắc thương hiệu chủ đạo
                 </label>
                 <div className="flex items-center gap-3">
-                  <button className="w-8 h-8 rounded-xl bg-[#6E62E5] ring-2 ring-offset-2 ring-[#6E62E5] ring-offset-background"></button>
+                  <button className="w-8 h-8 rounded-xl bg-[#2f6cf5] ring-2 ring-offset-2 ring-[#2f6cf5] ring-offset-background"></button>
                   <button className="w-8 h-8 rounded-xl border border-border bg-rose-500 hover:scale-110 transition-transform"></button>
                   <button className="w-8 h-8 rounded-xl border border-border bg-emerald-500 hover:scale-110 transition-transform"></button>
                   <button className="w-8 h-8 rounded-xl border border-border bg-amber-500 hover:scale-110 transition-transform"></button>
@@ -487,7 +488,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <span className="font-heading font-black tracking-widest text-[#6E62E5]">
+          <span className="font-heading font-black tracking-widest text-[#2f6cf5]">
             {activeTab === "home"
               ? "SEVA"
               : activeTab === "rewards"
@@ -513,7 +514,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                     className={`text-3xl font-heading ${textPrimary} leading-tight`}
                   >
                     Chào bạn, <br />
-                    <span className="text-[#6E62E5] italic text-4xl">
+                    <span className="text-[#2f6cf5] italic text-4xl">
                       Eleanor.
                     </span>
                   </h2>
@@ -523,7 +524,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                 </div>
                 <button
                   onClick={() => setCustomerPoints((prev) => prev + 50)}
-                  className="px-3 py-1.5 bg-[#6E62E5]/10 text-[#6E62E5] border border-[#6E62E5]/20 rounded-lg text-[10px] font-bold uppercase transition-all hover:bg-[#6E62E5] hover:text-white cursor-pointer"
+                  className="px-3 py-1.5 bg-[#2f6cf5]/10 text-[#2f6cf5] border border-[#2f6cf5]/20 rounded-lg text-[10px] font-bold uppercase transition-all hover:bg-[#2f6cf5] hover:text-white cursor-pointer"
                 >
                   +50 pts (Demo)
                 </button>
@@ -532,10 +533,10 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                 <div
                   className={`mt-6 aspect-[1.586/1] ${cardGradient} rounded-2xl relative overflow-hidden shadow-xl flex flex-col justify-between p-6 transition-all duration-300`}
                 >
-                  <div className="absolute -right-12 -top-12 w-48 h-48 bg-[#6E62E5] opacity-20 rounded-full blur-3xl"></div>
+                  <div className="absolute -right-12 -top-12 w-48 h-48 bg-[#2f6cf5] opacity-20 rounded-full blur-3xl"></div>
 
                   <div className="flex justify-between items-start relative z-10">
-                    <span className="font-heading font-extrabold text-[#6E62E5] tracking-widest text-lg">
+                    <span className="font-heading font-extrabold text-[#2f6cf5] tracking-widest text-lg">
                       SEVA
                     </span>
                     <button 
@@ -562,7 +563,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                     onClick={() => setActiveTab("rewards")}
                     className={`flex flex-col items-center justify-center p-4 rounded-2xl ${buttonBg} cursor-pointer`}
                   >
-                    <Gift className="w-6 h-6 text-[#6E62E5] mb-2" />
+                    <Gift className="w-6 h-6 text-[#2f6cf5] mb-2" />
                     <span
                       className={`text-xs ${textPrimary} font-bold tracking-wide uppercase`}
                     >
@@ -573,7 +574,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                     className={`flex flex-col items-center justify-center p-4 rounded-2xl ${buttonBg} cursor-pointer`}
                     onClick={() => setActiveTab("history")}
                   >
-                    <History className="w-6 h-6 text-[#6E62E5] mb-2" />
+                    <History className="w-6 h-6 text-[#2f6cf5] mb-2" />
                     <span
                       className={`text-xs ${textPrimary} font-bold tracking-wide uppercase`}
                     >
@@ -583,7 +584,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                   <button
                     className={`flex flex-col items-center justify-center p-4 rounded-2xl ${buttonBg} cursor-pointer`}
                   >
-                    <UserIcon className="w-6 h-6 text-[#6E62E5] mb-2" />
+                    <UserIcon className="w-6 h-6 text-[#2f6cf5] mb-2" />
                     <span
                       className={`text-xs ${textPrimary} font-bold tracking-wide uppercase`}
                     >
@@ -596,7 +597,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                 <div className={`${cardBg} rounded-3xl p-6 transition-colors duration-300 space-y-4`}>
                   <div className="flex items-center justify-between">
                     <h3 className={`${textPrimary} font-bold text-sm flex items-center gap-2`}>
-                      <Share2 className="w-4 h-4 text-[#6E62E5]" /> Giới thiệu bạn bè
+                      <Share2 className="w-4 h-4 text-[#2f6cf5]" /> Giới thiệu bạn bè
                     </h3>
                     <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">
                       {referralCount} Bạn đã tham gia
@@ -612,12 +613,12 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                         navigator.clipboard.writeText(referralLink);
                         toast.success("Đã sao chép link giới thiệu!");
                       }}
-                      className="p-1.5 hover:bg-[#6E62E5]/5 rounded-lg text-[#6E62E5] transition-colors"
+                      className="p-1.5 hover:bg-[#2f6cf5]/5 rounded-lg text-[#2f6cf5] transition-colors"
                     >
                       <Copy className="w-4 h-4" />
                     </button>
                   </div>
-                  <button className="w-full py-3 bg-[#6E62E5] text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#6E62E5]/90 transition-all active:scale-95 shadow-md">
+                  <button className="w-full py-3 bg-[#2f6cf5] text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#2f6cf5]/90 transition-all active:scale-95 shadow-md">
                     Gửi lời mời ngay
                   </button>
                 </div>
@@ -633,7 +634,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                     <h3 className={`${textPrimary} font-bold text-sm`}>
                       Lộ trình thăng hạng
                     </h3>
-                    <span className="text-[10px] font-black text-[#6E62E5] uppercase tracking-widest">
+                    <span className="text-[10px] font-black text-[#2f6cf5] uppercase tracking-widest">
                       Hạng hiện tại: {currentTierName}
                     </span>
                   </div>
@@ -655,7 +656,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                       {
                         name: "Atelier",
                         points: 10000,
-                        color: "bg-[#6E62E5]",
+                        color: "bg-[#2f6cf5]",
                         icon: Gem,
                       },
                     ].map((tier, idx) => {
@@ -689,7 +690,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                             >
                               {isReached
                                 ? "ĐÃ ĐẠT"
-                                : `CẦN ${pointsNeeded.toLocaleString()} PTS`}
+                                : `CẦN ${pointsNeeded.toLocaleString()} Điểm`}
                             </span>
                           </div>
                           <div
@@ -744,7 +745,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                     <h3 className={`${textPrimary} font-bold text-sm`}>
                       Trải nghiệm VIP
                     </h3>
-                    <button className="text-xs text-[#6E62E5] font-black uppercase hover:underline">
+                    <button className="text-xs text-[#2f6cf5] font-black uppercase hover:underline">
                       Khám phá
                     </button>
                   </div>
@@ -765,7 +766,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                       <p
                         className={`${isPortalDark ? "text-indigo-300" : "text-indigo-600"} text-xs mt-1 uppercase font-extrabold tracking-tighter`}
                       >
-                        +500 PTS / LẦN
+                        +500 Điểm / LẦN
                       </p>
                     </div>
                     <div
@@ -798,7 +799,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                     <h3 className={`${textPrimary} font-bold text-sm`}>
                       Hoạt động gần đây
                     </h3>
-                    <button className="text-xs text-[#6E62E5] font-black uppercase tracking-wider hover:underline">
+                    <button className="text-xs text-[#2f6cf5] font-black uppercase tracking-wider hover:underline">
                       Xem tất cả
                     </button>
                   </div>
@@ -840,7 +841,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                           <span
                             className={
                               act.type === "earn"
-                                ? "text-[#6E62E5] text-sm font-bold"
+                                ? "text-[#2f6cf5] text-sm font-bold"
                                 : `${isPortalDark ? "text-zinc-500" : "text-zinc-400"} text-sm `
                             }
                           >
@@ -865,7 +866,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                     <h3
                       className={`${textPrimary} font-bold text-sm flex items-center gap-2`}
                     >
-                      <Palette className="w-4 h-4 text-[#6E62E5]" /> Thiết lập
+                      <Palette className="w-4 h-4 text-[#2f6cf5]" /> Thiết lập
                       cổng của bạn
                     </h3>
                   </div>
@@ -890,7 +891,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                           onClick={() => setPortalThemeOption("system")}
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
                             portalThemeOption === "system"
-                              ? "bg-[#6E62E5] text-white shadow-sm font-black"
+                              ? "bg-[#2f6cf5] text-white shadow-sm font-black"
                               : `${isPortalDark ? "text-zinc-400 hover:text-white" : "text-zinc-500 hover:text-zinc-900"}`
                           }`}
                         >
@@ -933,7 +934,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                     >
                       Số dư
                     </p>
-                    <p className="text-[#6E62E5] font-bold text-base">
+                    <p className="text-[#2f6cf5] font-bold text-base">
                       {customerPoints.toLocaleString()} pts
                     </p>
                   </div>
@@ -961,7 +962,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                             className={`w-14 h-14 rounded-xl ${isPortalDark ? "bg-gradient-to-br from-[#2A2A2A] to-[#1A1A1A] border-white/10" : "bg-gradient-to-br from-zinc-100 to-zinc-50 border-zinc-200/50"} flex items-center justify-center border shrink-0`}
                           >
                             {rule.rewardType === "discount" ? (
-                              <Ticket className="w-7 h-7 text-[#6E62E5]" />
+                              <Ticket className="w-7 h-7 text-[#2f6cf5]" />
                             ) : rule.rewardType === "voucher" ? (
                               <CheckCircle2 className="w-7 h-7 text-emerald-500" />
                             ) : (
@@ -975,7 +976,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                               {rule.name}
                             </h4>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[#6E62E5] text-xs font-black">
+                              <span className="text-[#2f6cf5] text-xs font-black">
                                 {rule.pointsRequired.toLocaleString()} pts
                               </span>
                               <div className="w-1 h-1 rounded-full bg-zinc-700"></div>
@@ -1010,7 +1011,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                             onClick={() => handleRedeem(rule)}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
                               canRedeem
-                                ? "bg-[#6E62E5] text-white hover:scale-105 active:scale-95"
+                                ? "bg-[#2f6cf5] text-white hover:scale-105 active:scale-95"
                                 : isPortalDark
                                   ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
                                   : "bg-zinc-100 text-zinc-400 cursor-not-allowed"
@@ -1066,7 +1067,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                         <div
                           className={`w-11 h-11 rounded-lg ${isPortalDark ? "bg-white/5" : "bg-zinc-100"} flex items-center justify-center shrink-0`}
                         >
-                          <Gift className="w-5 h-5 text-[#6E62E5]" />
+                          <Gift className="w-5 h-5 text-[#2f6cf5]" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4
@@ -1113,7 +1114,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
             </div>
             
             <div className="flex-1 flex flex-col items-center justify-center space-y-6">
-              <div id="qr-reader" className="w-full max-w-[300px] overflow-hidden rounded-2xl border-4 border-[#6E62E5]" />
+              <div id="qr-reader" className="w-full max-w-[300px] overflow-hidden rounded-2xl border-4 border-[#2f6cf5]" />
               <div className="text-center space-y-2">
                 <p className="text-white font-bold">Hãy quét mã tại quầy POS</p>
                 <p className="text-zinc-500 text-xs">Để tích điểm hoặc xác thực ưu đãi trực tiếp</p>

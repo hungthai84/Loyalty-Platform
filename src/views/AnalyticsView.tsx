@@ -24,6 +24,7 @@ import {
  Cell,
  Legend
 } from "recharts";
+import { ActivityHeatmap } from "@/components/dashboard/ActivityHeatmap";
 import { ChurnRiskList } from "@/components/analytics/ChurnRiskList";
 import { 
   TrendingUp, 
@@ -33,8 +34,12 @@ import {
  ArrowUpRight,
  ArrowDownRight,
  Sparkles,
+ Compass,
+ HelpCircle,
  Gem,
+ Award,
  Zap,
+ Trophy,
  CheckCircle2,
  Calendar,
  ChevronDown
@@ -51,7 +56,9 @@ import { formatCurrency, getCurrency } from "@/lib/currency";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, Send } from "lucide-react";
+import { Mail, Clock, Send, Coins, Crown, Shield } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { BespokeSimulator } from "@/components/loyalty/BespokeSimulator";
 
 const SUGGESTIONS_MAP: Record<string, {
   vibe: string;
@@ -183,6 +190,13 @@ const heatmapData = [
   const [scheduledEnabled, setScheduledEnabled] = useState(false);
   const [reportEmail, setReportEmail] = useState("admin@seva.premium");
   const [currencyConfig, setCurrencyConfig] = useState(getCurrency());
+
+  // Simulator states
+  const [simAovValue, setSimAovValue] = useState<number>(750000);
+  const [selectedSimTierId, setSelectedSimTierId] = useState<string>("tier-member");
+  const [isGlobalMultiplierActive, setIsGlobalMultiplierActive] = useState<boolean>(false);
+  const [globalMultiplier, setGlobalMultiplier] = useState<number>(1.2);
+  const [globalMultiplierReason, setGlobalMultiplierReason] = useState<string>("Happy Hour / Tháng Sinh Nhật");
 
   useEffect(() => {
     const handleCurrencyChange = () => setCurrencyConfig(getCurrency());
@@ -526,7 +540,7 @@ const heatmapData = [
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-
+        {/* Export buttons removed */}
         <div className="relative">
           <button 
             onClick={() => setIsOpen(!isOpen)}
@@ -637,6 +651,8 @@ const heatmapData = [
         <div className="mb-8">
           <ChurnRiskList customers={dbCustomers} />
         </div>
+
+        <BespokeSimulator />
 
         {/* KPI Stats */}
  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

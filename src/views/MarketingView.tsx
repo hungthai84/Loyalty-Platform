@@ -3,10 +3,13 @@ import { createPortal } from "react-dom";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Mail,
+  Mail, 
+  Zap,
   Megaphone, 
+  CheckCircle2, 
   Activity, 
   Send, 
+  Laptop, 
   History, 
   CheckCircle, 
   Eye, 

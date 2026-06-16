@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { db } from "@/lib/firebase";
-import { doc, updateDoc, deleteDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { Customer, Company, AttributeDefinition, TierConfig } from "@/types";
 import { StatusService, CustomerActivityMetrics } from "@/services/StatusService";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import {
+  ArrowLeft,
   Phone,
   Mail,
   Facebook,
@@ -23,6 +24,7 @@ import {
   Upload,
   TrendingUp,
   Zap,
+  Trash2,
   AlertTriangle,
   Gem,
   Compass,
@@ -32,8 +34,6 @@ import {
   Download,
   Smile,
   MessageSquare,
-  Package,
-  Globe,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -987,33 +987,7 @@ export function CustomerDashboard({
         toast.dismiss(toastId);
       }
       return true;
-    } catch (error: any) {
-      if (error.code === "not-found" || error.message?.includes("not-found") || error.message?.includes("No document to update")) {
-        try {
-          const fullCustomer = {
-            ...customer,
-            ...updatedData,
-            customFields: {
-              ...(customer.customFields || {}),
-              ...(updatedData.customFields || {}),
-            },
-            userId: userId,
-            createdAt: customer.createdAt instanceof Date || typeof customer.createdAt === "string" ? customer.createdAt : serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          };
-          await setDoc(docRef, fullCustomer);
-          if (successMessage) {
-            toast.success(successMessage, { id: toastId });
-          } else {
-            toast.dismiss(toastId);
-          }
-          return true;
-        } catch (setErr: any) {
-          console.error("Error creating customer document: ", setErr);
-          toast.error("Không thể lưu cấu hình đến cloud", { id: toastId });
-          return false;
-        }
-      }
+    } catch (error) {
       console.error("Error updating customer config: ", error);
       toast.error("Không thể lưu cấu hình đến cloud", { id: toastId });
       return false;
@@ -1093,20 +1067,20 @@ export function CustomerDashboard({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between border-b border-border/30 pb-3">
-        <div className="text-xs text-muted-foreground font-semibold">
-          Mã KH: {getCustomerCode(customer, companies)} (Tạo:{" "}
-          {customer.createdAt?.toDate?.()?.toLocaleDateString("vi-VN") ||
-            "Vừa xong"}
-          )
-        </div>
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-blue-500/20 bg-blue-500/5 text-blue-600 text-sm font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-blue-500/20 bg-blue-500/5 text-blue-600 text-sm font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm"
           >
             <Download className="w-3.5 h-3.5" /> Xuất PDF
           </button>
+          <div className="text-xs text-muted-foreground ">
+            Mã KH: {getCustomerCode(customer, companies)} (Tạo:{" "}
+            {customer.createdAt?.toDate?.()?.toLocaleDateString("vi-VN") ||
+              "Vừa xong"}
+            )
+          </div>
         </div>
       </div>
 
@@ -1143,7 +1117,7 @@ export function CustomerDashboard({
         </DialogContent>
       </Dialog>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* CỘT TRÁI - CRM PROFILE CARD */}
         <div className="space-y-6 lg:col-span-1">
           <motion.div
@@ -1156,7 +1130,7 @@ export function CustomerDashboard({
 
             <div className="flex flex-col items-center text-center space-y-4 pt-4">
               <div className="relative group">
-                <div className="w-28 h-28 rounded-3xl border-2 border-[#2f6cf5]/30 overflow-hidden bg-primary/10 text-primary shadow-lg transition-transform hover:scale-105 duration-300 flex items-center justify-center text-3xl font-bold uppercase shrink-0">
+                <div className="w-24 h-24 rounded-3xl border-2 border-[#2f6cf5]/30 overflow-hidden bg-primary/10 text-primary shadow-lg transition-transform hover:scale-105 duration-300 flex items-center justify-center text-2xl font-bold uppercase shrink-0">
                   {avatar ? (
                     <img
                       src={avatar}
@@ -1178,16 +1152,16 @@ export function CustomerDashboard({
               </div>
 
               <div>
-                <h3 className="text-2xl font-extrabold text-foreground tracking-tight">
+                <h3 className="text-xl font-extrabold text-foreground tracking-tight">
                   {customer.name}
                 </h3>
-                <p className="text-sm text-muted-foreground font-semibold mt-1">
+                <p className="text-xs text-muted-foreground font-medium mt-0.5">
                   {company?.name || "Thành viên Cá nhân"}
                 </p>
               </div>
 
-              <div className="flex flex-col items-center gap-3 justify-center w-full">
-                <div className="flex flex-wrap items-center gap-2 justify-center">
+              <div className="flex flex-col items-start gap-3 justify-start w-full">
+                <div className="flex flex-wrap items-start gap-2 justify-start">
                   {/* Interactive Status Changer Dropdown */}
                   <div className="relative group/status flex items-center gap-1 bg-[#2f6cf5]/5 dark:bg-[#2f6cf5]/10 border border-[#2f6cf5]/20 hover:border-[#2f6cf5]/40 rounded-full px-2.5 py-1 text-xs font-bold text-[#2f6cf5] hover:text-[#2f6cf5] transition-all">
                     <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse shrink-0" />
@@ -1386,50 +1360,15 @@ export function CustomerDashboard({
                   <span className="truncate">{email || "Chưa có email"}</span>
                 </div>
                 {company && (
-                  <div className="flex items-start gap-4 text-muted-foreground hover:text-foreground transition-colors border-t border-border/30 pt-4">
-                    <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shrink-0 border border-border/40 overflow-hidden shadow-sm">
-                      {company.logoUrl ? (
-                        <img
-                          src={company.logoUrl}
-                          alt={company.name}
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Package className="w-6 h-6 text-muted-foreground" />
-                      )}
-                    </div>
-                    
-                    <div className="min-w-0 space-y-2 flex-1">
-                      <div>
-                        <span className="text-[10px] font-extrabold text-[#2f6cf5] bg-[#2f6cf5]/10 px-2 py-0.5 rounded uppercase tracking-wider block w-max mb-1">
-                          Tên sản phẩm
-                        </span>
-                        <p className="font-extrabold text-foreground truncate text-sm">
-                          {company.name}
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <span className="text-[10px] font-extrabold text-muted-foreground bg-muted px-2 py-0.5 rounded uppercase tracking-wider block w-max mb-1">
-                          Thông tin sản phẩm
-                        </span>
-                        <p className="text-xs text-muted-foreground leading-normal">
-                          {company.address || "Không có thông tin chi tiết"}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 pt-1">
-                        <Globe className="w-4 h-4 text-[#2f6cf5]" />
-                        <a 
-                          href="https://seva.premium/products" 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-xs text-[#2f6cf5] hover:underline font-extrabold"
-                        >
-                          Website sản phẩm ➜
-                        </a>
-                      </div>
+                  <div className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors border-t border-border/30 pt-3">
+                    <Landmark className="w-4 h-4 shrink-0 text-[#2f6cf5]" />
+                    <div className="min-w-0">
+                      <p className="font-bold text-foreground truncate">
+                        {company.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {company.address || "Không địa chỉ"}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -1686,29 +1625,29 @@ export function CustomerDashboard({
             )}
           </motion.div>
 
-          {/* Point Adjustment Utility (New) */}
-          <div className="rounded-3xl border border-amber-500/30 bg-amber-500/5 p-6 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-black text-amber-600 uppercase tracking-wider flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5" /> Quản lý điểm thưởng
+          {/* Quà tặng, Đổi quà tặng, Tương tác utility cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+             {/* Quà tặng */}
+             <div className="rounded-3xl border border-rose-500/30 bg-rose-500/5 p-6 space-y-2 shadow-sm">
+                <h4 className="text-xs font-black text-rose-600 uppercase tracking-wider flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5" /> Quà tặng
                 </h4>
-                <p className="text-[10px] text-amber-600/70 font-bold mt-0.5">Thêm/Bớt điểm thủ công (Admin)</p>
-              </div>
-              <div className="text-right">
-                 <p className="text-lg font-black text-foreground">{points.toLocaleString()}</p>
-                 <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">Điểm hiện tại</p>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-               <button 
-                onClick={() => setIsAdjustingPoints(true)}
-                className="flex-1 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase shadow-sm hover:shadow-md transition-all active:scale-95"
-               >
-                 Điều chỉnh điểm
-               </button>
-            </div>
+                <p className="text-[10px] text-rose-600/70 font-bold">Danh sách quà tặng</p>
+             </div>
+             {/* Đổi quà */}
+             <div className="rounded-3xl border border-indigo-500/30 bg-indigo-500/5 p-6 space-y-2 shadow-sm">
+                <h4 className="text-xs font-black text-indigo-600 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> Đổi quà tặng
+                </h4>
+                <p className="text-[10px] text-indigo-600/70 font-bold">Lịch sử đổi quà</p>
+             </div>
+             {/* Tương tác */}
+             <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-6 space-y-2 shadow-sm">
+                <h4 className="text-xs font-black text-emerald-600 uppercase tracking-wider flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5" /> Tương tác
+                </h4>
+                <p className="text-[10px] text-emerald-600/70 font-bold">Quản lý tương tác</p>
+             </div>
           </div>
 
           {/* CUSTOM ATTRIBUTES & FASHION PANEL */}
@@ -2202,8 +2141,6 @@ export function CustomerDashboard({
             <TabsList className="bg-muted/50 border p-1 rounded-xl">
               <TabsTrigger value="overview" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">Tổng quan</TabsTrigger>
               <TabsTrigger value="timeline" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">Timeline Sự kiện</TabsTrigger>
-              <TabsTrigger value="gallery" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 data-[state=active]:shadow-sm">Bộ sưu tập đổi quà</TabsTrigger>
-              <TabsTrigger value="emails" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-indigo-500/10 data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm">Email Marketing</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
@@ -3261,7 +3198,7 @@ export function CustomerDashboard({
                onClick={async () => {
                  const newPoints = points + adjustAmount;
                  const logEntry = {
-                    id: `PTS-${Date.now()}`,
+                    id: `Điểm-${Date.now()}`,
                     type: adjustAmount > 0 ? "manual_add" : "manual_subtract",
                     amount: Math.abs(adjustAmount),
                     balance: newPoints,

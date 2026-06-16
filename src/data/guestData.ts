@@ -364,6 +364,7 @@ export const GUEST_TIERS: TierConfig[] = [
 ];
 
 export const GUEST_REDEMPTION_RULES: RedemptionRule[] = [
+  { id: "rule_default_100", name: "Đổi ưu đãi 1.000đ (100 điểm)", pointsRequired: 100, rewardValue: 1000, rewardType: "discount", userId: "guest", createdAt: daysAgo(0) },
   { id: "rule_voucher_200", name: "Mã giảm giá 200.000đ áp dụng toàn phần hóa đơn kế tiếp", pointsRequired: 200, rewardValue: 200000, rewardType: "voucher", userId: "guest", createdAt: daysAgo(90) },
   { id: "rule_voucher_1000", name: "Phiếu Quà Tặng Đậm Đắc Mừng Lễ Trị Giá 1.000.000đ", pointsRequired: 900, rewardValue: 1000000, rewardType: "voucher", userId: "guest", createdAt: daysAgo(90) },
   { id: "rule_spa_service", name: "Trải nghiệm spa dọn dẹp làm sạch trang sức đặc biệt tại HeartLock", pointsRequired: 50, rewardValue: 150000, rewardType: "item", userId: "guest", createdAt: daysAgo(90) },
@@ -373,12 +374,13 @@ export const GUEST_REDEMPTION_RULES: RedemptionRule[] = [
 ];
 
 export const GUEST_EARN_RULES: EarnRule[] = [
-  { id: "earn_purchase", name: "Tích điểm mua sắm (Mỗi 100.000đ nhận 1 điểm)", type: "purchase", points: 1, isActive: true, userId: "guest", createdAt: daysAgo(90) },
-  { id: "earn_birthday", name: "Nhân 2 điểm tích lũy toàn bộ đơn hàng trong Tháng sinh nhật", type: "birthday", points: 2, isActive: true, userId: "guest", createdAt: daysAgo(90) },
-  { id: "earn_ai_styling", name: "Trải nghiệm tư vấn đá quý hộ mệnh bằng AI Stylist", type: "ai_styling", points: 50, isActive: true, userId: "guest", createdAt: daysAgo(90) },
-  { id: "earn_referral", name: "Giới thiệu thành viên mới kích hoạt tài khoản thành công", type: "referral", points: 150, isActive: true, userId: "guest", createdAt: daysAgo(90) },
-  { id: "earn_share_article", name: "Chia sẻ bài viết Seva Retail kiến tạo vẻ đẹp lộng lẫy", type: "share_article", points: 100, isActive: true, userId: "guest", createdAt: daysAgo(42) },
-  { id: "earn_survey", name: "Khảo sát mức độ hài lòng về chất lượng chế tác sản phẩm", type: "survey", points: 30, isActive: true, userId: "guest", createdAt: daysAgo(10) }
+  { id: "earn_purchase", name: "Tích điểm mua sắm (Mỗi 10.000đ nhận 1 điểm)", type: "purchase", points: 10, isActive: true, userId: "guest", createdAt: daysAgo(90) },
+  { id: "earn_share_fb", name: "Chia sẻ bài viết trên Facebook (+50 điểm)", type: "social_share", points: 50, isActive: true, userId: "guest", createdAt: daysAgo(0) },
+  { id: "earn_follow_insta", name: "Theo dõi kênh Instagram (+30 điểm)", type: "social_follow", points: 30, isActive: true, userId: "guest", createdAt: daysAgo(0) },
+  { id: "earn_profile_update", name: "Cập nhật hồ sơ cá nhân (+20 điểm)", type: "other", points: 20, isActive: true, userId: "guest", createdAt: daysAgo(0) },
+  { id: "earn_first_review", name: "Viết đánh giá sản phẩm đầu tiên (+100 điểm)", type: "review", points: 100, isActive: true, userId: "guest", createdAt: daysAgo(0) },
+  { id: "earn_checkin_store", name: "Check-in tại cửa hàng (+40 điểm)", type: "checkin", points: 40, isActive: true, userId: "guest", createdAt: daysAgo(0) },
+  { id: "earn_referral", name: "Giới thiệu bạn bè đăng ký tài khoản (+150 điểm)", type: "referral", points: 150, isActive: true, userId: "guest", createdAt: daysAgo(0) }
 ];
 
 export const GUEST_CAMPAIGNS: LoyaltyCampaign[] = [

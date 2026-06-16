@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Customer, TierConfig } from "@/types";
 import { User, ChevronRight, TrendingUp } from "lucide-react";
 

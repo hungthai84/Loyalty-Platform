@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
+  Sparkles, 
   Crown, 
   Gem, 
+  Award, 
   CheckCircle2, 
   X, 
   Zap,

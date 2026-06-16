@@ -116,6 +116,7 @@ export interface LoyaltySettings {
 export interface SegmentationRule {
  id: string;
  name: string;
+ description?: string;
  tag: string;
  color: string;
  criteriaType: 'total_spend' | 'time_since_last_purchase' | 'points_balance';
@@ -130,8 +131,10 @@ export interface Company {
  id: string;
  name: string;
  logoUrl?: string;
+ iconUrl?: string;
+ websiteUrl?: string;
  address?: string;
- type?: 'company' | 'branch';
+ type?: 'company' | 'product' | 'branch' | 'project';
  parentId?: string;
  userId: string;
  createdAt: any;

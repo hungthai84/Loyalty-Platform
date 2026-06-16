@@ -2,10 +2,13 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Badge } from "@/components/ui/badge";
 import {
+  Building2,
   Plus,
   Settings as SettingsIcon,
+  Star,
   Shield,
   Database,
+  Fingerprint,
   Webhook,
   Key as KeyIcon,
   Activity,

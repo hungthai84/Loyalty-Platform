@@ -1,8 +1,9 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Gift, Cake } from "lucide-react";
+import { Gift, Cake, ChevronRight, Send } from "lucide-react";
 import { getGuestCustomers } from "@/data/guestData";
 import { toast } from "sonner";
+import { Customer } from "@/types";
 
 export function UpcomingBirthdays() {
   const currentMonth = new Date().getMonth();

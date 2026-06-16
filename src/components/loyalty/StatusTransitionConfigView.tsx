@@ -121,38 +121,47 @@ const OPERATOR_OPTIONS = [
 ];
 
 const TIER_VALUES = [
-  { value: "MEMBER", label: "Thành viên (Member)" },
-  { value: "ESSENTIAL", label: "Essential" },
-  { value: "ICON", label: "Icon" },
-  { value: "ATELIER", label: "Atelier" },
+  { value: "BRONZE", label: "Đồng (Bronze)" },
+  { value: "SILVER", label: "Bạc (Silver)" },
+  { value: "GOLD", label: "Vàng (Gold)" },
+  { value: "PLATINUM", label: "Bạch Kim (Platinum)" },
+  { value: "DIAMOND", label: "Kim Cương (Diamond)" },
 ];
-
-const getTierBadgeStyle = (tierCode: string) => {
-  const code = tierCode.toUpperCase();
-  if (code === "ATELIER") {
-    return "bg-indigo-500/10 text-indigo-600 border-indigo-500/20";
-  }
-  if (code === "ICON") {
-    return "bg-amber-500/10 text-amber-600 border-amber-500/20";
-  }
-  if (code === "ESSENTIAL") {
-    return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
-  }
-  return "bg-slate-500/10 text-slate-600 border-slate-500/20";
-};
 
 // Presets if empty
 const DEFAULT_RULES: TransitionRule[] = [
   {
-    id: "RULE_ESSENTIAL_UPGRADE",
-    name: "Tự động nâng cấp lên hạng Essential",
-    description: "Nhận diện khách hàng có điểm tích lũy hoặc tổng chi tiêu đạt mốc tối thiểu của hạng Essential để tự động nâng cấp.",
-    fromStatus: "MEMBER",
-    toStatus: "ESSENTIAL",
+    id: "RULE_VIP_PROMOTION",
+    name: "Tự động thăng thăng hạng VIP đặc biệt",
+    description:
+      "Nhận diện khách hàng có điểm tích lũy hoặc chi tiêu vượt hạng và tự động kích hoạt quyền lợi VIP cao cấp.",
+    fromStatus: "ACTIVE_LOYALTY",
+    toStatus: "VIP",
     matchType: "or",
     conditions: [
-      { metric: "current_points", operator: "gte", value: "500" },
-      { metric: "total_spend", operator: "gte", value: "25000000" },
+      { metric: "current_points", operator: "gte", value: "100000" },
+      { metric: "total_spend", operator: "gte", value: "50000000" },
+    ],
+    enabled: true,
+    automations: {
+      sendZalo: true,
+      grantVoucher: true,
+      notifySupport: true,
+      enableDoublePoints: true,
+      lockAccount: false,
+    },
+  },
+  {
+    id: "RULE_CHURN_WARNING",
+    name: "Cảnh báo sớm rủi ro rời bỏ hệ thống",
+    description:
+      "Kích hoạt cảnh báo khi hội viên không tương tác quá lâu kèm sụt giảm tần suất giao dịch đột ngột.",
+    fromStatus: "ACTIVE",
+    toStatus: "CHURN_RISK",
+    matchType: "and",
+    conditions: [
+      { metric: "inactive_days", operator: "gte", value: "45" },
+      { metric: "purchase_drop_rate", operator: "gte", value: "35" },
     ],
     enabled: true,
     automations: {
@@ -164,43 +173,21 @@ const DEFAULT_RULES: TransitionRule[] = [
     },
   },
   {
-    id: "RULE_ICON_UPGRADE",
-    name: "Tự động nâng cấp lên hạng Icon",
-    description: "Nhận diện khách hàng có điểm tích lũy hoặc tổng chi tiêu đạt mốc tối thiểu của hạng Icon để tự động thăng hạng.",
-    fromStatus: "ESSENTIAL",
-    toStatus: "ICON",
-    matchType: "or",
-    conditions: [
-      { metric: "current_points", operator: "gte", value: "2500" },
-      { metric: "total_spend", operator: "gte", value: "100000000" },
-    ],
-    enabled: true,
-    automations: {
-      sendZalo: true,
-      grantVoucher: true,
-      notifySupport: true,
-      enableDoublePoints: true,
-      lockAccount: false,
-    },
-  },
-  {
-    id: "RULE_ATELIER_UPGRADE",
-    name: "Tự động nâng cấp lên hạng Atelier",
-    description: "Nhận diện khách hàng có điểm tích lũy hoặc tổng chi tiêu đạt mốc tối thiểu của hạng VVIP Atelier để tự động thăng hạng.",
+    id: "RULE_FRAUD_LOCKDOWN",
+    name: "Tự động khóa tạm thời nghi ngờ gian lận",
+    description:
+      "Tự động kích hoạt trạng thái tạm khóa khi có nhiều cảnh báo bảo mật, spam hoặc hành vi trục lợi hệ thống.",
     fromStatus: "ALL",
-    toStatus: "ATELIER",
-    matchType: "or",
-    conditions: [
-      { metric: "current_points", operator: "gte", value: "10000" },
-      { metric: "total_spend", operator: "gte", value: "500000000" },
-    ],
+    toStatus: "TEMP_LOCK",
+    matchType: "and",
+    conditions: [{ metric: "fraud_alerts_count", operator: "gte", value: "3" }],
     enabled: true,
     automations: {
-      sendZalo: true,
-      grantVoucher: true,
+      sendZalo: false,
+      grantVoucher: false,
       notifySupport: true,
-      enableDoublePoints: true,
-      lockAccount: false,
+      enableDoublePoints: false,
+      lockAccount: true,
     },
   },
 ];
@@ -220,8 +207,8 @@ export function StatusTransitionConfigView() {
   const [simDropRate, setSimDropRate] = useState("15");
   const [simBadReviews, setSimBadReviews] = useState("0");
   const [simFraudAlerts, setSimFraudAlerts] = useState("0");
-  const [simCurrentStatus, setSimCurrentStatus] = useState("MEMBER");
-  const [simCurrentTier, setSimCurrentTier] = useState("MEMBER");
+  const [simCurrentStatus, setSimCurrentStatus] = useState("ACTIVE");
+  const [simCurrentTier, setSimCurrentTier] = useState("GOLD");
 
   const [simResults, setSimResults] = useState<
     Array<{
@@ -284,15 +271,15 @@ export function StatusTransitionConfigView() {
       // 3. For each customer, check rules
       for (const cust of liveCustomers) {
         let matchedRule: TransitionRule | null = null;
-        const currentTier = (
-          cust.tier || "MEMBER"
+        const currentStatus = (
+          cust.activityStatus || "NEW_MEMBER"
         ).toUpperCase();
 
         for (const rule of activeRules) {
           // Verify rule.fromStatus
           if (
             rule.fromStatus !== "ALL" &&
-            rule.fromStatus.toUpperCase() !== currentTier
+            rule.fromStatus.toUpperCase() !== currentStatus
           ) {
             continue;
           }
@@ -342,8 +329,8 @@ export function StatusTransitionConfigView() {
               case "current_tier":
                 profileValue =
                   cust.customFields?.current_tier ||
-                  cust.tier ||
-                  "MEMBER";
+                  cust.customFields?.tier ||
+                  "BRONZE";
                 break;
             }
 
@@ -398,8 +385,8 @@ export function StatusTransitionConfigView() {
           const ruleMatched = rule.matchType === "and" ? isAllTrue : isAnyTrue;
 
           if (ruleMatched) {
-            // Found matched rule. Ensure we don't transition if target is same as current tier
-            if (rule.toStatus.toUpperCase() !== currentTier) {
+            // Found matched rule. Ensure we don't transition if target is same as current status
+            if (rule.toStatus.toUpperCase() !== currentStatus) {
               matchedRule = rule;
               break; // Trigger first matched rule
             }
@@ -409,29 +396,14 @@ export function StatusTransitionConfigView() {
         if (matchedRule) {
           // Perform state transition update in Firestore
           const docRef = doc(db, `customers/${cust.id}`);
-          try {
-            await updateDoc(docRef, {
-              tier: matchedRule.toStatus,
-              updatedAt: serverTimestamp(),
-            });
-          } catch (err: any) {
-            if (err.code === 'not-found' || err.message?.includes('not-found') || err.message?.includes('No document to update')) {
-              const fullCustomer = {
-                ...cust,
-                tier: matchedRule.toStatus,
-                userId: user?.uid || "guest",
-                createdAt: cust.createdAt instanceof Date || typeof cust.createdAt === 'string' ? cust.createdAt : serverTimestamp(),
-                updatedAt: serverTimestamp(),
-              };
-              await setDoc(docRef, fullCustomer);
-            } else {
-              throw err;
-            }
-          }
+          await updateDoc(docRef, {
+            activityStatus: matchedRule.toStatus,
+            updatedAt: serverTimestamp(),
+          });
 
           changedLogs.push({
             customerName: cust.name || cust.email || cust.id,
-            fromStatus: currentTier,
+            fromStatus: currentStatus,
             toStatus: matchedRule.toStatus,
             ruleName: matchedRule.name,
           });
@@ -655,7 +627,7 @@ export function StatusTransitionConfigView() {
         userId: user.uid,
         updatedAt: serverTimestamp(),
       });
-      toast.success("Đã ghi nhận cấu hình chuyển đổi hạng thành viên");
+      toast.success("Đã ghi nhận cấu hình chuyển trạng thái khách hàng");
       window.dispatchEvent(
         new CustomEvent("crm-config-saved", { detail: { tab: "transitions" } }),
       );
@@ -672,7 +644,7 @@ export function StatusTransitionConfigView() {
     const results = rules.map((rule) => {
       // Check current status match
       let isStatusMatched = false;
-      if (rule.fromStatus === "ALL" || rule.fromStatus.toUpperCase() === simCurrentStatus.toUpperCase()) {
+      if (rule.fromStatus === "ALL" || rule.fromStatus === simCurrentStatus) {
         isStatusMatched = true;
       }
 
@@ -695,7 +667,7 @@ export function StatusTransitionConfigView() {
           targetStatus: rule.toStatus,
           appliedAutomations: [],
           details: [
-            `Hạng hội viên gốc của hồ sơ (${simCurrentStatus}) không khớp yêu cầu (${rule.fromStatus})`,
+            `Trạng thái gốc của hồ sơ (${simCurrentStatus}) không khớp yêu cầu (${rule.fromStatus})`,
           ],
         };
       }
@@ -743,11 +715,11 @@ export function StatusTransitionConfigView() {
             : parseFloat(cond.value || "0");
 
         if (cond.metric === "current_tier") {
-          if (cond.operator === "eq") isCondTrue = String(profileValue).toUpperCase() === String(ruleValue).toUpperCase();
+          if (cond.operator === "eq") isCondTrue = profileValue === ruleValue;
           else if (cond.operator === "neq")
-            isCondTrue = String(profileValue).toUpperCase() !== String(ruleValue).toUpperCase();
+            isCondTrue = profileValue !== ruleValue;
           else {
-            isCondTrue = String(profileValue).toUpperCase() === String(ruleValue).toUpperCase(); // fallback for noneq
+            isCondTrue = profileValue === ruleValue; // fallback for noneq
           }
         } else {
           const profNum = Number(profileValue);
@@ -847,11 +819,12 @@ export function StatusTransitionConfigView() {
           <GitCompare className="w-6 h-6 text-primary shrink-0 mt-1" />
           <div className="space-y-1">
             <h4 className="font-bold">
-              Quy tắc Chuyển đổi Hạng Thành viên
+              Quy tắc Chuyển đổi Trạng thái Khách hàng
             </h4>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Thiết lập các điều kiện tự động hóa với nhiều thông số phức tạp để
-              tự động chuyển đổi hoặc thăng cấp Trạng thái thành viên (hạng hội viên).
+              phân loại, phát hiện rủi ro rời bỏ hoặc tự động thăng cấp trạng
+              thái VIP.
             </p>
           </div>
         </div>
@@ -897,11 +870,11 @@ export function StatusTransitionConfigView() {
           ) : (
             <div className="space-y-4">
               {rules.map((rule) => {
-                const sourceTierObj = TIER_VALUES.find(
-                  (t) => t.value.toUpperCase() === rule.fromStatus.toUpperCase(),
+                const sourceStatusObj = CUSTOMER_STATUSES.find(
+                  (s) => s.code === rule.fromStatus,
                 );
-                const destTierObj = TIER_VALUES.find(
-                  (t) => t.value.toUpperCase() === rule.toStatus.toUpperCase(),
+                const destStatusObj = CUSTOMER_STATUSES.find(
+                  (s) => s.code === rule.toStatus,
                 );
 
                 return (
@@ -969,13 +942,13 @@ export function StatusTransitionConfigView() {
                           <span className="text-muted-foreground">Từ:</span>
                           {rule.fromStatus === "ALL" ? (
                             <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded font-bold">
-                              Mọi hạng (ALL)
+                              Mọi trạng thái
                             </span>
                           ) : (
                             <span
-                              className={`text-xs font-bold px-2 py-0.5 rounded border ${getTierBadgeStyle(rule.fromStatus)}`}
+                              className={`text-xs font-bold px-2 py-0.5 rounded border ${sourceStatusObj?.color.bg || ""} ${sourceStatusObj?.color.text || ""} ${sourceStatusObj?.color.border || ""}`}
                             >
-                              {sourceTierObj?.label || rule.fromStatus}
+                              {rule.fromStatus}
                             </span>
                           )}
                         </div>
@@ -987,9 +960,9 @@ export function StatusTransitionConfigView() {
                             Chuyển sang:
                           </span>
                           <span
-                            className={`text-xs font-bold px-2 py-0.5 rounded border ${getTierBadgeStyle(rule.toStatus)}`}
+                            className={`text-xs font-bold px-2 py-0.5 rounded border ${destStatusObj?.color.bg || ""} ${destStatusObj?.color.text || ""} ${destStatusObj?.color.border || ""}`}
                           >
-                            {destTierObj?.label || rule.toStatus}
+                            {rule.toStatus}
                           </span>
                         </div>
                       </div>
@@ -1104,16 +1077,16 @@ export function StatusTransitionConfigView() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs text-muted-foreground font-bold tracking-tight uppercase">
-                    Hạng hội viên hiện tại (Source)
+                    Trạng thái hiện tại
                   </label>
                   <select
                     value={simCurrentStatus}
                     onChange={(e) => setSimCurrentStatus(e.target.value)}
                     className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
                   >
-                    {TIER_VALUES.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
+                    {CUSTOMER_STATUSES.map((s) => (
+                      <option key={s.code} value={s.code}>
+                        {s.code} ({s.classification})
                       </option>
                     ))}
                   </select>
@@ -1121,7 +1094,7 @@ export function StatusTransitionConfigView() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs text-muted-foreground font-bold tracking-tight uppercase">
-                    Hạng so sánh điều kiện
+                    Hạng hội viên hiện có
                   </label>
                   <select
                     value={simCurrentTier}
@@ -1446,10 +1419,11 @@ export function StatusTransitionConfigView() {
                     <Settings2 className="w-5 h-5 text-primary" />
                     <div>
                       <h4 className="font-bold text-lg">
-                        Cấu hình Quy tắc Chuyển hạng Thành viên
+                        Cấu hình Quy tắc Chuyển Trạng thái
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        Xây dựng luật tự động nâng/hạ cấp hạng hội viên của khách hàng với nhiều thuộc tính.
+                        Xây dựng luật tự động đổi nhãn phân loại khách hàng với
+                        nhiều thuộc tính.
                       </p>
                     </div>
                   </div>
@@ -1492,7 +1466,7 @@ export function StatusTransitionConfigView() {
                           description: e.target.value,
                         })
                       }
-                      placeholder="Nhập ghi chú ý nghĩa hoặc mục đích của quy tắc chuyển đổi hạng thành viên này..."
+                      placeholder="Nhập ghi chú ý nghĩa hoặc mục đích của quy tắc chuyển trạng thái này..."
                       className="w-full bg-background border border-border rounded-xl px-3.5 py-2 text-xs min-h-[60px] outline-none focus:border-primary/50"
                     />
                   </div>
@@ -1501,7 +1475,7 @@ export function StatusTransitionConfigView() {
                   <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-2xl border border-border/40">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                        Hạng hội viên gốc (Source)
+                        Trạng thái gốc (Source)
                       </label>
                       <select
                         value={editingRule.fromStatus || "ALL"}
@@ -1513,10 +1487,10 @@ export function StatusTransitionConfigView() {
                         }
                         className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
                       >
-                        <option value="ALL">MỌI HẠNG (ALL)</option>
-                        {TIER_VALUES.map((t) => (
-                          <option key={t.value} value={t.value}>
-                            {t.label}
+                        <option value="ALL">MỌI TRẠNG THÁI (ALL)</option>
+                        {CUSTOMER_STATUSES.map((s) => (
+                          <option key={s.code} value={s.code}>
+                            {s.code} ({s.classification})
                           </option>
                         ))}
                       </select>
@@ -1524,10 +1498,10 @@ export function StatusTransitionConfigView() {
 
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                        Hạng hội viên Đích (Target)
+                        Trạng thái Đích (Target)
                       </label>
                       <select
-                        value={editingRule.toStatus || "ESSENTIAL"}
+                        value={editingRule.toStatus || "ACTIVE"}
                         onChange={(e) =>
                           setEditingRule({
                             ...editingRule,
@@ -1536,9 +1510,9 @@ export function StatusTransitionConfigView() {
                         }
                         className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
                       >
-                        {TIER_VALUES.map((t) => (
-                          <option key={t.value} value={t.value}>
-                            {t.label}
+                        {CUSTOMER_STATUSES.map((s) => (
+                          <option key={s.code} value={s.code}>
+                            {s.code} ({s.classification})
                           </option>
                         ))}
                       </select>

@@ -23,7 +23,7 @@ interface TierConfigDialogProps {
 }
 
 const CONDITION_FIELDS = [
-  { value: "points", label: "Tổng điểm (PTS)" },
+  { value: "points", label: "Tổng điểm (Điểm)" },
   { value: "spend", label: "Tổng chi tiêu ($)" },
   { value: "orders", label: "Số lượng đơn hàng" },
   { value: "referrals", label: "Số lượt giới thiệu" },
@@ -44,7 +44,7 @@ const PRESET_COLORS = [
   "#10b981",
   "#f59e0b",
   "#ef4444",
-  "#8075F2",
+  "#8b5cf6",
   "#ec4899",
   "#6366f1",
   "#14b8a6",

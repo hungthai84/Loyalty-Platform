@@ -152,7 +152,7 @@ export function LoyaltyCampaignDialog({ onClose, campaign }: LoyaltyCampaignDial
  value={rewardType}
  onChange={e => setRewardType(e.target.value as any)}
  >
- <option value="points">Tặng điểm (PTS)</option>
+ <option value="points">Tặng điểm (Điểm)</option>
  <option value="voucher">Voucher giảm giá (%)</option>
  <option value="gift">Quà hiện vật</option>
  </select>

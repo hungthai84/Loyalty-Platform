@@ -27,7 +27,7 @@ function AppContent() {
   const safeActiveView = activeView;
 
   return (
-    <div className="h-full w-full flex bg-background rounded-2xl overflow-hidden shadow-[0_45px_120px_-15px_rgba(0,0,0,0.95),_0_0_80px_rgba(255,255,255,0.035)] border-2 border-black dark:border-white relative selection:bg-[#6E62E5]/10">
+    <div className="h-full w-full flex bg-background rounded-2xl overflow-hidden shadow-[0_45px_120px_-15px_rgba(0,0,0,0.95),_0_0_80px_rgba(255,255,255,0.035)] border-2 border-black dark:border-white relative selection:bg-[#eb7a2e]/10">
       <Sidebar 
         className="hidden md:flex shrink-0" 
         activeView={safeActiveView} 
@@ -35,7 +35,7 @@ function AppContent() {
       />
       
       <div className="flex-1 flex flex-col w-full min-w-0 transition-all duration-300">
-        <main className="flex-1 overflow-auto bg-background/60">
+        <main className="flex-1 overflow-auto bg-sidebar">
           <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6">
             <div id="dashboard-upper-portal" />
           </div>
@@ -69,7 +69,7 @@ export default function App() {
   return (
     <FirebaseProvider>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-        <div className="h-screen w-screen p-[5px] overflow-hidden relative theme-transition bg-gradient-to-br from-[#8075F2] via-[#6E62E5] to-[#4E42C5]">
+        <div className="h-screen w-screen p-[5px] overflow-hidden relative theme-transition bg-black">
           <AppContent />
         </div>
         <Toaster />

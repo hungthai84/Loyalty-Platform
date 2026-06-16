@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
+import { useFirebase } from "@/components/FirebaseProvider";
 import { motion, AnimatePresence } from "motion/react";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { NotificationBell } from "@/components/layout/NotificationBell";
@@ -12,7 +13,9 @@ import {
   Megaphone,
   Fingerprint,
   Sparkles,
-  Search
+  Search,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -23,7 +26,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className, activeView, setActiveView }: SidebarProps) {
-  const isHovered = true;
+  const [isHovered, setIsHovered] = React.useState(true);
 
   const allMenuItems: { name: string; view: string; icon: any; isSecondary?: boolean }[] = [
     { name: "Tổng quan", view: "dashboard", icon: LayoutDashboard },
@@ -51,8 +54,8 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
     >
       {/* Top: Logo */}
       <div className={cn(
-        "h-20 flex items-center transition-all duration-300 shrink-0",
-        isHovered ? "px-6 justify-start" : "justify-center"
+        "h-16 flex items-center transition-all duration-300 shrink-0 relative",
+        isHovered ? "px-4 justify-start" : "justify-center"
       )}>
         <BrandLogo className="w-9 h-9 shrink-0 hover:scale-105 transition-transform duration-300" />
         <div className="flex flex-col ml-3">
@@ -63,7 +66,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="text-lg font-bold tracking-tight font-heading whitespace-nowrap text-[#6E62E5]"
+                  className="text-lg font-bold tracking-tight font-heading whitespace-nowrap text-primary"
                 >
                   Power Service
                 </motion.h2>
@@ -78,6 +81,12 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
             )}
           </AnimatePresence>
         </div>
+        <button 
+            onClick={() => setIsHovered(!isHovered)}
+            className="absolute right-2 top-2 p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-all"
+        >
+          {isHovered ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+        </button>
       </div>
 
       {/* Global Search */}
@@ -161,8 +170,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
             activeView === "settings"
               ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/15"
               : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            !isHovered ? "w-11 h-11 mx-auto justify-center px-0" : "w-full py-3 px-4 space-x-3 justify-start",
-            isHovered && "border border-sidebar-border"
+            !isHovered ? "w-11 h-11 mx-auto justify-center px-0" : "w-full py-3 px-4 space-x-3 justify-start"
           )}
           title={!isHovered ? "Cài đặt" : undefined}
         >

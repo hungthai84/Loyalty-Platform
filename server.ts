@@ -1,14 +1,14 @@
-import "dotenv/config";
-
 import express from "express";
 import path from "path";
 import { GoogleGenAI } from "@google/genai";
 import { createServer as createViteServer } from "vite";
+import dotenv from "dotenv";
 import { AuthRequest, requireAuth } from "./src/middleware/auth.ts";
 import { getOrCreateUser } from "./src/db/users.ts";
 import { db } from "./src/db/index.ts";
 import { sql } from "drizzle-orm";
 
+dotenv.config();
 
 async function startServer() {
   const app = express();

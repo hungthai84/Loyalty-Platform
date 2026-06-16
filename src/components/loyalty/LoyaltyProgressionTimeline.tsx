@@ -77,7 +77,7 @@ export function LoyaltyProgressionTimeline({ currentPoints, tierName }: LoyaltyP
     <div className="space-y-6 overflow-x-auto pb-4">
       <div className="flex items-center justify-between mb-8 min-w-[700px]">
         <div>
-          <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+          <h3 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary" /> Lộ trình thăng cấp (Loyalty Journey)
           </h3>
           <p className="text-xs text-muted-foreground">Theo dõi tiến trình từ khách hàng mới đến thượng khách.</p>
@@ -88,18 +88,18 @@ export function LoyaltyProgressionTimeline({ currentPoints, tierName }: LoyaltyP
         </div>
       </div>
 
-      <div className="relative min-w-[700px] pt-5">
+      <div className="relative min-w-[700px] pt-4">
         {/* Progress Line Background */}
-        <div className="absolute top-[40px] left-[10%] right-[10%] h-1 bg-muted rounded-full -translate-y-1/2" />
+        <div className="absolute top-[34px] left-[10%] right-[10%] h-1 bg-muted rounded-full" />
         
         {/* Actual Progress Line */}
         <motion.div 
           initial={{ width: 0 }}
-          animate={{ width: `calc(${Math.min(100, (currentPoints / 5000) * 100)}% * 0.8)` }}
-          className="absolute top-[40px] left-[10%] h-1 bg-primary rounded-full z-10 -translate-y-1/2"
+          animate={{ width: `${Math.min(100, (currentPoints / 5000) * 100)}%` }}
+          className="absolute top-[34px] left-[10%] h-1 bg-primary rounded-full z-10"
         />
 
-        <div className="flex justify-between relative">
+        <div className="flex justify-between relative mt-0">
           {milestones.map((ms, idx) => (
             <motion.div 
               key={ms.id}
@@ -110,13 +110,13 @@ export function LoyaltyProgressionTimeline({ currentPoints, tierName }: LoyaltyP
             >
               {/* Point Indicator */}
               <div className={cn(
-                "w-10 h-10 rounded-full border-4 border-background flex items-center justify-center z-20 transition-all duration-500 shadow-sm",
+                "w-10 h-10 rounded-full border-4 border-background flex items-center justify-center z-20 transition-all duration-500 shadow-sm relative",
                 ms.isUnlocked ? "bg-primary text-white scale-110 shadow-lg shadow-primary/20" : "bg-muted text-muted-foreground"
               )}>
                 {ms.isUnlocked ? <CheckCircle2 className="w-5 h-5" /> : ms.icon}
               </div>
 
-              <div className="flex flex-col items-center justify-center text-center mt-3 px-2 w-full">
+              <div className="flex flex-col items-center justify-center text-center -mt-2 px-2 w-full">
                 <h4 className={cn(
                   "text-xs font-black tracking-tight mb-1 line-clamp-1",
                   ms.isUnlocked ? "text-foreground" : "text-muted-foreground"

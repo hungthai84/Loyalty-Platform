@@ -10,7 +10,7 @@ import {
   DollarSign,
   Clock,
   Search,
-  Award
+  Award,
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -216,13 +216,11 @@ export function SegmentationView() {
 
                 if (isChanged) {
                     const pRef = doc(db, "customers", cust.id);
-                    batch.set(pRef, {
+                    batch.update(pRef, {
                         ...cust,
                         dynamicSegments,
-                        userId: user?.uid || "guest",
-                        createdAt: cust.createdAt instanceof Date || typeof cust.createdAt === 'string' ? cust.createdAt : serverTimestamp(),
                         updatedAt: serverTimestamp(),
-                    }, { merge: true });
+                    });
                     updatedCount++;
                 }
             }
@@ -257,13 +255,13 @@ export function SegmentationView() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 bg-sidebar/50 border border-border/80 rounded-3xl backdrop-blur-md">
         <div>
           <h3 className="text-xl font-bold font-heading flex items-center gap-2">
-            <Tag className="w-5 h-5 text-primary" /> Phân loại trạng thái tự động
+            <Tag className="w-5 h-5 text-primary" /> Nhóm Khách Hàng Dự Án
           </h3>
           <p className="text-xs text-muted-foreground mt-1">
-            Thiết lập tiêu chí để gán nhãn CRM trạng thái tự động khi khách hàng
-            thỏa mãn tổng doanh thu chi tiêu hoặc ngày không mua sắm.
+            Thiết lập tiêu chí để gán nhãn CRM khách hàng tự động hoặc upload danh sách thủ công.
           </p>
         </div>
+        
         <div className="flex flex-wrap gap-2 shrink-0">
           {segmentationRules.length === 0 && (
             <button
@@ -304,7 +302,7 @@ export function SegmentationView() {
             }}
             className="px-4 py-2 bg-gradient-to-r from-primary to-blue-600 text-primary-foreground rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:shadow-xl transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus className="w-4 h-4" /> Thêm Nguyên Tắc (Điều Kiện)
+            <Plus className="w-4 h-4" /> Thêm Dự Án
           </button>
         </div>
       </div>
@@ -352,13 +350,20 @@ export function SegmentationView() {
                     <div className="p-5 flex flex-col sm:flex-row gap-4 justify-between items-start">
                       <div className="space-y-3 flex-1 w-full">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-bold text-sm text-foreground tracking-tight">
-                              {rule.name}
-                            </h4>
-                            <span className={cn("px-2 py-0.5 text-[10px] uppercase font-black tracking-widest rounded flex items-center gap-1 border", colorClass)}>
-                              {rule.tag}
-                            </span>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-sm text-foreground tracking-tight">
+                                {rule.name}
+                              </h4>
+                              <span className={cn("px-2 py-0.5 text-[10px] uppercase font-black tracking-widest rounded flex items-center gap-1 border", colorClass)}>
+                                {rule.tag}
+                              </span>
+                            </div>
+                            {rule.description && (
+                              <p className="text-xs text-muted-foreground line-clamp-2 max-w-sm mt-0.5">
+                                {rule.description}
+                              </p>
+                            )}
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             <button

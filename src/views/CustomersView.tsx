@@ -12,23 +12,28 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import {
+  Search,
   Filter,
+  Download,
   Plus,
   Layers,
   Settings,
   Facebook,
   Linkedin,
   Instagram,
+  ArrowRight,
   User,
   Users,
   Cloud,
   CloudOff,
+  Upload,
   SlidersHorizontal,
   RotateCcw,
+  FileText,
   X,
   ChevronDown,
+  Check,
   BookOpen,
-  Package,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
@@ -45,11 +50,13 @@ import {
   doc,
   writeBatch,
   serverTimestamp,
+  where,
 } from "firebase/firestore";
 import { Customer, AttributeDefinition, Company, TierConfig } from "@/types";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
 import { AddCustomerDialog } from "@/components/customers/AddCustomerDialog";
 import { ImportCustomersDialog } from "@/components/customers/ImportCustomersDialog";
+import { AttributeManager } from "@/components/customers/AttributeManager";
 import { CrmSettingsDialog } from "@/components/customers/CrmSettingsDialog";
 import { CustomerDashboard } from "@/components/customers/CustomerDashboard";
 import { CustomerSearch } from "@/components/customers/CustomerSearch";
@@ -68,6 +75,7 @@ import {
   History,
   Crown,
   Mail,
+  Info,
   AlertCircle
 } from "lucide-react";
 import {
@@ -78,6 +86,7 @@ import {
 } from "@/components/ui/tooltip";
 import { BulkEmailDialog } from "@/components/customers/BulkEmailDialog";
 import { AddSegmentDialog } from "@/components/customers/AddSegmentDialog";
+import { StatusTransitionConfigView } from "@/components/loyalty/StatusTransitionConfigView";
 import { SegmentationView } from "@/components/customers/SegmentationView";
 import { toast } from "sonner";
 import {
@@ -201,35 +210,19 @@ export function CustomersView() {
     }
     return [
       {
-        id: "seg_whales",
-        name: "VIP Đại Gia (LTV Cao, Tần suất lớn)",
-        minSpend: 50000000,
-        minFrequency: 3,
-        color: "emerald",
-        type: "criteria"
-      },
-      {
-        id: "seg_loyal",
-        name: "Thành viên Thường Xuyên (Mua Sắm Đều Đặn)",
-        minSpend: 20000000,
-        minFrequency: 2,
+        id: "seg_internal",
+        name: "Dự án thành viên nội bộ",
+        minSpend: 0,
+        minFrequency: 0,
         color: "blue",
         type: "criteria"
       },
       {
-        id: "seg_promising",
-        name: "Thành viên Thường Thức (Casual Shoppers)",
-        minSpend: 5000000,
-        minFrequency: 1,
-        color: "amber",
-        type: "criteria"
-      },
-      {
-        id: "seg_at_risk",
-        name: "Nhóm Có Rủi ro Rời bỏ (Churn Potential)",
+        id: "seg_sayhi",
+        name: "Dự án khách hàng SayHi",
         minSpend: 0,
         minFrequency: 0,
-        color: "rose",
+        color: "emerald",
         type: "criteria"
       },
     ];
@@ -270,25 +263,10 @@ export function CustomersView() {
 
         selectedCustomerIds.forEach((id) => {
           const docRef = doc(customersCol, id);
-          const customer = customers.find((c) => c.id === id);
-          if (customer) {
-            batch.set(
-              docRef,
-              {
-                ...customer,
-                ...updateData,
-                userId: user.uid,
-                createdAt: customer.createdAt instanceof Date || typeof customer.createdAt === "string" ? customer.createdAt : serverTimestamp(),
-                updatedAt: serverTimestamp(),
-              },
-              { merge: true },
-            );
-          } else {
-            batch.update(docRef, {
-              ...updateData,
-              updatedAt: serverTimestamp(),
-            });
-          }
+          batch.update(docRef, {
+            ...updateData,
+            updatedAt: serverTimestamp(),
+          });
         });
 
         await batch.commit();
@@ -329,6 +307,8 @@ export function CustomersView() {
       social: false,
       company: false,
       status: true,
+      productIcon: true,
+      customerStatusDetail: true,
       points: false,
       churnRisk: false,
       customAttributes: false,
@@ -689,7 +669,7 @@ export function CustomersView() {
     }
 
     if (points > 0 && clv === 0) {
-      segments.push({ tag: "Newcomer", color: "sky" });
+      segments.push({ tag: "Khách hàng mới", color: "sky" });
     }
 
     return segments;
@@ -1009,103 +989,6 @@ export function CustomersView() {
             if (cond.operator === 'lte') return riskScore <= valNum;
             return riskScore === valNum;
           }
-          
-          if (cond.field === 'product_name') {
-            const val = cond.value.toLowerCase().trim();
-            if (!val) return true;
-            
-            // split by comma or word " và "
-            const keywords = val.split(/,|\bvà\b/).map((t: string) => t.trim()).filter(Boolean);
-            if (keywords.length === 0) return true;
-            
-            const orders = c.orders || [];
-            
-            if (cond.operator === 'eq') {
-              return orders.some(o => 
-                keywords.some(kw => (o.items || o.description || '').toLowerCase().trim() === kw)
-              );
-            }
-            
-            // contains: match all keywords anywhere in order items history
-            const allProductsText = orders.map(o => 
-              ((o.items || '') + ' ' + (o.description || '')).toLowerCase()
-            ).join(' ');
-            
-            return keywords.every(kw => allProductsText.includes(kw));
-          }
-          
-          if (cond.field === 'purchase_date') {
-            const val = cond.value;
-            if (!val) return true;
-            
-            let startDate: Date | null = null;
-            let endDate: Date | null = null;
-            
-            if (val === '6_thang_cuoi_2026') {
-              startDate = new Date('2026-07-01T00:00:00');
-              endDate = new Date('2026-12-31T23:59:59');
-            } else if (val === '6_thang_dau_2026') {
-              startDate = new Date('2026-01-01T00:00:00');
-              endDate = new Date('2026-06-30T23:59:59');
-            } else if (val === 'ca_nam_2026') {
-              startDate = new Date('2026-01-01T00:00:00');
-              endDate = new Date('2026-12-31T23:59:59');
-            } else if (val === 'last_30_days') {
-              startDate = new Date();
-              startDate.setDate(startDate.getDate() - 30);
-              endDate = new Date();
-            } else if (val === 'last_180_days') {
-              startDate = new Date();
-              startDate.setDate(startDate.getDate() - 180);
-              endDate = new Date();
-            } else if (val.startsWith('custom:')) {
-              const parts = val.split(':');
-              if (parts[1]) startDate = new Date(parts[1] + 'T00:00:00');
-              if (parts[2]) endDate = new Date(parts[2] + 'T23:59:59');
-            } else {
-              const parsedDate = new Date(val + 'T00:00:00');
-              if (cond.operator === 'gte') {
-                startDate = parsedDate;
-              } else if (cond.operator === 'lte') {
-                endDate = new Date(val + 'T23:59:59');
-              }
-            }
-            
-            const parseOrderDate = (dateVal: any): number => {
-              if (!dateVal) return 0;
-              if (dateVal instanceof Date) return dateVal.getTime();
-              if (dateVal && typeof dateVal.toDate === "function") return dateVal.toDate().getTime();
-              if (dateVal && typeof dateVal.seconds === "number") return dateVal.seconds * 1000;
-              if (typeof dateVal === "number") return dateVal;
-              
-              const dateStr = String(dateVal).trim();
-              try {
-                const parts = dateStr.split(" ");
-                const datePart = parts[0];
-                const [day, month, year] = datePart.split("/").map(Number);
-                if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-                  const timePart = parts[1] || "00:00";
-                  const [hour, minute] = timePart.split(":").map(Number);
-                  return new Date(year, month - 1, day, hour || 0, minute || 0, 0, 0).getTime();
-                }
-              } catch (e) {}
-              
-              const parsed = Date.parse(dateStr);
-              return isNaN(parsed) ? 0 : parsed;
-            };
-            
-            const orders = c.orders || [];
-            return orders.some(o => {
-              const oTime = parseOrderDate(o.date);
-              if (oTime === 0) return false;
-              
-              let match = true;
-              if (startDate) match = match && oTime >= startDate.getTime();
-              if (endDate) match = match && oTime <= endDate.getTime();
-              return match;
-            });
-          }
-          
           return true;
         });
       });
@@ -1304,8 +1187,12 @@ export function CustomersView() {
       if (!val) return new Date(0);
       if (typeof val.toDate === "function") return val.toDate();
       if (val.seconds !== undefined) return new Date(val.seconds * 1000);
-      const parsed = new Date(val);
-      return isNaN(parsed.getTime()) ? new Date(0) : parsed;
+      try {
+        const parsed = new Date(val);
+        return isNaN(parsed.getTime()) ? new Date(0) : parsed;
+      } catch (e) {
+        return new Date(0);
+      }
     };
 
     let matchesDate = true;
@@ -1553,45 +1440,6 @@ export function CustomersView() {
     );
   };
 
-  const renderMemberTierBadge = (points: number = 0, tier?: string) => {
-    let tierName = tier || "Member";
-    let badgeClass = "bg-slate-500/5 text-slate-500 border-slate-500/15";
-    
-    const norm = tierName.trim().toLowerCase();
-    if (norm === "atelier") {
-      tierName = "Atelier";
-      badgeClass = "bg-indigo-500/10 text-indigo-600 border-indigo-500/20";
-    } else if (norm === "icon") {
-      tierName = "Icon";
-      badgeClass = "bg-amber-500/10 text-amber-600 border-amber-500/20";
-    } else if (norm === "essential") {
-      tierName = "Essential";
-      badgeClass = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
-    } else if (norm === "member") {
-      tierName = "Member";
-      badgeClass = "bg-slate-500/5 text-slate-500 border-slate-500/15";
-    } else {
-      if (points >= 10000) {
-        tierName = "Atelier";
-        badgeClass = "bg-indigo-500/10 text-indigo-600 border-indigo-500/20";
-      } else if (points >= 2500) {
-        tierName = "Icon";
-        badgeClass = "bg-amber-500/10 text-amber-600 border-amber-500/20";
-      } else if (points >= 500) {
-        tierName = "Essential";
-        badgeClass = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
-      } else {
-        tierName = tier || "Member";
-        badgeClass = "bg-slate-500/5 text-slate-500 border-slate-500/15";
-      }
-    }
-    return (
-      <Badge className={cn("text-[11px] font-bold py-0.5 px-2 rounded-full inline-flex items-center shadow-none select-none whitespace-nowrap border", badgeClass)}>
-        {tierName}
-      </Badge>
-    );
-  };
-
   if (authLoading) return <div className="p-8 text-center">Đang tải...</div>;
 
   const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
@@ -1794,7 +1642,8 @@ export function CustomersView() {
           )}
         </AnimatePresence>
 
-        {activeViewTab === "status_rules" && <SegmentationView />}
+        {activeViewTab === "status_rules" && <StatusTransitionConfigView />}
+        {activeViewTab === "segments" && <SegmentationView />}
 
         {activeViewTab === "list" ? (
           <>
@@ -2621,7 +2470,6 @@ export function CustomersView() {
                     )}
                     {visibleColumns.company && <TableHead>Công ty</TableHead>}
                     {visibleColumns.status && <TableHead>Trạng thái</TableHead>}
-                    {visibleColumns.status && <TableHead>Trạng thái thành viên</TableHead>}
                     {visibleColumns.churnRisk && (
                       <TableHead>Rủi ro rời bỏ</TableHead>
                     )}
@@ -2632,7 +2480,7 @@ export function CustomersView() {
                         .map((attr) => (
                           <TableHead key={attr.id}>{attr.label}</TableHead>
                         ))}
-                    {visibleColumns.actions && <TableHead className="text-center">Hành động</TableHead>}
+                    {visibleColumns.actions && <TableHead>Hành động</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -2731,7 +2579,7 @@ export function CustomersView() {
                           }
                           setSelectedCustomer(customer);
                         }}
-                        className={`cursor-pointer transition-all duration-200 group/row border-b ${selectedCustomerIds.includes(customer.id) ? "bg-[#2f6cf5]/5 border-[#2f6cf5]/20" : "hover:bg-transparent active:bg-muted/60 border-border/50"}`}
+                        className={`cursor-pointer transition-all duration-200 group/row border-b ${selectedCustomerIds.includes(customer.id) ? "bg-[#2f6cf5]/5 border-[#2f6cf5]/20" : "hover:bg-muted/40 active:bg-muted/60 border-border/50"}`}
                       >
                         <TableCell
                           onClick={(e) => e.stopPropagation()}
@@ -2762,20 +2610,19 @@ export function CustomersView() {
                           </TableCell>
                         )}
 
-                        {/* PRODUCT LOGO + NAME */}
+                        {/* AVATAR + NAME */}
                         {visibleColumns.nameEmail && (
                           <TableCell className="font-medium">
-                            <div className="flex items-center gap-3 text-left">
-                              <div className="w-9 h-9 rounded-xl overflow-hidden border border-border/40 bg-muted flex items-center justify-center shrink-0 shadow-xs">
-                                {customer.companyId && companies.find((comp) => comp.id === customer.companyId)?.logoUrl ? (
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-xl overflow-hidden border border-border bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-xs font-bold text-xs uppercase">
+                                {customer.avatarUrl ? (
                                   <img
-                                    src={companies.find((comp) => comp.id === customer.companyId)?.logoUrl}
-                                    referrerPolicy="no-referrer"
+                                    src={customer.avatarUrl}
                                     className="w-full h-full object-cover"
-                                    alt="Product Logo"
+                                    alt={customer.name}
                                   />
                                 ) : (
-                                  <Package className="w-5 h-5 text-muted-foreground" />
+                                  customer.name.slice(0, 2)
                                 )}
                               </div>
                               <div>
@@ -2940,13 +2787,6 @@ export function CustomersView() {
                           </TableCell>
                         )}
 
-                        {/* MEMBER STATUS */}
-                        {visibleColumns.status && (
-                          <TableCell>
-                            {renderMemberTierBadge(customer.points, customer.tier)}
-                          </TableCell>
-                        )}
-
                         {/* CHURN RISK */}
                         {visibleColumns.churnRisk && (
                           <TableCell onClick={(e) => e.stopPropagation()}>
@@ -3005,8 +2845,15 @@ export function CustomersView() {
 
                         {/* ACTIONS */}
                         {visibleColumns.actions && (
-                          <TableCell className="text-center">
-                            <div className="flex items-center justify-center gap-1 font-sans" onClick={(e) => e.stopPropagation()}>
+                          <TableCell className="pr-6 text-right">
+                            <div className="flex items-center justify-end gap-1 font-sans">
+                              <button
+                                onClick={() => setSelectedCustomer(customer)}
+                                className="p-1.5 text-[#2f6cf5] hover:bg-primary/10 rounded-lg text-xs font-extrabold flex items-center cursor-pointer gap-0.5"
+                                title="Chi tiết"
+                              >
+                                Chi tiết ➜
+                              </button>
                               <button
                                 onClick={() => setSelectedQrCustomer(customer)}
                                 className="p-1.5 text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-lg transition-all cursor-pointer"
@@ -3311,20 +3158,6 @@ export function CustomersView() {
 
             {/* TAB TABLE CARD CONTAINER */}
             <Card className="border border-border/50 bg-card/45 backdrop-blur-md rounded-2xl shadow-xs overflow-hidden w-full">
-              <CardHeader className="p-5 md:p-6 pb-2 select-none">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left">
-                  <div>
-                    <h3 className="text-sm font-black text-foreground tracking-tight uppercase flex items-center gap-2">
-                      <Users className="w-4 h-4 text-emerald-500" />
-                      Quy mô danh sách cohorts
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Phát hiện <strong>{filteredSegmentCustomers.length}</strong> khách hàng khớp các tiêu chí phân nhóm hiện thời.
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-              
               <CardContent className="p-0">
                 <Table>
                   <TableHeader>
@@ -3334,7 +3167,6 @@ export function CustomersView() {
                       {visibleColumns.social && <TableHead>Mạng xã hội</TableHead>}
                       {visibleColumns.company && <TableHead>Công ty</TableHead>}
                       {visibleColumns.status && <TableHead>Trạng thái</TableHead>}
-                      {visibleColumns.status && <TableHead>Trạng thái thành viên</TableHead>}
                       {visibleColumns.churnRisk && <TableHead>Rủi ro rời bỏ</TableHead>}
                       {visibleColumns.points && <TableHead>Điểm CRM</TableHead>}
                       {visibleColumns.customAttributes &&
@@ -3343,7 +3175,7 @@ export function CustomersView() {
                           .map((attr) => (
                             <TableHead key={attr.id}>{attr.label}</TableHead>
                           ))}
-                      {visibleColumns.actions && <TableHead className="text-center">Hành động</TableHead>}
+                      {visibleColumns.actions && <TableHead className="pr-6 text-right">Hành động</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -3360,11 +3192,7 @@ export function CustomersView() {
                       </TableRow>
                     ) : (
                       filteredSegmentCustomers.map((customer) => (
-                        <TableRow
-                          key={customer.id}
-                          onClick={() => setSelectedCustomer(customer)}
-                          className="cursor-pointer transition-all duration-200 group/row hover:bg-transparent border-b border-border/50"
-                        >
+                        <TableRow key={customer.id} className="group hover:bg-muted/30 transition-colors">
                           {visibleColumns.id && (
                             <TableCell className="pl-6 font-mono text-xs text-[#2f6cf5] font-semibold">
                               {getCustomerCode(customer, companies)}
@@ -3373,16 +3201,16 @@ export function CustomersView() {
                           {visibleColumns.nameEmail && (
                             <TableCell>
                               <div className="flex items-center gap-3 text-left">
-                                <div className="w-8 h-8 rounded-xl overflow-hidden border border-border/40 bg-muted flex items-center justify-center shrink-0 shadow-xs">
-                                  {customer.companyId && companies.find((comp) => comp.id === customer.companyId)?.logoUrl ? (
+                                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/20 shrink-0 overflow-hidden">
+                                  {customer.avatarUrl ? (
                                     <img
-                                      src={companies.find((comp) => comp.id === customer.companyId)?.logoUrl}
+                                      src={customer.avatarUrl}
                                       referrerPolicy="no-referrer"
                                       className="w-full h-full object-cover"
-                                      alt="Product Logo"
+                                      alt={customer.name}
                                     />
                                   ) : (
-                                    <Package className="w-4 h-4 text-muted-foreground" />
+                                    customer.name.slice(0, 2)
                                   )}
                                 </div>
                                 <div className="max-w-[190px] overflow-hidden">
@@ -3487,12 +3315,6 @@ export function CustomersView() {
                             </TableCell>
                           )}
 
-                          {visibleColumns.status && (
-                            <TableCell>
-                              {renderMemberTierBadge(customer.points, customer.tier)}
-                            </TableCell>
-                          )}
-
                           {visibleColumns.churnRisk && (
                             <TableCell>
                               <div className="flex items-center gap-2">
@@ -3535,8 +3357,15 @@ export function CustomersView() {
                               })}
 
                           {visibleColumns.actions && (
-                            <TableCell className="text-center">
-                              <div className="flex items-center justify-center gap-1 font-sans" onClick={(e) => e.stopPropagation()}>
+                            <TableCell className="pr-6 text-right">
+                              <div className="flex items-center justify-end gap-1 font-sans">
+                                <button
+                                  onClick={() => setSelectedCustomer(customer)}
+                                  className="p-1.5 text-[#2f6cf5] hover:bg-primary/10 rounded-lg text-xs font-extrabold flex items-center cursor-pointer gap-0.5"
+                                  title="Chi tiết"
+                                >
+                                  Chi tiết ➜
+                                </button>
                                 <button
                                   onClick={() => setSelectedQrCustomer(customer)}
                                   className="p-1.5 text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-lg transition-all cursor-pointer"
@@ -3580,15 +3409,7 @@ export function CustomersView() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 15 }}
               transition={{ type: "spring", duration: 0.45, bounce: 0.1 }}
-              style={{
-                background: "rgba(255, 255, 255, 0.75)",
-                borderRadius: "16px",
-                boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
-                backdropFilter: "blur(9.3px)",
-                WebkitBackdropFilter: "blur(9.3px)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
-              }}
-              className="w-[96vw] h-[94vh] max-w-[1850px] flex flex-col relative overflow-hidden"
+              className="bg-background border border-border shadow-2xl rounded-2xl w-[92vw] h-[90vh] max-w-[1700px] flex flex-col relative overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Nút đóng nổi bật ở góc phải trên cùng */}
@@ -3601,7 +3422,7 @@ export function CustomersView() {
               </button>
 
               {/* Phần nội dung có scroll riêng lẻ */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-8 lg:p-12 scrollbar-thin">
+              <div className="flex-1 overflow-y-auto p-6 md:p-10 scrollbar-thin">
                 <CustomerDashboard
                   customer={currentCustomerData}
                   userId={user?.uid || "guest"}

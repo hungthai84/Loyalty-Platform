@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Search, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Customer } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface CustomerSearchProps {
   customers: Customer[];

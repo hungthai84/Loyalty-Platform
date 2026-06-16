@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Settings, TrendingUp, Zap } from "lucide-react";
+import { Star, Plus, Settings, TrendingUp, Zap, Medal, Award, Crown, Gem, Shield } from "lucide-react";
+import * as motion from "motion/react-client";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy, doc, setDoc, serverTimestamp } from "firebase/firestore";
@@ -95,20 +96,29 @@ export function TierManagementView() {
             </div>
           </div>
         ) : (
-          tiers.map((tier) => (
-            <div
-              key={tier.id}
-              className="h-full"
-            >
-              <Card className="h-full border border-border bg-card shadow-sm rounded-3xl overflow-hidden relative border-t-8 flex flex-col" style={{ borderTopColor: tier.color }}>
-                <CardContent className="p-0 flex-1 flex flex-col">
-                  {/* Header Section */}
-                  <div className="p-6 pb-4 bg-muted/5 border-b border-border/50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: tier.color }}>
-                          <Star className="w-5 h-5 fill-current" />
-                        </div>
+          tiers.map((tier) => {
+            const nameLower = tier.name.toLowerCase();
+            let TierIcon = Star;
+            if (nameLower.includes("member")) TierIcon = Shield;
+            else if (nameLower.includes("essential") || nameLower.includes("silver")) TierIcon = Medal;
+            else if (nameLower.includes("icon") || nameLower.includes("gold") || nameLower.includes("vip")) TierIcon = Award;
+            else if (nameLower.includes("atelier") || nameLower.includes("platinum")) TierIcon = Gem;
+            else if (nameLower.includes("royal") || nameLower.includes("diamond")) TierIcon = Crown;
+
+            return (
+              <div
+                key={tier.id}
+                className="h-full"
+              >
+                <Card className="h-full border border-border bg-card shadow-sm rounded-3xl overflow-hidden relative border-t-8 flex flex-col" style={{ borderTopColor: tier.color }}>
+                  <CardContent className="p-0 flex-1 flex flex-col">
+                    {/* Header Section */}
+                    <div className="p-6 pb-4 bg-muted/5 border-b border-border/50">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: tier.color }}>
+                            <TierIcon className="w-5 h-5 fill-current" />
+                          </div>
                         <div>
                           <h4 className="text-xl font-black font-heading tracking-tight">{tier.name}</h4>
                           <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Hệ số: {tier.multiplier}x</p>
@@ -129,7 +139,7 @@ export function TierManagementView() {
                       <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-2 opacity-60">Điều kiện thăng hạng</h5>
                       <div className="p-4 bg-muted/30 rounded-2xl border border-border/50 flex items-center justify-between gap-4">
                         <span className="text-xs font-bold text-muted-foreground shrink-0">Tích lũy</span>
-                        <span className="text-lg sm:text-xl font-black text-primary truncate" title={`${tier.threshold.toLocaleString()} PTS`}>{tier.threshold.toLocaleString()} PTS</span>
+                        <span className="text-lg sm:text-xl font-black text-primary truncate" title={`${tier.threshold.toLocaleString()} Điểm`}>{tier.threshold.toLocaleString()} Điểm</span>
                       </div>
                     </div>
                     
@@ -174,7 +184,8 @@ export function TierManagementView() {
                 </CardContent>
               </Card>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 

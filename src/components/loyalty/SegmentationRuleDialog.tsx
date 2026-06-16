@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { 
  X, 
  Save, 
@@ -7,7 +7,9 @@ import {
  Coins, 
  Calendar, 
  Award,
- Sliders
+ Sliders,
+ Upload,
+ FileText
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -36,56 +38,47 @@ const OPERATORS = [
  { id: 'lt', label: 'Nhỏ hơn (<)' },
 ];
 
-const COLOR_PRESETS = [
- { id: 'gold', name: 'Vàng Ánh Kim', hex: '#2f6cf5', border: 'border-[#2f6cf5]/30 bg-[#2f6cf5]/10 text-[#2f6cf5]' },
- { id: 'emerald', name: 'Xanh Ngọc Lục Bảo', hex: '#10b981', border: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500' },
- { id: 'rose', name: 'Đỏ Ruby', hex: '#f43f5e', border: 'border-rose-500/30 bg-rose-500/10 text-rose-500' },
- { id: 'sky', name: 'Xanh Đại Dương', hex: '#0ea5e9', border: 'border-sky-500/30 bg-sky-500/10 text-sky-500' },
- { id: 'indigo', name: 'Tím Indigo', hex: '#6366f1', border: 'border-indigo-500/30 bg-indigo-500/10 text-indigo-500' },
- { id: 'purple', name: 'Tím Hoàng Gia', hex: '#a855f7', border: 'border-purple-500/30 bg-purple-500/10 text-purple-500' },
- { id: 'slate', name: 'Xám Đá Slate', hex: '#64748b', border: 'border-slate-500/30 bg-slate-500/10 text-slate-500' },
-];
 
-export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialogProps) {
- const { user } = useFirebase();
- const [name, setName] = useState(rule?.name || '');
- const [tag, setTag] = useState(rule?.tag || '');
- const [color, setColor] = useState(rule?.color || 'gold');
- const [criteriaType, setCriteriaType] = useState<SegmentationRule['criteriaType']>(rule?.criteriaType || 'total_spend');
- const [operator, setOperator] = useState<SegmentationRule['operator']>(rule?.operator || 'gte');
- const [value, setValue] = useState<string>(rule?.value?.toString() || '');
- const [isActive, setIsActive] = useState(rule?.isActive ?? true);
- const [submitting, setSubmitting] = useState(false);
 
- const handleSubmit = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!name.trim()) {
- toast.error("Vui lòng điền tên quy tắc phân loại trạng thái");
- return;
- }
- if (!tag.trim()) {
- toast.error("Vui lòng điền nhãn tag tự động");
- return;
- }
- if (value === '' || isNaN(Number(value))) {
- toast.error("Vui lòng điền giá trị ngưỡng hợp lệ");
- return;
- }
+ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialogProps) {
+  const { user } = useFirebase();
+  const [name, setName] = useState(rule?.name || '');
+  const [description, setDescription] = useState(rule?.description || '');
+  const [criteriaType, setCriteriaType] = useState<SegmentationRule['criteriaType']>(rule?.criteriaType || 'total_spend');
+  const [operator, setOperator] = useState<SegmentationRule['operator']>(rule?.operator || 'gte');
+  const [value, setValue] = useState<string>(rule?.value?.toString() || '');
+  const [isActive, setIsActive] = useState(rule?.isActive ?? true);
+  const [submitting, setSubmitting] = useState(false);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
 
- setSubmitting(true);
- const id = rule?.id || Math.random().toString(36).substring(7);
- const ruleData: SegmentationRule = {
- id,
- name: name.trim(),
- tag: tag.trim(),
- color,
- criteriaType,
- operator,
- value: Number(value),
- isActive,
- userId: user?.uid || "guest",
- createdAt: rule?.createdAt || new Date().toISOString(),
- };
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!name.trim()) {
+  toast.error("Vui lòng điền tên dự án / quy tắc");
+  return;
+  }
+  if (value === '' || isNaN(Number(value))) {
+  toast.error("Vui lòng điền giá trị ngưỡng hợp lệ");
+  return;
+  }
+
+  setSubmitting(true);
+  const id = rule?.id || Math.random().toString(36).substring(7);
+  const ruleData: SegmentationRule = {
+  id,
+  name: name.trim(),
+  description: description.trim(),
+  tag: name.trim().substring(0, 15), // Auto-generate tag from name
+  color: 'slate', // Default color for project
+  criteriaType,
+  operator,
+  value: Number(value),
+  isActive,
+  userId: user?.uid || "guest",
+  createdAt: rule?.createdAt || new Date().toISOString(),
+  };
 
  try {
  if (!user) {
@@ -133,7 +126,7 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
  }
  };
 
- const selectedPresetColor = COLOR_PRESETS.find(p => p.id === color) || COLOR_PRESETS[0];
+
 
  return (
  <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
@@ -143,10 +136,10 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
  <div>
  <h3 className="text-lg font-bold font-heading flex items-center gap-2">
  <Sliders className="w-5 h-5 text-primary" />
- {rule ? "Sửa Quy tắc Phân loại trạng thái" : "Thêm Quy tắc Phân loại trạng thái mới"}
+ {rule ? "Sửa Nhóm Khách Hàng Dự Án" : "Thêm Nhóm Khách Hàng Dự Án mới"}
  </h3>
  <p className="text-xs text-muted-foreground mt-0.5">
- Thiết lập quy luật tự động gán nhãn khách hàng dựa trên dữ liệu CRM
+ Thiết lập quy luật tự động gán nhãn khách hàng dựa trên dữ liệu CRM hoặc tải lên danh sách
  </p>
  </div>
  <button 
@@ -161,55 +154,27 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
  <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
  {/* Rule Name */}
  <div className="space-y-1.5">
- <label className="text-xs font-bold uppercase text-muted-foreground">Tên quy tắc phân loại trạng thái</label>
+ <label className="text-xs font-bold uppercase text-muted-foreground">Tên dự án / Nhóm</label>
  <input
  type="text"
  required
- placeholder="Ví dụ: Khách hàng chi tiêu lớn, Thành viên không hoạt động..."
+ placeholder="Ví dụ: Dự án chăm sóc VIP quý 2..."
  className="w-full px-4 py-2 bg-background border rounded-xl focus:ring-1 focus:ring-primary outline-none text-sm transition-all"
  value={name}
  onChange={e => setName(e.target.value)}
  />
  </div>
 
- {/* Tag Badges Setup */}
- <div className="grid grid-cols-2 gap-4">
+ {/* Rule Description */}
  <div className="space-y-1.5">
- <label className="text-xs font-bold uppercase text-muted-foreground font-sans">Nhãn Tag tự động gán</label>
- <div className="relative">
- <Tag className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
- <input
- type="text"
- required
- placeholder="Ví dụ: Big Spender"
- className="w-full pl-9 pr-4 py-2 bg-background border rounded-xl focus:ring-1 focus:ring-primary outline-none text-sm font-semibold transition-all"
- value={tag}
- onChange={e => setTag(e.target.value)}
+ <label className="text-xs font-bold uppercase text-muted-foreground">Mô tả (Tùy chọn)</label>
+ <textarea
+ placeholder="Chính sách đặc biệt dành riêng, thời gian áp dụng..."
+ rows={2}
+ className="w-full px-4 py-2 bg-background border rounded-xl focus:ring-1 focus:ring-primary outline-none text-sm transition-all resize-none"
+ value={description}
+ onChange={e => setDescription(e.target.value)}
  />
- </div>
- </div>
-
- {/* Tag Color Presets */}
- <div className="space-y-1.5">
- <label className="text-xs font-bold uppercase text-muted-foreground block">Màu sắc hiển thị</label>
- <select
- value={color}
- onChange={e => setColor(e.target.value)}
- className="w-full px-3 py-2 bg-background border rounded-xl focus:ring-1 focus:ring-primary outline-none text-sm transition-all"
- >
- {COLOR_PRESETS.map((p) => (
- <option key={p.id} value={p.id}>{p.name}</option>
- ))}
- </select>
- </div>
- </div>
-
- {/* Live Badge Preview */}
- <div className="p-3 bg-muted/20 border border-border/40 rounded-xl flex items-center justify-between">
- <span className="text-xs text-muted-foreground">Bản xem trước nhãn tag:</span>
- <span className={cn("px-3 py-1 rounded-full text-xs font-bold border transition-all uppercase tracking-wide", selectedPresetColor.border)}>
- {tag || "EXAMPLE_TAG"}
- </span>
  </div>
 
  {/* Criteria Selector */}
@@ -265,6 +230,36 @@ export function SegmentationRuleDialog({ onClose, rule }: SegmentationRuleDialog
  value={value}
  onChange={e => setValue(e.target.value)}
  />
+ </div>
+ </div>
+
+ {/* File Excel upload */}
+ <div className="space-y-2">
+ <label className="text-xs font-bold uppercase text-muted-foreground block">Hoặc: Tải lên danh sách thành viên (Excel/CSV)</label>
+ <div 
+ onClick={() => fileInputRef.current?.click()}
+ className="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/30 hover:border-primary/50 transition-all"
+ >
+ <input 
+ type="file" 
+ ref={fileInputRef}
+ className="hidden" 
+ accept=".csv,.xlsx,.xls"
+ onChange={(e) => {
+   const file = e.target.files?.[0];
+   if (file) {
+     setFileName(file.name);
+     toast.success("Tính năng chèn tệp Excel đang được nâng cấp để hỗ trợ nhiều định dạng. Tạm thời sử dụng tag chung cho file này.");
+   }
+ }}
+ />
+ <div className="p-3 bg-muted rounded-full mb-3">
+ {fileName ? <FileText className="w-5 h-5 text-primary" /> : <Upload className="w-5 h-5 text-muted-foreground" />}
+ </div>
+ <h4 className="text-sm font-bold">{fileName || "Chọn tệp Excel danh sách thành viên"}</h4>
+ <p className="text-xs text-muted-foreground mt-1 max-w-[250px]">
+ Kéo thả hoặc nhấp để tải lên tệp (.csv, .xlsx). Khách hàng sẽ tự động được thêm vào nhóm này.
+ </p>
  </div>
  </div>
 

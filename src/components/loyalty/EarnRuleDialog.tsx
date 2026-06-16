@@ -273,7 +273,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
                       value={points}
                       onChange={e => setPoints(Number(e.target.value))}
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">PTS</span>
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">Điểm</span>
                   </div>
                 </div>
                 {type === "purchase" && (

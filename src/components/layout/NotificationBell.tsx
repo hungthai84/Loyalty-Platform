@@ -82,7 +82,7 @@ export function NotificationBell({ isSidebar, collapsed }: NotificationBellProps
           isSidebar 
             ? collapsed 
               ? "w-11 h-11 mx-auto justify-center px-0 bg-sidebar-accent/50 text-sidebar-foreground/75" 
-              : "w-full py-3 px-4 space-x-3 justify-start bg-sidebar-accent/50 text-sidebar-foreground/75 border border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              : "w-full py-3 px-4 space-x-3 justify-start bg-sidebar-accent/50 text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             : "h-8 w-8 items-center justify-center bg-muted/30 text-muted-foreground hover:text-foreground"
         )}
       >

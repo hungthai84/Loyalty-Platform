@@ -6,8 +6,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Zap, ArrowRight, Check } from "lucide-react";
+import { Zap, Plus, ArrowRight, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
 
 interface AutomationRuleBuilderProps {

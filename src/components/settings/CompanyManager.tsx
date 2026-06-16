@@ -46,7 +46,7 @@ export function CompanyManager() {
   const [formData, setFormData] = useState({
     name: "",
     address: "",
-    type: "company" as "company" | "branch",
+    type: "company" as "company" | "branch" | "product" | "project",
     parentId: "",
   });
 

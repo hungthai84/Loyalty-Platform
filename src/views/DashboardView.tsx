@@ -8,7 +8,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { revenueData, recentCustomers } from "@/data/mockData";
+import { kpiData, revenueData, recentCustomers } from "@/data/mockData";
 import { getGuestCustomers, saveGuestCustomer } from "@/data/guestData";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
@@ -43,6 +43,9 @@ import {
 import {
   ArrowUpRight,
   ArrowDownRight,
+  Gem,
+  Wifi,
+  WifiOff,
   Calendar,
   ChevronDown,
   Filter,
@@ -50,6 +53,7 @@ import {
   User,
   RotateCcw,
   LayoutDashboard,
+  Database,
   Send,
   Smartphone,
   CreditCard as LucideCreditCard,
@@ -58,10 +62,13 @@ import {
   Minus,
   Lock,
   ShieldCheck,
+  Check,
   MapPin,
+  Info,
   Coins,
   Globe,
   Copy,
+  CheckCircle,
   HelpCircle,
   TrendingUp,
   Gift,
@@ -78,6 +85,7 @@ import { DatabaseStatus } from "@/components/layout/DatabaseStatus";
 import {
   Dialog,
   DialogContent,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
@@ -1064,7 +1072,7 @@ export function DashboardView() {
 
       {actionControls}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid w-full gap-4 md:grid-cols-2 lg:grid-cols-4">
         {filteredKpis.map((kpi, i) => (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -1081,7 +1089,7 @@ export function DashboardView() {
                 {kpi.label.includes("doanh thu") && <LucideCreditCard className="h-4 w-4 text-emerald-500/60" />}
                 {kpi.label.includes("khách hàng") && <User className="h-4 w-4 text-[#2f6cf5]" />}
                 {kpi.label.includes("Chiến dịch") && <Award className="h-4 w-4 text-amber-500/60" />}
-                {kpi.label.includes("Điểm Loyalty") && <Coins className="h-4 w-4 text-[#6E62E5]/60" />}
+                {kpi.label.includes("Điểm Loyalty") && <Coins className="h-4 w-4 text-[#eb7a2e]/60" />}
               </CardHeader>
               <CardContent className="text-left">
                 <div className="text-2xl font-bold">{kpi.value}</div>
@@ -1301,8 +1309,8 @@ export function DashboardView() {
         <div className="col-span-1 lg:col-span-4 flex flex-col gap-5">
           
           {/* Balance Card */}
-          <div className="bg-card rounded-[10px] p-6 border border-border/85 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:border-[#6E62E5]/20 transition-all duration-300">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#6E62E5]/5 to-transparent rounded-full pointer-events-none" />
+          <div className="bg-card rounded-[10px] p-6 border border-border/85 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:border-[#eb7a2e]/20 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#eb7a2e]/5 to-transparent rounded-full pointer-events-none" />
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-400 select-none tracking-wide">Balance</span>
@@ -1326,7 +1334,7 @@ export function DashboardView() {
           </div>
 
           {/* Information Card */}
-          <div className="bg-card rounded-[10px] p-6 border border-border/85 shadow-sm text-left relative group hover:border-[#6E62E5]/20 transition-all duration-300">
+          <div className="bg-card rounded-[10px] p-6 border border-border/85 shadow-sm text-left relative group hover:border-[#eb7a2e]/20 transition-all duration-300">
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100/60 dark:border-slate-800/60">
               <span className="text-xs font-bold text-slate-400 tracking-wide">information</span>
               <button 
@@ -1353,7 +1361,7 @@ export function DashboardView() {
                   <span className="text-slate-400 font-medium">Wallet ID:</span>
                   <button 
                     onClick={() => handleCopyWalletId("4d2ca285e64945c7fe88772bb5fda24b")}
-                    className="p-1 text-[#6E62E5] hover:underline flex items-center gap-1 cursor-pointer font-bold"
+                    className="p-1 text-[#eb7a2e] hover:underline flex items-center gap-1 cursor-pointer font-bold"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>Copy</span>
@@ -1367,7 +1375,7 @@ export function DashboardView() {
           </div>
 
           {/* Security Card */}
-          <div className="bg-card rounded-[10px] p-6 border border-border/85 shadow-sm text-left relative group hover:border-[#6E62E5]/20 transition-all duration-300">
+          <div className="bg-card rounded-[10px] p-6 border border-border/85 shadow-sm text-left relative group hover:border-[#eb7a2e]/20 transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-bold text-slate-400 tracking-wide">Security</span>
               <HelpCircle className="w-4 h-4 text-slate-300" />
@@ -1376,7 +1384,7 @@ export function DashboardView() {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3.5 rounded-[10px] bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#6E62E5]/10 text-[#6E62E5] rounded-xl">
+                  <div className="p-2 bg-[#eb7a2e]/10 text-[#eb7a2e] rounded-xl">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div className="text-left">
@@ -1420,10 +1428,10 @@ export function DashboardView() {
         </div>
 
         {/* COLUMN 2: GOLD-VIOLET CREDIT CARD & SEND WORKFLOW */}
-        <div className="col-span-1 lg:col-span-5 bg-card/65 rounded-[10px] p-6 border border-border/80 shadow-sm relative overflow-hidden backdrop-blur-md flex flex-col gap-6 hover:border-[#6E62E5]/20 transition-all duration-300 font-sans">
+        <div className="col-span-1 lg:col-span-5 bg-card/65 rounded-[10px] p-6 border border-border/80 shadow-sm relative overflow-hidden backdrop-blur-md flex flex-col gap-6 hover:border-[#eb7a2e]/20 transition-all duration-300 font-sans">
           
           {/* Stunning Power Service Mockup Floating Plastic Card */}
-          <div className="relative aspect-[1.58/1] w-full max-w-[340px] mx-auto rounded-[10px] p-5 text-white overflow-hidden shadow-[0_15px_30px_rgba(124, 58, 237,0.25)] bg-gradient-to-tr from-[#6b11ff] via-[#6E62E5] to-[#fbbf24] select-none hover:scale-[1.02] active:scale-[0.99] transition-all duration-300">
+          <div className="relative aspect-[1.58/1] w-full max-w-[340px] mx-auto rounded-[10px] p-5 text-white overflow-hidden shadow-[0_15px_30px_rgba(235,122,46,0.25)] bg-gradient-to-tr from-[#6b11ff] via-[#eb7a2e] to-[#fbbf24] select-none hover:scale-[1.02] active:scale-[0.99] transition-all duration-300">
             <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-white/10 to-transparent rounded-full pointer-events-none" />
             
             {/* Hologram card chip & Power Service brand */}
@@ -1459,7 +1467,7 @@ export function DashboardView() {
               {/* MasterCard overlapping circles mockup */}
               <div className="flex -space-x-2 opacity-90 scale-95 shrink-0">
                 <div className="w-7 h-7 rounded-full bg-white/20 select-none backdrop-blur-xs flex items-center justify-center border border-white/10" />
-                <div className="w-7 h-7 rounded-full bg-[#6E62E5]/90 select-none border border-[#6E62E5]/20" />
+                <div className="w-7 h-7 rounded-full bg-[#eb7a2e]/90 select-none border border-[#eb7a2e]/20" />
                 <div className="w-7 h-7 rounded-full bg-[#fbbf24]/90 select-none border border-[#fbbf24]/20" />
               </div>
             </div>
@@ -1468,7 +1476,7 @@ export function DashboardView() {
           {/* Transactions Action Block wrapper */}
           <div className="flex flex-col gap-4 text-left flex-1">
             <h3 className="text-sm font-extrabold text-[#131924] dark:text-white uppercase tracking-wider text-center flex items-center justify-center gap-2">
-              <Coins className="w-4 h-4 text-[#6E62E5]" /> 
+              <Coins className="w-4 h-4 text-[#eb7a2e]" /> 
               <span>Transactions</span>
             </h3>
 
@@ -1504,7 +1512,7 @@ export function DashboardView() {
                   value={payToAddress}
                   onChange={(e) => setPayToAddress(e.target.value)}
                   placeholder="Nhập mã ví nhận..."
-                  className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6E62E5]/20 text-slate-800 dark:text-slate-100"
+                  className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
                   required
                 />
                 <span className="text-[10px] text-slate-400 block mt-0.5">Please enter the Wallet ID or destination email.</span>
@@ -1519,7 +1527,7 @@ export function DashboardView() {
                     value={transferAmount}
                     onChange={(e) => setTransferAmount(Number(e.target.value))}
                     min="1"
-                    className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6E62E5]/20 text-slate-800 dark:text-slate-100"
+                    className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
                     required
                   />
                 </div>
@@ -1529,7 +1537,7 @@ export function DashboardView() {
                   <select
                     value={transferReason}
                     onChange={(e) => setTransferReason(e.target.value)}
-                    className="w-full px-3 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6E62E5]/20 text-slate-800 dark:text-slate-100"
+                    className="w-full px-3 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
                     required
                   >
                     <option value="Games">Games</option>
@@ -1550,14 +1558,14 @@ export function DashboardView() {
                 <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
                 <div className="flex items-center gap-1.5">
                   <span>Total:</span>
-                  <span className="text-[#6E62E5] font-black">${transferAmount + 3}</span>
+                  <span className="text-[#eb7a2e] font-black">${transferAmount + 3}</span>
                 </div>
               </div>
 
               {/* Dynamic submit action with pink gradient */}
               <button
                 type="submit"
-                className="w-full py-3.5 px-6 rounded-[10px] text-xs font-black text-white hover:opacity-95 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all bg-gradient-to-r from-[#6E62E5] to-[#6E62E5]"
+                className="w-full py-3.5 px-6 rounded-[10px] text-xs font-black text-white hover:opacity-95 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all bg-gradient-to-r from-[#eb7a2e] to-[#7c3aed]"
               >
                 <Send className="w-4 h-4 shrink-0" />
                 <span>Send</span>
@@ -1573,7 +1581,7 @@ export function DashboardView() {
           <button 
             type="button"
             onClick={() => toast.success("Hiện tại không có hóa đơn quá hạn cần nộp thanh toán.")}
-            className="bg-card w-full rounded-[10px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#6E62E5]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
+            className="bg-card w-full rounded-[10px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#eb7a2e]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
           >
             <div className="w-14 h-14 rounded-[10px] bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 group-hover:scale-105 transition-all">
               {/* Custom styled vector lines of check and bill */}
@@ -1595,9 +1603,9 @@ export function DashboardView() {
           <button 
             type="button"
             onClick={() => toast.success("Cổng nạp tiền di động đa mạng Việt Nam/Quốc tế đang tải...")}
-            className="bg-card w-full rounded-[10px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#6E62E5]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
+            className="bg-card w-full rounded-[10px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#eb7a2e]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
           >
-            <div className="w-14 h-14 rounded-[10px] bg-[#6E62E5]/10 flex items-center justify-center text-[#6E62E5] group-hover:scale-105 transition-all">
+            <div className="w-14 h-14 rounded-[10px] bg-[#eb7a2e]/10 flex items-center justify-center text-[#eb7a2e] group-hover:scale-105 transition-all">
               <Smartphone className="w-7 h-7" />
             </div>
             <div className="text-center">
@@ -1610,7 +1618,7 @@ export function DashboardView() {
           <button 
             type="button"
             onClick={() => toast.success("Đang truy xuất thông tin phát hành các hạng thẻ vật lý...")}
-            className="bg-card w-full rounded-[10px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#6E62E5]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
+            className="bg-card w-full rounded-[10px] p-5 border border-border/85 shadow-sm hover:shadow-md hover:border-[#eb7a2e]/25 hover:translate-y-[-2px] transition-all duration-300 text-left flex flex-col items-center justify-center gap-3 relative group"
           >
             <div className="w-14 h-14 rounded-[10px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[#131924] dark:text-white group-hover:scale-105 transition-all">
               <LucideCreditCard className="w-7 h-7" />

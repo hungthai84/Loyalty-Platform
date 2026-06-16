@@ -24,6 +24,8 @@ import {
   X,
   PlusCircle,
   MinusCircle,
+  Shield,
+  Palette
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -46,74 +48,107 @@ import { motion, AnimatePresence } from "motion/react";
 
 const REWARD_TYPE_OPTIONS = [
   {
-    value: "discount",
-    label: "Phiếu giảm giá (VND)",
-    icon: Ticket,
-    color: "text-blue-500 bg-blue-550/10",
-  },
-  {
-    value: "voucher",
-    label: "Voucher Chiết khấu (%)",
-    icon: Percent,
-    color: "text-amber-500 bg-amber-550/10",
-  },
-  {
-    value: "item",
-    label: "Quà hiện vật & Sản phẩm",
+    value: "limited_item",
+    label: "Sản phẩm giới hạn",
     icon: Package,
     color: "text-emerald-500 bg-emerald-550/10",
   },
   {
-    value: "service",
-    label: "Dịch vụ & Đặc quyền đặc biệt",
-    icon: Sparkles,
+    value: "ticket",
+    label: "Vé chương trình",
+    icon: Ticket,
     color: "text-purple-500 bg-purple-550/10",
+  },
+  {
+    value: "discount_percent",
+    label: "Giảm % khi mua hàng",
+    icon: Percent,
+    color: "text-amber-500 bg-amber-550/10",
+  },
+  {
+    value: "warranty",
+    label: "Vé bảo hành miễn phí",
+    icon: Shield,
+    color: "text-blue-500 bg-blue-550/10",
+  },
+  {
+    value: "maintenance",
+    label: "Vé bảo dưỡng định kỳ",
+    icon: Sliders,
+    color: "text-cyan-500 bg-cyan-550/10",
   },
 ];
 
 const PRESET_RULES = [
   {
-    name: "Voucher giảm giá 50,000đ",
-    pointsRequired: 100,
-    rewardType: "discount" as const,
-    rewardValue: 50000,
-    description:
-      "Áp dụng cho mọi hóa đơn mua hàng từ 250k trở lên. Hạn dùng 30 ngày.",
-    isEnabled: true,
-    minBillValue: 250000,
-    expiryDays: 30,
-  },
-  {
-    name: "Chiết khấu 10% tổng hóa đơn",
-    pointsRequired: 250,
-    rewardType: "voucher" as const,
-    rewardValue: 10,
-    description: "Giảm trực tiếp 10% giá trị thanh toán, giảm tối đa 100,000đ.",
-    isEnabled: true,
-    minBillValue: 100000,
-    expiryDays: 45,
-  },
-  {
-    name: "Bình nước giữ nhiệt SEVA Limited",
+    name: "Túi Tote phiên bản giới hạn SEVA",
     pointsRequired: 450,
-    rewardType: "item" as const,
+    rewardType: "limited_item" as const,
     rewardValue: 1,
-    description:
-      "Quà tặng hiện vật đặc quyền in logo thương hiệu SEVA cao cấp.",
+    description: "Sản phẩm thời trang cao cấp độc quyền dành cho khách hàng tích điểm.",
     isEnabled: true,
     minBillValue: 0,
     expiryDays: 60,
   },
   {
-    name: "Miễn phí dịch vụ Spa Premium",
-    pointsRequired: 800,
-    rewardType: "service" as const,
+    name: "Vé mời VIP Dạ tiệc tri ân cuối năm",
+    pointsRequired: 1500,
+    rewardType: "ticket" as const,
     rewardValue: 1,
-    description:
-      "Tặng 1 buổi trải nghiệm dịch vụ chăm sóc da chuyên sâu 60 phút miễn phí.",
+    description: "Vé tham dự sự kiện âm nhạc và thời trang đẳng cấp cùng SEVA.",
     isEnabled: true,
     minBillValue: 0,
     expiryDays: 90,
+  },
+  {
+    name: "Chiết khấu 15% tổng hóa đơn",
+    pointsRequired: 250,
+    rewardType: "discount_percent" as const,
+    rewardValue: 15,
+    description: "Giảm trực tiếp 15% giá trị thanh toán không giới hạn.",
+    isEnabled: true,
+    minBillValue: 100000,
+    expiryDays: 45,
+  },
+  {
+    name: "Gói bảo hành vàng 24 tháng",
+    pointsRequired: 800,
+    rewardType: "warranty" as const,
+    rewardValue: 1,
+    description: "Nâng cấp gói bảo hành miễn phí cho sản phẩm điện tử.",
+    isEnabled: true,
+    minBillValue: 0,
+    expiryDays: 365,
+  },
+  {
+    name: "Phiếu bảo dưỡng xe ô tô toàn diện",
+    pointsRequired: 1200,
+    rewardType: "maintenance" as const,
+    rewardValue: 1,
+    description: "Bảo dưỡng các hạng mục thay dầu, kiểm tra phanh, lọc gió.",
+    isEnabled: true,
+    minBillValue: 0,
+    expiryDays: 180,
+  },
+  {
+    name: "Bình giữ nhiệt Titan SEVA",
+    pointsRequired: 500,
+    rewardType: "limited_item" as const,
+    rewardValue: 1,
+    description: "Phiên bản thiết kế Titanium chỉ dùng để đổi điểm, siêu giới hạn.",
+    isEnabled: true,
+    minBillValue: 0,
+    expiryDays: 60,
+  },
+  {
+    name: "Vé vào cửa Khu Vui Chơi SEVA Park",
+    pointsRequired: 200,
+    rewardType: "ticket" as const,
+    rewardValue: 1,
+    description: "Vé vui chơi không giới hạn trò chơi tại công viên.",
+    isEnabled: true,
+    minBillValue: 0,
+    expiryDays: 30,
   },
 ];
 
@@ -262,13 +297,20 @@ export function PointRedemptionConfigView() {
   // Bootstrap initial rule presets
   const handleBootstrap = async () => {
     if (!user) return;
-    if (!confirm("Bạn có muốn tạo thêm các quy tắc đổi quả mẫu chuẩn không?"))
+    if (!confirm("Thao tác này sẽ xóa toàn bộ nội dung Đổi Quà cũ và thay bằng tính năng mới. Bạn có tiếp tục?"))
       return;
 
     try {
       const path = `redemption_rules`;
+      // Clear out the previous contents
+      for (const rule of rules) {
+         try {
+           await deleteDoc(doc(db, `${path}/${rule.id}`));
+         } catch(e) {}
+      }
+
       for (let i = 0; i < PRESET_RULES.length; i++) {
-        const id = `RULE-BOOTSTRAP-${Date.now()}-${i}`;
+        const id = `RULE-NEW-${Date.now()}-${i}`;
         await setDoc(doc(db, `${path}/${id}`), {
           id,
           ...PRESET_RULES[i],
@@ -276,7 +318,7 @@ export function PointRedemptionConfigView() {
           createdAt: serverTimestamp(),
         });
       }
-      toast.success("Đã bổ sung các quy tắc đổi quà mẫu chuẩn thành công!");
+      toast.success("Đã xóa nội dung cũ và tạo danh mục thiết lập Đổi Quà mới!");
       window.dispatchEvent(
         new CustomEvent("crm-config-saved", { detail: { tab: "redemption" } }),
       );
@@ -400,25 +442,10 @@ export function PointRedemptionConfigView() {
 
     try {
       const custRef = doc(db, `customers/${customer.id}`);
-      try {
-        await updateDoc(custRef, {
-          points: finalPoints,
-          updatedAt: serverTimestamp(),
-        });
-      } catch (err: any) {
-        if (err.code === "not-found" || err.message?.includes("not-found") || err.message?.includes("No document to update")) {
-          const fullCustomer = {
-            ...customer,
-            points: finalPoints,
-            userId: user.uid,
-            createdAt: customer.createdAt instanceof Date || typeof customer.createdAt === "string" ? customer.createdAt : serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          };
-          await setDoc(custRef, fullCustomer);
-        } else {
-          throw err;
-        }
-      }
+      await updateDoc(custRef, {
+        points: finalPoints,
+        updatedAt: serverTimestamp(),
+      });
       toast.success(
         `Đã cập nhật điểm cho khách hàng ${customer.name}: ${finalPoints.toLocaleString()} pts`,
       );
@@ -452,25 +479,10 @@ export function PointRedemptionConfigView() {
       // 1. Deduct points in Firestore for this Customer
       const custRef = doc(db, `customers/${customer.id}`);
       const newPoints = currentPoints - rule.pointsRequired;
-      try {
-        await updateDoc(custRef, {
-          points: newPoints,
-          updatedAt: serverTimestamp(),
-        });
-      } catch (err: any) {
-        if (err.code === "not-found" || err.message?.includes("not-found") || err.message?.includes("No document to update")) {
-          const fullCustomer = {
-            ...customer,
-            points: newPoints,
-            userId: user.uid,
-            createdAt: customer.createdAt instanceof Date || typeof customer.createdAt === "string" ? customer.createdAt : serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          };
-          await setDoc(custRef, fullCustomer);
-        } else {
-          throw err;
-        }
-      }
+      await updateDoc(custRef, {
+        points: newPoints,
+        updatedAt: serverTimestamp(),
+      });
 
       // 2. Log transaction to `users/${uid}/redemptions`
       const redemptionId = `REDEEM-${Date.now()}`;
@@ -588,41 +600,10 @@ export function PointRedemptionConfigView() {
           </div>
         </div>
 
-        {/* High visual toggle sub-tabs selector */}
-        <div className="flex bg-muted/80 p-1 rounded-2xl border border-border shrink-0 self-start md:self-center">
-          <button
-            type="button"
-            onClick={() => setActiveSubTab("create_offers")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeSubTab === "create_offers"
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            1. Quản lý Ưu đãi
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSubTab("redeem_terminal")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeSubTab === "redeem_terminal"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <UserCheck className="w-3.5 h-3.5" />
-            2. Trừ điểm Đổi quà
-          </button>
-        </div>
-      </div>
-
-      {/* SUBTAB 1: CREATE MASTER OFFERS */}
-      {activeSubTab === "create_offers" && (
-        <div className="space-y-6">
-          {/* Rules List column */}
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between px-1">
+      <div className="space-y-6">
+        {/* Rules List column */}
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between px-1">
               <div className="text-left">
                 <h5 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest">
                   Thư viện quà tặng tích lũy ({filteredRules.length})
@@ -706,43 +687,19 @@ export function PointRedemptionConfigView() {
                       key={rule.id}
                       className={`border-none ${rule.isEnabled !== false ? "bg-card" : "bg-muted/10 opacity-70"} hover:shadow-md transition-all duration-300 rounded-[1.5rem] border border-border/40 overflow-hidden text-left flex flex-col h-full`}
                     >
-                      <CardContent className="flex-1 flex flex-col p-5 gap-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-4">
-                            <div
-                              className={`p-2.5 rounded-xl ${typeInfo.color} shrink-0 mt-0.5`}
-                            >
-                              <TypeIcon className="w-5 h-5" />
-                            </div>
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-bold text-sm text-foreground">
-                                  {rule.name}
-                                </h4>
-                                {rule.isEnabled === false && (
-                                  <span className="bg-rose-500/10 text-rose-600 font-extrabold text-xs tracking-wider px-1.5 py-0.2 rounded uppercase">
-                                    Vô hiệu hóa
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground leading-relaxed max-w-md">
-                                {rule.description ||
-                                  "Không có mô tả chi tiết cho món quà này."}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex items-center gap-1 shrink-0">
+                      <div className="w-full h-28 relative bg-muted/30 border-b border-border/10 overflow-hidden group">
+                         <img 
+                            src={`https://picsum.photos/seed/${encodeURIComponent(rule.id || rule.name)}/400/200`} 
+                            alt={rule.name}
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105 mix-blend-overlay dark:opacity-60" 
+                         />
+                         <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+                         <div className="absolute bottom-0 translate-y-3 right-4 flex items-center justify-end gap-1">
                             <button
                               type="button"
                               onClick={() => handleToggleRuleStatus(rule)}
-                              className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors cursor-pointer"
-                              title={
-                                rule.isEnabled !== false
-                                  ? "Tạm ngưng"
-                                  : "Kích hoạt"
-                              }
+                              className="p-1.5 backdrop-blur-md bg-background/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors shadow-sm"
                             >
                               <Power
                                 className={`w-3.5 h-3.5 ${rule.isEnabled !== false ? "text-emerald-500" : "text-muted-foreground"}`}
@@ -751,21 +708,44 @@ export function PointRedemptionConfigView() {
                             <button
                               type="button"
                               onClick={() => handleEditRule(rule)}
-                              className="p-1.5 text-muted-foreground hover:text-primary hover:bg-muted rounded-lg transition-colors cursor-pointer"
-                              title="Sửa"
+                              className="p-1.5 backdrop-blur-md bg-background/50 text-muted-foreground hover:text-primary hover:bg-muted rounded-lg transition-colors shadow-sm"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               type="button"
-                              onClick={() =>
-                                handleDeleteRule(rule.id, rule.name)
-                              }
-                              className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-colors cursor-pointer"
-                              title="Xóa"
+                              onClick={() => handleDeleteRule(rule.id, rule.name)}
+                              className="p-1.5 backdrop-blur-md bg-background/50 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors shadow-sm"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
+                         </div>
+                      </div>
+
+                      <CardContent className="flex-1 flex flex-col p-5 gap-4 pt-3">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-4">
+                            <div
+                              className={`p-3 rounded-2xl ${typeInfo.color} shrink-0 mt-0.5 shadow-inner`}
+                            >
+                              <TypeIcon className="w-5 h-5" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="font-bold text-sm text-foreground line-clamp-2">
+                                  {rule.name}
+                                </h4>
+                                {rule.isEnabled === false && (
+                                  <span className="bg-rose-500/10 text-rose-600 font-extrabold text-xs tracking-wider px-1.5 py-0.2 rounded uppercase">
+                                    Vô hiệu hóa
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                                {rule.description ||
+                                  "Không có mô tả chi tiết cho món quà này."}
+                              </p>
+                            </div>
                           </div>
                         </div>
 
@@ -911,368 +891,7 @@ export function PointRedemptionConfigView() {
             </Card>
           </div>
         </div>
-      )}
-
-      {/* SUBTAB 2: REDEEM OPERATIONS - POINT DEDUCTION */}
-      {activeSubTab === "redeem_terminal" && (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-          {/* Customer Selection Column */}
-          <div className="xl:col-span-5 space-y-4">
-            <Card className="border border-border bg-card rounded-3xl overflow-hidden text-left">
-              <div className="p-5 border-b border-border bg-muted/10">
-                <h5 className="font-bold text-sm flex items-center gap-1.5 text-foreground">
-                  <User className="w-4 h-4 text-[#2f6cf5]" />
-                  Chọn Khách Hàng Muốn Đổi Quà
-                </h5>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Tìm kiếm khách hàng theo Tên, Số điện thoại hoặc Email để tra
-                  cứu ví điểm.
-                </p>
-              </div>
-
-              <CardContent className="p-5 space-y-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="search"
-                    placeholder="Tìm tên hoặc SĐT khách..."
-                    value={customerSearch}
-                    onChange={(e) => setCustomerSearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-xl text-xs outline-none focus:border-primary/50"
-                  />
-                </div>
-
-                {loadingCustomers ? (
-                  <div className="py-8 text-center text-xs text-muted-foreground">
-                    Đang tải danh sách khách hàng từ hệ thống...
-                  </div>
-                ) : filteredCustomers.length === 0 ? (
-                  <div className="py-12 text-center text-xs text-muted-foreground border-2 border-dashed border-border rounded-2xl">
-                    Không tìm thấy khách hàng nào khớp.
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
-                    {filteredCustomers.map((cust: any) => {
-                      const isSelected = selectedCustomerId === cust.id;
-                      const userPoints = cust.points || 0;
-                      return (
-                        <div
-                          key={cust.id}
-                          onClick={() => setSelectedCustomerId(cust.id)}
-                          className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                            isSelected
-                              ? "bg-primary/5 border-primary shadow-xs"
-                              : "bg-background hover:bg-muted/40 border-border/80"
-                          }`}
-                        >
-                          <div className="space-y-0.5 text-left max-w-[70%]">
-                            <span className="font-bold text-xs block text-foreground truncate">
-                              {cust.name}
-                            </span>
-                            <span className="text-xs text-muted-foreground block">
-                              SĐT: {cust.phone || "Chưa cung cấp"}
-                            </span>
-                          </div>
-
-                          <div className="text-right">
-                            <span className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-xl font-black">
-                              {userPoints.toLocaleString()} pts
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Recent Redemptions Live History Log */}
-            <Card className="border border-border bg-card rounded-3xl overflow-hidden text-left">
-              <div className="p-4 border-b border-border bg-muted/10 flex items-center justify-between">
-                <h5 className="font-bold text-xs text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-                  <History className="w-3.5 h-3.5 text-slate-500" />
-                  Nhật Ký Đổi Quà Thực Tế
-                </h5>
-                <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
-                  LIVE-SYNCED
-                </span>
-              </div>
-              <CardContent className="p-4">
-                {loadingLogs ? (
-                  <div className="py-4 text-center text-xs text-muted-foreground">
-                    Đang tải lịch sử đổi...
-                  </div>
-                ) : redeemLogs.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic text-center py-4">
-                    Chưa có giao dịch đổi quà nào hôm nay.
-                  </p>
-                ) : (
-                  <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
-                    {redeemLogs.map((log) => (
-                      <div
-                        key={log.id}
-                        className="p-2.5 bg-muted/30 border border-border/20 rounded-xl space-y-1"
-                      >
-                        <div className="flex justify-between items-start">
-                          <span className="font-bold text-xs text-foreground block truncate max-w-[150px]">
-                            {log.ruleName}
-                          </span>
-                          <span className="text-xs text-rose-600 font-extrabold ">
-                            -{log.pointsRedeemed} pts
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs text-muted-foreground">
-                          <span>
-                            Khách:{" "}
-                            <strong className="text-foreground">
-                              {log.customerName}
-                            </strong>
-                          </span>
-                          <span>
-                            {log.createdAt?.toDate
-                              ? log.createdAt
-                                  .toDate()
-                                  .toLocaleTimeString("vi-VN", {
-                                    hour: "numeric",
-                                    minute: "numeric",
-                                  })
-                              : "Vừa xong"}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Redemption Terminal Panel */}
-          <div className="xl:col-span-7 space-y-4">
-            {!selectedCustomer ? (
-              <div className="py-32 text-center border-2 border-dashed border-border rounded-3xl space-y-4 bg-muted/20">
-                <Gift className="w-12 h-12 text-muted-foreground/30 mx-auto animate-bounce" />
-                <div className="space-y-1">
-                  <p className="text-sm font-bold text-muted-foreground">
-                    Bếp Phục Vụ Đổi Quà SEVA
-                  </p>
-                  <p className="text-xs text-muted-foreground max-w-sm mx-auto p-2">
-                    Vui lòng click chọn 1 khách hàng từ danh bạ bên trái để mở
-                    giao diện kiểm duyệt, tùy chỉnh điểm số và thực hiện trừ
-                    điểm tự động khi quy nạp quà thưởng.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
-              >
-                {/* Selected Customer Core Passport Card */}
-                <Card className="border-none bg-primary text-primary-foreground rounded-3xl overflow-hidden shadow-lg border relative">
-                  <div className="absolute top-0 right-0 w-44 h-44 bg-white/5 rounded-full translate-x-12 -translate-y-12" />
-                  <CardContent className="p-6 relative text-left">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-white/15 rounded-2xl flex items-center justify-center font-bold text-lg select-none">
-                          {selectedCustomer.name?.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="space-y-0.5">
-                          <h4 className="font-bold text-base leading-none text-white">
-                            {selectedCustomer.name}
-                          </h4>
-                          <span className="text-xs text-white/70 block">
-                            SĐT: {selectedCustomer.phone || "Không có"}
-                          </span>
-                          <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded font-black tracking-wide uppercase inline-block">
-                            {selectedCustomer.points &&
-                            selectedCustomer.points >= 150000
-                              ? "Atelier Tier"
-                              : selectedCustomer.points &&
-                                  selectedCustomer.points >= 50000
-                                ? "Icon Tier"
-                                : "Essential Tier"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Display Big Account Points */}
-                      <div className="text-right flex flex-col items-end shrink-0 sm:border-l sm:border-white/10 sm:pl-6">
-                        <span className="text-xs text-white/70 font-bold uppercase tracking-widest block">
-                          Số Điểm Hiện Có
-                        </span>
-                        <div className="flex items-baseline gap-1 mt-0.5">
-                          <Coins className="w-5 h-5 text-amber-300 animate-pulse shrink-0" />
-                          <span className="text-3xl font-black tracking-tight text-white">
-                            {(selectedCustomer.points || 0).toLocaleString()}
-                          </span>
-                          <span className="text-xs text-white/80 font-bold">
-                            PTS
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Developer test harness shortcut to easily add/minus points for simulation */}
-                    <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/5 -mx-6 -mb-6 p-4">
-                      <div className="flex items-center gap-1.5 text-xs text-white/80">
-                        <Info className="w-3.5 h-3.5 shrink-0" />
-                        <span>
-                          Hỗ trợ Demo: Nhanh chóng nạp/khấu trừ để test các
-                          ngưỡng đổi thưởng.
-                        </span>
-                      </div>
-                      <div className="flex gap-2 justify-end">
-                        <button
-                          onClick={() =>
-                            handleAdjustCustomerPoints(selectedCustomer, -100)
-                          }
-                          className="px-2.5 py-1 bg-white/10 hover:bg-white/15 border border-white/5 rounded-lg text-xs font-bold text-white transition-all cursor-pointer flex items-center gap-1"
-                          title="Trừ bớt 100 điểm để thử nghiệm"
-                        >
-                          <MinusCircle className="w-3.5 h-3.5" />
-                          Trừ 100 pts
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleAdjustCustomerPoints(selectedCustomer, 500)
-                          }
-                          className="px-2.5 py-1 bg-white hover:bg-white/90 rounded-lg text-xs font-bold text-primary transition-all cursor-pointer flex items-center gap-1 shadow-sm"
-                          title="Tặng thêm 500 điểm để tăng số dư"
-                        >
-                          <PlusCircle className="w-3.5 h-3.5 text-primary" />
-                          Nạp 500 pts
-                        </button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Grid of Redeemable Options for the Selected Client */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center px-1">
-                    <h5 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest text-left">
-                      Khả năng đổi điểm nhận quà của khách hàng
-                    </h5>
-                    <span className="text-xs text-muted-foreground font-semibold">
-                      Tích có sẵn:{" "}
-                      {(selectedCustomer.points || 0).toLocaleString()} pts
-                    </span>
-                  </div>
-
-                  {rules.length === 0 ? (
-                    <div className="py-12 bg-card rounded-3xl text-center text-xs text-muted-foreground border">
-                      Chưa cấu hình bất kỳ ưu đãi quà tặng nào trong Thư viện Ưu
-                      đãi.
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-3">
-                      {rules.map((rule: any) => {
-                        const currentPoints = Number(
-                          selectedCustomer.points || 0,
-                        );
-                        const isEligible =
-                          currentPoints >= rule.pointsRequired &&
-                          rule.isEnabled !== false;
-                        const missingPoints =
-                          rule.pointsRequired - currentPoints;
-                        const progressPercentage = Math.min(
-                          100,
-                          Math.floor(
-                            (currentPoints / rule.pointsRequired) * 100,
-                          ),
-                        );
-
-                        const typeInfo =
-                          REWARD_TYPE_OPTIONS.find(
-                            (o) => o.value === rule.rewardType,
-                          ) || REWARD_TYPE_OPTIONS[0];
-                        const TypeIcon = typeInfo.icon;
-
-                        return (
-                          <div
-                            key={rule.id}
-                            className={`p-4 rounded-3xl border text-left transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                              isEligible
-                                ? "bg-emerald-550/5 border-emerald-500/20 text-emerald-950 dark:text-emerald-500"
-                                : "bg-muted/30 border-border/80 opacity-70"
-                            }`}
-                          >
-                            <div className="flex items-start gap-3.5">
-                              <div
-                                className={`p-2.5 rounded-2xl ${isEligible ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground"} shrink-0 mt-0.5`}
-                              >
-                                <TypeIcon className="w-5 h-5" />
-                              </div>
-                              <div className="space-y-1">
-                                <span className="font-bold text-xs text-foreground block">
-                                  {rule.name}
-                                </span>
-                                <span className="text-xs text-muted-foreground block max-w-sm">
-                                  {rule.description ||
-                                    "Không có hướng dẫn phụ."}
-                                </span>
-                                <span className="text-xs font-semibold text-primary block">
-                                  Quy đổi:{" "}
-                                  <strong className="font-bold">
-                                    {rule.pointsRequired} pts
-                                  </strong>
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Actions or requirements */}
-                            <div className="shrink-0 self-end md:self-center">
-                              {rule.isEnabled === false ? (
-                                <span className="px-2 py-1 text-xs bg-slate-100 text-slate-500 rounded-md font-extrabold uppercase shrink-0 tracking-wider">
-                                  Tạm dừng
-                                </span>
-                              ) : isEligible ? (
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleExecuteRealRedeem(
-                                      selectedCustomer,
-                                      rule,
-                                    )
-                                  }
-                                  className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all hover:bg-emerald-700 hover:shadow-md cursor-pointer flex items-center gap-1"
-                                >
-                                  Đổi Quà & Trừ Điểm
-                                  <ArrowRight className="w-3.5 h-3.5" />
-                                </button>
-                              ) : (
-                                <div className="space-y-1.5 text-right w-44">
-                                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                                    <div
-                                      className="h-full bg-amber-500 rounded-full transition-all duration-300"
-                                      style={{
-                                        width: `${progressPercentage}%`,
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="flex justify-between items-center text-xs text-muted-foreground">
-                                    <span>Tiến độ {progressPercentage}%</span>
-                                    <span className="text-amber-600 font-bold">
-                                      Thiếu {missingPoints} pts
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Editor Modal for creating/updating Master Offers */}
       <AnimatePresence>
@@ -1366,10 +985,11 @@ export function PointRedemptionConfigView() {
                         }
                         className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50 text-foreground"
                       >
-                        <option value="discount">Phiếu giảm giá (VNĐ)</option>
-                        <option value="voucher">Voucher Chiết khấu (%)</option>
-                        <option value="item">Quà hiện vật & Sản phẩm</option>
-                        <option value="service">Dịch vụ & Đặc quyền</option>
+                        {REWARD_TYPE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
 

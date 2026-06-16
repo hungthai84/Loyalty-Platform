@@ -16,7 +16,9 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  const [name, setName] = useState(company?.name || '');
  const [logoUrl, setLogoUrl] = useState(company?.logoUrl || '');
  const [address, setAddress] = useState(company?.address || '');
- const [type, setType] = useState<'company'|'branch'>(company?.type || 'company');
+ const [iconUrl, setIconUrl] = useState(company?.iconUrl || '');
+ const [websiteUrl, setWebsiteUrl] = useState(company?.websiteUrl || '');
+ const [type, setType] = useState<'company'|'product'|'branch'|'project'>(company?.type || 'company');
  const [parentId, setParentId] = useState(company?.parentId || '');
  const [submitting, setSubmitting] = useState(false);
  const [deleteConfirm, setDeleteConfirm] = useState(false);
@@ -62,8 +64,10 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
         name,
         logoUrl,
         address,
-        type,
-        parentId: type === 'branch' ? parentId : undefined,
+        type: type === 'product' ? 'branch' : 'company',
+        parentId: type === 'product' ? parentId : undefined,
+        iconUrl,
+        websiteUrl,
         userId: user.isLocal ? "guest" : user.uid,
         createdAt: company?.createdAt || new Date(),
       };
@@ -117,7 +121,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  <div className="px-6 py-4 border-b flex justify-between items-center bg-muted/30">
  <h3 className="text-xl font-bold font-heading flex items-center gap-2">
  <Building2 className="w-5 h-5 text-primary" />
- {company ? "Sửa thông tin" : "Thêm Công ty / Chi nhánh"}
+ {company ? "Sửa thông tin" : "Thêm Công ty / Sản phẩm"}
  </h3>
  <button type="button" onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
  <X className="w-5 h-5" />

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Plus, Save, X } from "lucide-react";
+import { Upload, Plus, Layers, Search, Save, Filter, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface AddSegmentDialogProps {
@@ -132,36 +132,6 @@ export function AddSegmentDialog({ isOpen, onClose, editingSegment, onSave }: Ad
         </DialogHeader>
 
         <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-          {/* Quick templates */}
-          {!editingSegment && (
-            <div className="bg-[#2f6cf5]/5 border border-[#2f6cf5]/20 rounded-2xl p-4 space-y-2 text-left">
-              <div className="flex items-center gap-2 text-[#2f6cf5]">
-                <span className="text-xs font-black uppercase tracking-wider block">🎟️ Mẫu Phân Khúc Nhanh</span>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Tải các mẫu điều kiện định sẵn theo chiến dịch chăm sóc hoặc tặng quà của bạn.
-              </p>
-              <div className="flex flex-wrap gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setName("Nhóm xem Anh Trai Say Hi (6 tháng cuối 2026)");
-                    setColor("violet");
-                    setType("criteria");
-                    setConditions([
-                      { field: "product_name", operator: "contains", value: "độc đáo, đặc quyền" },
-                      { field: "purchase_date", operator: "between", value: "6_thang_cuoi_2026" }
-                    ]);
-                    toast.success("Đã tải mẫu phân khúc vé Anh Trai Say Hi!");
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
-                >
-                  🎟️ Mẫu: Vé Anh Trai Say Hi (6 tháng cuối 2026)
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Tên & Màu */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2.5">
@@ -169,7 +139,7 @@ export function AddSegmentDialog({ isOpen, onClose, editingSegment, onSave }: Ad
                 Tên Segment
               </label>
               <Input
-                placeholder="Ví dụ: Khách VIP HCM (Chi tiêu > 50tr)"
+                placeholder="Ví dụ: Khách VIP HCM (Chi tiêu &gt; 50tr)"
                 className="bg-background h-10 border-border text-xs font-semibold"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -223,27 +193,13 @@ export function AddSegmentDialog({ isOpen, onClose, editingSegment, onSave }: Ad
                         value={cond.field}
                         onChange={(e) => {
                           const newConds = [...conditions];
-                          const selectedField = e.target.value;
-                          newConds[idx].field = selectedField;
-                          
-                          if (selectedField === "product_name") {
-                            newConds[idx].operator = "contains";
-                            newConds[idx].value = "";
-                          } else if (selectedField === "purchase_date") {
-                            newConds[idx].operator = "between";
-                            newConds[idx].value = "6_thang_cuoi_2026";
-                          } else {
-                            newConds[idx].operator = "gte";
-                            newConds[idx].value = "1000000";
-                          }
+                          newConds[idx].field = e.target.value;
                           setConditions(newConds);
                         }}
                       >
                         <option value="spend">Tổng Chi Tiêu Lũy Kế</option>
                         <option value="frequency">Tần Suất Mua Sắm</option>
                         <option value="points">Hạn Mức Điểm Tích Lũy</option>
-                        <option value="product_name">Sản phẩm đã mua (Từ khóa)</option>
-                        <option value="purchase_date">Thời gian mua hàng</option>
                       </select>
 
                       <select 
@@ -251,132 +207,26 @@ export function AddSegmentDialog({ isOpen, onClose, editingSegment, onSave }: Ad
                         value={cond.operator}
                         onChange={(e) => {
                           const newConds = [...conditions];
-                          const selectedOp = e.target.value;
-                          newConds[idx].operator = selectedOp;
-                          
-                          if (cond.field === "purchase_date") {
-                            if (selectedOp === "between") {
-                              newConds[idx].value = "6_thang_cuoi_2026";
-                            } else {
-                              newConds[idx].value = new Date().toISOString().split('T')[0];
-                            }
-                          }
+                          newConds[idx].operator = e.target.value;
                           setConditions(newConds);
                         }}
                       >
-                        {cond.field === "product_name" ? (
-                          <>
-                            <option value="contains">Chứa từ khóa</option>
-                            <option value="eq">Bằng chính xác</option>
-                          </>
-                        ) : cond.field === "purchase_date" ? (
-                          <>
-                            <option value="between">Trong khoảng</option>
-                            <option value="gte">Từ ngày (≥)</option>
-                            <option value="lte">Đến ngày (≤)</option>
-                          </>
-                        ) : (
-                          <>
-                            <option value="gte">Lớn hơn hoặc bằng (≥)</option>
-                            <option value="lte">Nhỏ hơn hoặc bằng (≤)</option>
-                            <option value="eq">Bằng chính xác (=)</option>
-                          </>
-                        )}
+                        <option value="gte">Lớn hơn hoặc bằng (≥)</option>
+                        <option value="lte">Nhỏ hơn hoặc bằng (≤)</option>
+                        <option value="eq">Bằng chính xác (=)</option>
                       </select>
 
-                      {cond.field === "product_name" ? (
-                        <Input 
-                          placeholder="Ví dụ: độc đáo, đặc quyền" 
-                          type="text"
-                          className="h-9 w-full sm:w-1/3 bg-background font-sans text-xs" 
-                          value={cond.value}
-                          onChange={(e) => {
-                            const newConds = [...conditions];
-                            newConds[idx].value = e.target.value;
-                            setConditions(newConds);
-                          }}
-                        />
-                      ) : cond.field === "purchase_date" ? (
-                        cond.operator === "between" ? (
-                          <div className="flex flex-col sm:flex-row gap-1.5 w-full sm:w-1/3 min-w-0">
-                            <select
-                              className="h-9 w-full bg-card border border-border rounded-md px-1.5 text-xs font-semibold outline-none text-foreground shrink-0"
-                              value={cond.value.startsWith("custom:") ? "custom" : cond.value}
-                              onChange={(e) => {
-                                const newConds = [...conditions];
-                                const selectedPreset = e.target.value;
-                                if (selectedPreset === "custom") {
-                                  newConds[idx].value = "custom:2026-07-01:2026-12-31";
-                                } else {
-                                  newConds[idx].value = selectedPreset;
-                                }
-                                setConditions(newConds);
-                              }}
-                            >
-                              <option value="6_thang_cuoi_2026">6 tháng cuối 2026</option>
-                              <option value="6_thang_dau_2026">6 tháng đầu 2026</option>
-                              <option value="ca_nam_2026">Cả năm 2026</option>
-                              <option value="last_30_days">30 ngày gần đây</option>
-                              <option value="last_180_days">180 ngày gần đây</option>
-                              <option value="custom">Tự chọn ngày...</option>
-                            </select>
-                            
-                            {cond.value.startsWith("custom:") && (() => {
-                              const parts = cond.value.split(":");
-                              const start = parts[1] || "";
-                              const end = parts[2] || "";
-                              return (
-                                <div className="flex items-center gap-1 shrink-0 w-full sm:w-auto">
-                                  <input 
-                                    type="date"
-                                    value={start}
-                                    onChange={(e) => {
-                                      const newConds = [...conditions];
-                                      newConds[idx].value = `custom:${e.target.value}:${end}`;
-                                      setConditions(newConds);
-                                    }}
-                                    className="h-9 w-[100px] bg-background border border-border rounded-md px-1 text-[10px] outline-none text-foreground font-mono"
-                                  />
-                                  <span className="text-[9px] text-muted-foreground">đến</span>
-                                  <input 
-                                    type="date"
-                                    value={end}
-                                    onChange={(e) => {
-                                      const newConds = [...conditions];
-                                      newConds[idx].value = `custom:${start}:${e.target.value}`;
-                                      setConditions(newConds);
-                                    }}
-                                    className="h-9 w-[100px] bg-background border border-border rounded-md px-1 text-[10px] outline-none text-foreground font-mono"
-                                  />
-                                </div>
-                              );
-                            })()}
-                          </div>
-                        ) : (
-                          <Input 
-                            type="date"
-                            className="h-9 w-full sm:w-1/3 bg-background text-xs font-mono" 
-                            value={cond.value}
-                            onChange={(e) => {
-                              const newConds = [...conditions];
-                              newConds[idx].value = e.target.value;
-                              setConditions(newConds);
-                            }}
-                          />
-                        )
-                      ) : (
-                        <Input 
-                          placeholder="Giá trị..." 
-                          type="number"
-                          className="h-9 w-full sm:w-1/3 bg-background font-mono text-xs" 
-                          value={cond.value}
-                          onChange={(e) => {
-                            const newConds = [...conditions];
-                            newConds[idx].value = e.target.value;
-                            setConditions(newConds);
-                          }}
-                        />
-                      )}
+                      <Input 
+                        placeholder="Giá trị..." 
+                        type="number"
+                        className="h-9 w-full sm:w-1/3 bg-background font-mono text-xs" 
+                        value={cond.value}
+                        onChange={(e) => {
+                          const newConds = [...conditions];
+                          newConds[idx].value = e.target.value;
+                          setConditions(newConds);
+                        }}
+                      />
 
                       <button 
                         onClick={() => {

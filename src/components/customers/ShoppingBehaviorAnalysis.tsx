@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Target,
+  TrendingUp,
   ShoppingCart
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
