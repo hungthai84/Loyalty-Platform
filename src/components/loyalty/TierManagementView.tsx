@@ -10,12 +10,51 @@ import { TierConfigDialog } from "@/components/loyalty/TierConfigDialog";
 import { getGuestTiers } from "@/data/guestData";
 import { toast } from "sonner";
 
-export function TierManagementView() {
+interface TierManagementViewProps {
+  rules?: any[];
+  gifts?: any[];
+}
+
+export function TierManagementView({ rules = [], gifts = [] }: TierManagementViewProps) {
   const { user } = useFirebase();
   const [tiers, setTiers] = useState<TierConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTier, setSelectedTier] = useState<TierConfig | undefined>(undefined);
   const [showDialog, setShowDialog] = useState(false);
+  const [newBenefit, setNewBenefit] = useState<Record<string, {name: string, value: string}>>({});
+
+  const handleAddInlineBenefit = async (tier: TierConfig) => {
+    const input = newBenefit[tier.id];
+    if (!input || !input.name.trim() || !input.value.trim()) {
+      toast.error("Vui lòng nhập đầy đủ Tên và Nội dung đặc quyền");
+      return;
+    }
+
+    const updatedBenefits = [...(tier.benefits || []), { name: input.name.trim(), value: input.value.trim() }];
+    
+    if (!user) return;
+    
+    try {
+      if (user.isLocal) {
+        const { getGuestTiers, setLocalStorageData } = await import("@/data/guestData");
+        const currentTiers = getGuestTiers();
+        const newTiers = currentTiers.map(t => t.id === tier.id ? { ...t, benefits: updatedBenefits } : t);
+        setLocalStorageData("crm_guest_tiers_v6", newTiers);
+        setTiers(newTiers);
+        toast.success("Đã thêm đặc quyền (Local)");
+      } else {
+        await setDoc(doc(db, "tier_configs", tier.id), {
+          benefits: updatedBenefits,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        toast.success("Đã thêm đặc quyền");
+      }
+      setNewBenefit(prev => ({ ...prev, [tier.id]: { name: "", value: "" } }));
+    } catch (e) {
+      console.error(e);
+      toast.error("Thêm đặc quyền thất bại");
+    }
+  };
 
   useEffect(() => {
     const handleOpen = () => {
@@ -76,7 +115,7 @@ export function TierManagementView() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {loading ? (
           <div className="py-12 text-center text-muted-foreground col-span-full">Đang tải cấu hình...</div>
         ) : tiers.length === 0 ? (
@@ -96,7 +135,7 @@ export function TierManagementView() {
             </div>
           </div>
         ) : (
-          tiers.map((tier) => {
+          tiers.slice(0, 4).map((tier) => {
             const nameLower = tier.name.toLowerCase();
             let TierIcon = Star;
             if (nameLower.includes("member")) TierIcon = Shield;
@@ -106,84 +145,70 @@ export function TierManagementView() {
             else if (nameLower.includes("royal") || nameLower.includes("diamond")) TierIcon = Crown;
 
             return (
-              <div
+              <motion.div
                 key={tier.id}
-                className="h-full"
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="relative cursor-pointer h-full"
+                onClick={() => { setSelectedTier(tier); setShowDialog(true); }}
               >
-                <Card className="h-full border border-border bg-card shadow-sm rounded-3xl overflow-hidden relative border-t-8 flex flex-col" style={{ borderTopColor: tier.color }}>
-                  <CardContent className="p-0 flex-1 flex flex-col">
-                    {/* Header Section */}
-                    <div className="p-6 pb-4 bg-muted/5 border-b border-border/50">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: tier.color }}>
-                            <TierIcon className="w-5 h-5 fill-current" />
-                          </div>
-                        <div>
-                          <h4 className="text-xl font-black font-heading tracking-tight">{tier.name}</h4>
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Hệ số: {tier.multiplier}x</p>
-                        </div>
+                <Card className="h-full border border-border/80 bg-card overflow-hidden flex flex-col hover:shadow-lg hover:border-primary/20 transition-all rounded-3xl p-6 relative">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white via-transparent to-transparent opacity-10 pointer-events-none rounded-bl-full" style={{ backgroundImage: `linear-gradient(to bottom left, ${tier.color}, transparent)` }} />
+                  
+                  <div className="flex items-start justify-between relative z-10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: tier.color }}>
+                        <TierIcon className="w-6 h-6 fill-current" />
                       </div>
-                      <button 
-                        onClick={() => { setSelectedTier(tier); setShowDialog(true); }}
-                        className="p-2 hover:bg-muted bg-white/50 backdrop-blur-sm rounded-xl transition-colors shadow-sm"
-                      >
-                        <Settings className="w-4 h-4 text-muted-foreground" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="p-6 space-y-5 flex-1">
-                    {/* Threshold */}
-                    <div>
-                      <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-2 opacity-60">Điều kiện thăng hạng</h5>
-                      <div className="p-4 bg-muted/30 rounded-2xl border border-border/50 flex items-center justify-between gap-4">
-                        <span className="text-xs font-bold text-muted-foreground shrink-0">Tích lũy</span>
-                        <span className="text-lg sm:text-xl font-black text-primary truncate" title={`${tier.threshold.toLocaleString()} Điểm`}>{tier.threshold.toLocaleString()} Điểm</span>
+                      <div>
+                        <h4 className="text-xl font-bold font-heading text-foreground">{tier.name}</h4>
+                        <p className="text-sm font-medium text-muted-foreground mt-0.5">{tier.threshold.toLocaleString()} pts</p>
                       </div>
                     </div>
                     
-                    {/* Dynamic Conditions if any */}
-                    {tier.conditions && tier.conditions.length > 0 && (
-                      <div className="space-y-1.5">
-                        {tier.conditions.map((c, i) => (
-                          <div key={i} className="px-3 py-2 bg-muted/20 rounded-xl border border-border/40 flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase">{c.field === 'custom_attribute' ? c.attributeKey : c.field}</span>
-                            <span className="text-xs font-bold">{c.operator} {c.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Benefits */}
-                    {tier.benefits && tier.benefits.length > 0 && (
-                      <div className="space-y-2">
-                        <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-2 opacity-60">Đặc quyền cấp bậc</h5>
-                        <div className="grid grid-cols-1 gap-1.5">
-                          {tier.benefits.slice(0, 3).map((benefit, i) => (
-                            <div key={i} className="flex justify-between items-start bg-muted/10 px-3 py-2 rounded-lg border border-border/20 gap-2">
-                              <span className="text-xs font-bold text-foreground break-words flex-1 leading-tight">{benefit.name}</span>
-                              <span className="text-xs text-muted-foreground font-medium shrink-0 max-w-[50%] text-right break-words leading-tight" title={benefit.value}>{benefit.value}</span>
-                            </div>
-                          ))}
-                          {tier.benefits.length > 3 && (
-                            <p className="text-[10px] text-center text-muted-foreground font-bold italic pt-1">+ {tier.benefits.length - 3} đặc quyền khác</p>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="px-6 py-3 bg-muted/5 border-t border-border/50 flex justify-between items-center mt-auto">
-                    <div className="flex items-center gap-1.5 opacity-50">
-                      <TrendingUp className="w-3 h-3" />
-                      <span className="text-[10px] font-bold uppercase tracking-tight">Quy mô</span>
+                    <div className="text-right shrink-0">
+                      <span className="inline-flex items-center justify-center px-3 py-1 text-xs font-black uppercase tracking-widest rounded-full border" style={{ backgroundColor: `${tier.color}15`, color: tier.color, borderColor: `${tier.color}30` }}>
+                        Hệ số: {tier.multiplier}x
+                      </span>
                     </div>
-                    <span className="text-sm font-black text-muted-foreground">1,240 <span className="text-[10px] uppercase font-bold ml-1 opacity-50">Pax</span></span>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  
+                  <div className="mt-6 pt-4 border-t border-border/50 grid grid-cols-2 gap-6 relative z-10">
+                    <div className="space-y-3">
+                      <h5 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5 opacity-80">
+                        <Zap className="w-3.5 h-3.5 text-primary" /> Ưu đãi gần nhất
+                      </h5>
+                      <div className="space-y-2">
+                        {rules.length > 0 ? rules.slice(0, 2).map((r, i) => (
+                          <div key={i} className="text-xs font-semibold px-3 py-2 bg-muted/40 text-foreground border border-border/40 rounded-xl truncate transition-all hover:bg-muted/60">
+                            ✨ {r.name}
+                          </div>
+                        )) : (
+                          <div className="text-xs text-muted-foreground/60 italic px-3 py-2">Chưa có ưu đãi</div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <h5 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5 opacity-80">
+                        <Gem className="w-3.5 h-3.5 text-amber-500" /> Quà tặng gần nhất
+                      </h5>
+                      <div className="space-y-2">
+                        {gifts.length > 0 ? gifts.slice(0, 2).map((g, i) => (
+                          <div key={i} className="text-xs font-semibold px-3 py-2 bg-amber-500/5 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-xl truncate transition-all hover:bg-amber-500/10">
+                            🎁 {g.name}
+                          </div>
+                        )) : (
+                          <div className="text-xs text-muted-foreground/60 italic px-3 py-2">Chưa có quà tặng</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 text-[10px] text-center text-muted-foreground italic opacity-50 z-10 flex-1 flex items-end justify-center">
+                    Bấm để xem & cấu hình chi tiết phân hạng
+                  </div>
+                </Card>
+              </motion.div>
             );
           })
         )}
@@ -192,7 +217,8 @@ export function TierManagementView() {
       {showDialog && (
         <TierConfigDialog 
           onClose={() => setShowDialog(false)} 
-          tier={selectedTier} 
+          tier={selectedTier}
+          availableRules={rules}
         />
       )}
     </div>

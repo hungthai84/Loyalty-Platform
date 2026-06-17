@@ -44,111 +44,114 @@ import { RedemptionRule } from "@/types";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
 const REWARD_TYPE_OPTIONS = [
   {
-    value: "limited_item",
-    label: "Sản phẩm giới hạn",
-    icon: Package,
-    color: "text-emerald-500 bg-emerald-550/10",
+    value: "discount_percent",
+    label: "Giảm giá theo %",
+    icon: Percent,
+    color: "text-amber-500 bg-amber-500/10",
+  },
+  {
+    value: "discount_fixed",
+    label: "Giảm giá cố định (VNĐ)",
+    icon: Coins,
+    color: "text-[#2f6cf5] bg-blue-500/10",
+  },
+  {
+    value: "buy_one_get_one",
+    label: "Mua 1 Tặng 1",
+    icon: Gift,
+    color: "text-emerald-500 bg-emerald-500/10",
+  },
+  {
+    value: "free_gift",
+    label: "Tặng kèm quà khi mua",
+    icon: Gift,
+    color: "text-rose-500 bg-rose-500/10",
   },
   {
     value: "ticket",
-    label: "Vé chương trình",
+    label: "Vé chương trình / sự kiện VIP",
     icon: Ticket,
-    color: "text-purple-500 bg-purple-550/10",
+    color: "text-purple-500 bg-purple-500/10",
   },
   {
-    value: "discount_percent",
-    label: "Giảm % khi mua hàng",
-    icon: Percent,
-    color: "text-amber-500 bg-amber-550/10",
+    value: "limited_item",
+    label: "Vật phẩm giới hạn",
+    icon: Package,
+    color: "text-teal-500 bg-teal-500/10",
   },
   {
     value: "warranty",
-    label: "Vé bảo hành miễn phí",
+    label: "Bảo hành & Bảo dưỡng VIP",
     icon: Shield,
-    color: "text-blue-500 bg-blue-550/10",
-  },
-  {
-    value: "maintenance",
-    label: "Vé bảo dưỡng định kỳ",
-    icon: Sliders,
-    color: "text-cyan-500 bg-cyan-550/10",
+    color: "text-cyan-500 bg-cyan-500/10",
   },
 ];
 
 const PRESET_RULES = [
   {
-    name: "Túi Tote phiên bản giới hạn SEVA",
-    pointsRequired: 450,
-    rewardType: "limited_item" as const,
+    name: "Ưu đãi Giảm giá 15% Bộ sưu tập mới",
+    pointsRequired: 250,
+    rewardType: "discount_percent" as const,
+    rewardValue: 15,
+    description: "Áp dụng giảm trực tiếp 15% khi mua các loại trang sức ngọc trai và đá quý tự nhiên.",
+    isEnabled: true,
+    minBillValue: 2000000,
+    expiryDays: 30,
+  },
+  {
+    name: "Voucher Giảm 500k cho hóa đơn từ 5 Triệu",
+    pointsRequired: 400,
+    rewardType: "discount_fixed" as const,
+    rewardValue: 500000,
+    description: "Giảm ngay 500,000đ khi thanh toán đơn hàng trang sức vàng cưới hoặc đá quý.",
+    isEnabled: true,
+    minBillValue: 5000000,
+    expiryDays: 45,
+  },
+  {
+    name: "Ưu đãi Mua 1 Tặng 1 dòng Charm Vàng",
+    pointsRequired: 350,
+    rewardType: "buy_one_get_one" as const,
     rewardValue: 1,
-    description: "Sản phẩm thời trang cao cấp độc quyền dành cho khách hàng tích điểm.",
+    description: "Khi mua 1 Charm vàng 10K, tặng ngay 1 Charm bạc cao cấp S925 đồng dạng.",
     isEnabled: true,
     minBillValue: 0,
+    expiryDays: 30,
+  },
+  {
+    name: "Tặng Hộp da đựng trang sức Heritage kèm đơn hàng",
+    pointsRequired: 180,
+    rewardType: "free_gift" as const,
+    rewardValue: 1,
+    description: "Tặng kèm 1 hộp đựng trang sức bằng da PU cao cấp cho bất kỳ đơn hàng nào phát sinh.",
+    isEnabled: true,
+    minBillValue: 1000000,
     expiryDays: 60,
   },
   {
-    name: "Vé mời VIP Dạ tiệc tri ân cuối năm",
-    pointsRequired: 1500,
+    name: "Vé mời VIP độc quyền Dạ tiệc Tri ân Seva",
+    pointsRequired: 1000,
     rewardType: "ticket" as const,
     rewardValue: 1,
-    description: "Vé tham dự sự kiện âm nhạc và thời trang đẳng cấp cùng SEVA.",
+    description: "Tham dự đêm nhạc hội luxury độc quyền và thưởng lãm BST trang sức kim cương mới.",
     isEnabled: true,
     minBillValue: 0,
     expiryDays: 90,
   },
   {
-    name: "Chiết khấu 15% tổng hóa đơn",
-    pointsRequired: 250,
-    rewardType: "discount_percent" as const,
-    rewardValue: 15,
-    description: "Giảm trực tiếp 15% giá trị thanh toán không giới hạn.",
-    isEnabled: true,
-    minBillValue: 100000,
-    expiryDays: 45,
-  },
-  {
-    name: "Gói bảo hành vàng 24 tháng",
-    pointsRequired: 800,
+    name: "Gói Spa làm bóng trang sức trọn đời",
+    pointsRequired: 300,
     rewardType: "warranty" as const,
     rewardValue: 1,
-    description: "Nâng cấp gói bảo hành miễn phí cho sản phẩm điện tử.",
+    description: "Đặc quyền mang sản phẩm tới làm sạch, siêu âm, xi xi mạ bóng miễn phí không giới hạn.",
     isEnabled: true,
     minBillValue: 0,
     expiryDays: 365,
-  },
-  {
-    name: "Phiếu bảo dưỡng xe ô tô toàn diện",
-    pointsRequired: 1200,
-    rewardType: "maintenance" as const,
-    rewardValue: 1,
-    description: "Bảo dưỡng các hạng mục thay dầu, kiểm tra phanh, lọc gió.",
-    isEnabled: true,
-    minBillValue: 0,
-    expiryDays: 180,
-  },
-  {
-    name: "Bình giữ nhiệt Titan SEVA",
-    pointsRequired: 500,
-    rewardType: "limited_item" as const,
-    rewardValue: 1,
-    description: "Phiên bản thiết kế Titanium chỉ dùng để đổi điểm, siêu giới hạn.",
-    isEnabled: true,
-    minBillValue: 0,
-    expiryDays: 60,
-  },
-  {
-    name: "Vé vào cửa Khu Vui Chơi SEVA Park",
-    pointsRequired: 200,
-    rewardType: "ticket" as const,
-    rewardValue: 1,
-    description: "Vé vui chơi không giới hạn trò chơi tại công viên.",
-    isEnabled: true,
-    minBillValue: 0,
-    expiryDays: 30,
   },
 ];
 
@@ -318,7 +321,7 @@ export function PointRedemptionConfigView() {
           createdAt: serverTimestamp(),
         });
       }
-      toast.success("Đã xóa nội dung cũ và tạo danh mục thiết lập Đổi Quà mới!");
+      toast.success("Đã xóa nội dung cũ và tạo danh mục thiết lập Ưu Đãi mới!");
       window.dispatchEvent(
         new CustomEvent("crm-config-saved", { detail: { tab: "redemption" } }),
       );
@@ -343,7 +346,7 @@ export function PointRedemptionConfigView() {
         { merge: true },
       );
       toast.success(
-        `Đã ${nextState ? "kích hoạt" : "tạm ngưng"} quy tắc đổi quà: ${rule.name}`,
+        `Đã ${nextState ? "kích hoạt" : "tạm ngưng"} quy tắc đổi ưu đãi: ${rule.name}`,
       );
       window.dispatchEvent(
         new CustomEvent("crm-config-saved", { detail: { tab: "redemption" } }),
@@ -376,13 +379,13 @@ export function PointRedemptionConfigView() {
 
   const handleDeleteRule = async (id: string, name: string) => {
     if (!user) return;
-    if (!confirm(`Bạn có chắc muốn xóa cấu hình quà tặng "${name}" không?`))
+    if (!confirm(`Bạn có chắc muốn xóa cấu hình ưu đãi "${name}" không?`))
       return;
 
     const path = `redemption_rules/${id}`;
     try {
       await deleteDoc(doc(db, path));
-      toast.success("Đã xóa quy tắc đổi quà thành công");
+      toast.success("Đã xóa quy tắc ưu đãi thành công");
       window.dispatchEvent(
         new CustomEvent("crm-config-saved", { detail: { tab: "redemption" } }),
       );
@@ -397,12 +400,12 @@ export function PointRedemptionConfigView() {
     if (!user || !editingRule) return;
 
     if (!editingRule.name.trim()) {
-      toast.error("Tên món quà không được để trống");
+      toast.error("Tên ưu đãi không được để trống");
       return;
     }
 
     if (Number(editingRule.pointsRequired) <= 0) {
-      toast.error("Điểm đổi quà phải lớn hơn 0");
+      toast.error("Điểm yêu cầu đổi phải lớn hơn 0");
       return;
     }
 
@@ -422,7 +425,7 @@ export function PointRedemptionConfigView() {
         { merge: true },
       );
 
-      toast.success("Đã lưu cấu hình đổi quà ưu đãi");
+      toast.success("Đã lưu cấu hình quy tắc ưu đãi");
       window.dispatchEvent(
         new CustomEvent("crm-config-saved", { detail: { tab: "redemption" } }),
       );
@@ -430,7 +433,7 @@ export function PointRedemptionConfigView() {
       setEditingRule(null);
     } catch (err) {
       console.error(err);
-      toast.error("Lỗi khi lưu cấu hình đổi quà");
+      toast.error("Lỗi khi lưu ưu đãi");
     }
   };
 
@@ -532,7 +535,7 @@ export function PointRedemptionConfigView() {
     const pts = Number(simPoints);
     if (pts < rule.pointsRequired) {
       toast.error(
-        `Không đủ điểm! Cần thêm ${rule.pointsRequired - pts} điểm để đổi quầy quà tặng này.`,
+        `Không đủ điểm! Cần thêm ${rule.pointsRequired - pts} điểm để đổi ưu đãi này.`,
       );
       return;
     }
@@ -544,10 +547,10 @@ export function PointRedemptionConfigView() {
     toast.success(
       <div className="space-y-1 text-left">
         <p className="font-bold text-emerald-600">
-          🎉 Đổi Quà Thử Nghiệm Thành Công!
+          🎉 Đổi Ưu Đãi Thử Nghiệm Thành Công!
         </p>
         <p className="text-xs">
-          Bạn đã đổi quà thành công: <strong>{rule.name}</strong>
+          Bạn đã trích điểm đổi thành công: <strong>{rule.name}</strong>
         </p>
         <p className="text-xs text-muted-foreground ">
           Đã khấu trừ: -{rule.pointsRequired} pts. Điểm ảo còn lại: {nextPoints}{" "}
@@ -581,24 +584,40 @@ export function PointRedemptionConfigView() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-primary/5 p-6 border border-primary/10 rounded-3xl">
-        <div className="flex items-start gap-4 text-left">
-          <div className="p-3 bg-primary/10 rounded-2xl text-primary mt-1">
-            <Gift className="w-6 h-6 animate-pulse" />
-          </div>
+      {/* Banner / Header */}
+      <div className="relative overflow-hidden rounded-3xl border border-indigo-500/10 bg-gradient-to-r from-indigo-500/10 via-indigo-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
+        <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500 via-background to-background pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
-            <h4 className="font-bold text-lg text-foreground">
-              Hệ thống Thiết lập & Đổi quà Ưu đãi
-            </h4>
-            <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
-              Quy trình khép kín: Tổ chức các chương trình quà贈 ưu đãi trước
-              (Voucher, Hiện vật, Dịch vụ). Sau đó chuyển sang quầy đổi quà để
-              khách đổi điểm & tự động khấu trừ điểm tích lũy của khách hàng
-              trên hệ thống.
+            <div className="flex items-center gap-2 text-indigo-500 font-bold text-sm uppercase tracking-wider mb-2">
+              <Ticket className="w-5 h-5 animate-pulse" /> Đổi thưởng
+            </div>
+            <h3 className="text-2xl font-bold font-heading text-foreground">
+              Mã ưu đãi & Dịch vụ (Redemption)
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+              Quản lý các gói ưu đãi mà khách hàng có thể dùng điểm để đổi.
             </p>
           </div>
+          <div className="flex gap-2.5 flex-wrap shrink-0 self-start md:self-auto">
+            <button
+              onClick={handleBootstrapRules}
+              className="px-4 py-2.5 bg-muted hover:bg-muted/80 text-foreground rounded-2xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <RefreshCw className="w-4 h-4 text-indigo-500" /> Nạp Demo mẫu
+            </button>
+            <button
+              onClick={() => {
+                setEditingRule(null);
+                setShowEditor(true);
+              }}
+              className="px-5 py-2.5 bg-indigo-500 text-white hover:bg-indigo-600 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> Thiết lập ưu đãi mới
+            </button>
+          </div>
         </div>
+      </div>
 
       <div className="space-y-6">
         {/* Rules List column */}
@@ -606,7 +625,7 @@ export function PointRedemptionConfigView() {
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between px-1">
               <div className="text-left">
                 <h5 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest">
-                  Thư viện quà tặng tích lũy ({filteredRules.length})
+                  Thư viện ưu đãi ({filteredRules.length})
                 </h5>
                 <p className="text-xs text-muted-foreground">
                   Tạo các gói kích cầu mua sắm bằng điểm của khách hàng
@@ -618,7 +637,7 @@ export function PointRedemptionConfigView() {
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                   <input
                     type="search"
-                    placeholder="Tìm quà tặng..."
+                    placeholder="Tìm ưu đãi..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-xl text-xs outline-none focus:border-primary/50"
@@ -628,13 +647,15 @@ export function PointRedemptionConfigView() {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="bg-background border border-border rounded-xl px-2 py-1.5 text-xs outline-none focus:border-primary/50"
+                  className="bg-background border border-border rounded-xl px-2 py-1.5 text-xs outline-none focus:border-primary/50 text-foreground font-medium"
                 >
-                  <option value="all">Mọi loại quà</option>
-                  <option value="discount">Giảm giá (VNĐ)</option>
-                  <option value="voucher">Chiết khấu (%)</option>
-                  <option value="item">Hiện vật</option>
-                  <option value="service">Dịch vụ</option>
+                  <option value="all">Mọi nhóm ưu đãi</option>
+                  <option value="discount_percent">Giảm giá (%)</option>
+                  <option value="discount_fixed">Giảm tiền (VNĐ)</option>
+                  <option value="buy_one_get_one">Mua 1 Tặng 1</option>
+                  <option value="free_gift">Tặng kèm quà</option>
+                  <option value="ticket">Vé VIP & Sự kiện</option>
+                  <option value="warranty">Bảo dưỡng & Spa</option>
                 </select>
 
                 <button
@@ -650,13 +671,13 @@ export function PointRedemptionConfigView() {
 
             {loadingRules ? (
               <div className="py-12 text-center text-muted-foreground italic bg-card border border-border rounded-3xl">
-                Đang tải thư viện quà tặng...
+                Đang tải thư viện ưu đãi...
               </div>
             ) : filteredRules.length === 0 ? (
               <div className="py-16 text-center border border-dashed border-border rounded-3xl space-y-3 bg-card/40">
                 <Gift className="w-10 h-10 text-muted-foreground/30 mx-auto" />
                 <p className="text-sm text-muted-foreground font-medium">
-                  Chưa có quy định ưu đãi quà tặng nào.
+                  Chưa có quy định ưu đãi nào.
                 </p>
                 <div className="flex justify-center gap-2">
                   <button
@@ -685,21 +706,24 @@ export function PointRedemptionConfigView() {
                   return (
                     <Card
                       key={rule.id}
-                      className={`border-none ${rule.isEnabled !== false ? "bg-card" : "bg-muted/10 opacity-70"} hover:shadow-md transition-all duration-300 rounded-[1.5rem] border border-border/40 overflow-hidden text-left flex flex-col h-full`}
+                      className={cn(
+                        "border-none transition-all duration-300 rounded-[1.5rem] border border-border/40 overflow-hidden text-left flex flex-col h-full shadow-sm hover:shadow-lg",
+                        rule.isEnabled !== false ? "bg-card" : "bg-muted/10 opacity-70"
+                      )}
                     >
-                      <div className="w-full h-28 relative bg-muted/30 border-b border-border/10 overflow-hidden group">
+                      <div className="w-full h-32 relative bg-muted/30 border-b border-border/10 overflow-hidden group">
                          <img 
                             src={`https://picsum.photos/seed/${encodeURIComponent(rule.id || rule.name)}/400/200`} 
                             alt={rule.name}
                             referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105 mix-blend-overlay dark:opacity-60" 
+                            className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105" 
                          />
-                         <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-                         <div className="absolute bottom-0 translate-y-3 right-4 flex items-center justify-end gap-1">
+                         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+                         <div className="absolute bottom-3 right-3 flex items-center gap-1">
                             <button
                               type="button"
                               onClick={() => handleToggleRuleStatus(rule)}
-                              className="p-1.5 backdrop-blur-md bg-background/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors shadow-sm"
+                              className="p-1.5 backdrop-blur-md bg-background/60 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors shadow-sm"
                             >
                               <Power
                                 className={`w-3.5 h-3.5 ${rule.isEnabled !== false ? "text-emerald-500" : "text-muted-foreground"}`}
@@ -708,92 +732,75 @@ export function PointRedemptionConfigView() {
                             <button
                               type="button"
                               onClick={() => handleEditRule(rule)}
-                              className="p-1.5 backdrop-blur-md bg-background/50 text-muted-foreground hover:text-primary hover:bg-muted rounded-lg transition-colors shadow-sm"
+                              className="p-1.5 backdrop-blur-md bg-background/60 text-muted-foreground hover:text-primary hover:bg-muted rounded-lg transition-colors shadow-sm"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDeleteRule(rule.id, rule.name)}
-                              className="p-1.5 backdrop-blur-md bg-background/50 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors shadow-sm"
+                              className="p-1.5 backdrop-blur-md bg-background/60 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors shadow-sm"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                          </div>
                       </div>
 
-                      <CardContent className="flex-1 flex flex-col p-5 gap-4 pt-3">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-4">
-                            <div
-                              className={`p-3 rounded-2xl ${typeInfo.color} shrink-0 mt-0.5 shadow-inner`}
-                            >
-                              <TypeIcon className="w-5 h-5" />
+                      <CardContent className="flex-1 flex flex-col p-5 gap-4 pt-4">
+                        <div className="flex items-start gap-4">
+                          <div
+                            className={`p-3 rounded-2xl ${typeInfo.color} shrink-0 mt-0.5 shadow-inner`}
+                          >
+                            <TypeIcon className="w-5 h-5" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="font-bold text-sm text-foreground line-clamp-2">
+                                {rule.name}
+                              </h4>
+                              {rule.isEnabled === false && (
+                                <span className="bg-rose-500/10 text-rose-600 font-extrabold text-[10px] tracking-wider px-1.5 py-0.5 rounded-full uppercase">
+                                  Vô hiệu hóa
+                                </span>
+                              )}
                             </div>
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-bold text-sm text-foreground line-clamp-2">
-                                  {rule.name}
-                                </h4>
-                                {rule.isEnabled === false && (
-                                  <span className="bg-rose-500/10 text-rose-600 font-extrabold text-xs tracking-wider px-1.5 py-0.2 rounded uppercase">
-                                    Vô hiệu hóa
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                                {rule.description ||
-                                  "Không có mô tả chi tiết cho món quà này."}
-                              </p>
-                            </div>
+                            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                              {rule.description ||
+                                "Không có mô tả chi tiết cho loại ưu đãi này."}
+                            </p>
                           </div>
                         </div>
 
                         {/* Specs grid */}
-                        <div className="grid grid-cols-2 mt-auto gap-2 pt-1 border-t border-border/10">
-                          <div className="p-2 bg-primary/5 rounded-xl border border-primary/10 flex flex-col justify-between">
-                            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block">
+                        <div className="grid grid-cols-2 mt-auto gap-3 pt-4 border-t border-border/10">
+                          <div className="p-3 bg-primary/5 rounded-xl border border-primary/10 flex flex-col justify-between">
+                            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider block">
                               Yêu cầu đổi
                             </span>
-                            <span className="text-xs font-extrabold text-primary mt-0.5 flex items-center gap-1">
-                              <Coins className="w-3 h-3 text-amber-500" />
-                              {rule.pointsRequired.toLocaleString()} pts
+                            <span className="text-xs font-extrabold text-primary mt-1 flex items-center gap-1.5">
+                              <Coins className="w-3.5 h-3.5 text-amber-500" />
+                              {rule.pointsRequired.toLocaleString()} điểm
                             </span>
                           </div>
 
-                          <div className="p-2 bg-muted/30 rounded-xl border border-border/10 flex flex-col justify-between">
-                            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block">
-                              Giá trị gói quà
+                          <div className="p-3 bg-muted/30 rounded-xl border border-border/10 flex flex-col justify-between">
+                            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider block">
+                              Giá trị
                             </span>
-                            <span className="text-xs font-bold text-foreground mt-0.5">
-                              {rule.rewardType === "discount"
-                                ? `${rule.rewardValue?.toLocaleString()}₫`
-                                : rule.rewardType === "voucher"
-                                  ? `${rule.rewardValue}%`
-                                  : "Điện thoại / Vật phẩm"}
-                            </span>
-                          </div>
-
-                          <div className="p-2 bg-muted/30 rounded-xl border border-border/10 flex flex-col justify-between">
-                            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block">
-                              Đơn tối thiểu
-                            </span>
-                            <span className="text-xs font-bold text-foreground mt-0.5">
-                              {rule.minBillValue > 0
-                                ? `${rule.minBillValue.toLocaleString()}₫`
-                                : "Vô điều kiện"}
-                            </span>
-                          </div>
-
-                          <div className="p-2 bg-muted/30 rounded-xl border border-border/10 flex flex-col justify-between">
-                            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block">
-                              Thời hạn mã
-                            </span>
-                            <span className="text-xs font-bold text-foreground mt-0.5 flex items-center gap-1">
-                              <Calendar className="w-2.5 h-2.5 text-muted-foreground" />
-                              {rule.expiryDays
-                                ? `${rule.expiryDays} ngày`
-                                : "30 ngày"}
+                            <span className="text-xs font-bold text-foreground mt-1">
+                              {rule.rewardType === "discount_percent"
+                                ? `Giảm ${rule.rewardValue}%`
+                                : rule.rewardType === "discount_fixed"
+                                  ? `Giảm ${rule.rewardValue?.toLocaleString()}₫`
+                                  : rule.rewardType === "buy_one_get_one"
+                                    ? "Mua 1 Tặng 1 Combo"
+                                    : rule.rewardType === "free_gift"
+                                      ? "Tặng kèm quà"
+                                      : rule.rewardType === "ticket"
+                                        ? "Dạ tiệc / Sự kiện VIP"
+                                        : rule.rewardType === "warranty"
+                                          ? "Bảo hành & Spa"
+                                          : "Đặc quyền VIP"}
                             </span>
                           </div>
                         </div>
@@ -814,15 +821,14 @@ export function PointRedemptionConfigView() {
                   Mẫu Cấu Hình Chuẩn
                 </h5>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Tạo nhanh các phần quà tiêu biểu để quản lý chiến dịch của bạn
+                  Tạo nhanh các ưu đãi tiêu biểu để quản lý chiến dịch của bạn
                   tiện lợi hơn.
                 </p>
               </div>
               <CardContent className="p-5 space-y-4">
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Hệ thống đề xuất các mẫu chương trình tích điểm đổi quà mang
-                  lại tính trung thành cao nhất dựa trên chỉ số chiết khấu tối
-                  ưu.
+                  Hệ thống đề xuất các mẫu chương trình tích điểm đổi thưởng mang
+                  lại giá trị trung thành cao nhất dựa trên chỉ số chiết khấu chuẩn.
                 </p>
                 <button
                   type="button"
@@ -891,7 +897,6 @@ export function PointRedemptionConfigView() {
             </Card>
           </div>
         </div>
-      </div>
 
       {/* Editor Modal for creating/updating Master Offers */}
       <AnimatePresence>
@@ -918,10 +923,10 @@ export function PointRedemptionConfigView() {
                     <Gift className="w-5 h-5 text-primary animate-pulse" />
                     <div>
                       <h4 className="font-bold text-base text-foreground">
-                        Thiết lập Quà Tặng / Ưu Đãi
+                        Thiết lập Tham số Ưu Đãi
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        Khai báo phần thưởng trong thư viện trước khi khách tiến
+                        Khai báo gói trả thưởng trong thư viện trước khi khách tiến
                         hành đổi.
                       </p>
                     </div>
@@ -939,7 +944,7 @@ export function PointRedemptionConfigView() {
                 <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                      Tên quà tặng / Ưu đãi
+                      Tên ưu đãi / Voucher
                     </label>
                     <input
                       type="text"
@@ -955,7 +960,7 @@ export function PointRedemptionConfigView() {
 
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                      Mô tả quà tặng & Hướng dẫn sử dụng
+                      Mô tả / Hướng dẫn sử dụng ưu đãi
                     </label>
                     <textarea
                       value={editingRule.description}
@@ -973,7 +978,7 @@ export function PointRedemptionConfigView() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                        Nhóm Quà Ưu Đãi
+                        Nhóm Ưu Đãi
                       </label>
                       <select
                         value={editingRule.rewardType}
@@ -1000,8 +1005,10 @@ export function PointRedemptionConfigView() {
                       <input
                         type="number"
                         disabled={
-                          editingRule.rewardType === "item" ||
-                          editingRule.rewardType === "service"
+                          editingRule.rewardType === "buy_one_get_one" ||
+                          editingRule.rewardType === "free_gift" ||
+                          editingRule.rewardType === "limited_item" ||
+                          editingRule.rewardType === "ticket"
                         }
                         value={editingRule.rewardValue}
                         onChange={(e) =>

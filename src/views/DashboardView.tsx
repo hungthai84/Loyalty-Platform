@@ -434,7 +434,7 @@ export function DashboardView() {
 
       (doc as any).autoTable({
         startY: nextY + 6,
-        head: [["XH", "Họ tên", "Số điện thoại", "Hạng thành viên", "Điểm tích lũy"]],
+        head: [["XH", "Họ tên", "Số điện thoại", "Cấp bậc", "Điểm tích lũy"]],
         body: eliteBody,
         theme: "striped",
         headStyles: {
@@ -1900,7 +1900,7 @@ export function DashboardView() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Hạng thành viên</label>
+                  <label className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider block">Cấp bậc</label>
                   <select
                     value={newCustTier}
                     onChange={(e) => setNewCustTier(e.target.value)}

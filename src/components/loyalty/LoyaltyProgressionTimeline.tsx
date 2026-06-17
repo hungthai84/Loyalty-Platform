@@ -34,8 +34,7 @@ export function LoyaltyProgressionTimeline({ currentPoints, tierName }: LoyaltyP
       label: "Thành viên Mới", 
       points: 0, 
       icon: <Circle className="w-4 h-4" />, 
-      isUnlocked: true,
-      date: "01/01/2026"
+      isUnlocked: true
     },
     { 
       id: "m2", 
@@ -43,8 +42,7 @@ export function LoyaltyProgressionTimeline({ currentPoints, tierName }: LoyaltyP
       points: 500, 
       icon: <Star className="w-4 h-4" />, 
       isUnlocked: currentPoints >= 500,
-      reward: "Voucher 500k",
-      date: currentPoints >= 500 ? "15/02/2026" : undefined
+      reward: "Voucher 500k"
     },
     { 
       id: "m3", 
@@ -52,8 +50,7 @@ export function LoyaltyProgressionTimeline({ currentPoints, tierName }: LoyaltyP
       points: 1000, 
       icon: <Gem className="w-4 h-4" />, 
       isUnlocked: currentPoints >= 1000,
-      reward: "Quà tặng Sinh nhật",
-      date: currentPoints >= 1000 ? "10/05/2026" : undefined
+      reward: "Quà tặng Sinh nhật"
     },
     { 
       id: "m4", 
@@ -81,10 +78,6 @@ export function LoyaltyProgressionTimeline({ currentPoints, tierName }: LoyaltyP
             <TrendingUp className="w-4 h-4 text-primary" /> Lộ trình thăng cấp (Loyalty Journey)
           </h3>
           <p className="text-xs text-muted-foreground">Theo dõi tiến trình từ khách hàng mới đến thượng khách.</p>
-        </div>
-        <div className="text-right">
-          <span className="text-2xl font-black text-primary">{currentPoints.toLocaleString()}</span>
-          <span className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Điểm hiện tại</span>
         </div>
       </div>
 
@@ -127,13 +120,7 @@ export function LoyaltyProgressionTimeline({ currentPoints, tierName }: LoyaltyP
                   {ms.points} pts
                 </span>
                 
-                <div className="flex flex-col items-center gap-1.5 mt-2 h-[70px]">
-                   {ms.date && (
-                     <span className="text-[9px] font-bold text-[#2f6cf5] flex flex-col items-center bg-blue-500/5 px-2 py-1 rounded w-full line-clamp-2">
-                       <span>Đạt được lúc:</span>
-                       <span>{ms.date}</span>
-                     </span>
-                   )}
+                <div className="flex flex-col items-center gap-1.5 mt-2 h-[40px]">
                    {ms.reward && (
                      <span className={cn(
                        "text-[9px] font-bold flex flex-col items-center px-2 py-1 rounded w-full line-clamp-2",

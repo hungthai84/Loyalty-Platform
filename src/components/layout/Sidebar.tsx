@@ -31,7 +31,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
   const allMenuItems: { name: string; view: string; icon: any; isSecondary?: boolean }[] = [
     { name: "Tổng quan", view: "dashboard", icon: LayoutDashboard },
     { name: "Khách hàng", view: "customers", icon: Users },
-    { name: "Ưu đãi", view: "loyalty", icon: Award },
+    { name: "Đặc quyền", view: "loyalty", icon: Award },
     { name: "Tương tác", view: "marketing", icon: Megaphone },
     { name: "Phân tích", view: "analysis", icon: Sparkles },
     { name: "Điểm chạm", view: "portal", icon: Fingerprint },
@@ -55,35 +55,37 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
       {/* Top: Logo */}
       <div className={cn(
         "h-16 flex items-center transition-all duration-300 shrink-0 relative",
-        isHovered ? "px-4 justify-start" : "justify-center"
+        isHovered ? "px-4 justify-between" : "justify-center"
       )}>
-        <BrandLogo className="w-9 h-9 shrink-0 hover:scale-105 transition-transform duration-300" />
-        <div className="flex flex-col ml-3">
-          <AnimatePresence>
-            {isHovered && (
-              <>
-                <motion.h2 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  className="text-lg font-bold tracking-tight font-heading whitespace-nowrap text-primary"
-                >
-                  Power Service
-                </motion.h2>
-                <motion.p
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-[10px] font-extrabold tracking-[0.2em] text-black uppercase -mt-1"
-                >
-                  CLP Platfrom
-                </motion.p>
-              </>
-            )}
-          </AnimatePresence>
-        </div>
+       <div className="flex items-center">
+         <BrandLogo className="w-9 h-9 shrink-0 hover:scale-105 transition-transform duration-300" />
+         <div className="flex flex-col ml-3">
+           <AnimatePresence>
+             {isHovered && (
+               <>
+                 <motion.h2 
+                   initial={{ opacity: 0, x: -10 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   exit={{ opacity: 0, x: -10 }}
+                   className="text-lg font-bold tracking-tight font-heading whitespace-nowrap text-primary"
+                 >
+                   Power Service
+                 </motion.h2>
+                 <motion.p
+                   initial={{ opacity: 0, scale: 0.9 }}
+                   animate={{ opacity: 1, scale: 1 }}
+                   className="text-[10px] font-extrabold tracking-[0.2em] text-black uppercase -mt-1"
+                 >
+                   CLP Platfrom
+                 </motion.p>
+               </>
+             )}
+           </AnimatePresence>
+         </div>
+       </div>
         <button 
             onClick={() => setIsHovered(!isHovered)}
-            className="absolute right-2 top-2 p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-all"
+            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-all"
         >
           {isHovered ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>

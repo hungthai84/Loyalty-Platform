@@ -813,29 +813,30 @@ export function StatusTransitionConfigView() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Overview Card */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-primary/5 p-6 border border-primary/10 rounded-3xl">
-        <div className="flex items-start gap-4">
-          <GitCompare className="w-6 h-6 text-primary shrink-0 mt-1" />
+      {/* Banner / Header */}
+      <div className="relative overflow-hidden rounded-3xl border border-[#2f6cf5]/10 bg-gradient-to-r from-[#2f6cf5]/10 via-[#2f6cf5]/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
+        <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#2f6cf5] via-background to-background pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
-            <h4 className="font-bold">
-              Quy tắc Chuyển đổi Trạng thái Khách hàng
-            </h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Thiết lập các điều kiện tự động hóa với nhiều thông số phức tạp để
-              phân loại, phát hiện rủi ro rời bỏ hoặc tự động thăng cấp trạng
-              thái VIP.
+            <div className="flex items-center gap-2 text-[#2f6cf5] font-bold text-sm uppercase tracking-wider mb-2">
+              <GitCompare className="w-5 h-5 animate-pulse" /> Luồng trạng thái
+            </div>
+            <h3 className="text-2xl font-bold font-heading text-foreground">
+              Quy tắc chuyển đổi trạng thái khách hàng
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+              Thiết lập luồng phân luồng và gán thẻ theo thời gian thực nhằm phát hiện rời bỏ hoặc vinh danh tệp hội viên.
             </p>
           </div>
+          <div className="flex gap-2.5 flex-wrap shrink-0 self-start md:self-auto">
+            <button
+               onClick={handleNewRule}
+               className="px-5 py-2.5 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-[#2f6cf5]/20 flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> Thêm quy tắc mới
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={handleNewRule}
-          className="px-5 py-2.5 bg-primary text-primary-foreground text-xs font-bold rounded-xl transition-all hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-primary/10"
-        >
-          <Plus className="w-4 h-4" />
-          Thêm quy tắc mới
-        </button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">

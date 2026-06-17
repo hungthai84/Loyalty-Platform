@@ -306,11 +306,13 @@ export const GUEST_TIERS: TierConfig[] = [
     color: "#94a3b8", 
     userId: "guest", 
     createdAt: daysAgo(100), 
-    description: "Hạng thành viên tiêu chuẩn dành cho khách hàng mới gia nhập Seva Retail. Tích điểm cơ bản trên mỗi hóa đơn và nhận bản tin ưu đãi sớm định kỳ.",
+    description: "Cấp bậc tiêu chuẩn dành cho khách hàng mới gia nhập Seva Retail. Tích điểm cơ bản trên mỗi hóa đơn và nhận bản tin đặc quyền sớm định kỳ.",
     benefits: [
-      { name: "Tích lũy điểm khi mua hàng", value: "Tích lũy 1% giá trị hóa đơn quy thành điểm chi tiêu" },
-      { name: "Nhận thông tin bộ sưu tập mới", value: "Nhận thông tin sớm nhất về các BST giới hạn ra mắt hàng tháng" },
-      { name: "Quà tặng sinh nhật cơ bản", value: "Nhận thiệp chúc mừng thiết kế tinh xảo kèm quà tặng lưu niệm từ Seva" }
+      { name: "Hệ số tích điểm", value: "1.0x (Cơ bản)" },
+      { name: "Quà tặng chào mừng", value: "Thiệp tay Seva Heritage" },
+      { name: "Sinh nhật hoàng gia", value: "Quà lưu niệm" },
+      { name: "Spa & Vệ sinh trang sức", value: "Giảm 20%" },
+      { name: "Chuyên viên tư vấn riêng", value: "Hotline CSKH" }
     ]
   },
   { 
@@ -323,10 +325,11 @@ export const GUEST_TIERS: TierConfig[] = [
     createdAt: daysAgo(100), 
     description: "Hành trình trải nghiệm xa xỉ bền vững. Thưởng thức x1.25 điểm tích lũy, miễn phí mọi dịch vụ spa trang sức trọn đời tại các chi nhánh.",
     benefits: [
-      { name: "Tất cả đặc quyền Member", value: "Bao gồm tất cả quyền lợi của hạng Member" },
-      { name: "Ưu tiên mua các sản phẩm limited", value: "Được quyền đặt cọc sở hữu sớm BST mới trước ngày tung ra thị trường 3 ngày" },
-      { name: "Miễn phí giao hàng toàn quốc", value: "Vận chuyển miễn phí kèm chuyên viên bảo an bàn giao tận tay" },
-      { name: "Quà tặng sinh nhật cao cấp", value: "Nhận quà tặng sinh nhật trị giá cao" }
+      { name: "Hệ số tích điểm", value: "1.25x (Ưu đãi)" },
+      { name: "Quà tặng chào mừng", value: "Voucher 500k" },
+      { name: "Sinh nhật hoàng gia", value: "Voucher 1M" },
+      { name: "Spa & Vệ sinh trang sức", value: "Miễn phí đánh bóng" },
+      { name: "Chuyên viên tư vấn riêng", value: "Hotline VIP" }
     ]
   },
   { 
@@ -339,10 +342,12 @@ export const GUEST_TIERS: TierConfig[] = [
     createdAt: daysAgo(100), 
     description: "Hạng Khách hàng VIP thể hiện vị thế biểu tượng. Trải nghiệm phòng chờ thượng hạng Private Lounge và mức chiết khấu mua sắm trực tiếp đặc quyền.",
     benefits: [
-      { name: "Tất cả đặc quyền Essential", value: "Bao gồm tất cả quyền lợi của hạng Essential" },
-      { name: "Có stylist tư vấn riêng 1-1", value: "Chuyên gia tư vấn màu sắc đá phong thủy mang tính trợ mệnh và hộ thân" },
-      { name: "Tham dự Private Event", value: "Trải nghiệm không gian Private Lounge riêng tư tại chi nhánh kèm tiệc trà nhẹ" },
-      { name: "Phiếu mua hàng tự động hàng quý", value: "Nhận phiếu mua hàng vào mỗi quý" }
+      { name: "Hệ số tích điểm", value: "1.5x" },
+      { name: "Quà tặng chào mừng", value: "Voucher 1.5M + Nến thơm" },
+      { name: "Sinh nhật hoàng gia", value: "Hộp quà hoa di sản" },
+      { name: "Spa & Vệ sinh trang sức", value: "Miễn phí đánh bóng trọn đời" },
+      { name: "Sử dụng Private Lounge", value: "Giảm 50% phí dịch vụ" },
+      { name: "Chuyên viên tư vấn riêng", value: "Chuyên viên riêng" }
     ]
   },
   { 
@@ -355,10 +360,12 @@ export const GUEST_TIERS: TierConfig[] = [
     createdAt: daysAgo(100), 
     description: "Hạng VVIP tinh hoa trọn vẹn đặc quyền cao quý nhất. Đồng sáng tạo thiết kế Bespoke độc bản và trải nghiệm những đặc khu xa hoa vô tận.",
     benefits: [
-      { name: "Tất cả đặc quyền Icon", value: "Bao gồm tất cả quyền lợi của hạng Icon" },
-      { name: "Thiết kế trang sức độc bản", value: "Tương tác trực tiếp cùng Giám đốc Thiết kế vẽ rập 3D thủ công độc nhất thế giới" },
-      { name: "Dịch vụ Spa trang sức trọn đời", value: "Dịch vụ chăm sóc, làm mới trang sức đặc biệt hằng năm" },
-      { name: "Limousine đưa đón mua sắm", value: "Dịch vụ thử trang diện xa xỉ tại tư dinh với chuyên xe chuyên trách đưa đón" }
+      { name: "Hệ số tích điểm", value: "2.0x (Đặc quyền tối đa)" },
+      { name: "Quà tặng chào mừng", value: "Tráp quà lụa thượng hạng VIP" },
+      { name: "Sinh nhật hoàng gia", value: "Set trang sức độc bản đính đá quý" },
+      { name: "Spa & Vệ sinh trang sức", value: "Đặc trị khuyết tật & Xi mạ cao cấp" },
+      { name: "Sử dụng Private Lounge", value: "Miễn phí 100% kèm trà bánh" },
+      { name: "Chuyên viên tư vấn riêng", value: "Quản lý Showroom phụ trách 24/7" }
     ]
   }
 ];

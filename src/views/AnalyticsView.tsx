@@ -1208,7 +1208,7 @@ const heatmapData = [
  {/* Tier Distribution Chart */}
  <Card className="md:col-span-3 border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
  <CardHeader className="border-b border-border/40 pb-5">
- <CardTitle className="font-heading text-lg">Phân bổ Hạng thành viên</CardTitle>
+ <CardTitle className="font-heading text-lg">Phân bổ Cấp bậc</CardTitle>
  <CardDescription>
  Tỷ lệ khách hàng theo từng cấp độ thành viên.
  </CardDescription>
@@ -1261,7 +1261,7 @@ const heatmapData = [
  >
  <Card className="border border-border/50 bg-sidebar backdrop-blur-sm shadow-sm relative overflow-hidden">
  <CardHeader className="border-b border-border/40 pb-5">
- <CardTitle className="font-heading text-lg">Quy mô tệp khách hàng theo Hạng thành viên</CardTitle>
+ <CardTitle className="font-heading text-lg">Quy mô tệp khách hàng theo Cấp bậc</CardTitle>
  <CardDescription>
  Số lượng thành viên thuộc các phân tầng Atelier, Icon, Essential và Member đang hoạt động trong hệ thống.
  </CardDescription>

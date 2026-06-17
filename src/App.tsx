@@ -69,7 +69,7 @@ export default function App() {
   return (
     <FirebaseProvider>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-        <div className="h-screen w-screen p-[5px] overflow-hidden relative theme-transition bg-black">
+        <div className="h-screen w-screen p-[5px] overflow-hidden relative theme-transition bg-[#6E62E5]">
           <AppContent />
         </div>
         <Toaster />

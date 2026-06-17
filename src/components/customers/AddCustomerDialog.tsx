@@ -4,7 +4,7 @@ import { collection, doc, setDoc, serverTimestamp, query, orderBy, onSnapshot } 
 import { useFirebase } from '@/components/FirebaseProvider';
 import { handleFirestoreError, OperationType } from '@/lib/firestore-errors';
 import { toast } from 'sonner';
-import { X, Building2, Facebook, Linkedin, Instagram, Upload } from 'lucide-react';
+import { X, Building2, Facebook, Linkedin, Instagram, Upload, Crown } from 'lucide-react';
 import * as motion from 'motion/react-client';
 import { AttributeDefinition, Company, Customer } from '@/types';
 import { CUSTOMER_STATUSES } from '@/data/customerStatuses';
@@ -41,6 +41,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  const [linkedin, setLinkedin] = useState('');
  const [instagram, setInstagram] = useState('');
  const [tiktok, setTiktok] = useState('');
+ const [privilegesText, setPrivilegesText] = useState('');
 
  useEffect(() => {
  if (!user || user.isLocal) {
@@ -85,6 +86,10 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  if (!name.trim()) return toast.error("Họ và tên là bắt buộc");
 
  setSubmitting(true);
+ const parsedPrivileges = privilegesText
+  .split('\n')
+  .map(line => line.trim())
+  .filter(line => line.length > 0);
  const customerId = `CUS-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
  // Select default avatar if empty
@@ -105,7 +110,10 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  companyId: selectedCompanyId || null,
  activityStatus: activityStatus as any,
  userId: user?.uid || "guest",
- customFields,
+ customFields: {
+  ...customFields,
+  privileges: parsedPrivileges
+ },
  createdAt: new Date().toISOString(),
  updatedAt: new Date().toISOString()
  };
@@ -440,6 +448,22 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  placeholder="https://tiktok.com/@user..."
  />
  </div>
+ </div>
+
+ {/* ĐẶC QUYỀN RIÊNG BIỆT CHO HỘI VIÊN */}
+ <div className="pt-4 border-t space-y-3">
+ <label className="text-xs font-bold uppercase text-foreground flex items-center gap-1.5">
+ <Crown className="w-4 h-4 text-amber-500 fill-amber-500/10" /> Nhập đặc quyền riêng (Mỗi dòng một đặc quyền)
+ </label>
+ <textarea
+ className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-xs transition-all min-h-[90px] resize-y"
+ value={privilegesText}
+ onChange={e => setPrivilegesText(e.target.value)}
+ placeholder="Ví dụ:&#10;Bàn VIP vị trí trung tâm&#10;Tặng champagne chào mừng Dom Pérignon&#10;Xe Limousine đưa đón tận showroom"
+ />
+ <p className="text-[10px] text-muted-foreground leading-normal font-medium">
+ Nhập các đặc quyền riêng được cấp riêng biệt (cá nhân hóa) cho hội viên này. Mỗi dòng ghi nhận một ghi chú đặc quyền.
+ </p>
  </div>
  </div>
 

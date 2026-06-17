@@ -72,6 +72,7 @@ function filterCustomersByRule(customers: Customer[], rule: SegmentationRule) {
 }
 
 export function SegmentationView() {
+  return null;
   const { user } = useFirebase();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [segmentationRules, setSegmentationRules] = useState<SegmentationRule[]>([]);

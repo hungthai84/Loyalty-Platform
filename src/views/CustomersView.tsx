@@ -87,7 +87,7 @@ import {
 import { BulkEmailDialog } from "@/components/customers/BulkEmailDialog";
 import { AddSegmentDialog } from "@/components/customers/AddSegmentDialog";
 import { StatusTransitionConfigView } from "@/components/loyalty/StatusTransitionConfigView";
-import { SegmentationView } from "@/components/customers/SegmentationView";
+import { MembershipProjectsView } from "@/components/customers/MembershipProjectsView";
 import { toast } from "sonner";
 import {
   getGuestCustomers,
@@ -1494,7 +1494,7 @@ export function CustomersView() {
           )}
         >
           <BookOpen className="w-4 h-4 mr-2 text-emerald-500" />
-          {activeViewTab === "list" ? "Tài liệu Thành viên" : activeViewTab === "segments" ? "Tài liệu Nhóm tùy chỉnh" : "Tài liệu Phân loại khách hàng"}
+          {activeViewTab === "list" ? "Tài liệu Thành viên" : activeViewTab === "segments" ? "Tài liệu Dự án Hội viên" : "Tài liệu Phân loại khách hàng"}
         </button>
       </div>
     </motion.div>
@@ -1527,7 +1527,7 @@ export function CustomersView() {
                 : "text-muted-foreground hover:text-foreground border border-transparent"
             )}
           >
-            <Layers className="w-4 h-4" /> Nhóm thành viên tùy chỉnh
+            <Layers className="w-4 h-4" /> Danh sách hội viên
           </button>
           <button
             onClick={() => setActiveViewTab("status_rules")}
@@ -1563,13 +1563,13 @@ export function CustomersView() {
                 </div>
                 <div>
                   <h4 className="text-sm font-black text-foreground uppercase tracking-wider">
-                    {activeViewTab === "list" ? "Tài liệu Hướng dẫn Quản lý Thành viên" : activeViewTab === "segments" ? "Tài liệu Hướng dẫn Phân rã Nhóm tùy chỉnh" : "Tài liệu Phân loại trạng thái tự động"}
+                    {activeViewTab === "list" ? "Tài liệu Hướng dẫn Quản lý Thành viên" : activeViewTab === "segments" ? "Tài liệu Hướng dẫn Quản lý Dự án Hội viên" : "Tài liệu Phân loại trạng thái tự động"}
                   </h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {activeViewTab === "list" 
                       ? "Tìm hiểu về cách cấu trúc tìm kiếm, bộ lọc nâng cao và cập nhật hàng loạt trạng thái hội viên." 
                       : activeViewTab === "segments" 
-                        ? "Xây dựng các tệp khách hàng mục tiêu thông qua hoạt động mua sắm, tích lũy điểm và tải danh sách trực tiếp." 
+                        ? "Quản lý và tạo các dự án hội viên ngắn hạn hoặc dài hạn, nạp tệp thành viên theo file, thiết lập đặc quyền và liên kết trực tiếp ưu đãi." 
                         : "Cài đặt các quy tắc tự động chuyển trạng thái khách hàng dựa trên hành vi chi tiêu và tần suất tương tác."}
                   </p>
                 </div>
@@ -1643,10 +1643,27 @@ export function CustomersView() {
         </AnimatePresence>
 
         {activeViewTab === "status_rules" && <StatusTransitionConfigView />}
-        {activeViewTab === "segments" && <SegmentationView />}
+        {activeViewTab === "segments" && <MembershipProjectsView />}
 
-        {activeViewTab === "list" ? (
-          <>
+        {activeViewTab === "list" && (
+          <div className="space-y-6">
+            <div className="relative overflow-hidden rounded-3xl border border-emerald-500/10 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
+              <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500 via-background to-background pointer-events-none" />
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-emerald-500 font-bold text-sm uppercase tracking-wider mb-2">
+                    <User className="w-5 h-5 animate-pulse" /> Danh sách
+                  </div>
+                  <h3 className="text-2xl font-bold font-heading text-foreground">
+                    Danh sách thành viên
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                    Quản lý bộ khung dữ liệu khách hàng. Tìm kiếm, sử dụng bộ lọc nâng cao và truy cập lịch trình cá nhân hóa của từng hội viên.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className={cn(
               "bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col gap-5 relative backdrop-blur-md w-full",
               showColumnSettings ? "z-[100]" : "z-30"
@@ -2881,520 +2898,8 @@ export function CustomersView() {
               </Table>
             </CardContent>
           </Card>
-        </>
-      ) : (
-          <>
-            <div className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col gap-5 relative backdrop-blur-md w-full">
-              {/* DONG 1: Tìm kiếm khách hàng, Thêm Nhóm thành viên, Cài đặt nhóm thành viên */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
-                {/* Tìm kiếm khách hàng */}
-                <div className="relative flex-1 max-w-md text-left">
-                  <CustomerSearch
-                    customers={customers}
-                    value={segmentSearch}
-                    onChange={setSegmentSearch}
-                    onSelectCustomer={(c) => setSegmentSearch(c.name)}
-                  />
-                </div>
-
-                {/* Thêm Nhóm thành viên & Cài đặt nhóm thành viên */}
-                <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
-                  <button
-                    onClick={() => {
-                      setEditingSegmentId(null);
-                      setSegmentBuilderName("");
-                      setSegmentConditions([{ field: 'spend', operator: 'gte', value: '10000000' }]);
-                      setSegmentBuilderColor("blue");
-                      setSegmentBuilderType("criteria");
-                      setUploadedFileEntries([]);
-                      setUploadedFileName("");
-                      setShowAddSegmentDialog(true);
-                    }}
-                    className="flex items-center justify-center px-4 py-2 bg-[#2f6cf5] text-white rounded-xl text-xs font-bold shadow-xs hover:bg-[#2f6cf5]/90 transition-all cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4 mr-1.5" /> Thêm Nhóm thành viên
-                  </button>
-
-                  <button
-                    onClick={() => setShowSegmentSettingsDialog(true)}
-                    className="flex items-center justify-center px-4 py-2 border border-border bg-card text-foreground hover:bg-muted rounded-xl text-xs font-bold transition-all cursor-pointer"
-                  >
-                    <Settings className="w-4 h-4 mr-1.5 text-muted-foreground" /> Cài đặt nhóm thành viên
-                  </button>
-                </div>
-              </div>
-
-              {/* DONG 2: Tất cả các nhóm, Tất cả trạng thái, cột hiển thị, Tùy chỉnh bộ lọc */}
-              <div className="flex flex-wrap items-center gap-3 w-full">
-                {/* Tất cả các nhóm */}
-                <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
-                  <Layers className="w-3.5 h-3.5 text-[#2f6cf5]" />
-                  <select
-                    className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer text-foreground"
-                    value={selectedSegmentFilter}
-                    onChange={(e) => setSelectedSegmentFilter(e.target.value)}
-                  >
-                    <option value="all" className="bg-card">Tất cả các nhóm</option>
-                    {customSegments.map((seg) => (
-                      <option key={seg.id} value={seg.id} className="bg-card">
-                        {seg.name} ({getCustomersInSegment(seg, customers).length} KH)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Tất cả trạng thái */}
-                <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
-                  <UserCheck className="w-3.5 h-3.5 text-muted-foreground" />
-                  <select
-                    className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer text-foreground"
-                    value={segmentSelectedStatus}
-                    onChange={(e) => setSegmentSelectedStatus(e.target.value)}
-                  >
-                    <option value="all" className="bg-card">Tất cả trạng thái</option>
-                    {CUSTOMER_STATUSES.map((s) => (
-                      <option key={s.code} value={s.code} className="bg-card">
-                        {s.classification}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Cột hiển thị */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowSegmentColumnSettings(!showSegmentColumnSettings)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold hover:bg-muted transition-colors select-none cursor-pointer",
-                      showSegmentColumnSettings ? "bg-primary/10 border-primary/30 text-primary" : "bg-card text-foreground"
-                    )}
-                  >
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span>Cột hiển thị</span>
-                  </button>
-                  {showSegmentColumnSettings && (
-                    <div className="absolute left-0 mt-2 w-56 bg-card border border-border hover:border-primary/20 shadow-xl rounded-xl p-3.5 z-[120] text-left backdrop-blur-xl">
-                      <div className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-2">
-                        Ẩn/hiện cột bảng
-                      </div>
-                      <div className="space-y-1.5 max-h-[190px] overflow-y-auto pr-1">
-                        {Object.keys(visibleColumns).map((colKey) => (
-                          <label
-                            key={colKey}
-                            className="flex items-center gap-2 px-1.5 py-1 hover:bg-muted rounded-md text-[11px] font-bold cursor-pointer text-foreground select-none"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={(visibleColumns as any)[colKey]}
-                              className="rounded border-border text-[#2f6cf5] focus:ring-[#2f6cf5] h-3.5 w-3.5"
-                              onChange={(e) => {
-                                setVisibleColumns((prev) => ({
-                                  ...prev,
-                                  [colKey]: e.target.checked,
-                                }));
-                              }}
-                            />
-                            <span className="capitalize font-sans">
-                              {colKey === "nameEmail"
-                                ? "Danh tính hội viên"
-                                : colKey === "churnRisk"
-                                  ? "Rủi ro Churn"
-                                  : colKey === "customAttributes"
-                                    ? "Thuộc tính mở rộng"
-                                    : colKey === "social"
-                                      ? "Kênh MXH"
-                                      : colKey === "company"
-                                        ? "Công ty"
-                                        : colKey === "status"
-                                          ? "Trạng thái"
-                                          : colKey === "points"
-                                            ? "Điểm dán nhãn"
-                                            : colKey === "actions"
-                                              ? "Tác vụ"
-                                              : colKey}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Tùy chỉnh bộ lọc */}
-                <button
-                  onClick={() => setShowSegmentAdvancedFilters(!showSegmentAdvancedFilters)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold hover:bg-muted transition-colors select-none cursor-pointer",
-                    showSegmentAdvancedFilters ? "bg-primary/10 border-primary/30 text-primary" : "bg-card text-foreground"
-                  )}
-                >
-                  <Filter className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Tùy chỉnh bộ lọc</span>
-                </button>
-              </div>
-
-              {/* Advanced filter panels for segments */}
-              {showSegmentAdvancedFilters && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-4 border-t border-border/60 text-left"
-                >
-                  {/* Tất cả chi nhánh */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black text-muted-foreground tracking-wider block">
-                      Đoàn thể / Chi nhánh
-                    </label>
-                    <select
-                      className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer text-foreground"
-                      value={segmentSelectedCompanyId}
-                      onChange={(e) => setSegmentSelectedCompanyId(e.target.value)}
-                    >
-                      <option value="all">Tất cả chi nhánh</option>
-                      {companies.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Tất cả thứ hạng */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black text-muted-foreground tracking-wider block">
-                      Phân cấp thứ hạng
-                    </label>
-                    <select
-                      className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer text-foreground"
-                      value={segmentSelectedTier}
-                      onChange={(e) => setSegmentSelectedTier(e.target.value)}
-                    >
-                      <option value="all">Tất cả thứ hạng</option>
-                      <option value="Atelier">Atelier (≥ 10,000 pts)</option>
-                      <option value="Icon">Icon (≥ 5,000 pts)</option>
-                      <option value="Essential">Essential (≥ 2,000 pts)</option>
-                      <option value="Member">Member (&lt; 2,000 pts)</option>
-                    </select>
-                  </div>
-
-                  {/* Khoảng điểm CRM */}
-                  <div className="space-y-1 md:col-span-1">
-                    <label className="text-[10px] uppercase font-black text-muted-foreground tracking-wider block">
-                      Khoảng tích lũy điểm CRM
-                    </label>
-                    <div className="flex items-center gap-1.5">
-                      <Input
-                        type="number"
-                        placeholder="Từ"
-                        className="bg-background h-8 text-xs font-semibold"
-                        value={segmentMinPoints}
-                        onChange={(e) => setSegmentMinPoints(e.target.value)}
-                      />
-                      <span className="text-xs text-muted-foreground font-black">-</span>
-                      <Input
-                        type="number"
-                        placeholder="Đến"
-                        className="bg-background h-8 text-xs font-semibold"
-                        value={segmentMaxPoints}
-                        onChange={(e) => setSegmentMaxPoints(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  {/* RESET BUTTON */}
-                  <div className="flex items-end justify-end">
-                    <button
-                      onClick={resetSegmentFilters}
-                      className="flex items-center gap-1 px-3 py-1.5 text-xs text-rose-500 hover:text-white hover:bg-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-lg font-bold transition-all shrink-0 cursor-pointer"
-                    >
-                      <RotateCcw className="w-3 h-3" /> Đặt lại tất cả
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-
-            {/* THẺ NHÓM CỤ THỂ ĐANG ĐƯỢC CHỌN */}
-            {selectedSegmentFilter !== "all" && (() => {
-              const activeSeg = customSegments.find(s => s.id === selectedSegmentFilter);
-              if (!activeSeg) return null;
-              return (
-                <Card className="border border-border/50 bg-card/45 backdrop-blur-md rounded-2xl shadow-xs overflow-hidden w-full mb-6 relative">
-                  <div className={`absolute top-0 left-0 w-1.5 h-full`} style={{ backgroundColor: `var(--${activeSeg.color || 'blue'}-500, #2f6cf5)` }} />
-                  <CardContent className="p-5 md:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="pl-2">
-                      <h3 className="text-lg font-black text-foreground">{activeSeg.name}</h3>
-                      <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                        <Badge variant="outline" className={`bg-primary/5 text-primary border-primary/20 uppercase font-black text-[10px]`}>
-                          {activeSeg.type === "file" ? "DS Tải Lên" : "Động (Điều Kiện)"}
-                        </Badge>
-                        {activeSeg.type === "criteria" && (activeSeg.minSpend ?? 0) > 0 && (
-                          <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-muted-foreground/50"></span>
-                            Chi tiêu ≥ {((activeSeg.minSpend ?? 0) / 1000000).toLocaleString()}tr
-                          </span>
-                        )}
-                        {activeSeg.type === "criteria" && (activeSeg.minFrequency ?? 0) > 0 && (
-                          <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-muted-foreground/50"></span>
-                            Tần suất ≥ {activeSeg.minFrequency}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setEditingSegmentId(activeSeg.id);
-                        setShowAddSegmentDialog(true);
-                      }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-amber-500 hover:text-white hover:bg-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-lg font-bold transition-all shrink-0 cursor-pointer"
-                    >
-                      <Settings className="w-3.5 h-3.5" /> Edit nhóm
-                    </button>
-                  </CardContent>
-                </Card>
-              );
-            })()}
-
-            {/* TAB TABLE CARD CONTAINER */}
-            <Card className="border border-border/50 bg-card/45 backdrop-blur-md rounded-2xl shadow-xs overflow-hidden w-full">
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      {visibleColumns.id && <TableHead className="pl-6">Mã KH</TableHead>}
-                      {visibleColumns.nameEmail && <TableHead>Họ tên / Số điện thoại</TableHead>}
-                      {visibleColumns.social && <TableHead>Mạng xã hội</TableHead>}
-                      {visibleColumns.company && <TableHead>Công ty</TableHead>}
-                      {visibleColumns.status && <TableHead>Trạng thái</TableHead>}
-                      {visibleColumns.churnRisk && <TableHead>Rủi ro rời bỏ</TableHead>}
-                      {visibleColumns.points && <TableHead>Điểm CRM</TableHead>}
-                      {visibleColumns.customAttributes &&
-                        attributes
-                          .slice(0, 1)
-                          .map((attr) => (
-                            <TableHead key={attr.id}>{attr.label}</TableHead>
-                          ))}
-                      {visibleColumns.actions && <TableHead className="pr-6 text-right">Hành động</TableHead>}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredSegmentCustomers.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={Object.values(visibleColumns).filter(Boolean).length + 2}
-                          className="text-center py-12 text-muted-foreground"
-                        >
-                          <Users className="w-8 h-8 opacity-25 mx-auto mb-2" />
-                          <p className="font-bold">Không tìm thấy thành viên thỏa mãn điều kiện</p>
-                          <p className="text-xs">Điều chỉnh lại bộ lọc hoặc tạo nhóm mới</p>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredSegmentCustomers.map((customer) => (
-                        <TableRow key={customer.id} className="group hover:bg-muted/30 transition-colors">
-                          {visibleColumns.id && (
-                            <TableCell className="pl-6 font-mono text-xs text-[#2f6cf5] font-semibold">
-                              {getCustomerCode(customer, companies)}
-                            </TableCell>
-                          )}
-                          {visibleColumns.nameEmail && (
-                            <TableCell>
-                              <div className="flex items-center gap-3 text-left">
-                                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/20 shrink-0 overflow-hidden">
-                                  {customer.avatarUrl ? (
-                                    <img
-                                      src={customer.avatarUrl}
-                                      referrerPolicy="no-referrer"
-                                      className="w-full h-full object-cover"
-                                      alt={customer.name}
-                                    />
-                                  ) : (
-                                    customer.name.slice(0, 2)
-                                  )}
-                                </div>
-                                <div className="max-w-[190px] overflow-hidden">
-                                  <div className="flex items-center gap-1">
-                                    <p className="text-xs font-bold text-foreground truncate block font-sans">
-                                      {customer.name}
-                                    </p>
-                                    {customer.points && customer.points >= 10000 && (
-                                      <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-500/10 shrink-0" />
-                                    )}
-                                  </div>
-                                  <p className="text-[10px] text-muted-foreground/80 truncate block">
-                                    {customer.phone || "Không có SĐT"}
-                                  </p>
-                                </div>
-                              </div>
-                            </TableCell>
-                          )}
-
-                          {visibleColumns.social && (
-                            <TableCell>
-                              <div className="flex items-center gap-1.5">
-                                {/* Facebook */}
-                                <span
-                                  title={customer.facebook || "Chưa liên kết Facebook"}
-                                  className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs shadow-2xs transition-all ${
-                                    customer.facebook
-                                      ? "bg-blue-600/10 text-blue-600 border-blue-600/30"
-                                      : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
-                                  }`}
-                                >
-                                  <Facebook className="w-3 h-3" />
-                                </span>
-
-                                {/* Zalo */}
-                                <span
-                                  title={customer.zalo || "Chưa liên kết Zalo"}
-                                  className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs font-extrabold shadow-2xs transition-all ${
-                                    customer.zalo
-                                      ? "bg-sky-500/10 text-sky-600 border-sky-500/35 font-sans"
-                                      : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
-                                  }`}
-                                >
-                                  Z
-                                </span>
-
-                                {/* LinkedIn */}
-                                <span
-                                  title={customer.linkedin || "Chưa liên kết LinkedIn"}
-                                  className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs shadow-2xs transition-all ${
-                                    customer.linkedin
-                                      ? "bg-blue-700/10 text-blue-700 border-blue-700/30"
-                                      : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
-                                  }`}
-                                >
-                                  <Linkedin className="w-3 h-3" />
-                                </span>
-
-                                {/* Instagram */}
-                                <span
-                                  title={customer.instagram || "Chưa liên kết Instagram"}
-                                  className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs shadow-2xs transition-all ${
-                                    customer.instagram
-                                      ? "bg-pink-600/10 text-pink-600 border-pink-600/30"
-                                      : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
-                                  }`}
-                                >
-                                  <Instagram className="w-3 h-3" />
-                                </span>
-                              </div>
-                            </TableCell>
-                          )}
-
-                          {visibleColumns.company && (
-                            <TableCell>
-                              {customer.companyId ? (
-                                <div className="flex items-center gap-1.5 text-left max-w-[170px] overflow-hidden">
-                                  <div className="w-5 h-5 rounded bg-muted flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
-                                    {companies.find((comp) => comp.id === customer.companyId)?.logoUrl ? (
-                                      <img
-                                        src={companies.find((comp) => comp.id === customer.companyId)?.logoUrl}
-                                        referrerPolicy="no-referrer"
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <Building2 className="w-3 h-3 text-muted-foreground" />
-                                    )}
-                                  </div>
-                                  <span className="text-[11px] font-bold text-foreground truncate block font-sans">
-                                    {companies.find((comp) => comp.id === customer.companyId)?.name || "—"}
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-muted-foreground italic font-sans">Cá nhân</span>
-                              )}
-                            </TableCell>
-                          )}
-
-                          {visibleColumns.status && (
-                            <TableCell>
-                              {renderStatusBadge(customer.activityStatus)}
-                            </TableCell>
-                          )}
-
-                          {visibleColumns.churnRisk && (
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <div className="flex-1 bg-muted rounded-full h-1.5 overflow-hidden max-w-[80px]">
-                                  <div
-                                    className={cn(
-                                      "h-full rounded-full",
-                                      (customer.customFields?.risk_score || 0) >= 70
-                                        ? "bg-rose-500"
-                                        : (customer.customFields?.risk_score || 0) >= 40
-                                          ? "bg-amber-500"
-                                          : "bg-emerald-500"
-                                    )}
-                                    style={{ width: `${customer.customFields?.risk_score || 0}%` }}
-                                  />
-                                </div>
-                                <span className="text-[10px] font-mono font-bold text-[#f43f5e]">
-                                  {customer.customFields?.risk_score || 0}%
-                                </span>
-                              </div>
-                            </TableCell>
-                          )}
-
-                          {visibleColumns.points && (
-                            <TableCell className="font-mono text-xs font-black text-[#2f6cf5]">
-                              {(customer.points || 0).toLocaleString()} pts
-                            </TableCell>
-                          )}
-
-                          {visibleColumns.customAttributes &&
-                            attributes
-                              .slice(0, 1)
-                              .map((attr) => {
-                                const val = customer.customFields?.[attr.id] || "—";
-                                return (
-                                  <TableCell key={attr.id} className="text-xs font-semibold text-muted-foreground">
-                                    {val}
-                                  </TableCell>
-                                );
-                              })}
-
-                          {visibleColumns.actions && (
-                            <TableCell className="pr-6 text-right">
-                              <div className="flex items-center justify-end gap-1 font-sans">
-                                <button
-                                  onClick={() => setSelectedCustomer(customer)}
-                                  className="p-1.5 text-[#2f6cf5] hover:bg-primary/10 rounded-lg text-xs font-extrabold flex items-center cursor-pointer gap-0.5"
-                                  title="Chi tiết"
-                                >
-                                  Chi tiết ➜
-                                </button>
-                                <button
-                                  onClick={() => setSelectedQrCustomer(customer)}
-                                  className="p-1.5 text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-lg transition-all cursor-pointer"
-                                  title="Xuất mã Định danh QR"
-                                >
-                                  <QrCode className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setLogCustomer(customer);
-                                    setShowActivityLog(true);
-                                  }}
-                                  className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
-                                  title="Lịch sử hoạt động"
-                                >
-                                  <History className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </>
-        )}
+          </div>
+      )}
       </div>
 
       {/* Popup chi tiết khách hàng chiếm 90% diện tích trang web */}

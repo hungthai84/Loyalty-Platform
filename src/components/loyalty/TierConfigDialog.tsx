@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 interface TierConfigDialogProps {
   onClose: () => void;
   tier?: TierConfig;
+  availableRules?: { id: string; name: string; rewardType: string }[];
 }
 
 const CONDITION_FIELDS = [
@@ -51,7 +52,7 @@ const PRESET_COLORS = [
   "#f43f5e",
 ];
 
-export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
+export function TierConfigDialog({ onClose, tier, availableRules }: TierConfigDialogProps) {
   const { user } = useFirebase();
   const [name, setName] = useState(tier?.name || "");
   const [threshold, setThreshold] = useState(tier?.threshold || 0);
@@ -363,14 +364,14 @@ export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Zap className="w-4 h-4" /> Tuyến ưu đãi (Benefits)
+                <Zap className="w-4 h-4" /> Tuyến đặc quyền (Benefits)
               </label>
               <button
                 type="button"
                 onClick={addBenefit}
                 className="text-xs font-bold text-primary flex items-center gap-1 hover:underline"
               >
-                <Plus className="w-3 h-3" /> Thêm ưu đãi
+                <Plus className="w-3 h-3" /> Thêm đặc quyền
               </button>
             </div>
             
@@ -378,15 +379,26 @@ export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
               {benefits.map((benefit, idx) => (
                 <div key={idx} className="flex gap-2 p-3 bg-background border border-border rounded-2xl relative group items-center">
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <input
+                    <select
                       className="w-full px-3 py-2 bg-muted rounded-lg text-sm outline-none font-bold"
-                      placeholder="Tên chương trình (VD: Welcome Voucher)"
                       value={benefit.name}
-                      onChange={(e) => updateBenefit(idx, e.target.value, benefit.value)}
-                    />
+                      onChange={(e) => {
+                        const selectedName = e.target.value;
+                        const rule = availableRules?.find(r => r.name === selectedName);
+                        updateBenefit(idx, selectedName, rule ? `Thuộc loại: ${rule.rewardType}` : benefit.value);
+                      }}
+                    >
+                      <option value="">Chọn ưu đãi hoặc nhập tên...</option>
+                      {availableRules?.map(r => (
+                        <option key={r.id} value={r.name}>{r.name}</option>
+                      ))}
+                      {benefit.name && !availableRules?.find(r => r.name === benefit.name) && (
+                        <option value={benefit.name}>{benefit.name}</option>
+                      )}
+                    </select>
                     <input
                       className="w-full px-3 py-2 bg-muted rounded-lg text-sm outline-none"
-                      placeholder="Nội dung ưu đãi (VD: Giảm 5%)"
+                      placeholder="Ghi chú thêm (VD: Giảm 5%)"
                       value={benefit.value}
                       onChange={(e) => updateBenefit(idx, benefit.name, e.target.value)}
                     />
@@ -403,7 +415,7 @@ export function TierConfigDialog({ onClose, tier }: TierConfigDialogProps) {
               
               {benefits.length === 0 && (
                 <div className="py-8 text-center border-2 border-dashed border-border rounded-2xl text-muted-foreground text-sm">
-                  Cấp bậc này chưa có cấu hình ưu đãi cụ thể.
+                  Cấp bậc này chưa có cấu hình đặc quyền cụ thể.
                 </div>
               )}
             </div>

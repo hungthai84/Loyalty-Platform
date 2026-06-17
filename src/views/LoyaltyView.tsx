@@ -88,6 +88,7 @@ import { LoyaltyProgressionTimeline } from "@/components/loyalty/LoyaltyProgress
 import { TierComparisonTable } from "@/components/loyalty/TierComparisonTable";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { PointRedemptionConfigView } from "@/components/loyalty/PointRedemptionConfigView";
+import { GiftsManagementView } from "@/components/loyalty/GiftsManagementView";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -273,6 +274,7 @@ export function LoyaltyView() {
   const [showDoc, setShowDoc] = useState(false);
   const [tiers, setTiers] = useState<TierConfig[]>([]);
   const [rules, setRules] = useState<RedemptionRule[]>([]);
+  const [gifts, setGifts] = useState<any[]>([]);
   const [earnRules, setEarnRules] = useState<EarnRule[]>([]);
   const [campaigns, setCampaigns] = useState<LoyaltyCampaign[]>([]);
   const [segmentationRules, setSegmentationRules] = useState<
@@ -583,6 +585,16 @@ export function LoyaltyView() {
       (error) => handleFirestoreError(error, OperationType.GET, rPath)
     );
 
+    const unsubGifts = onSnapshot(
+      collection(db, "loyalty_gifts"),
+      (s) => {
+        setGifts(
+          s.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+        );
+      },
+      (error) => console.log(error)
+    );
+
     const unsubEarn = onSnapshot(
       query(collection(db, ePath), orderBy("createdAt", "desc")),
       (s) => {
@@ -626,6 +638,7 @@ export function LoyaltyView() {
     return () => {
       unsubTiers();
       unsubRules();
+      unsubGifts();
       unsubEarn();
       unsubCamp();
       unsubSeg();
@@ -1114,10 +1127,10 @@ export function LoyaltyView() {
   };
 
   const tabs = [
-    { id: "tiers", label: "Hạng thành viên", icon: Star },
+    { id: "tiers", label: "Cấp bậc", icon: Star },
     { id: "points", label: "Điểm thưởng", icon: Award },
     { id: "redemption", label: "Ưu đãi", icon: Gem },
-    { id: "gifts", label: "Đổi quà", icon: Gift },
+    { id: "gifts", label: "Quà tặng", icon: Gift },
   ];
 
   const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
@@ -1147,7 +1160,7 @@ export function LoyaltyView() {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
-              Hạng và Ưu đãi
+              Cấp bậc và Đặc quyền
             </h2>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
@@ -1341,7 +1354,7 @@ export function LoyaltyView() {
                   <div>
                     <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
                       <Gift className="w-4 h-4 text-rose-500 fill-rose-500" />
-                      4. Đổi quà & Ưu đãi (Redemption)
+                      4. Đổi quà & Đặc quyền (Redemption)
                     </h4>
                     <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
                       Khách sài điểm thưởng nhận các mã voucher chiết khấu hóa đơn, sản phẩm hoặc coupon:
@@ -1434,23 +1447,32 @@ export function LoyaltyView() {
           >
             {activeTab === "tiers" && (
               <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-card/60 border border-border/80 rounded-3xl backdrop-blur-md">
-                  <div className="text-left w-full">
-                    <h3 className="text-lg font-bold font-heading flex items-center gap-2 text-foreground">
-                      <Star className="w-5 h-5 text-amber-500 fill-amber-500" /> Cấu hình Hạng thành viên
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Quản lý các cấp bậc thành viên và thiết lập điều kiện thăng hạng.
-                    </p>
+                {/* Banner / Header */}
+                <div className="relative overflow-hidden rounded-3xl border border-[#2f6cf5]/10 bg-gradient-to-r from-[#2f6cf5]/10 via-[#2f6cf5]/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
+                  <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#2f6cf5] via-background to-background pointer-events-none" />
+                  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-[#2f6cf5] font-bold text-sm uppercase tracking-wider mb-2">
+                        <Star className="w-5 h-5 animate-pulse" /> Chương trình cấp bậc
+                      </div>
+                      <h3 className="text-2xl font-bold font-heading text-foreground">
+                        Cấu hình Cấp bậc
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                        Quản lý các cấp bậc thành viên và thiết lập điều kiện thăng hạng, theo dõi đường thăng hạng của khách hàng.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2.5 shrink-0 self-start md:self-auto">
+                      <button
+                        onClick={() => {
+                            window.dispatchEvent(new CustomEvent('open-add-tier-dialog'));
+                        }}
+                        className="px-5 py-2.5 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-[#2f6cf5]/20 flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus className="w-4 h-4" /> Thêm hạng mới
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => {
-                        window.dispatchEvent(new CustomEvent('open-add-tier-dialog'));
-                    }}
-                    className="px-5 py-2.5 bg-gradient-to-r from-[#2f6cf5] to-blue-600 text-white rounded-xl text-xs font-bold hover:shadow-lg transition-all shadow-md shadow-blue-500/30 flex items-center shrink-0 cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4 mr-2" /> Thêm hạng mới
-                  </button>
                 </div>
 
                 {/* Thẻ Lộ trình thăng cấp (Loyalty Journey) */}
@@ -1460,7 +1482,7 @@ export function LoyaltyView() {
 
                 {/* Thẻ tương ứng 4 hạng thành viên */}
                 <div className="w-full mt-4">
-                  <TierManagementView />
+                  <TierManagementView rules={rules} gifts={gifts} />
                 </div>
 
                 <TierComparisonTable />
@@ -1469,31 +1491,38 @@ export function LoyaltyView() {
 
             {activeTab === "points" && (
               <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-card/60 border border-border/80 rounded-3xl backdrop-blur-md">
-                  <div className="text-left">
-                    <h3 className="text-lg font-bold font-heading flex items-center gap-2 text-foreground">
-                      <Award className="w-5 h-5 text-amber-500 fill-amber-500" /> Cấu hình Điểm Thưởng (Earn Rules)
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Quản lý các quy tắc tích lũy điểm thưởng từ các hoạt động của khách hàng.
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleBootstrapEarnRules}
-                      className="px-5 py-2.5 bg-muted text-foreground rounded-xl text-xs font-bold hover:bg-muted/80 transition-all shadow-sm flex items-center shrink-0 cursor-pointer"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-2" /> Nạp Demo mẫu
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedEarnRule(undefined);
-                        setShowEarnDialog(true);
-                      }}
-                      className="px-5 py-2.5 bg-gradient-to-r from-[#2f6cf5] to-blue-600 text-white rounded-xl text-xs font-bold hover:shadow-lg transition-all shadow-md shadow-blue-500/30 flex items-center shrink-0 cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Thiết lập mới
-                    </button>
+                {/* Banner / Header */}
+                <div className="relative overflow-hidden rounded-3xl border border-amber-500/10 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
+                  <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-500 via-background to-background pointer-events-none" />
+                  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-amber-500 font-bold text-sm uppercase tracking-wider mb-2">
+                        <Award className="w-5 h-5 animate-pulse" /> Tích lũy điểm thưởng
+                      </div>
+                      <h3 className="text-2xl font-bold font-heading text-foreground">
+                        Quy tắc Cộng Điểm (Earn Rules)
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                        Quản lý các quy tắc tích lũy điểm thưởng từ các hoạt động của khách hàng. Thiết lập hệ số, quy đổi tiền tệ và các chiến dịch tặng điểm bổ sung.
+                      </p>
+                    </div>
+                    <div className="flex gap-2.5 flex-wrap shrink-0 self-start md:self-auto">
+                      <button
+                        onClick={handleBootstrapEarnRules}
+                        className="px-4 py-2.5 bg-muted hover:bg-muted/80 text-foreground rounded-2xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <RefreshCw className="w-4 h-4 text-amber-500" /> Nạp Demo mẫu
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedEarnRule(undefined);
+                          setShowEarnDialog(true);
+                        }}
+                        className="px-5 py-2.5 bg-amber-500 text-white hover:bg-amber-600 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus className="w-4 h-4" /> Thiết lập mới
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1579,168 +1608,11 @@ export function LoyaltyView() {
 
             {activeTab === "gifts" && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-left">
-                <PointRedemptionConfigView />
+                <GiftsManagementView />
               </div>
             )}
 
-            {activeTab === "tiers" && (
-              <div className="space-y-8">
-                {/* Visual Header card */}
-                <div className="relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-r from-primary/10 via-[#2f6cf5]/5 to-transparent p-6 md:p-8 backdrop-blur-md">
-                  <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary via-background to-background pointer-events-none" />
-                  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div>
-                      <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider mb-2">
-                        <Gem className="w-4 h-4 animate-pulse" /> Chương trình thành viên tinh hoa
-                      </div>
-                      <h3 className="text-2xl font-bold font-heading text-foreground">
-                        Cấu hình Đặc quyền VIP
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-                        Thiết lập các đặc quyền chăm sóc đặc biệt riêng biệt cho 4 phân hạng khách hàng: <strong>Member, Essential, Icon, và Atelier</strong>. Trải nghiệm dịch vụ xa xỉ mang tính nhận diện thương hiệu cao cấp.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setSelectedTiersForPrivilege(tiers.map(t => t.id)); // select all by default
-                        setShowCreatePrivilegeDialog(true);
-                      }}
-                      className="px-5 py-3 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer shrink-0 self-start md:self-auto"
-                    >
-                      <Sparkles className="w-4 h-4 text-yellow-300 fill-yellow-300" />
-                      Tạo đặc quyền phân hạng
-                    </button>
-                  </div>
-                </div>
 
-                {/* 4 tiers display grid */}
-                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-                  {tiers.map((tier) => {
-                    const mappedColor = tier.color || "#4f46e5";
-                    const tierBenefits = tier.benefits && tier.benefits.length > 0
-                      ? tier.benefits
-                      : getFallbackBenefits(tier.name);
-
-                    return (
-                      <motion.div
-                        key={tier.id}
-                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                        className="relative"
-                      >
-                        <Card className="h-full border border-border/80 bg-card overflow-hidden flex flex-col justify-between hover:shadow-lg hover:border-primary/20 transition-all rounded-3xl p-6">
-                          <div className="space-y-4">
-                            {/* Tier Header with styled banner */}
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <Badge
-                                  style={{
-                                    backgroundColor: `${mappedColor}15`,
-                                    color: mappedColor,
-                                    borderColor: `${mappedColor}30`
-                                  }}
-                                  className="text-xs font-extrabold px-3 py-1 tracking-wider uppercase border"
-                                >
-                                  {tier.name}
-                                </Badge>
-                                <h4 className="text-sm text-muted-foreground font-medium mt-1">
-                                  Hạn mức chi tiêu: từ {tier.threshold.toLocaleString()} pts
-                                </h4>
-                              </div>
-                              <div
-                                style={{ color: mappedColor }}
-                                className="p-2 rounded-xl bg-muted/60"
-                              >
-                                {tier.name.toLowerCase() === 'atelier' ? (
-                                  <Crown className="w-5 h-5" />
-                                ) : tier.name.toLowerCase() === 'icon' ? (
-                                  <Gem className="w-5 h-5" />
-                                ) : tier.name.toLowerCase() === 'essential' ? (
-                                  <Award className="w-5 h-5" />
-                                ) : (
-                                  <Shield className="w-5 h-5" />
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Divider with tier accent color */}
-                            <div
-                              className="h-[2px] w-12 rounded-full"
-                              style={{ backgroundColor: mappedColor }}
-                            />
-
-                            {/* Benefits List */}
-                            <div className="space-y-2.5 pt-2">
-                              {tierBenefits.map((benefit, idx) => (
-                                <div
-                                  key={idx}
-                                  className="group/item flex items-start justify-between gap-3 p-2.5 rounded-xl border border-transparent hover:border-border/60 hover:bg-muted/30 transition-all"
-                                >
-                                  <div className="flex gap-2.5 items-start">
-                                    <div
-                                      style={{ color: mappedColor }}
-                                      className="mt-1 shrink-0"
-                                    >
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
-                                    </div>
-                                    <div className="flex-1">
-                                      <p className="text-xs font-semibold text-foreground leading-tight">
-                                        {benefit.name}
-                                      </p>
-                                      {benefit.value && (
-                                        <p className="text-[10px] text-muted-foreground font-medium mt-0.5">
-                                          {benefit.value}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <button
-                                    onClick={() => handleDeletePrivilege(tier.id, idx)}
-                                    className="opacity-0 group-hover/item:opacity-100 p-1 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all text-muted-foreground shrink-0 cursor-pointer"
-                                    title="Xóa đặc quyền"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Quick Add Inline form */}
-                          <div className="mt-6 pt-4 border-t border-border/40">
-                            <form
-                              onSubmit={(e) => {
-                                e.preventDefault();
-                                const text = quickAddTexts[tier.id] || "";
-                                if (text.trim()) {
-                                  handleQuickAddPrivilege(tier.id, text, "Chi tiết VIP");
-                                  setQuickAddTexts(prev => ({ ...prev, [tier.id]: "" }));
-                                }
-                              }}
-                              className="flex gap-2"
-                            >
-                              <input
-                                type="text"
-                                value={quickAddTexts[tier.id] || ""}
-                                onChange={(e) => setQuickAddTexts(prev => ({ ...prev, [tier.id]: e.target.value }))}
-                                placeholder="Thêm nhanh đặc quyền..."
-                                className="flex-1 min-w-0 bg-muted/30 focus:bg-background border border-border/60 focus:border-primary/40 rounded-xl px-3 py-1.5 text-xs font-medium placeholder:text-muted-foreground/60 outline-none transition-all"
-                              />
-                              <button
-                                type="submit"
-                                className="p-1.5 border border-primary/20 bg-primary/5 hover:bg-primary/20 text-primary rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0"
-                                title="Thêm đặc quyền"
-                              >
-                                <Plus className="w-4 h-4" />
-                              </button>
-                            </form>
-                          </div>
-                        </Card>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
       </div>

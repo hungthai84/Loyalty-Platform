@@ -497,6 +497,23 @@ export function MarketingView() {
               transition={{ duration: 0.2 }}
               className="space-y-6 text-left"
             >
+              <div className="relative overflow-hidden rounded-3xl border border-blue-500/10 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
+                <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500 via-background to-background pointer-events-none" />
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-blue-500 font-bold text-sm uppercase tracking-wider mb-2">
+                      <Mail className="w-5 h-5 animate-pulse" /> Trình tương tác
+                    </div>
+                    <h3 className="text-2xl font-bold font-heading text-foreground">
+                      Thông điệp khách hàng đa điểm
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                      Thiết kế và gửi thông điệp tự động tới hội viên thông qua mạng lưới đa nền tảng Email, Zalo, SMS hoặc trực tiếp thực hiện ghi chú cho đội ngũ Telesale.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
                 {/* Editor Column */}
@@ -860,8 +877,26 @@ export function MarketingView() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.2 }}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-left items-start mb-10"
+              className="space-y-6"
             >
+              <div className="relative overflow-hidden rounded-3xl border border-amber-500/10 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
+                <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-500 via-background to-background pointer-events-none" />
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-amber-500 font-bold text-sm uppercase tracking-wider mb-2">
+                      <Sliders className="w-5 h-5 animate-pulse" /> Trình sự kiện
+                    </div>
+                    <h3 className="text-2xl font-bold font-heading text-foreground">
+                      Cấu hình sự kiện nhận điểm thưởng
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                       Thiết lập các sự kiện có giới hạn thời gian tăng hệ số nhân để thu hút khách hàng giao dịch. Mọi điểm thưởng đều quy chiếu các quy tắc được sử dụng tại bảng Điều kiện thăng hạng.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-left items-start mb-10">
               {/* Campaign Creation Form (Left) */}
               <div className="lg:col-span-5">
                 <div className="bg-card border border-border rounded-3xl p-6 shadow-sm space-y-6">
@@ -1086,6 +1121,7 @@ export function MarketingView() {
                     )}
                   </div>
                 </div>
+              </div>
               </div>
             </motion.div>
           )}

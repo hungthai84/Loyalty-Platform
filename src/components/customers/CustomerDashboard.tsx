@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { Customer, Company, AttributeDefinition, TierConfig } from "@/types";
@@ -34,6 +34,7 @@ import {
   Download,
   Smile,
   MessageSquare,
+  Crown,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -263,6 +264,42 @@ export function CustomerDashboard({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Privileges states
+  const [personalPrivileges, setPersonalPrivileges] = useState<string[]>(customer.customFields?.privileges || []);
+  const [newPrivilegeInput, setNewPrivilegeInput] = useState("");
+
+  useEffect(() => {
+    setPersonalPrivileges(customer.customFields?.privileges || []);
+  }, [customer]);
+
+  const handleAddPrivilege = async () => {
+    if (!newPrivilegeInput.trim()) {
+      toast.error("Vui lòng nhập nội dung đặc quyền riêng");
+      return;
+    }
+    const updated = [...personalPrivileges, newPrivilegeInput.trim()];
+    setPersonalPrivileges(updated);
+    
+    await updateFirestore({
+      customFields: {
+        ...(customer.customFields || {}),
+        privileges: updated
+      }
+    }, "Đã cập nhật đặc quyền riêng của hội viên!");
+    setNewPrivilegeInput("");
+  };
+
+  const handleRemovePrivilege = async (index: number) => {
+    const updated = personalPrivileges.filter((_, i) => i !== index);
+    setPersonalPrivileges(updated);
+    await updateFirestore({
+      customFields: {
+        ...(customer.customFields || {}),
+        privileges: updated
+      }
+    }, "Đã xóa đặc quyền riêng!");
+  };
+
   // Local edit states
   const [fb, setFb] = useState(customer.facebook || "");
   const [zl, setZl] = useState(customer.zalo || "");
@@ -335,7 +372,7 @@ export function CustomerDashboard({
         ["Ho ten", customer.name],
         ["Email", customer.email],
         ["So dien thoai", customer.phone],
-        ["Hang thanh vien", tier.name],
+        ["Cap bac", tier.name],
         ["Diem tich luy", points.toLocaleString() + " pts"],
         ["Ngay gia nhap", formatVietnameseDate(customer.createdAt)],
       ],
@@ -1376,6 +1413,225 @@ export function CustomerDashboard({
             )}
           </motion.div>
 
+          {/* VIP MEMBERSHIP CARD (THẺ HỘI VIÊN) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-xl space-y-6 text-left relative overflow-hidden"
+          >
+            <div>
+              <h4 className="text-xs font-black text-foreground uppercase tracking-widest flex items-center gap-2">
+                <Crown className="w-4 h-4 text-amber-500 fill-amber-500/10" /> Thẻ hội viên & Đặc quyền
+              </h4>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Bảo chứng phân hạng và đặc quyền của hội viên trên hệ thống.
+              </p>
+            </div>
+
+            {/* Simulated credit card style membership card */}
+            {(() => {
+              const pts = points;
+              // Compute card specifics
+              let cardBg = "from-slate-900 via-slate-800 to-zinc-900 text-slate-100";
+              let cardTier = "MEMBER";
+              let chipColor = "from-yellow-400 to-amber-600";
+              let textHex = "text-slate-300";
+              let borderCol = "border-slate-700";
+
+              if (pts >= 10000) { // Atelier
+                cardBg = "from-zinc-950 via-slate-900 to-purple-950 text-white";
+                cardTier = "ATELIER";
+                chipColor = "from-zinc-100 to-slate-400";
+                textHex = "text-purple-300";
+                borderCol = "border-indigo-500/30";
+              } else if (pts >= 2500) { // Icon
+                cardBg = "from-amber-600 via-[#b45309] to-amber-950 text-amber-50";
+                cardTier = "ICON";
+                chipColor = "from-yellow-200 to-yellow-500";
+                textHex = "text-yellow-300";
+                borderCol = "border-yellow-500/30";
+              } else if (pts >= 500) { // Essential
+                cardBg = "from-slate-500 via-slate-700 to-zinc-800 text-slate-50";
+                cardTier = "ESSENTIAL";
+                chipColor = "from-zinc-300 to-zinc-500";
+                textHex = "text-sky-300";
+                borderCol = "border-slate-500/30";
+              }
+
+              return (
+                <div className={`w-full aspect-[1.58/1] rounded-2xl bg-gradient-to-tr ${cardBg} p-5 relative overflow-hidden shadow-2xl flex flex-col justify-between border ${borderCol} group`}>
+                  {/* Glossy reflection shine effect */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out pointer-events-none" />
+                  
+                  {/* Top line: Brand & Signal */}
+                  <div className="flex justify-between items-start relative z-10">
+                    <div className="text-left">
+                      <p className="text-[10px] font-black uppercase tracking-[0.25em] leading-none text-white/90">SEVA HERITAGE</p>
+                      <p className="text-[7px] font-mono text-white/50 tracking-wider">EST. 2024</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 opacity-85">
+                      <div className="w-2.5 h-2.5 rounded-full border border-white/40" />
+                      <div className="w-2.5 h-2.5 rounded-full border border-white/40 bg-white/20" />
+                    </div>
+                  </div>
+
+                  {/* Middle part: EMV Chip & Tier Tag */}
+                  <div className="flex justify-between items-center relative z-10">
+                    {/* Chip */}
+                    <div className="w-9 h-7 rounded-sm bg-gradient-to-r from-yellow-400 to-amber-600 relative border border-black/10 overflow-hidden shadow-sm shrink-0">
+                      <div className="absolute inset-0 grid grid-cols-3 divide-x divide-black/10">
+                        <div className="border-b border-black/10" />
+                        <div className="border-b border-black/10" />
+                        <div className="border-b border-black/10" />
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-md bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+                        {cardTier}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bottom: Card Number & Details */}
+                  <div className="relative z-10 flex justify-between items-end">
+                    <div className="text-left space-y-1">
+                      <p className="font-mono text-xs sm:text-sm tracking-[0.15em] text-white font-semibold">
+                        {customer.id ? customer.id.replace(/-/g, ' ') : 'CUS 0000 000'}
+                      </p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-white truncate max-w-[150px]">{customer.name}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[7px] font-semibold text-white/50 uppercase tracking-widest">LOYALTY MEMBER Since</p>
+                      <p className="text-[9px] font-mono font-bold text-white leading-none">12/24</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* List of Privileges */}
+            <div className="space-y-4 pt-2 border-t border-border/40">
+              {/* 1. Standard Tier Privileges */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#2f6cf5] block">
+                  ✓ Đặc quyền theo Cấp bậc:
+                </span>
+                <div className="space-y-1.5 plan-checklist">
+                  {(() => {
+                    // Try to get from configs or fallback statically
+                    let activeBenefits: { name: string; value: string }[] = [];
+                    if (tierConfigs && tierConfigs.length > 0) {
+                      const eligible = [...tierConfigs].filter(t => points >= t.threshold).sort((a,b) => b.threshold - a.threshold);
+                      if (eligible.length > 0 && eligible[0].benefits) {
+                        activeBenefits = eligible[0].benefits;
+                      }
+                    }
+                    if (!activeBenefits || activeBenefits.length === 0) {
+                      if (points >= 10000) {
+                        activeBenefits = [
+                          { name: "Hệ số tích điểm", value: "2.0x (Đặc quyền tối đa)" },
+                          { name: "Quà tặng chào mừng", value: "Tráp quà lụa thượng hạng VIP" },
+                          { name: "Sinh nhật hoàng gia", value: "Set trang sức độc bản đính đá quý" },
+                          { name: "Spa & Vệ sinh trang sức", value: "Đặc trị khuyết tật & Xi mạ cao cấp" },
+                          { name: "Sử dụng Private Lounge", value: "Miễn phí 100% kèm trà bánh" },
+                          { name: "Chuyên viên tư vấn riêng", value: "Quản lý Showroom phụ trách 24/7" }
+                        ];
+                      } else if (points >= 2500) {
+                        activeBenefits = [
+                          { name: "Hệ số tích điểm", value: "1.5x" },
+                          { name: "Quà tặng chào mừng", value: "Voucher 1.5M + Nến thơm" },
+                          { name: "Sinh nhật hoàng gia", value: "Hộp quà hoa di sản" },
+                          { name: "Spa & Vệ sinh trang sức", value: "Miễn phí đánh bóng trọn đời" },
+                          { name: "Sử dụng Private Lounge", value: "Giảm 50% phí dịch vụ" },
+                          { name: "Chuyên viên tư vấn riêng", value: "Chuyên viên riêng" }
+                        ];
+                      } else if (points >= 500) {
+                        activeBenefits = [
+                          { name: "Hệ số tích điểm", value: "1.25x (Ưu đãi)" },
+                          { name: "Quà tặng chào mừng", value: "Voucher 500k" },
+                          { name: "Sinh nhật hoàng gia", value: "Voucher 1M" },
+                          { name: "Spa & Vệ sinh trang sức", value: "Miễn phí đánh bóng" },
+                          { name: "Chuyên viên tư vấn riêng", value: "Hotline VIP" }
+                        ];
+                      } else {
+                        activeBenefits = [
+                          { name: "Hệ số tích điểm", value: "1.0x (Cơ bản)" },
+                          { name: "Quà tặng chào mừng", value: "Thiệp tay Seva Heritage" },
+                          { name: "Sinh nhật hoàng gia", value: "Quà lưu niệm" },
+                          { name: "Spa & Vệ sinh trang sức", value: "Giảm 20%" },
+                          { name: "Chuyên viên tư vấn riêng", value: "Hotline CSKH" }
+                        ];
+                      }
+                    }
+
+                    return activeBenefits.map((benefit: any, idx: number) => (
+                      <div key={idx} className="flex justify-between items-start text-xs bg-muted/30 px-3 py-2 rounded-xl border border-border/40 gap-2">
+                        <span className="font-bold text-foreground shrink-0">{benefit.name}:</span>
+                        <span className="text-muted-foreground font-medium text-right break-words leading-tight">{benefit.value}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+
+              {/* 2. Personal Privileges */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 block">
+                  ★ Đặc quyền riêng biệt của quý hội viên:
+                </span>
+                {personalPrivileges.length === 0 ? (
+                  <p className="text-[11px] text-muted-foreground italic pl-1 leading-normal">Chưa thiết lập đặc quyền cá nhân hóa riêng. Sử dụng form bên dưới để thêm đặc quyền.</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {personalPrivileges.map((p, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-3 py-2 rounded-xl text-xs font-bold transition-all">
+                        <span className="leading-tight flex-1 break-words">{p}</span>
+                        <button
+                          onClick={() => handleRemovePrivilege(idx)}
+                          type="button"
+                          className="text-xs text-rose-500 hover:text-rose-700 hover:scale-110 transition-transform font-bold px-1 py-0.5 ml-2 cursor-pointer rounded-md hover:bg-rose-500/10 shrink-0"
+                          title="Xóa đặc quyền riêng này"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Add personal privilege form */}
+              <div className="space-y-2 bg-muted/20 p-3 rounded-2xl border border-border/50">
+                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground block">
+                  Thêm đặc quyền riêng của hội viên
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newPrivilegeInput}
+                    onChange={(e) => setNewPrivilegeInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddPrivilege();
+                      }
+                    }}
+                    placeholder="VD: Phòng chờ riêng VIP, Tặng hoa kỷ niệm..."
+                    className="flex-1 px-3 py-1.5 bg-background border border-border rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-[#2f6cf5]"
+                  />
+                  <button
+                    onClick={handleAddPrivilege}
+                    type="button"
+                    className="px-3.5 py-1.5 bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 text-white rounded-xl text-xs font-bold shrink-0 transition-colors cursor-pointer"
+                  >
+                    Thêm
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
           {/* SOCIAL NETWORK INTEGRATION GRAPH & LINKS (MỤC LIÊN KẾT TẤT CẢ NỀN TẢNG) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1626,27 +1882,27 @@ export function CustomerDashboard({
           </motion.div>
 
           {/* Quà tặng, Đổi quà tặng, Tương tác utility cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
              {/* Quà tặng */}
-             <div className="rounded-3xl border border-rose-500/30 bg-rose-500/5 p-6 space-y-2 shadow-sm">
-                <h4 className="text-xs font-black text-rose-600 uppercase tracking-wider flex items-center gap-1.5">
+             <div className="rounded-2xl border border-rose-500/20 bg-rose-500/[0.03] p-5 space-y-1.5 shadow-sm hover:shadow-md transition-all duration-300">
+                <h4 className="text-[11px] font-black text-rose-600/90 uppercase tracking-wider flex items-center gap-2">
                   <Award className="w-3.5 h-3.5" /> Quà tặng
                 </h4>
-                <p className="text-[10px] text-rose-600/70 font-bold">Danh sách quà tặng</p>
+                <p className="text-[10px] text-rose-600/60 font-medium">Danh sách quà tặng hệ thống</p>
              </div>
              {/* Đổi quà */}
-             <div className="rounded-3xl border border-indigo-500/30 bg-indigo-500/5 p-6 space-y-2 shadow-sm">
-                <h4 className="text-xs font-black text-indigo-600 uppercase tracking-wider flex items-center gap-1.5">
+             <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.03] p-5 space-y-1.5 shadow-sm hover:shadow-md transition-all duration-300">
+                <h4 className="text-[11px] font-black text-indigo-600/90 uppercase tracking-wider flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5" /> Đổi quà tặng
                 </h4>
-                <p className="text-[10px] text-indigo-600/70 font-bold">Lịch sử đổi quà</p>
+                <p className="text-[10px] text-indigo-600/60 font-medium">Lịch sử quy đổi khách hàng</p>
              </div>
              {/* Tương tác */}
-             <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-6 space-y-2 shadow-sm">
-                <h4 className="text-xs font-black text-emerald-600 uppercase tracking-wider flex items-center gap-1.5">
+             <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.03] p-5 space-y-1.5 shadow-sm hover:shadow-md transition-all duration-300">
+                <h4 className="text-[11px] font-black text-emerald-600/90 uppercase tracking-wider flex items-center gap-2">
                   <MessageSquare className="w-3.5 h-3.5" /> Tương tác
                 </h4>
-                <p className="text-[10px] text-emerald-600/70 font-bold">Quản lý tương tác</p>
+                <p className="text-[10px] text-emerald-600/60 font-medium">Lịch sử tương tác hệ thống</p>
              </div>
           </div>
 
