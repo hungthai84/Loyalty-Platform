@@ -76,15 +76,15 @@ const MOCK_CRM_ACTIVITIES = [
     type: "order",
     content: "Mua sắm bộ sưu tập Hè Atelier Premium",
     value: "+35.000.000 ₫",
-    points: "+350 pts",
+    points: "+350 điểm",
     date: "Hôm qua, 14:20",
   },
   {
     id: "2",
     type: "reward",
     content: "Đổi Voucher ẩm thực đặc quyền tại Private Lounge",
-    value: "-1.000 pts",
-    points: "-1000 pts",
+    value: "-1.000 điểm",
+    points: "-1000 điểm",
     date: "22/05/2026",
   },
   {
@@ -92,7 +92,7 @@ const MOCK_CRM_ACTIVITIES = [
     type: "event",
     content: "Tham gia Sự kiện Private Showcase Atelier",
     value: "Đăng ký VIP",
-    points: "+200 pts",
+    points: "+200 điểm",
     date: "18/05/2026",
   },
   {
@@ -100,7 +100,7 @@ const MOCK_CRM_ACTIVITIES = [
     type: "referral",
     content: "Giới thiệu thành viên mới liên kết thẻ VIP",
     value: "Mã REF-302",
-    points: "+150 pts",
+    points: "+150 điểm",
     date: "10/05/2026",
   },
 ];
@@ -373,7 +373,7 @@ export function CustomerDashboard({
         ["Email", customer.email],
         ["So dien thoai", customer.phone],
         ["Cap bac", tier.name],
-        ["Diem tich luy", points.toLocaleString() + " pts"],
+        ["Diem tich luy", points.toLocaleString() + " điểm"],
         ["Ngay gia nhap", formatVietnameseDate(customer.createdAt)],
       ],
       theme: 'grid',
@@ -754,7 +754,7 @@ export function CustomerDashboard({
       : o.amount
         ? formatVND(o.amount)
         : "N/A",
-    pointsStr: o.points ? `+${o.points} pts` : "+50 pts",
+    pointsStr: o.points ? `+${o.points} điểm` : "+50 điểm",
     badgeText: o.status || "Hoàn thành",
     badgeStyle:
       o.statusClasses ||
@@ -819,8 +819,8 @@ export function CustomerDashboard({
     type: "redemption" as const,
     title: `Đổi quà ưu đãi: ${r.rewardName || r.name}`,
     description: r.description || `Đổi thành công: ${r.rewardName || r.name}`,
-    valueStr: `-${r.pointsUsed || r.pointsRequired || r.points || r.value || 0} pts`,
-    pointsStr: `-${r.pointsUsed || r.pointsRequired || r.points || r.value || 0} pts`,
+    valueStr: `-${r.pointsUsed || r.pointsRequired || r.points || r.value || 0} điểm`,
+    pointsStr: `-${r.pointsUsed || r.pointsRequired || r.points || r.value || 0} điểm`,
     badgeText: r.status || "Đã nhận",
     badgeStyle: "bg-rose-500/10 text-rose-500 border-rose-500/20",
     dateStr: formatVietnameseDate(r.date || r.createdAt),
@@ -876,7 +876,7 @@ export function CustomerDashboard({
       if (!current) {
         return {
           name: "Member (Hạng Phổ thông)",
-          nextTarget: nextTier ? `${nextTier.threshold - pts} pts nâng ${nextTier.name}` : "Tối đa",
+          nextTarget: nextTier ? `${nextTier.threshold - pts} điểm nâng ${nextTier.name}` : "Tối đa",
           progress: nextTier ? (pts / nextTier.threshold) * 100 : 100,
           color: "text-slate-400 border-slate-400",
           bg: "bg-slate-400/10",
@@ -901,7 +901,7 @@ export function CustomerDashboard({
 
       return {
         name: current.name,
-        nextTarget: nextTier ? `${nextTier.threshold - pts} pts nâng ${nextTier.name}` : "Hạng cao nhất",
+        nextTarget: nextTier ? `${nextTier.threshold - pts} điểm nâng ${nextTier.name}` : "Hạng cao nhất",
         progress: nextTier ? ((pts - current.threshold) / (nextTier.threshold - current.threshold)) * 100 : 100,
         color: colorClass,
         bg: bgClass,
@@ -920,7 +920,7 @@ export function CustomerDashboard({
     } else if (pts >= 2500) {
       return {
         name: "Icon (Vàng VIP)",
-        nextTarget: `${10000 - pts} pts nâng Atelier`,
+        nextTarget: `${10000 - pts} điểm nâng Atelier`,
         progress: (pts / 10000) * 100,
         color: "text-yellow-500 border-yellow-500",
         bg: "bg-yellow-500/10",
@@ -928,7 +928,7 @@ export function CustomerDashboard({
     } else if (pts >= 500) {
       return {
         name: "Essential (Hạng Bạc)",
-        nextTarget: `${2500 - pts} pts nâng Icon`,
+        nextTarget: `${2500 - pts} điểm nâng Icon`,
         progress: (pts / 2500) * 100,
         color: "text-sky-500 border-sky-500",
         bg: "bg-sky-500/10",
@@ -936,7 +936,7 @@ export function CustomerDashboard({
     } else {
       return {
         name: "Member (Hạng Phổ thông)",
-        nextTarget: `${500 - pts} pts nâng Essential`,
+        nextTarget: `${500 - pts} điểm nâng Essential`,
         progress: (pts / 500) * 100,
         color: "text-slate-400 border-slate-400",
         bg: "bg-slate-400/10",
@@ -1079,6 +1079,11 @@ export function CustomerDashboard({
         avatarUrl: avatar,
         phone,
         email,
+        facebook: fb,
+        tiktok: tt,
+        zalo: zl,
+        instagram: ig,
+        linkedin: li,
       },
       "Cập nhật thông tin thành công!",
     );
@@ -1104,28 +1109,30 @@ export function CustomerDashboard({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/30">
+            Mã KH: {getCustomerCode(customer, companies)}
+          </Badge>
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+            (Tạo: {customer.createdAt?.toDate?.()?.toLocaleDateString("vi-VN") || "Vừa xong"})
+          </span>
+        </div>
         <div className="flex items-center gap-3">
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-blue-500/20 bg-blue-500/5 text-blue-600 text-sm font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-[10px] border border-blue-500/20 bg-blue-500/5 text-blue-600 text-sm font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm"
           >
             <Download className="w-3.5 h-3.5" /> Xuất PDF
           </button>
-          <div className="text-xs text-muted-foreground ">
-            Mã KH: {getCustomerCode(customer, companies)} (Tạo:{" "}
-            {customer.createdAt?.toDate?.()?.toLocaleDateString("vi-VN") ||
-              "Vừa xong"}
-            )
-          </div>
         </div>
       </div>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <DialogContent className="sm:max-w-[425px] rounded-3xl border border-border bg-card backdrop-blur-xl">
+        <DialogContent className="sm:max-w-[425px] rounded-[10px] border border-border bg-card backdrop-blur-xl">
           <DialogHeader>
-            <div className="mb-4 w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+            <div className="mb-4 w-12 h-12 rounded-[10px] bg-rose-500/10 text-rose-500 flex items-center justify-center">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <DialogTitle className="text-xl font-bold tracking-tight">Xác nhận xóa khách hàng</DialogTitle>
@@ -1138,7 +1145,7 @@ export function CustomerDashboard({
             <Button
               variant="outline"
               onClick={() => setShowDeleteConfirm(false)}
-              className="flex-1 rounded-xl h-10 font-bold"
+              className="flex-1 rounded-[10px] h-10 font-bold"
             >
               Hủy bỏ
             </Button>
@@ -1146,7 +1153,7 @@ export function CustomerDashboard({
               variant="destructive"
               onClick={handleDeleteCustomer}
               disabled={isDeleting}
-              className="flex-1 rounded-xl h-10 font-bold bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/20"
+              className="flex-1 rounded-[10px] h-10 font-bold bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/20"
             >
               {isDeleting ? "Đang xóa..." : "Xác nhận xóa"}
             </Button>
@@ -1160,14 +1167,14 @@ export function CustomerDashboard({
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-3xl border border-border/50 bg-sidebar/75 backdrop-blur-md p-6 relative overflow-hidden shadow-xl"
+            className="rounded-[10px] border border-border/50 bg-sidebar/75 backdrop-blur-md p-6 relative overflow-hidden shadow-xl"
           >
             {/* Elegant luxury gold visual overlay background */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#2f6cf5]/5 blur-3xl rounded-full" />
 
             <div className="flex flex-col items-center text-center space-y-4 pt-4">
               <div className="relative group">
-                <div className="w-24 h-24 rounded-3xl border-2 border-[#2f6cf5]/30 overflow-hidden bg-primary/10 text-primary shadow-lg transition-transform hover:scale-105 duration-300 flex items-center justify-center text-2xl font-bold uppercase shrink-0">
+                <div className="w-24 h-24 rounded-[10px] border-2 border-[#2f6cf5]/30 overflow-hidden bg-primary/10 text-primary shadow-lg transition-transform hover:scale-105 duration-300 flex items-center justify-center text-2xl font-bold uppercase shrink-0">
                   {avatar ? (
                     <img
                       src={avatar}
@@ -1181,7 +1188,7 @@ export function CustomerDashboard({
                 {!isUpdatingField && (
                   <button
                     onClick={() => setIsUpdatingField(true)}
-                    className="absolute -bottom-1 -right-1 p-1.5 bg-background border border-border rounded-xl shadow-md hover:text-primary transition-all text-xs"
+                    className="absolute -bottom-1 -right-1 p-1.5 bg-background border border-border rounded-[10px] shadow-md hover:text-primary transition-all text-xs"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
@@ -1280,13 +1287,13 @@ export function CustomerDashboard({
                   
                   if (suggested.code !== currentStatus) {
                     return (
-                      <div className="flex flex-col items-center gap-2 bg-amber-500/5 border border-amber-500/20 rounded-2xl p-3 w-full max-w-[280px]">
-                        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                      <div className="flex flex-col items-center gap-2 bg-indigo-500/5 border border-indigo-500/20 rounded-[10px] p-3 w-full max-w-[280px]">
+                        <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
                           <Sparkles className="w-3.5 h-3.5" />
-                          <span className="text-[10px] font-bold uppercase tracking-wider">Trạng thái gợi ý</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Phân tích vòng đời (Lifecycle)</span>
                         </div>
                         <p className="text-[11px] text-center text-muted-foreground leading-tight">
-                          Dựa trên hành vi, khách hàng nên là: <strong className="text-foreground">{suggested.classification}</strong>
+                          Giai đoạn vòng đời phù hợp hiện tại: <strong className="text-foreground">{suggested.classification}</strong>
                         </p>
                         <button
                           onClick={async () => {
@@ -1297,14 +1304,14 @@ export function CustomerDashboard({
                               to: suggested.code,
                               date: formatVietnameseDate(Date.now()),
                               timestamp: Date.now(),
-                              note: "Tự động gợi ý từ hệ thống SEVA Status Service"
+                              note: "Tự động gợi ý vòng đời từ hệ thống SEVA"
                             };
                             await updateFirestore({
                               activityStatus: suggested.code as any,
                               statusHistory: [...(customer.statusHistory || []), logEntry]
-                            }, `Đã áp dụng trạng thái hệ thống: ${suggested.classification}`);
+                            }, `Đã dịch chuyển vòng đời sang: ${suggested.classification}`);
                           }}
-                          className="w-full py-1.5 bg-amber-500 text-white rounded-lg text-[10px] font-bold shadow-sm hover:bg-amber-600 transition-colors"
+                          className="w-full py-1.5 bg-indigo-500 text-white rounded-[10px] text-[10px] font-bold shadow-sm hover:bg-indigo-600 transition-colors"
                         >
                           Cập nhật ngay
                         </button>
@@ -1327,7 +1334,7 @@ export function CustomerDashboard({
                   Sửa thông tin cơ bản
                 </h4>
 
-                <div className="space-y-2 bg-background/50 p-3 rounded-xl border border-dashed border-border/80">
+                <div className="space-y-2 bg-background/50 p-3 rounded-[10px] border border-dashed border-border/80">
                   <span className="text-xs text-muted-foreground block font-bold uppercase tracking-wider mb-1">
                     CẬP NHẬT ẢNH ĐẠI DIỆN
                   </span>
@@ -1341,7 +1348,7 @@ export function CustomerDashboard({
                     />
                     <label
                       htmlFor="dashboard-avatar-upload"
-                      className="text-xs font-bold uppercase py-1.5 px-3 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-lg cursor-pointer transition-colors flex items-center gap-1.5 shadow-2xs"
+                      className="text-xs font-bold uppercase py-1.5 px-3 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-[10px] cursor-pointer transition-colors flex items-center gap-1.5 shadow-2xs"
                     >
                       <Upload className="w-3 h-3" /> Tải ảnh từ máy tính
                     </label>
@@ -1355,7 +1362,7 @@ export function CustomerDashboard({
                     SỐ ĐIỆN THOẠI
                   </span>
                   <input
-                    className="w-full p-2 text-xs bg-background border rounded-lg focus:ring-1 focus:ring-primary/20 outline-none"
+                    className="w-full p-2 text-xs bg-background border rounded-[10px] focus:ring-1 focus:ring-primary/20 outline-none"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                   />
@@ -1365,22 +1372,44 @@ export function CustomerDashboard({
                     EMAIL KHÁCH HÀNG
                   </span>
                   <input
-                    className="w-full p-2 text-xs bg-background border rounded-lg focus:ring-1 focus:ring-primary/20 outline-none"
+                    className="w-full p-2 text-xs bg-background border rounded-[10px] focus:ring-1 focus:ring-primary/20 outline-none"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Facebook</span>
+                    <input className="w-full p-2 h-8 text-xs bg-background border rounded-[10px] focus:ring-1 outline-none" value={fb} onChange={(e) => setFb(e.target.value)} placeholder="Link FB" />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Zalo</span>
+                    <input className="w-full p-2 h-8 text-xs bg-background border rounded-[10px] focus:ring-1 outline-none" value={zl} onChange={(e) => setZl(e.target.value)} placeholder="Số Zalo" />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase">LinkedIn</span>
+                    <input className="w-full p-2 h-8 text-xs bg-background border rounded-[10px] focus:ring-1 outline-none" value={li} onChange={(e) => setLi(e.target.value)} placeholder="Link LinkedIn" />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Instagram</span>
+                    <input className="w-full p-2 h-8 text-xs bg-background border rounded-[10px] focus:ring-1 outline-none" value={ig} onChange={(e) => setIg(e.target.value)} placeholder="Link Instagram" />
+                  </div>
+                  <div className="space-y-1 col-span-2">
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase">TikTok</span>
+                    <input className="w-full p-2 h-8 text-xs bg-background border rounded-[10px] focus:ring-1 outline-none" value={tt} onChange={(e) => setTt(e.target.value)} placeholder="Link TikTok" />
+                  </div>
                 </div>
 
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={() => setIsUpdatingField(false)}
-                    className="flex-1 py-1.5 border rounded-lg text-xs hover:bg-muted"
+                    className="flex-1 py-1.5 border rounded-[10px] text-xs hover:bg-muted"
                   >
                     Hủy
                   </button>
                   <button
                     onClick={handleSaveProfileHeader}
-                    className="flex-1 py-1.5 bg-[#2f6cf5] text-white rounded-lg text-xs font-bold"
+                    className="flex-1 py-1.5 bg-[#2f6cf5] text-white rounded-[10px] text-xs font-bold"
                   >
                     Lưu hồ sơ
                   </button>
@@ -1396,6 +1425,35 @@ export function CustomerDashboard({
                   <Mail className="w-4 h-4 shrink-0 text-[#2f6cf5]" />
                   <span className="truncate">{email || "Chưa có email"}</span>
                 </div>
+                {(fb || zl || li || ig || tt) && (
+                  <div className="flex items-center gap-2 pt-1 pl-7">
+                    {fb && (
+                      <a href={fb.startsWith("http") ? fb : `https://${fb}`} target="_blank" rel="noreferrer" className="w-6 h-6 rounded-[10px] bg-blue-600/10 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors">
+                        <Facebook className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    {zl && (
+                      <a href={zl.startsWith("http") ? zl : `https://zalo.me/${zl}`} target="_blank" rel="noreferrer" className="w-6 h-6 rounded-[10px] bg-sky-500/10 text-sky-600 font-bold text-[10px] flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors">
+                        Z
+                      </a>
+                    )}
+                    {li && (
+                      <a href={li.startsWith("http") ? li : `https://${li}`} target="_blank" rel="noreferrer" className="w-6 h-6 rounded-[10px] bg-blue-700/10 text-blue-700 flex items-center justify-center hover:bg-blue-700 hover:text-white transition-colors">
+                        <Linkedin className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    {ig && (
+                      <a href={ig.startsWith("http") ? ig : `https://${ig}`} target="_blank" rel="noreferrer" className="w-6 h-6 rounded-[10px] bg-pink-600/10 text-pink-600 flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors">
+                        <Instagram className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    {tt && (
+                      <a href={tt.startsWith("http") ? tt : `https://${tt}`} target="_blank" rel="noreferrer" className="w-6 h-6 rounded-[10px] bg-slate-900/10 dark:bg-slate-200/10 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:bg-slate-900 hover:text-white dark:hover:text-black transition-colors">
+                        <span className="font-extrabold text-[10px]">♬</span>
+                      </a>
+                    )}
+                  </div>
+                )}
                 {company && (
                   <div className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors border-t border-border/30 pt-3">
                     <Landmark className="w-4 h-4 shrink-0 text-[#2f6cf5]" />
@@ -1418,7 +1476,7 @@ export function CustomerDashboard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-xl space-y-6 text-left relative overflow-hidden"
+            className="rounded-[10px] border border-border/50 bg-sidebar/75 p-6 shadow-xl space-y-6 text-left relative overflow-hidden"
           >
             <div>
               <h4 className="text-xs font-black text-foreground uppercase tracking-widest flex items-center gap-2">
@@ -1460,7 +1518,7 @@ export function CustomerDashboard({
               }
 
               return (
-                <div className={`w-full aspect-[1.58/1] rounded-2xl bg-gradient-to-tr ${cardBg} p-5 relative overflow-hidden shadow-2xl flex flex-col justify-between border ${borderCol} group`}>
+                <div className={`w-full aspect-[1.58/1] rounded-[10px] bg-gradient-to-tr ${cardBg} p-5 relative overflow-hidden shadow-2xl flex flex-col justify-between border ${borderCol} group`}>
                   {/* Glossy reflection shine effect */}
                   <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out pointer-events-none" />
                   
@@ -1487,7 +1545,7 @@ export function CustomerDashboard({
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-md bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+                      <span className="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-[10px] bg-white/10 backdrop-blur-sm border border-white/20 text-white">
                         {cardTier}
                       </span>
                     </div>
@@ -1502,8 +1560,10 @@ export function CustomerDashboard({
                       <p className="text-[10px] font-bold uppercase tracking-wider text-white truncate max-w-[150px]">{customer.name}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[7px] font-semibold text-white/50 uppercase tracking-widest">LOYALTY MEMBER Since</p>
-                      <p className="text-[9px] font-mono font-bold text-white leading-none">12/24</p>
+                      <p className="text-[7px] font-semibold text-white/50 uppercase tracking-widest">MEMBER SINCE</p>
+                      <p className="text-[10px] font-mono font-bold text-white leading-none tracking-wider mt-0.5">
+                        {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString('vi-VN', {month: '2-digit', year: '2-digit'}) : 'NEW'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1566,7 +1626,7 @@ export function CustomerDashboard({
                     }
 
                     return activeBenefits.map((benefit: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-start text-xs bg-muted/30 px-3 py-2 rounded-xl border border-border/40 gap-2">
+                      <div key={idx} className="flex justify-between items-start text-xs bg-muted/30 px-3 py-2 rounded-[10px] border border-border/40 gap-2">
                         <span className="font-bold text-foreground shrink-0">{benefit.name}:</span>
                         <span className="text-muted-foreground font-medium text-right break-words leading-tight">{benefit.value}</span>
                       </div>
@@ -1585,12 +1645,12 @@ export function CustomerDashboard({
                 ) : (
                   <div className="grid grid-cols-1 gap-1.5">
                     {personalPrivileges.map((p, idx) => (
-                      <div key={idx} className="flex items-center justify-between bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-3 py-2 rounded-xl text-xs font-bold transition-all">
+                      <div key={idx} className="flex items-center justify-between bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-3 py-2 rounded-[10px] text-xs font-bold transition-all">
                         <span className="leading-tight flex-1 break-words">{p}</span>
                         <button
                           onClick={() => handleRemovePrivilege(idx)}
                           type="button"
-                          className="text-xs text-rose-500 hover:text-rose-700 hover:scale-110 transition-transform font-bold px-1 py-0.5 ml-2 cursor-pointer rounded-md hover:bg-rose-500/10 shrink-0"
+                          className="text-xs text-rose-500 hover:text-rose-700 hover:scale-110 transition-transform font-bold px-1 py-0.5 ml-2 cursor-pointer rounded-[10px] hover:bg-rose-500/10 shrink-0"
                           title="Xóa đặc quyền riêng này"
                         >
                           ✕
@@ -1602,7 +1662,7 @@ export function CustomerDashboard({
               </div>
 
               {/* 3. Add personal privilege form */}
-              <div className="space-y-2 bg-muted/20 p-3 rounded-2xl border border-border/50">
+              <div className="space-y-2 bg-muted/20 p-3 rounded-[10px] border border-border/50">
                 <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground block">
                   Thêm đặc quyền riêng của hội viên
                 </label>
@@ -1618,12 +1678,12 @@ export function CustomerDashboard({
                       }
                     }}
                     placeholder="VD: Phòng chờ riêng VIP, Tặng hoa kỷ niệm..."
-                    className="flex-1 px-3 py-1.5 bg-background border border-border rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-[#2f6cf5]"
+                    className="flex-1 px-3 py-1.5 bg-background border border-border rounded-[10px] text-xs font-medium outline-none focus:ring-1 focus:ring-[#2f6cf5]"
                   />
                   <button
                     onClick={handleAddPrivilege}
                     type="button"
-                    className="px-3.5 py-1.5 bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 text-white rounded-xl text-xs font-bold shrink-0 transition-colors cursor-pointer"
+                    className="px-3.5 py-1.5 bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 text-white rounded-[10px] text-xs font-bold shrink-0 transition-colors cursor-pointer"
                   >
                     Thêm
                   </button>
@@ -1632,282 +1692,10 @@ export function CustomerDashboard({
             </div>
           </motion.div>
 
-          {/* SOCIAL NETWORK INTEGRATION GRAPH & LINKS (MỤC LIÊN KẾT TẤT CẢ NỀN TẢNG) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-4 text-left"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-bold text-foreground uppercase tracking-widest">
-                  KỸ THUẬT SỐ & MẠNG XÃ HỘI CONNECTED
-                </h4>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Xác thực tài khoản và liên kết dữ liệu đa điểm của khách hàng.
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  if (isEditingSocial) {
-                    handleSaveSocialLinks();
-                  } else {
-                    setIsEditingSocial(true);
-                  }
-                }}
-                className={`px-3 py-1 rounded-xl text-xs font-bold border transition-all ${
-                  isEditingSocial
-                    ? "bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600"
-                    : "bg-background hover:bg-muted border-border"
-                }`}
-              >
-                {isEditingSocial ? "Lưu ✓" : "Sửa ✎"}
-              </button>
-            </div>
-
-            {isEditingSocial ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2 bg-muted/20 p-3 rounded-xl border text-left">
-                <div className="space-y-1">
-                  <span className="text-[10px] text-muted-foreground font-bold uppercase">
-                    FB / Messenger Link
-                  </span>
-                  <input
-                    className="w-full p-2 h-8 text-xs bg-background border rounded-lg focus:ring-1 outline-none"
-                    value={fb}
-                    onChange={(e) => setFb(e.target.value)}
-                    placeholder="Link Facebook"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-muted-foreground font-bold uppercase">
-                    Zalo Sđt / Profile URL
-                  </span>
-                  <input
-                    className="w-full p-2 h-8 text-xs bg-background border rounded-lg focus:ring-1 outline-none"
-                    value={zl}
-                    onChange={(e) => setZl(e.target.value)}
-                    placeholder="0901234567 hoặc link"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-muted-foreground font-bold uppercase">
-                    LinkedIn URL
-                  </span>
-                  <input
-                    className="w-full p-2 h-8 text-xs bg-background border rounded-lg focus:ring-1 outline-none"
-                    value={li}
-                    onChange={(e) => setLi(e.target.value)}
-                    placeholder="Link LinkedIn"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-muted-foreground font-bold uppercase">
-                    Instagram Handler
-                  </span>
-                  <input
-                    className="w-full p-2 h-8 text-xs bg-background border rounded-lg focus:ring-1 outline-none"
-                    value={ig}
-                    onChange={(e) => setIg(e.target.value)}
-                    placeholder="Link Instagram"
-                  />
-                </div>
-                <div className="space-y-1 sm:col-span-2 lg:col-span-1">
-                  <span className="text-[10px] text-muted-foreground font-bold uppercase">
-                    TikTok Profile
-                  </span>
-                  <input
-                    className="w-full p-2 h-8 text-xs bg-background border rounded-lg focus:ring-1 outline-none"
-                    value={tt}
-                    onChange={(e) => setTt(e.target.value)}
-                    placeholder="Link TikTok"
-                  />
-                </div>
-              </div>
-            ) : (
-              /* High-fidelity interconnected visual graph of socials */
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-                {/* Facebook Node */}
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  className={`flex flex-col items-center justify-between rounded-2xl border p-2 text-center transition-all shadow-2xs hover:shadow-md ${
-                    fb
-                      ? "bg-blue-600/5 border-blue-600/20 text-blue-600 hover:border-blue-600/40"
-                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
-                  }`}
-                >
-                  <Facebook className="w-5 h-5 mb-1" />
-                  <span className="text-[10px] font-bold block truncate max-w-full">
-                    Facebook
-                  </span>
-                  {fb ? (
-                    <a
-                      href={fb.startsWith("http") ? fb : `https://${fb}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-1 text-[9px] font-extrabold flex items-center gap-0.5 hover:underline uppercase text-blue-700"
-                    >
-                      Kết nối <ExternalLink className="w-2 h-2" />
-                    </a>
-                  ) : (
-                    <span className="mt-1 text-[9px] font-extrabold uppercase opacity-40">
-                      Trống
-                    </span>
-                  )}
-                </motion.div>
-
-                {/* Zalo Node */}
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  className={`flex flex-col items-center justify-between rounded-2xl border p-2 text-center transition-all shadow-2xs hover:shadow-md ${
-                    zl
-                      ? "bg-sky-500/5 border-sky-500/20 text-sky-600 hover:border-sky-500/40"
-                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
-                  }`}
-                >
-                  <div className="w-5 h-5 rounded-full bg-sky-500 text-white font-bold text-[10px] flex items-center justify-center mb-1 font-sans">
-                    Z
-                  </div>
-                  <span className="text-[10px] font-bold block truncate max-w-full">
-                    Zalo Chat
-                  </span>
-                  {zl ? (
-                    <a
-                      href={
-                        zl.startsWith("http") ? zl : `https://zalo.me/${zl}`
-                      }
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-1 text-[9px] font-extrabold flex items-center gap-0.5 hover:underline uppercase text-sky-700"
-                    >
-                      Mở Zalo <ExternalLink className="w-2 h-2" />
-                    </a>
-                  ) : (
-                    <span className="mt-1 text-[9px] font-extrabold uppercase opacity-40">
-                      Trống
-                    </span>
-                  )}
-                </motion.div>
-
-                {/* LinkedIn Node */}
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  className={`flex flex-col items-center justify-between rounded-2xl border p-2 text-center transition-all shadow-2xs hover:shadow-md ${
-                    li
-                      ? "bg-blue-700/5 border-blue-700/20 text-blue-700 hover:border-blue-700/40"
-                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
-                  }`}
-                >
-                  <Linkedin className="w-5 h-5 mb-1" />
-                  <span className="text-[10px] font-bold block truncate max-w-full">
-                    LinkedIn
-                  </span>
-                  {li ? (
-                    <a
-                      href={li.startsWith("http") ? li : `https://${li}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-1 text-[9px] font-extrabold flex items-center gap-0.5 hover:underline uppercase text-blue-800"
-                    >
-                      Hồ sơ <ExternalLink className="w-2 h-2" />
-                    </a>
-                  ) : (
-                    <span className="mt-1 text-[9px] font-extrabold uppercase opacity-40">
-                      Trống
-                    </span>
-                  )}
-                </motion.div>
-
-                {/* Instagram Node */}
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  className={`flex flex-col items-center justify-between rounded-2xl border p-2 text-center transition-all shadow-2xs hover:shadow-md ${
-                    ig
-                      ? "bg-pink-600/5 border-pink-600/20 text-pink-600 hover:border-pink-600/40"
-                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
-                  }`}
-                >
-                  <Instagram className="w-5 h-5 mb-1" />
-                  <span className="text-[10px] font-bold block truncate max-w-full">
-                    Instagram
-                  </span>
-                  {ig ? (
-                    <a
-                      href={ig.startsWith("http") ? ig : `https://${ig}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-1 text-[9px] font-extrabold flex items-center gap-0.5 hover:underline uppercase text-pink-700"
-                    >
-                      Kênh <ExternalLink className="w-2 h-2" />
-                    </a>
-                  ) : (
-                    <span className="mt-1 text-[9px] font-extrabold uppercase opacity-40">
-                      Trống
-                    </span>
-                  )}
-                </motion.div>
-
-                {/* TikTok Node */}
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  className={`flex flex-col items-center justify-between rounded-2xl border p-2 text-center transition-all shadow-2xs hover:shadow-md ${
-                    tt
-                      ? "bg-slate-900/5 border-slate-900/20 text-slate-800 dark:text-slate-200 hover:border-slate-900/40"
-                      : "bg-muted/10 border-border/40 text-muted-foreground hover:border-border/60"
-                  }`}
-                >
-                  <div className="w-5 h-5 rounded-full bg-slate-800 dark:bg-slate-200 text-white dark:text-black font-extrabold text-[10px] flex items-center justify-center mb-1 ">
-                     ♬
-                  </div>
-                  <span className="text-[10px] font-bold block truncate max-w-full">
-                    TikTok
-                  </span>
-                  {tt ? (
-                    <a
-                      href={tt.startsWith("http") ? tt : `https://${tt}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-1 text-[9px] font-extrabold flex items-center gap-0.5 hover:underline uppercase text-slate-900"
-                    >
-                      Kênh <ExternalLink className="w-2 h-2" />
-                    </a>
-                  ) : (
-                    <span className="mt-1 text-[9px] font-extrabold uppercase opacity-40">
-                      Trống
-                    </span>
-                  )}
-                </motion.div>
-              </div>
-            )}
-          </motion.div>
-
-          {/* Quà tặng, Đổi quà tặng, Tương tác utility cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-             {/* Quà tặng */}
-             <div className="rounded-2xl border border-rose-500/20 bg-rose-500/[0.03] p-5 space-y-1.5 shadow-sm hover:shadow-md transition-all duration-300">
-                <h4 className="text-[11px] font-black text-rose-600/90 uppercase tracking-wider flex items-center gap-2">
-                  <Award className="w-3.5 h-3.5" /> Quà tặng
-                </h4>
-                <p className="text-[10px] text-rose-600/60 font-medium">Danh sách quà tặng hệ thống</p>
-             </div>
-             {/* Đổi quà */}
-             <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.03] p-5 space-y-1.5 shadow-sm hover:shadow-md transition-all duration-300">
-                <h4 className="text-[11px] font-black text-indigo-600/90 uppercase tracking-wider flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5" /> Đổi quà tặng
-                </h4>
-                <p className="text-[10px] text-indigo-600/60 font-medium">Lịch sử quy đổi khách hàng</p>
-             </div>
-             {/* Tương tác */}
-             <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.03] p-5 space-y-1.5 shadow-sm hover:shadow-md transition-all duration-300">
-                <h4 className="text-[11px] font-black text-emerald-600/90 uppercase tracking-wider flex items-center gap-2">
-                  <MessageSquare className="w-3.5 h-3.5" /> Tương tác
-                </h4>
-                <p className="text-[10px] text-emerald-600/60 font-medium">Lịch sử tương tác hệ thống</p>
-             </div>
-          </div>
+          
 
           {/* CUSTOM ATTRIBUTES & FASHION PANEL */}
-          <div className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 space-y-4 shadow-md">
+          <div className="rounded-[10px] border border-border/50 bg-sidebar/75 p-6 space-y-4 shadow-md">
             <div className="flex items-center justify-between border-b pb-2">
               <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                 <Gem className="w-3.5 h-3.5 text-[#2f6cf5]" /> Thuộc tính mở rộng
@@ -1922,7 +1710,7 @@ export function CustomerDashboard({
                   }
                 }}
                 disabled={isSavingAttributes}
-                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all flex items-center gap-1 ${
+                className={`px-2.5 py-1 rounded-[10px] text-[10px] font-bold border transition-all flex items-center gap-1 ${
                   isEditingAttributes
                     ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500"
                     : "bg-background hover:bg-muted border-border text-muted-foreground hover:text-foreground"
@@ -1980,7 +1768,7 @@ export function CustomerDashboard({
                       <select
                         value={fashionStyle}
                         onChange={(e) => setFashionStyle(e.target.value)}
-                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                        className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none"
                       >
                         <option value="classic">Classic Elegant (Cổ điển)</option>
                         <option value="minimalist">Minimalist (Tối giản)</option>
@@ -1995,7 +1783,7 @@ export function CustomerDashboard({
                       <select
                         value={colorPalette}
                         onChange={(e) => setColorPalette(e.target.value)}
-                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                        className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none"
                       >
                         <option value="neutral">Neutral (Trung tính)</option>
                         <option value="warm">Warm (Tông ấm)</option>
@@ -2009,7 +1797,7 @@ export function CustomerDashboard({
                       <select
                         value={materials}
                         onChange={(e) => setMaterials(e.target.value)}
-                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                        className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none"
                       >
                         <option value="gold">Yellow Gold (Vàng 18K/24K)</option>
                         <option value="white_gold">White Gold & Platinum</option>
@@ -2024,7 +1812,7 @@ export function CustomerDashboard({
                       <select
                         value={occasions}
                         onChange={(e) => setOccasions(e.target.value)}
-                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                        className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none"
                       >
                         <option value="daily">Daily Wear (Đeo hàng ngày)</option>
                         <option value="gala">Parties & Gala (Dạ tiệc)</option>
@@ -2038,7 +1826,7 @@ export function CustomerDashboard({
                       <select
                         value={brandReference}
                         onChange={(e) => setBrandReference(e.target.value)}
-                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                        className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none"
                       >
                         <option value="cartier">Cartier Style</option>
                         <option value="tiffany">Tiffany & Co Style</option>
@@ -2056,7 +1844,7 @@ export function CustomerDashboard({
                           value={ringSize}
                           onChange={(e) => setRingSize(e.target.value)}
                           placeholder="v.d. 14"
-                          className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                          className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none"
                         />
                       </div>
                       <div className="space-y-1">
@@ -2066,7 +1854,7 @@ export function CustomerDashboard({
                           value={braceletSize}
                           onChange={(e) => setBraceletSize(e.target.value)}
                           placeholder="v.d. 16cm"
-                          className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                          className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none"
                         />
                       </div>
                     </div>
@@ -2079,7 +1867,7 @@ export function CustomerDashboard({
                           value={necklaceLength}
                           onChange={(e) => setNecklaceLength(e.target.value)}
                           placeholder="v.d. 45cm"
-                          className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                          className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none"
                         />
                       </div>
                       <div className="space-y-1">
@@ -2089,7 +1877,7 @@ export function CustomerDashboard({
                           value={jewelryPreference}
                           onChange={(e) => setJewelryPreference(e.target.value)}
                           placeholder="v.d. Bông tai, Nhẫn"
-                          className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                          className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none"
                         />
                       </div>
                     </div>
@@ -2101,7 +1889,7 @@ export function CustomerDashboard({
                         onChange={(e) => setAdditionalNotes(e.target.value)}
                         placeholder="Nhập ghi chú style..."
                         rows={2}
-                        className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none resize-none"
+                        className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none resize-none"
                       />
                     </div>
                   </div>
@@ -2113,9 +1901,9 @@ export function CustomerDashboard({
                     Tùy chọn nhận thông báo
                   </span>
                   <div className="space-y-3">
-                    <label className="flex items-center justify-between p-2.5 rounded-xl border border-border bg-background/50 cursor-pointer hover:bg-muted/30 transition-colors">
+                    <label className="flex items-center justify-between p-2.5 rounded-[10px] border border-border bg-background/50 cursor-pointer hover:bg-muted/30 transition-colors">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${emailNotifications ? "bg-blue-500/10 text-blue-500" : "bg-muted text-muted-foreground"}`}>
+                        <div className={`p-2 rounded-[10px] ${emailNotifications ? "bg-blue-500/10 text-blue-500" : "bg-muted text-muted-foreground"}`}>
                           <Mail className="w-4 h-4" />
                         </div>
                         <div className="text-left">
@@ -2131,9 +1919,9 @@ export function CustomerDashboard({
                       />
                     </label>
 
-                    <label className="flex items-center justify-between p-2.5 rounded-xl border border-border bg-background/50 cursor-pointer hover:bg-muted/30 transition-colors">
+                    <label className="flex items-center justify-between p-2.5 rounded-[10px] border border-border bg-background/50 cursor-pointer hover:bg-muted/30 transition-colors">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${smsNotifications ? "bg-amber-500/10 text-amber-500" : "bg-muted text-muted-foreground"}`}>
+                        <div className={`p-2 rounded-[10px] ${smsNotifications ? "bg-amber-500/10 text-amber-500" : "bg-muted text-muted-foreground"}`}>
                           <MessageSquare className="w-4 h-4" />
                         </div>
                         <div className="text-left">
@@ -2171,14 +1959,14 @@ export function CustomerDashboard({
                                 value={val}
                                 onChange={(e) => setEditedCustomFields({ ...editedCustomFields, [attr.key]: e.target.value })}
                                 placeholder={attr.placeholder}
-                                className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none resize-none"
+                                className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none resize-none"
                                 rows={2}
                               />
                             ) : attr.type === "select" ? (
                               <select
                                 value={val}
                                 onChange={(e) => setEditedCustomFields({ ...editedCustomFields, [attr.key]: e.target.value })}
-                                className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                                className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none"
                               >
                                 <option value="">-- Chọn --</option>
                                 {attr.options?.map((opt) => (
@@ -2231,7 +2019,7 @@ export function CustomerDashboard({
                                 value={val}
                                 onChange={(e) => setEditedCustomFields({ ...editedCustomFields, [attr.key]: e.target.value })}
                                 placeholder={attr.placeholder}
-                                className="w-full bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
+                                className="w-full bg-background border border-border rounded-[10px] px-2 py-1 text-xs text-foreground focus:outline-none"
                               />
                             )}
                           </div>
@@ -2245,7 +2033,7 @@ export function CustomerDashboard({
                   type="button"
                   onClick={handleSaveAllAttributes}
                   disabled={isSavingAttributes}
-                  className="w-full bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 text-white font-bold py-2 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                  className="w-full bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 text-white font-bold py-2 px-4 rounded-[10px] text-xs transition-colors flex items-center justify-center gap-1.5"
                 >
                   {isSavingAttributes ? (
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -2260,7 +2048,7 @@ export function CustomerDashboard({
               <div className="space-y-4 text-xs">
                 {/* View Mode Section 1: Gu Thời Trang & Thẩm Mỹ */}
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-xl border border-border/30">
+                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-[10px] border border-border/30">
                     <span className="text-muted-foreground font-medium">Gu thời trang:</span>
                     <span className="font-bold text-foreground">
                       {fashionStyle === "classic" && "Classic Elegant"}
@@ -2271,14 +2059,14 @@ export function CustomerDashboard({
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-xl border border-border/30">
+                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-[10px] border border-border/30">
                     <span className="text-muted-foreground font-medium">Tông màu ưa thích:</span>
                     <span className="font-bold text-[#2f6cf5] capitalize">
                       {colorPalette === "neutral" ? "Neutral" : colorPalette === "warm" ? "Warm" : colorPalette === "cool" ? "Cool" : "Pastel"}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-xl border border-border/30">
+                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-[10px] border border-border/30">
                     <span className="text-muted-foreground font-medium">Chất liệu tối ưu:</span>
                     <span className="font-bold text-foreground capitalize">
                       {materials === "gold" && "Vàng 18K/24K"}
@@ -2289,7 +2077,7 @@ export function CustomerDashboard({
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-xl border border-border/30">
+                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-[10px] border border-border/30">
                     <span className="text-muted-foreground font-medium">Dịp sử dụng:</span>
                     <span className="font-bold text-foreground">
                       {occasions === "daily" && "Hàng ngày"}
@@ -2299,7 +2087,7 @@ export function CustomerDashboard({
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-xl border border-border/30">
+                  <div className="flex justify-between items-center bg-background/30 p-2 rounded-[10px] border border-border/30">
                     <span className="text-muted-foreground font-medium">Thương hiệu Ref:</span>
                     <span className="font-bold text-foreground capitalize">
                       {brandReference} Style
@@ -2311,11 +2099,11 @@ export function CustomerDashboard({
                     <div className="col-span-2 mb-1">
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">Thông báo ưu tiên</span>
                     </div>
-                    <div className={`p-2 rounded-xl border ${emailNotifications ? "bg-blue-500/5 border-blue-500/20" : "bg-muted/20 border-border/20"} flex items-center gap-2`}>
+                    <div className={`p-2 rounded-[10px] border ${emailNotifications ? "bg-blue-500/5 border-blue-500/20" : "bg-muted/20 border-border/20"} flex items-center gap-2`}>
                       <Mail className={`w-3.5 h-3.5 ${emailNotifications ? "text-blue-500" : "text-muted-foreground"}`} />
                       <span className={`text-[10px] font-bold ${emailNotifications ? "text-blue-600" : "text-muted-foreground"}`}>Email: {emailNotifications ? "Bật" : "Tắt"}</span>
                     </div>
-                    <div className={`p-2 rounded-xl border ${smsNotifications ? "bg-amber-500/5 border-amber-500/20" : "bg-muted/20 border-border/20"} flex items-center gap-2`}>
+                    <div className={`p-2 rounded-[10px] border ${smsNotifications ? "bg-amber-500/5 border-amber-500/20" : "bg-muted/20 border-border/20"} flex items-center gap-2`}>
                       <MessageSquare className={`w-3.5 h-3.5 ${smsNotifications ? "text-amber-500" : "text-muted-foreground"}`} />
                       <span className={`text-[10px] font-bold ${smsNotifications ? "text-amber-600" : "text-muted-foreground"}`}>SMS: {smsNotifications ? "Bật" : "Tắt"}</span>
                     </div>
@@ -2325,25 +2113,25 @@ export function CustomerDashboard({
                   {(ringSize || braceletSize || necklaceLength || jewelryPreference) && (
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       {ringSize && (
-                        <div className="bg-background/20 p-2 rounded-xl border border-border/20">
+                        <div className="bg-background/20 p-2 rounded-[10px] border border-border/20">
                           <span className="text-[10px] text-muted-foreground block font-medium">Size nhẫn</span>
                           <span className="font-extrabold text-[#2f6cf5]">{ringSize}</span>
                         </div>
                       )}
                       {braceletSize && (
-                        <div className="bg-background/20 p-2 rounded-xl border border-border/20">
+                        <div className="bg-background/20 p-2 rounded-[10px] border border-border/20">
                           <span className="text-[10px] text-muted-foreground block font-medium">Size vòng tay</span>
                           <span className="font-extrabold text-[#2f6cf5]">{braceletSize}</span>
                         </div>
                       )}
                       {necklaceLength && (
-                        <div className="bg-background/20 p-2 rounded-xl border border-border/20">
+                        <div className="bg-background/20 p-2 rounded-[10px] border border-border/20">
                           <span className="text-[10px] text-muted-foreground block font-medium">Chiều dài dây</span>
                           <span className="font-extrabold text-[#2f6cf5]">{necklaceLength}</span>
                         </div>
                       )}
                       {jewelryPreference && (
-                        <div className="bg-background/20 p-2 rounded-xl border border-border/20">
+                        <div className="bg-background/20 p-2 rounded-[10px] border border-border/20">
                           <span className="text-[10px] text-muted-foreground block font-medium">Loại ưa thích</span>
                           <span className="font-extrabold text-[#2f6cf5] truncate block">{jewelryPreference}</span>
                         </div>
@@ -2352,7 +2140,7 @@ export function CustomerDashboard({
                   )}
 
                   {additionalNotes && (
-                    <div className="bg-[#2f6cf5]/5 p-3 rounded-xl border border-[#2f6cf5]/10 mt-1">
+                    <div className="bg-[#2f6cf5]/5 p-3 rounded-[10px] border border-[#2f6cf5]/10 mt-1">
                       <span className="text-[10px] text-[#2f6cf5] block font-bold uppercase tracking-wider mb-0.5">
                         Ghi chú của tư vấn viên
                       </span>
@@ -2372,7 +2160,7 @@ export function CustomerDashboard({
                     {attributes.map((attr) => (
                       <div
                         key={attr.id}
-                        className="flex justify-between items-center bg-background/50 p-2 rounded-xl text-xs border border-border/35"
+                        className="flex justify-between items-center bg-background/50 p-2 rounded-[10px] text-xs border border-border/35"
                       >
                         <span className="text-muted-foreground font-medium">
                           {attr.label}
@@ -2394,9 +2182,9 @@ export function CustomerDashboard({
         {/* CỘT GIỮA & CỘT PHẢI - TOÀN CẢNH ENGAGEMENT ENGINE */}
         <div className="lg:col-span-2">
           <Tabs defaultValue="overview" className="space-y-6 w-full">
-            <TabsList className="bg-muted/50 border p-1 rounded-xl">
-              <TabsTrigger value="overview" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">Tổng quan</TabsTrigger>
-              <TabsTrigger value="timeline" className="rounded-lg text-xs font-bold px-4 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">Timeline Sự kiện</TabsTrigger>
+            <TabsList className="bg-muted/50 border p-1 rounded-[10px]">
+              <TabsTrigger value="overview" className="rounded-[10px] text-xs font-bold px-4 py-1.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">Tổng quan</TabsTrigger>
+              <TabsTrigger value="timeline" className="rounded-[10px] text-xs font-bold px-4 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">Timeline Sự kiện</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
@@ -2407,50 +2195,42 @@ export function CustomerDashboard({
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="relative flex flex-col justify-between overflow-hidden shadow-lg transition-colors border border-[#2f6cf5]/30 bg-sidebar/75 p-6 rounded-3xl hover:shadow-xl hover:border-[#2f6cf5]/50"
+              className="relative flex flex-col justify-between overflow-hidden shadow-lg transition-colors border border-[#2f6cf5]/30 bg-gradient-to-br from-sidebar/90 to-sidebar/40 p-6 rounded-[10px] hover:shadow-xl hover:border-[#2f6cf5]/50 group"
             >
-              {/* Golden glow decorative bar */}
-              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#2f6cf5]" />
-
-              <div>
-                <span className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest block">
-                  QUỸ LOYALTY POINTS
-                </span>
-                <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-4xl font-extrabold text-foreground tracking-tight">
-                    {points.toLocaleString()}
-                  </span>
-                  <span className="text-xs font-bold text-[#2f6cf5]">pts</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  Ngân quỹ điểm được tích lũy thông qua giao dịch, các cột mốc
-                  chi tiêu và tương tác xã hội.
-                </p>
+              {/* Decorative glows */}
+              <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-[#2f6cf5] to-indigo-600 rounded-l-3xl" />
+              <div className="absolute -right-8 -top-8 w-32 h-32 bg-[#2f6cf5]/20 rounded-full blur-3xl group-hover:bg-[#2f6cf5]/30 transition-colors" />
+              <div className="absolute right-10 bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Crown className="w-24 h-24 text-[#2f6cf5]" />
               </div>
 
-              <div className="pt-4 border-t border-border/40 mt-4">
-                <span className="text-xs font-extrabold text-muted-foreground uppercase tracking-wider block mb-2">
-                  Cập nhật nhanh điểm số (Simulate)
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleAdjustPoints(-50)}
-                    className="flex-1 py-1 px-3 border border-border bg-background rounded-xl text-xs hover:bg-muted font-bold flex items-center justify-center gap-1 transition-all text-rose-500"
-                  >
-                    <Minus className="w-3 h-3" /> -50 pt
-                  </button>
-                  <button
-                    onClick={() => handleAdjustPoints(50)}
-                    className="flex-1 py-1 px-3 border border-border bg-background rounded-xl text-xs hover:bg-muted font-bold flex items-center justify-center gap-1 transition-all text-emerald-500"
-                  >
-                    <Plus className="w-3 h-3" /> +50 pt
-                  </button>
-                  <button
-                    onClick={() => handleAdjustPoints(200)}
-                    className="flex-1 py-1 px-2 border border-[#2f6cf5]/40 bg-[#2f6cf5]/5 rounded-xl text-xs hover:bg-[#2f6cf5]/10 font-bold flex items-center justify-center gap-1 transition-all text-[#2f6cf5]"
-                  >
-                    <Sparkles className="w-3 h-3" /> +200 pt
-                  </button>
+              <div className="relative z-10 pl-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest block bg-[#2f6cf5]/10 px-2.5 py-1 rounded-[10px] border border-[#2f6cf5]/20 w-fit">
+                    QUỸ LOYALTY
+                  </span>
+                  <Sparkles className="w-4 h-4 text-[#2f6cf5]" />
+                </div>
+                
+                <div className="flex items-baseline gap-2 mt-4 relative">
+                  <span className="text-5xl font-black text-foreground tracking-tighter drop-shadow-sm font-heading">
+                    {points.toLocaleString()}
+                  </span>
+                  <span className="text-sm font-extrabold text-[#2f6cf5] uppercase tracking-wider bg-background px-1.5 py-0.5 rounded shadow-sm border border-border/50">điểm</span>
+                </div>
+                
+                <div className="mt-5 space-y-2">
+                  <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">
+                    Sử dụng điểm để đổi quà, nâng hạng thành viên và tận hưởng các đặc quyền thượng lưu.
+                  </p>
+                  <div className="flex gap-2 text-[10px] font-bold">
+                    <span className="bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
+                      <TrendingUp className="w-3 h-3" /> +150 tháng này
+                    </span>
+                    <span className="bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded border border-amber-500/20">
+                      Sắp hết hạn: 0
+                    </span>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -2461,44 +2241,62 @@ export function CustomerDashboard({
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
               transition={{ delay: 0.1 }}
-              className="flex flex-col justify-between shadow-md transition-colors border border-border/50 bg-sidebar/75 p-6 rounded-3xl hover:shadow-lg hover:border-primary/30"
+              className="flex flex-col justify-between shadow-md transition-colors border border-border/50 bg-sidebar/75 p-6 rounded-[10px] hover:shadow-lg hover:border-primary/30 relative overflow-hidden group"
             >
-              <div>
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest block">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative z-10">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest block flex items-center gap-1.5">
+                  <Crown className="w-3.5 h-3.5 text-amber-500" />
                   LỘ TRÌNH ĐẶC QUYỀN VIP
                 </span>
-                <div className="mt-3 flex items-center justify-between">
+                <div className="mt-4 flex items-center justify-between">
                   <span className="text-sm font-bold text-foreground capitalize">
-                    {tier.name.split(" ")[0]} Member
+                    {tier.name.split(" ")[0]}
                   </span>
-                  <span className="text-xs font-bold text-muted-foreground">
-                    {tier.nextTarget}
+                  <span className="text-xs font-bold text-muted-foreground bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-[10px] border border-amber-500/20">
+                    {tier.nextTarget.replace(/pts?/g, 'điểm')}
                   </span>
                 </div>
 
                 {/* Meter road bar */}
-                <div className="w-full bg-muted rounded-full h-2.5 mt-2 overflow-hidden relative">
+                <div className="w-full bg-muted/60 rounded-full h-3 mt-3 overflow-hidden relative border border-border/40">
                   <div
-                    className="bg-gradient-to-r from-yellow-500 to-[#2f6cf5] h-full rounded-full transition-all duration-300"
+                    className="bg-gradient-to-r from-amber-500/80 via-amber-400 to-yellow-500 h-full rounded-full transition-all duration-700 ease-out relative"
                     style={{ width: `${tier.progress}%` }}
-                  />
+                  >
+                    <div className="absolute top-0 right-0 bottom-0 w-4 bg-white/20 blur-[2px]" />
+                  </div>
                 </div>
 
-                <div className="flex justify-between text-xs text-muted-foreground font-bold mt-1 uppercase">
-                  <span>Member (0 pt)</span>
-                  <span>Essential (500 pt)</span>
-                  <span>Icon (1k pt)</span>
-                  <span>Atelier (2.5k pt)</span>
+                <div className="flex justify-between text-[10px] text-muted-foreground font-bold mt-2 uppercase tracking-wide">
+                  <div className="flex flex-col items-center gap-1 relative">
+                    <div className="w-1 h-3 border-l-2 border-border/60 absolute -top-3" />
+                     Member
+                  </div>
+                  <div className="flex flex-col items-center gap-1 relative">
+                    <div className="w-1 h-3 border-l-2 border-border/60 absolute -top-3" />
+                     Essential
+                  </div>
+                  <div className="flex flex-col items-center gap-1 relative">
+                    <div className="w-1 h-3 border-l-2 border-border/60 absolute -top-3" />
+                     Icon
+                  </div>
+                  <div className="flex flex-col items-center gap-1 relative">
+                    <div className="w-1 h-3 border-l-2 border-border/60 absolute -top-3" />
+                     Atelier
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-muted/30 p-3 rounded-2xl border border-border/40 mt-4 flex items-center gap-2">
-                <Award className="w-5 h-5 text-[#2f6cf5]" />
+              <div className="bg-amber-500/5 p-3 rounded-[10px] border border-amber-500/20 mt-5 flex items-center gap-3 relative z-10 transition-colors hover:bg-amber-500/10">
+                <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                  <Award className="w-4 h-4 text-amber-600" />
+                </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-foreground">
+                  <p className="text-xs font-bold text-amber-700 dark:text-amber-400">
                     Sử dụng điểm đổi quà cao cấp
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-amber-600/70 dark:text-amber-500/70 truncate">
                     Phòng chờ VIP, Sự kiện kín tại showroom
                   </p>
                 </div>
@@ -2511,7 +2309,7 @@ export function CustomerDashboard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-5"
+            className="rounded-[10px] border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-5"
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40 pb-4">
               <div>
@@ -2521,7 +2319,7 @@ export function CustomerDashboard({
                 </h4>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Mô hình học máy dự phóng xu hướng chi tiêu 12 tháng kế tiếp
-                  dựa trên điểm số Loyalty ({points} pts) & hạng thành viên{" "}
+                  dựa trên điểm số Loyalty ({points} điểm) & hạng thành viên{" "}
                   <span className="font-bold capitalize text-primary">
                     {tier.name.split(" ")[0]}
                   </span>
@@ -2530,13 +2328,13 @@ export function CustomerDashboard({
               </div>
 
               {/* Scenario Toggle Button Suite */}
-              <div className="flex items-center gap-1.5 self-start md:self-center bg-muted/40 p-1 rounded-xl border border-border/40">
+              <div className="flex items-center gap-1.5 self-start md:self-center bg-muted/40 p-1 rounded-[10px] border border-border/40">
                 <span className="text-xs font-bold text-muted-foreground uppercase px-2">
                   Kịch bản:
                 </span>
                 <button
                   onClick={() => setClvScenario("conservative")}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 text-xs font-bold rounded-[10px] transition-all cursor-pointer ${
                     clvScenario === "conservative"
                       ? "bg-rose-500/10 text-rose-500 border border-rose-500/20 shadow-2xs font-extrabold"
                       : "text-muted-foreground border border-transparent hover:bg-muted font-bold"
@@ -2546,7 +2344,7 @@ export function CustomerDashboard({
                 </button>
                 <button
                   onClick={() => setClvScenario("baseline")}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 text-xs font-bold rounded-[10px] transition-all cursor-pointer ${
                     clvScenario === "baseline"
                       ? "bg-[#2f6cf5]/10 text-[#2f6cf5] border border-[#2f6cf5]/20 shadow-2xs font-extrabold"
                       : "text-muted-foreground border border-transparent hover:bg-muted font-bold"
@@ -2556,7 +2354,7 @@ export function CustomerDashboard({
                 </button>
                 <button
                   onClick={() => setClvScenario("optimistic")}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 text-xs font-bold rounded-[10px] transition-all cursor-pointer ${
                     clvScenario === "optimistic"
                       ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-2xs font-extrabold"
                       : "text-muted-foreground border border-transparent hover:bg-muted font-bold"
@@ -2571,7 +2369,7 @@ export function CustomerDashboard({
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <motion.div
                 whileHover={{ y: -3, scale: 1.01 }}
-                className="bg-background/45 p-3 rounded-2xl border border-border/40 hover:border-emerald-500/30 transition-colors shadow-2xs hover:shadow-md"
+                className="bg-background/45 p-3 rounded-[10px] border border-border/40 hover:border-emerald-500/30 transition-colors shadow-2xs hover:shadow-md"
               >
                 <span className="text-xs text-muted-foreground block font-bold uppercase tracking-wider">
                   ĐÃ CHI TIÊU
@@ -2586,7 +2384,7 @@ export function CustomerDashboard({
               </motion.div>
               <motion.div
                 whileHover={{ y: -3, scale: 1.01 }}
-                className="bg-background/45 p-3 rounded-2xl border border-border/40 hover:border-[#2f6cf5]/30 transition-colors shadow-2xs hover:shadow-md"
+                className="bg-background/45 p-3 rounded-[10px] border border-border/40 hover:border-[#2f6cf5]/30 transition-colors shadow-2xs hover:shadow-md"
               >
                 <span className="text-xs text-muted-foreground block font-bold uppercase tracking-wider">
                   CLV LŨY KẾ DỰ DỰ KIẾN
@@ -2601,7 +2399,7 @@ export function CustomerDashboard({
               </motion.div>
               <motion.div
                 whileHover={{ y: -3, scale: 1.01 }}
-                className="bg-background/45 p-3 rounded-2xl border border-border/40 col-span-2 md:col-span-1 hover:border-emerald-500/30 transition-colors shadow-2xs hover:shadow-md"
+                className="bg-background/45 p-3 rounded-[10px] border border-border/40 col-span-2 md:col-span-1 hover:border-emerald-500/30 transition-colors shadow-2xs hover:shadow-md"
               >
                 <span className="text-xs text-muted-foreground block font-bold uppercase tracking-wider">
                   TĂNG TRƯỞNG DỰ KIẾN
@@ -2739,7 +2537,7 @@ export function CustomerDashboard({
                           data["Đã Chi Tiêu"] !== null &&
                           data.name !== "Hiện tại";
                         return (
-                          <div className="bg-popover border border-border/80 p-3 rounded-2xl shadow-xl font-sans text-xs space-y-1.5 backdrop-blur-md">
+                          <div className="bg-popover border border-border/80 p-3 rounded-[10px] shadow-xl font-sans text-xs space-y-1.5 backdrop-blur-md">
                             <p className="font-extrabold text-foreground">
                               {data.name}
                             </p>
@@ -2816,7 +2614,7 @@ export function CustomerDashboard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-4"
+            className="rounded-[10px] border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-4"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -2868,7 +2666,7 @@ export function CustomerDashboard({
                     toast.error(`Lỗi hệ thống: ${err.message}`);
                   }
                 }}
-                className="px-3 py-1 rounded-xl text-xs font-bold border border-border bg-background hover:bg-muted transition-all flex items-center gap-1.5"
+                className="px-3 py-1 rounded-[10px] text-xs font-bold border border-border bg-background hover:bg-muted transition-all flex items-center gap-1.5"
                 title="Đồng bộ dữ liệu mới nhất"
               >
                 <RefreshCw className="w-3 h-3 text-[#2f6cf5]" /> Đồng bộ giả lập
@@ -2877,8 +2675,8 @@ export function CustomerDashboard({
 
             <div className="space-y-3">
               {!customer.orders || customer.orders.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 border border-dashed rounded-2xl">
-                  <div className="w-12 h-12 bg-background border rounded-2xl flex items-center justify-center mb-3 text-muted-foreground shadow-sm">
+                <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 border border-dashed rounded-[10px]">
+                  <div className="w-12 h-12 bg-background border rounded-[10px] flex items-center justify-center mb-3 text-muted-foreground shadow-sm">
                     🛒
                   </div>
                   <span className="text-sm font-bold text-foreground">
@@ -2893,7 +2691,7 @@ export function CustomerDashboard({
                 customer.orders.map((order: any) => (
                   <div
                     key={order.id}
-                    className="p-4 rounded-2xl border border-border/60 bg-background shadow-sm hover:border-primary/20 transition-all flex flex-col gap-2.5"
+                    className="p-4 rounded-[10px] border border-border/60 bg-background shadow-sm hover:border-primary/20 transition-all flex flex-col gap-2.5"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -2922,12 +2720,112 @@ export function CustomerDashboard({
             </div>
           </motion.div>
 
+          {/* QUÀ TẶNG & ƯU ĐÃI (Moved from left column to main tab) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
+            {/* Thẻ Quà Tặng */}
+            <div className="rounded-[10px] border border-rose-500/20 bg-sidebar/75 p-6 shadow-lg space-y-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl" />
+              <div className="flex items-center justify-between relative z-10">
+                <div>
+                  <h4 className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <Award className="w-3.5 h-3.5" /> Quà Tặng
+                  </h4>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Quà tặng khách hàng được tặng</p>
+                </div>
+              </div>
+              <div className="space-y-2 relative z-10">
+                {MOCK_REWARDS.filter(r => r.category === "Gift" || r.category === "Fashion").map(reward => (
+                  <div key={reward.id} className="flex items-center gap-3 p-3 rounded-[10px] border border-rose-500/10 bg-background/50 hover:bg-rose-500/5 transition-colors">
+                    <div className="w-10 h-10 rounded-[10px] overflow-hidden shrink-0">
+                      <img src={reward.image} alt={reward.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h5 className="text-xs font-bold truncate">{reward.name}</h5>
+                      <p className="text-[10px] text-muted-foreground truncate">{reward.date}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Thẻ Ưu Đãi (previously Đổi quà tặng) */}
+            <div className="rounded-[10px] border border-indigo-500/20 bg-sidebar/75 p-6 shadow-lg space-y-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl" />
+              <div className="flex items-center justify-between relative z-10">
+                <div>
+                  <h4 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" /> Ưu Đãi
+                  </h4>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Các ưu đãi của khách hàng</p>
+                </div>
+              </div>
+              <div className="space-y-2 relative z-10">
+                {MOCK_REWARDS.filter(r => r.category === "Lifestyle" || r.category === "Event").map(reward => (
+                  <div key={reward.id} className="flex items-center gap-3 p-3 rounded-[10px] border border-indigo-500/10 bg-background/50 hover:bg-indigo-500/5 transition-colors">
+                    <div className="w-10 h-10 rounded-[10px] overflow-hidden shrink-0">
+                      <img src={reward.image} alt={reward.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h5 className="text-xs font-bold truncate">{reward.name}</h5>
+                      <p className="text-[10px] text-muted-foreground truncate">{reward.date}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* TƯƠNG TÁC (TIN NHẮN ĐÃ GỬI) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.48 }}
+            className="rounded-[10px] border border-emerald-500/20 bg-sidebar/75 p-6 shadow-lg space-y-4 relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl" />
+            <div className="flex items-center justify-between relative z-10">
+              <div>
+                <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5" /> Tương Tác
+                </h4>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Các tin nhắn đã gửi cho khách hàng</p>
+              </div>
+            </div>
+            <div className="space-y-2 relative z-10">
+              {MOCK_EMAIL_COMMS.map((comm) => (
+                <div key={comm.id} className="p-3 rounded-[10px] border border-emerald-500/10 bg-background flex flex-col gap-2">
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="text-xs font-bold">{comm.subject}</span>
+                    <span className="text-[10px] whitespace-nowrap text-muted-foreground font-medium">{comm.date}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded border text-[9px] font-bold uppercase ${
+                      comm.status === 'delivered' ? 'border-emerald-500/30 text-emerald-600 bg-emerald-500/10' :
+                      comm.status === 'opened' ? 'border-blue-500/30 text-blue-600 bg-blue-500/10' :
+                      'border-border text-muted-foreground'
+                    }`}>
+                      {comm.status === 'delivered' ? 'Đã Gửi' : comm.status === 'opened' ? 'Đã Xem' : comm.status}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground uppercase opacity-70 border border-border px-1.5 py-0.5 rounded">
+                      {comm.type}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
           {/* API PHIẾU HỖ TRỢ */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-4"
+            className="rounded-[10px] border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-4"
           >
             <div className="flex flex-col gap-4 border-b border-border/40 pb-4">
               <div className="flex items-start justify-between gap-3">
@@ -2942,7 +2840,7 @@ export function CustomerDashboard({
               </div>
 
               {/* CRM Sandbox Panel */}
-              <div className="bg-background/40 p-4 rounded-2xl border border-border/50 space-y-3.5 text-left">
+              <div className="bg-background/40 p-4 rounded-[10px] border border-border/50 space-y-3.5 text-left">
                 <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase text-[#2f6cf5] tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
                   Hộp Cát Giả Lập Phiếu CRM (API Sandbox)
@@ -2957,7 +2855,7 @@ export function CustomerDashboard({
                         setTicketSubject(e.target.value);
                         if (e.target.value !== "custom") setCustomTicketSubject("");
                       }}
-                      className="w-full bg-background/80 border border-border/70 rounded-xl px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:border-primary"
+                      className="w-full bg-background/80 border border-border/70 rounded-[10px] px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:border-primary"
                     >
                       <option value="Yêu cầu spa làm dưỡng đá quý">Spa làm dưỡng đá quý & Kim cương</option>
                       <option value="Hỗ trợ chỉnh cỡ (size) nhẫn Atelier">Chỉnh lại cỡ nhẫn cưới Atelier</option>
@@ -2976,7 +2874,7 @@ export function CustomerDashboard({
                           key={sev}
                           type="button"
                           onClick={() => setTicketSeverity(sev)}
-                          className={`py-1 rounded-lg text-[10.5px] font-bold border transition-all ${
+                          className={`py-1 rounded-[10px] text-[10.5px] font-bold border transition-all ${
                             ticketSeverity === sev
                               ? "bg-primary/10 border-primary text-primary"
                               : "bg-background border-border text-muted-foreground hover:bg-muted"
@@ -2997,7 +2895,7 @@ export function CustomerDashboard({
                       placeholder="Nhập chủ đề yêu cầu hỗ trợ..."
                       value={customTicketSubject}
                       onChange={(e) => setCustomTicketSubject(e.target.value)}
-                      className="w-full bg-background border border-border/70 rounded-xl px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
+                      className="w-full bg-background border border-border/70 rounded-[10px] px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                 )}
@@ -3045,7 +2943,7 @@ export function CustomerDashboard({
                         toast.error(`Lỗi hệ thống: ${err.message}`, { id: toastId });
                       }
                     }}
-                    className="px-4 py-1.5 rounded-xl text-xs font-black bg-[#2f6cf5] hover:bg-blue-600 text-white transition-all flex items-center justify-center gap-1 shadow-md active:scale-95"
+                    className="px-4 py-1.5 rounded-[10px] text-xs font-black bg-[#2f6cf5] hover:bg-blue-600 text-white transition-all flex items-center justify-center gap-1 shadow-md active:scale-95"
                   >
                     🎫 Gửi Phiếu & Đồng Bộ
                   </button>
@@ -3055,8 +2953,8 @@ export function CustomerDashboard({
 
             <div className="space-y-3">
               {!customer.tickets || customer.tickets.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 border border-dashed rounded-2xl">
-                  <div className="w-12 h-12 bg-background border rounded-2xl flex items-center justify-center mb-3 text-muted-foreground shadow-sm">
+                <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/20 border border-dashed rounded-[10px]">
+                  <div className="w-12 h-12 bg-background border rounded-[10px] flex items-center justify-center mb-3 text-muted-foreground shadow-sm">
                     🎫
                   </div>
                   <span className="text-sm font-bold text-foreground">
@@ -3070,7 +2968,7 @@ export function CustomerDashboard({
                 customer.tickets.map((ticket: any) => (
                   <div
                     key={ticket.id}
-                    className="p-4 rounded-2xl border border-border/60 bg-background shadow-sm hover:border-primary/20 transition-all flex flex-col gap-2.5"
+                    className="p-4 rounded-[10px] border border-border/60 bg-background shadow-sm hover:border-primary/20 transition-all flex flex-col gap-2.5"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -3125,7 +3023,7 @@ export function CustomerDashboard({
                         <div key={email.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors group">
                            <div className="flex items-start gap-4">
                               <div className={cn(
-                                 "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                                 "w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
                                  email.type === "automated" ? "bg-emerald-500/10 text-emerald-500" :
                                  email.type === "marketing" ? "bg-amber-500/10 text-amber-500" :
                                  "bg-blue-500/10 text-blue-500"
@@ -3135,7 +3033,7 @@ export function CustomerDashboard({
                               <div className="min-w-0">
                                  <h5 className="text-sm font-bold truncate group-hover:text-primary transition-colors">{email.subject}</h5>
                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-[10px] bg-muted text-muted-foreground">
                                        {email.type}
                                     </span>
                                     <span className="text-[11px] text-muted-foreground">{email.date}</span>
@@ -3166,10 +3064,10 @@ export function CustomerDashboard({
           <TabsContent value="gallery" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
             {/* Survey Widget (New Feature) */}
             {redemptionEvents.length > 0 && !surveySubmitted && (
-              <Card className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-3xl overflow-hidden shadow-sm">
+              <Card className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-[10px] overflow-hidden shadow-sm">
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-primary/10 rounded-xl">
+                    <div className="p-2 bg-primary/10 rounded-[10px]">
                       <Smile className="w-5 h-5 text-primary" />
                     </div>
                     <div>
@@ -3198,7 +3096,7 @@ export function CustomerDashboard({
                   <div className="space-y-2">
                     <Label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">Phản hồi định tính (Qualitative Feedback)</Label>
                     <textarea 
-                      className="w-full min-h-[80px] p-3 text-xs bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                      className="w-full min-h-[80px] p-3 text-xs bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                       placeholder="Ghi chú lại đánh giá của khách hàng về món quà hoặc quy trình đổi..."
                       value={surveyComment}
                       onChange={(e) => setSurveyComment(e.target.value)}
@@ -3210,7 +3108,7 @@ export function CustomerDashboard({
                       setSurveySubmitted(true);
                       toast.success("Cảm ơn! Phản hồi khảo sát đã được lưu vào hệ thống.");
                     }}
-                    className="w-full h-10 rounded-xl font-bold bg-[#2f6cf5] hover:bg-blue-600 shadow-lg shadow-blue-500/20"
+                    className="w-full h-10 rounded-[10px] font-bold bg-[#2f6cf5] hover:bg-blue-600 shadow-lg shadow-blue-500/20"
                   >
                     Lưu phản hồi khảo sát
                   </Button>
@@ -3219,7 +3117,7 @@ export function CustomerDashboard({
             )}
 
             {surveySubmitted && (
-               <Card className="border border-emerald-500/30 bg-emerald-500/5 rounded-3xl p-4 flex items-center gap-3">
+               <Card className="border border-emerald-500/30 bg-emerald-500/5 rounded-[10px] p-4 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-600 flex items-center justify-center">
                     <Check className="w-5 h-5" />
                   </div>
@@ -3242,7 +3140,7 @@ export function CustomerDashboard({
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
                       <Badge className="bg-amber-500 text-white border-none shadow-lg">
-                        {reward.points} pts
+                        {reward.points} điểm
                       </Badge>
                     </div>
                   </div>
@@ -3265,8 +3163,8 @@ export function CustomerDashboard({
                   </div>
                 </Card>
               ))}
-              <button className="border-2 border-dashed border-border/40 rounded-3xl p-6 flex flex-col items-center justify-center gap-3 text-muted-foreground hover:bg-muted/30 hover:border-primary/30 transition-all min-h-[200px]">
-                <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
+              <button className="border-2 border-dashed border-border/40 rounded-[10px] p-6 flex flex-col items-center justify-center gap-3 text-muted-foreground hover:bg-muted/30 hover:border-primary/30 transition-all min-h-[200px]">
+                <div className="w-12 h-12 rounded-[10px] bg-muted flex items-center justify-center">
                   <Plus className="w-6 h-6" />
                 </div>
                 <p className="text-xs font-bold">Thêm quà đã đổi thủ công</p>
@@ -3279,7 +3177,7 @@ export function CustomerDashboard({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-5"
+              className="rounded-[10px] border border-border/50 bg-sidebar/75 p-6 shadow-lg space-y-5"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
                 <div>
@@ -3294,10 +3192,10 @@ export function CustomerDashboard({
                 </div>
 
                 {/* Filtering Controls */}
-                <div className="flex flex-wrap gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
+                <div className="flex flex-wrap gap-1 bg-muted/40 p-1 rounded-[10px] border border-border/40">
                   <button
                     onClick={() => setTimelineFilter("all")}
-                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 text-xs font-bold rounded-[10px] transition-all cursor-pointer ${
                       timelineFilter === "all"
                         ? "bg-primary text-primary-foreground shadow-xs"
                         : "text-muted-foreground hover:bg-muted"
@@ -3307,7 +3205,7 @@ export function CustomerDashboard({
                   </button>
                   <button
                     onClick={() => setTimelineFilter("purchase")}
-                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 text-xs font-bold rounded-[10px] transition-all cursor-pointer ${
                       timelineFilter === "purchase"
                         ? "bg-[#2f6cf5] text-white shadow-xs"
                         : "text-muted-foreground hover:bg-muted"
@@ -3317,7 +3215,7 @@ export function CustomerDashboard({
                   </button>
                   <button
                     onClick={() => setTimelineFilter("ticket")}
-                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 text-xs font-bold rounded-[10px] transition-all cursor-pointer ${
                       timelineFilter === "ticket"
                         ? "bg-amber-500 text-white shadow-xs"
                         : "text-muted-foreground hover:bg-muted"
@@ -3327,7 +3225,7 @@ export function CustomerDashboard({
                   </button>
                   <button
                     onClick={() => setTimelineFilter("status_change")}
-                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 text-xs font-bold rounded-[10px] transition-all cursor-pointer ${
                       timelineFilter === "status_change"
                         ? "bg-indigo-500 text-white shadow-xs"
                         : "text-muted-foreground hover:bg-muted"
@@ -3337,7 +3235,7 @@ export function CustomerDashboard({
                   </button>
                   <button
                     onClick={() => setTimelineFilter("redemption")}
-                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 text-xs font-bold rounded-[10px] transition-all cursor-pointer ${
                       timelineFilter === "redemption"
                         ? "bg-rose-500 text-white shadow-xs"
                         : "text-muted-foreground hover:bg-muted"
@@ -3364,7 +3262,7 @@ export function CustomerDashboard({
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.05 }}
-                      className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-3 bg-background/55 hover:bg-background/80 p-4 rounded-2xl border border-border/45 hover:border-[#2f6cf5]/30 transition-all group/item shadow-2xs"
+                      className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-3 bg-background/55 hover:bg-background/80 p-4 rounded-[10px] border border-border/45 hover:border-[#2f6cf5]/30 transition-all group/item shadow-2xs"
                     >
                       {/* Floating timeline bubble */}
                       <div className="absolute -left-[31px] md:-left-[35px] top-4 w-7 h-7 rounded-full bg-background border-2 border-border flex items-center justify-center text-xs shadow-sm group-hover/item:border-primary transition-colors">
@@ -3420,7 +3318,7 @@ export function CustomerDashboard({
 
       {/* Point Adjustment Dialog */}
       <Dialog open={isAdjustingPoints} onOpenChange={setIsAdjustingPoints}>
-        <DialogContent className="sm:max-w-[425px] rounded-3xl bg-background border-border shadow-2xl">
+        <DialogContent className="sm:max-w-[425px] rounded-[10px] bg-background border-border shadow-2xl">
           <DialogHeader>
             <DialogTitle className="font-heading text-xl font-black">Điều chỉnh điểm Loyalty</DialogTitle>
             <DialogDescription className="text-xs font-medium">
@@ -3434,13 +3332,13 @@ export function CustomerDashboard({
                 type="number" 
                 value={adjustAmount} 
                 onChange={(e) => setAdjustAmount(Number(e.target.value))}
-                className="text-xl font-black text-center h-16 rounded-2xl bg-muted/30 border-2 border-dashed border-border focus-visible:ring-amber-500/20 focus-visible:border-amber-500/40"
+                className="text-xl font-black text-center h-16 rounded-[10px] bg-muted/30 border-2 border-dashed border-border focus-visible:ring-amber-500/20 focus-visible:border-amber-500/40"
               />
             </div>
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Lý do điều chỉnh</Label>
               <textarea 
-                className="w-full min-h-[120px] p-4 text-sm bg-muted/30 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500/10 focus:border-amber-500/30 transition-all"
+                className="w-full min-h-[120px] p-4 text-sm bg-muted/30 border border-border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-amber-500/10 focus:border-amber-500/30 transition-all"
                 placeholder="Ví dụ: Tặng điểm sinh nhật muộn, Đền bù sự cố giao hàng..."
                 value={adjustReason}
                 onChange={(e) => setAdjustReason(e.target.value)}
@@ -3448,7 +3346,7 @@ export function CustomerDashboard({
             </div>
           </div>
           <DialogFooter className="gap-2 sm:gap-0 mt-2">
-            <Button variant="outline" onClick={() => setIsAdjustingPoints(false)} className="rounded-xl font-bold px-6">Hủy</Button>
+            <Button variant="outline" onClick={() => setIsAdjustingPoints(false)} className="rounded-[10px] font-bold px-6">Hủy</Button>
             <Button 
                disabled={!adjustReason || adjustAmount === 0}
                onClick={async () => {
@@ -3473,7 +3371,7 @@ export function CustomerDashboard({
                  setAdjustAmount(0);
                  setAdjustReason("");
                }}
-               className="rounded-xl font-bold bg-[#2f6cf5] hover:bg-blue-600 px-8 shadow-lg shadow-blue-500/20"
+               className="rounded-[10px] font-bold bg-[#2f6cf5] hover:bg-blue-600 px-8 shadow-lg shadow-blue-500/20"
             >
               Xác nhận thay đổi
             </Button>

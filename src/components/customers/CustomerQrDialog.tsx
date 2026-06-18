@@ -15,7 +15,7 @@ export function CustomerQrDialog({ customer, onClose }: { customer: Customer | n
           </DialogTitle>
           <DialogDescription>Quét mã QR dưới đây để check-in khách hàng tại cửa hàng vật lý.</DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col items-center justify-center p-6 bg-white rounded-xl border border-border mt-4">
+        <div className="flex flex-col items-center justify-center p-6 bg-white rounded-[10px] border border-border mt-4">
            {/* Simulate QR Code */}
            <div className="w-48 h-48 bg-[url('https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=MEM-0001')] bg-contain bg-center bg-no-repeat mb-4">
              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${customer.id}`} alt="QR Code" className="w-full h-full object-contain" />

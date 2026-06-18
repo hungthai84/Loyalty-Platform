@@ -67,7 +67,7 @@ export function RetentionConfigDialog({ onClose }: RetentionConfigDialogProps) {
 
  return (
  <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
- <div className="bg-card w-full max-w-lg rounded-2xl shadow-2xl border border-border overflow-hidden">
+ <div className="bg-card w-full max-w-lg rounded-[10px] shadow-2xl border border-border overflow-hidden">
  <form onSubmit={handleSubmit}>
  <div className="px-6 py-4 border-b flex justify-between items-center bg-muted/30">
  <h3 className="text-xl font-bold font-heading flex items-center gap-2">
@@ -80,7 +80,7 @@ export function RetentionConfigDialog({ onClose }: RetentionConfigDialogProps) {
 
  <div className="p-6 space-y-8">
  <div className="space-y-4">
- <div className="flex items-start gap-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+ <div className="flex items-start gap-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-[10px]">
  <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
  <div className="space-y-1">
  <p className="text-sm font-bold text-amber-700">Ngưỡng Inactive (Không hoạt động)</p>
@@ -95,14 +95,14 @@ export function RetentionConfigDialog({ onClose }: RetentionConfigDialogProps) {
  value={inactiveDays}
  onChange={e => setInactiveDays(Number(e.target.value))}
  />
- <div className="w-20 text-center bg-muted px-3 py-1 rounded-lg font-bold text-amber-600">
+ <div className="w-20 text-center bg-muted px-3 py-1 rounded-[10px] font-bold text-amber-600">
  {inactiveDays}d
  </div>
  </div>
  </div>
 
  <div className="space-y-4">
- <div className="flex items-start gap-4 p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+ <div className="flex items-start gap-4 p-4 bg-rose-500/10 border border-rose-500/20 rounded-[10px]">
  <Zap className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
  <div className="space-y-1">
  <p className="text-sm font-bold text-rose-700">Ngưỡng Churn Risk (Rủi ro rời bỏ)</p>
@@ -117,13 +117,13 @@ export function RetentionConfigDialog({ onClose }: RetentionConfigDialogProps) {
  value={churnDays}
  onChange={e => setChurnDays(Number(e.target.value))}
  />
- <div className="w-20 text-center bg-muted px-3 py-1 rounded-lg font-bold text-rose-600">
+ <div className="w-20 text-center bg-muted px-3 py-1 rounded-[10px] font-bold text-rose-600">
  {churnDays}d
  </div>
  </div>
  </div>
 
- <div className="p-4 bg-muted/30 rounded-xl border border-border flex items-center justify-between">
+ <div className="p-4 bg-muted/30 rounded-[10px] border border-border flex items-center justify-between">
  <div className="space-y-0.5">
  <p className="text-sm font-bold">Tự động gắn nhãn trạng thái</p>
  <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Cập nhật realtime dựa trên last transaction</p>
@@ -142,14 +142,14 @@ export function RetentionConfigDialog({ onClose }: RetentionConfigDialogProps) {
  <button 
  type="button" 
  onClick={onClose}
- className="px-6 py-2 border border-border rounded-xl text-sm font-medium hover:bg-muted transition-colors"
+ className="px-6 py-2 border border-border rounded-[10px] text-sm font-medium hover:bg-muted transition-colors"
  >
  Hủy
  </button>
  <button 
  type="submit"
  disabled={submitting}
- className="px-6 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center disabled:opacity-50"
+ className="px-6 py-2 bg-primary text-primary-foreground rounded-[10px] text-sm font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center disabled:opacity-50"
  >
  <Save className="w-4 h-4 mr-2" />
  {submitting ? "Đang lưu..." : "Lưu cấu hình"}

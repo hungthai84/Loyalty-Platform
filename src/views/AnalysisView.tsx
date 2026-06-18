@@ -165,7 +165,7 @@ const CustomCLVTooltip = ({ active, payload, label }: any) => {
     })();
 
     return (
-      <div className="bg-slate-950/95 border border-slate-800 p-3.5 rounded-xl shadow-2xl backdrop-blur-md text-left text-xs min-w-[220px]">
+      <div className="bg-slate-950/95 border border-slate-800 p-3.5 rounded-[10px] shadow-2xl backdrop-blur-md text-left text-xs min-w-[220px]">
         <p className="font-bold text-slate-400 mb-2 border-b border-white/10 pb-1.5 flex items-center justify-between">
           <span>📅 {formattedDate}</span>
           <span className="text-[9px] text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded uppercase font-extrabold tracking-wider">Mức CLV</span>
@@ -198,7 +198,7 @@ const CustomCLVTooltip = ({ active, payload, label }: any) => {
 const CustomSimulatedCLVTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-950/95 border border-slate-800 p-3.5 rounded-xl shadow-2xl backdrop-blur-md text-left text-xs min-w-[220px]">
+      <div className="bg-slate-950/95 border border-slate-800 p-3.5 rounded-[10px] shadow-2xl backdrop-blur-md text-left text-xs min-w-[220px]">
         <p className="font-bold text-slate-400 mb-2 border-b border-white/10 pb-1.5 flex items-center justify-between">
           <span>⏳ Năm Gắn Kết {label}</span>
           <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded uppercase font-extrabold tracking-wider">Mô Phỏng</span>
@@ -790,7 +790,7 @@ export function AnalysisView() {
  // Booking & Events States
  const [bookings, setBookings] = useState([
  { id: 'BK-101', customerName: 'Đoàn Hương Giang', type: 'Private Appointment', date: '2026-05-28', time: '14:30', stylist: 'Alexander Lam', status: 'Confirmed' },
- { id: 'BK-102', customerName: 'Nguyễn Lâm Anh', type: 'Showroom Private Viewing', date: '2026-06-01', time: '17:00', stylist: 'Victoria Trần', status: 'Pending' }
+ { id: 'BK-102', customerName: 'Nguyễn Lâm Anh', type: 'Xem trang sức phòng riêng', date: '2026-06-01', time: '17:00', stylist: 'Victoria Trần', status: 'Pending' }
  ]);
  const [newBooking, setNewBooking] = useState({ customerName: '', type: 'Showroom Private Viewing', date: '', time: '', stylist: '' });
 
@@ -1188,7 +1188,7 @@ export function AnalysisView() {
   const bannerContent = (
     <motion.div
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className="bg-card/45 border border-[#6366f1]/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#6366f1]/50"
+      className="bg-card/45 border border-[#6366f1]/30 p-5 md:p-6 rounded-[10px] shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#6366f1]/50"
     >
       <div className="flex items-center gap-4 text-left">
         <div className="p-3 bg-[#6366f1]/10 rounded-[10px] text-[#6366f1] flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
@@ -1222,7 +1222,7 @@ export function AnalysisView() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => setShowDoc(!showDoc)}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
+          className={`px-4 py-2 rounded-[10px] text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
             showDoc
               ? "bg-amber-500/10 border-amber-500/25 text-amber-600 dark:text-amber-400"
               : "bg-card border-border hover:bg-muted text-muted-foreground"
@@ -1249,11 +1249,11 @@ export function AnalysisView() {
    <motion.div
     initial={{ opacity: 0, y: -10 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`border rounded-3xl p-6 space-y-6 overflow-hidden shadow-sm transition-all text-left ${colors.bg} ${colors.border}`}
+    className={`border rounded-[10px] p-6 space-y-6 overflow-hidden shadow-sm transition-all text-left ${colors.bg} ${colors.border}`}
    >
     <div className="flex items-start justify-between">
      <div className="flex items-center gap-3">
-      <div className={`p-2.5 rounded-xl ${colors.iconBg}`}>
+      <div className={`p-2.5 rounded-[10px] ${colors.iconBg}`}>
        <BookOpen className="w-5 h-5" />
       </div>
       <div className="text-left">
@@ -1273,7 +1273,7 @@ export function AnalysisView() {
      </div>
      <button
       onClick={() => setShowDoc(false)}
-      className="p-1.5 hover:bg-muted/80 text-muted-foreground rounded-lg transition-colors cursor-pointer"
+      className="p-1.5 hover:bg-muted/80 text-muted-foreground rounded-[10px] transition-colors cursor-pointer"
      >
       <X className="w-4 h-4" />
      </button>
@@ -1281,7 +1281,7 @@ export function AnalysisView() {
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
      {docData.metrics.map((m, idx) => (
-      <div key={idx} className="bg-card/65 p-4 rounded-xl border border-border/10">
+      <div key={idx} className="bg-card/65 p-4 rounded-[10px] border border-border/10">
        <span className="text-[10px] text-muted-foreground block uppercase font-bold tracking-wider">{m.label}</span>
        <strong className="text-xl font-bold font-heading mt-1 block text-foreground">{m.value}</strong>
        <span className="text-[10px] text-muted-foreground/80 leading-relaxed block mt-0.5">{m.desc}</span>
@@ -1296,7 +1296,7 @@ export function AnalysisView() {
       </h4>
       <div className="space-y-2.5">
        {docData.details.map((d, idx) => (
-        <div key={idx} className="p-3 bg-card/40 rounded-xl border border-border/10 text-xs">
+        <div key={idx} className="p-3 bg-card/40 rounded-[10px] border border-border/10 text-xs">
          <span className="font-bold text-foreground block">{idx + 1}. {d.label}</span>
          <p className="text-muted-foreground text-[11px] leading-relaxed mt-0.5">{d.desc}</p>
         </div>
@@ -1305,7 +1305,7 @@ export function AnalysisView() {
      </div>
 
      <div className="space-y-4">
-      <div className="p-4 bg-muted/40 rounded-2xl border border-border/10">
+      <div className="p-4 bg-muted/40 rounded-[10px] border border-border/10">
        <h4 className="text-xs font-extrabold text-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
         <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
         Khuyến nghị chiến lược tiếp thị (AI advice)
@@ -1329,13 +1329,13 @@ export function AnalysisView() {
  })()}
 
  {/* Internal Navigation Tabs inside the View - NEW SELECT BOX MODULE */}
- <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-muted/40 p-4 rounded-3xl border border-border/80 max-w-full w-full relative">
+ <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-muted/40 p-4 rounded-[10px] border border-border/80 max-w-full w-full relative">
   {(() => {
    const tabsList = TABS_LIST_ANALYSIS;
    return (
     <>
      <div className="flex items-center gap-3">
-      <div className="p-3 bg-[#2f6cf5]/10 rounded-2xl text-[#2f6cf5] shrink-0">
+      <div className="p-3 bg-[#2f6cf5]/10 rounded-[10px] text-[#2f6cf5] shrink-0">
        <Layers className="w-6 h-6" />
       </div>
       <div className="text-left">
@@ -1352,12 +1352,12 @@ export function AnalysisView() {
         toast.success(`Đã chuyển sang phân hệ: ${name}`);
        }
       }}>
-       <SelectTrigger className="w-full md:w-[280px] h-10 px-3 bg-background border border-input rounded-xl text-xs font-bold font-heading text-foreground shadow-sm hover:bg-muted/70 flex items-center justify-between cursor-pointer">
+       <SelectTrigger className="w-full md:w-[280px] h-10 px-3 bg-background border border-input rounded-[10px] text-xs font-bold font-heading text-foreground shadow-sm hover:bg-muted/70 flex items-center justify-between cursor-pointer">
         <SelectValue placeholder="Chọn nội dung phân tích" />
        </SelectTrigger>
-       <SelectContent className="rounded-xl w-[280px] max-h-[320px] overflow-y-auto">
+       <SelectContent className="rounded-[10px] w-[280px] max-h-[320px] overflow-y-auto">
         {tabsList.map((tab) => (
-         <SelectItem key={tab.id} value={tab.id} className="rounded-lg p-2.5 cursor-pointer">
+         <SelectItem key={tab.id} value={tab.id} className="rounded-[10px] p-2.5 cursor-pointer">
           <div className="flex items-center gap-2.5">
            <tab.icon className="w-4 h-4 text-muted-foreground shrink-0" />
            <span className="text-xs font-semibold text-foreground">{tab.name}</span>
@@ -1374,7 +1374,7 @@ export function AnalysisView() {
 
  {/* Dynamic Toast Display */}
  {toastMessage && (
- <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]">
+ <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-[10px] border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]">
  <Award className="w-5 h-5 text-[#2f6cf5]" />
  <div className="text-xs font-bold text-foreground">{toastMessage}</div>
  </div>
@@ -1435,13 +1435,13 @@ export function AnalysisView() {
         <select
          value={selectedSegment}
          onChange={(e) => setSelectedSegment(e.target.value)}
-         className="bg-background border border-border/80 text-xs font-semibold rounded-xl px-3 py-1.5 focus:outline-none focus:border-[#2f6cf5] text-foreground transition-all shrink-0 cursor-pointer shadow-sm hover:border-primary/50"
+         className="bg-background border border-border/80 text-xs font-semibold rounded-[10px] px-3 py-1.5 focus:outline-none focus:border-[#2f6cf5] text-foreground transition-all shrink-0 cursor-pointer shadow-sm hover:border-primary/50"
         >
-         <option value="classic">Classic Elegant (Cổ điển & Thanh lịch)</option>
-         <option value="minimalist">Minimalist Sophistication (Tối giản & Tinh tế)</option>
-         <option value="glamorous">Luxury Glamour (Sang trọng & Quý phái)</option>
-         <option value="avant-garde">Avant-Garde/Experimental (Phá cách & Độc bản)</option>
-         <option value="romantic">Romantic & Gentle (Lãng mạn & Dịu dàng)</option>
+         <option value="classic">Cổ điển & Thanh lịch</option>
+         <option value="minimalist">Tối giản & Tinh tế</option>
+         <option value="glamorous">Sang trọng & Quý phái</option>
+         <option value="avant-garde">Phá cách & Độc bản</option>
+         <option value="romantic">Lãng mạn & Dịu dàng</option>
         </select>
        </div>
       </div>
@@ -1454,14 +1454,14 @@ export function AnalysisView() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
          
          <div className="space-y-4">
-          <div className={`p-4 rounded-2xl border bg-gradient-to-br ${prediction.color}`}>
+          <div className={`p-4 rounded-[10px] border bg-gradient-to-br ${prediction.color}`}>
            <span className="text-[10px] uppercase font-bold tracking-widest opacity-80 block mb-1">Cảm Hứng Thần Thái (Vibe Theme)</span>
            <p className="text-sm font-extrabold tracking-wide">{prediction.vibe}</p>
           </div>
           
           <div className="space-y-1">
            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Hồ Sơ Quy Mô Khách Hàng</span>
-           <div className="bg-background/40 border border-border/40 p-4 rounded-xl flex items-center justify-between">
+           <div className="bg-background/40 border border-border/40 p-4 rounded-[10px] flex items-center justify-between">
             <div>
              <span className="text-2xl font-black text-foreground">{matchingCustomersCount}</span>
              <span className="text-xs text-muted-foreground ml-1.5">thành viên</span>
@@ -1480,9 +1480,9 @@ export function AnalysisView() {
            </h4>
            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {prediction.items.map((item, idx) => (
-             <div key={idx} className="bg-background/30 border border-border/30 p-4 rounded-xl flex items-center justify-between group hover:bg-background/50 hover:border-[#2f6cf5]/30 transition-all cursor-default">
+             <div key={idx} className="bg-background/30 border border-border/30 p-4 rounded-[10px] flex items-center justify-between group hover:bg-background/50 hover:border-[#2f6cf5]/30 transition-all cursor-default">
               <span className="text-xs font-bold text-foreground pr-4">{item}</span>
-              <div className="p-1.5 bg-muted rounded-lg group-hover:bg-[#2f6cf5]/10 group-hover:text-[#2f6cf5] transition-colors">
+              <div className="p-1.5 bg-muted rounded-[10px] group-hover:bg-[#2f6cf5]/10 group-hover:text-[#2f6cf5] transition-colors">
                <TrendingUp className="w-3.5 h-3.5" />
               </div>
              </div>
@@ -1490,17 +1490,17 @@ export function AnalysisView() {
            </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#0f172a]/30 border border-border/30 flex flex-col md:flex-row gap-6">
+          <div className="p-5 rounded-[10px] bg-[#0f172a]/30 border border-border/30 flex flex-col md:flex-row gap-6">
            <div className="flex-1 space-y-2 text-left">
             <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Phân Tích Thẩm Mỹ Cơ Bản (Aesthetic Insight)</span>
             <p className="text-xs text-foreground/90 leading-relaxed font-medium italic">"{prediction.insight}"</p>
            </div>
            <div className="md:w-48 shrink-0 flex flex-col gap-3">
-            <div className="bg-background/40 p-3 rounded-xl border border-border/30">
+            <div className="bg-background/40 p-3 rounded-[10px] border border-border/30">
              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight block">Kỳ vọng Chuyển đổi</span>
              <span className="text-xl font-black text-emerald-500">{prediction.conversion}</span>
             </div>
-            <div className="bg-background/40 p-3 rounded-xl border border-border/30">
+            <div className="bg-background/40 p-3 rounded-[10px] border border-border/30">
              <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight block">Giá trị Doanh số Dự phỏng</span>
              <span className="text-lg font-black text-[#2f6cf5]">{prediction.projectedValue}</span>
             </div>
@@ -1549,7 +1549,7 @@ export function AnalysisView() {
         <select
          value={progressionCustomerId}
          onChange={(e) => setProgressionCustomerId(e.target.value)}
-         className="bg-background border border-border/80 text-xs font-semibold rounded-xl px-4 py-2 focus:outline-none focus:border-amber-500 text-foreground transition-all shrink-0 cursor-pointer shadow-sm hover:border-primary/50 min-w-[200px]"
+         className="bg-background border border-border/80 text-xs font-semibold rounded-[10px] px-4 py-2 focus:outline-none focus:border-amber-500 text-foreground transition-all shrink-0 cursor-pointer shadow-sm hover:border-primary/50 min-w-[200px]"
         >
          {customers.map((c) => (
           <option key={c.id} value={c.id}>
@@ -1661,7 +1661,7 @@ export function AnalysisView() {
            </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/50 border border-border/30 text-left">
+          <div className="p-4 rounded-[10px] bg-slate-900/50 border border-border/30 text-left">
            {nextTierObj ? (
             <>
              <p className="text-xs text-slate-300">
@@ -1685,7 +1685,7 @@ export function AnalysisView() {
            
            {nextTierObj ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <div className="bg-background/40 p-3.5 rounded-xl border border-border/40 text-left">
+             <div className="bg-background/40 p-3.5 rounded-[10px] border border-border/40 text-left">
               <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block mb-1">Tốc Độ Tích Lũy</span>
               <h5 className="text-sm font-extrabold text-white flex items-center gap-1">
                <TrendingUp className="w-4 h-4 text-[#2f6cf5]" /> ~{Math.round(pointsMonthlyRate).toLocaleString()} pts/tháng
@@ -1693,7 +1693,7 @@ export function AnalysisView() {
               <p className="text-[10px] text-muted-foreground mt-0.5">Dựa theo tần suất giao dịch thực tế.</p>
              </div>
 
-             <div className="bg-background/40 p-3.5 rounded-xl border border-border/40 text-left">
+             <div className="bg-background/40 p-3.5 rounded-[10px] border border-border/40 text-left">
               <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block mb-1 text-left">Thời Gian Thăng Hạng Dự Kiến</span>
               <h5 className="text-sm font-extrabold text-amber-400 font-heading">
                ~{monthsToLevelUp < 1 ? `${Math.round(daysToLevelUp)} ngày` : `${monthsToLevelUp.toFixed(1)} tháng`}
@@ -1702,7 +1702,7 @@ export function AnalysisView() {
              </div>
             </div>
            ) : (
-            <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl text-xs text-emerald-400 text-left font-medium">
+            <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-[10px] text-xs text-emerald-400 text-left font-medium">
              Giao dịch liên tục để duy trì thời hạn Atelier vĩnh cửu. Hệ số tích lũy nhân điểm độc quyền là x3.0.
             </div>
            )}
@@ -1744,7 +1744,7 @@ export function AnalysisView() {
  { label: 'Giá Trị Lũy Kế CLV TB', value: formatMillionVND(Number(averageCLV)), sub: `Cao nhất: ${formatMillionVND(310000000)}`, icon: DollarSign },
  { label: 'Tỷ Lệ Hoàn Vốn ROI', value: `${calculatedROI.toFixed(0)}%`, sub: 'Doanh số bồi đắp', icon: TrendingUp },
  ].map((card, i) => (
- <div key={i} className="bg-card border border-border/50 rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
+ <div key={i} className="bg-card border border-border/50 rounded-[10px] p-5 relative overflow-hidden flex flex-col justify-between">
  <div>
  <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider block">{card.label}</span>
  <span className="text-2xl font-bold tracking-tight text-foreground block mt-2">{card.value}</span>
@@ -1757,7 +1757,7 @@ export function AnalysisView() {
  {/* Main charts section */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  
- <div className="bg-card border border-border/50 rounded-2xl p-6 lg:col-span-2 space-y-4">
+ <div className="bg-card border border-border/50 rounded-[10px] p-6 lg:col-span-2 space-y-4">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 border-border/40">
  <div>
  <h3 className="text-sm font-bold text-foreground">XU HƯỚNG TĂNG TRƯỞNG CLV VS CHI PHÍ LOYALTY</h3>
@@ -1798,7 +1798,7 @@ export function AnalysisView() {
  </div>
  </div>
 
- <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+ <div className="bg-card border border-border/50 rounded-[10px] p-6 space-y-4">
  <div>
  <h3 className="text-sm font-bold text-foreground">PHÂN BỔ THEO HẠNG VIP (TIERS)</h3>
  <p className="text-xs text-muted-foreground">Tỷ lệ hội viên phân bổ theo các cấp bậc thiết kế.</p>
@@ -1839,7 +1839,7 @@ export function AnalysisView() {
   </div>
   </div>
 
-  <div className="bg-card border border-border/50 rounded-2xl p-6 lg:col-span-3 space-y-4">
+  <div className="bg-card border border-border/50 rounded-[10px] p-6 lg:col-span-3 space-y-4">
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 border-border/40">
   <div>
   <h3 className="text-sm font-bold text-foreground uppercase">TỔNG DOANH THU THEO CHI NHÁNH</h3>
@@ -1880,7 +1880,7 @@ export function AnalysisView() {
   </div>
 
   {/* POS API AND REAL-TIME ACCRUAL SIMULATOR */}
-  <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-6 mt-6">
+  <div className="bg-card border border-border/50 rounded-[10px] p-6 space-y-6 mt-6">
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-4 border-border/40">
       <div>
         <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -1922,7 +1922,7 @@ export function AnalysisView() {
               type="text" 
               value={simInvoiceId}
               onChange={(e) => setSimInvoiceId(e.target.value)}
-              className="w-full bg-muted/50 border border-border/60 hover:border-primary/20 focus:border-primary rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none transition-all"
+              className="w-full bg-muted/50 border border-border/60 hover:border-primary/20 focus:border-primary rounded-[10px] px-3 py-2 text-xs font-mono text-foreground focus:outline-none transition-all"
               placeholder="e.g. POS-INV-10928"
             />
           </div>
@@ -1933,7 +1933,7 @@ export function AnalysisView() {
             <select
               value={simCustomerId}
               onChange={(e) => setSimCustomerId(e.target.value)}
-              className="w-full bg-muted/50 border border-border/60 hover:border-primary/20 focus:border-primary rounded-xl px-3 py-2 text-xs text-zinc-300 focus:outline-none transition-all cursor-pointer font-medium"
+              className="w-full bg-muted/50 border border-border/60 hover:border-primary/20 focus:border-primary rounded-[10px] px-3 py-2 text-xs text-zinc-300 focus:outline-none transition-all cursor-pointer font-medium"
             >
               {customers.map((c) => (
                 <option key={c.id} value={c.id} className="bg-card">
@@ -1955,7 +1955,7 @@ export function AnalysisView() {
               type="number"
               value={simAmount}
               onChange={(e) => setSimAmount(Math.max(0, parseInt(e.target.value, 10) || 0))}
-              className="w-full bg-muted/50 border border-border/60 hover:border-primary/20 focus:border-primary rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none transition-all"
+              className="w-full bg-muted/50 border border-border/60 hover:border-primary/20 focus:border-primary rounded-[10px] px-3 py-2 text-xs font-mono text-foreground focus:outline-none transition-all"
               placeholder="Nhập số tiền..."
             />
             {/* Quick preset chips */}
@@ -1965,7 +1965,7 @@ export function AnalysisView() {
                   key={val}
                   type="button"
                   onClick={() => setSimAmount(val)}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                  className={`px-2.5 py-1 rounded-[10px] text-[10px] font-bold border transition-all ${
                     simAmount === val 
                       ? 'bg-[#2f6cf5]/15 border-[#2f6cf5] text-[#2f6cf5]' 
                       : 'bg-muted/30 border-border/50 hover:bg-muted text-muted-foreground'
@@ -1978,7 +1978,7 @@ export function AnalysisView() {
           </div>
 
           {/* Accrued calculation read-only indicator */}
-          <div className="bg-muted/30 border border-border/40 p-3 rounded-xl flex items-center justify-between">
+          <div className="bg-muted/30 border border-border/40 p-3 rounded-[10px] flex items-center justify-between">
             <div className="text-left font-sans">
               <div className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">Điểm tích lũy dự kiến (Loyalty Points)</div>
               <div className="text-[10px] text-muted-foreground mt-0.5">Tỷ lệ: {formatMillionVND(rules.pointEarningRate)} = 1 điểm</div>
@@ -1995,7 +1995,7 @@ export function AnalysisView() {
             type="button"
             onClick={handleSimulatePOSInvoice}
             disabled={simLoading}
-            className={`w-full relative overflow-hidden flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold tracking-wider uppercase transition-all shadow-md cursor-pointer text-white font-sans bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 hover:shadow-lg active:scale-[0.98]`}
+            className={`w-full relative overflow-hidden flex items-center justify-center gap-2 rounded-[10px] py-3 text-xs font-bold tracking-wider uppercase transition-all shadow-md cursor-pointer text-white font-sans bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 hover:shadow-lg active:scale-[0.98]`}
           >
             {simLoading ? (
               <>
@@ -2013,7 +2013,7 @@ export function AnalysisView() {
       </div>
 
       {/* Terminal and payload stream log */}
-      <div className="lg:col-span-7 flex flex-col h-full min-h-[320px] bg-[#121214] border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl relative text-left">
+      <div className="lg:col-span-7 flex flex-col h-full min-h-[320px] bg-[#121214] border border-zinc-800 rounded-[10px] overflow-hidden shadow-2xl relative text-left">
         {/* Terminal Header */}
         <div className="bg-[#18181b] border-b border-zinc-800 px-4 py-3 flex items-center justify-between shrink-0 font-sans">
           <div className="flex items-center gap-2">
@@ -2067,7 +2067,7 @@ export function AnalysisView() {
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  
  {/* Form controls */}
- <div className="bg-sidebar border border-border/50 rounded-2xl p-6 space-y-4">
+ <div className="bg-sidebar border border-border/50 rounded-[10px] p-6 space-y-4">
  <h3 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest border-b pb-2 border-border/40">THAM SỐ TÀI CHÍNH ĐẦU VÀO</h3>
  
  <div className="space-y-3">
@@ -2078,7 +2078,7 @@ export function AnalysisView() {
  inputMode="numeric"
  value={formatInputValue(revenue)} 
  onChange={(e) => handleNumericInputChange(e.target.value, setRevenue)} 
- className="w-full p-2 text-xs rounded-xl bg-muted border focus:ring-2 focus:ring-primary/20 outline-none font-semibold text-foreground" 
+ className="w-full p-2 text-xs rounded-[10px] bg-muted border focus:ring-2 focus:ring-primary/20 outline-none font-semibold text-foreground" 
  />
  <span className="text-xs text-[#2f6cf5] font-semibold mt-1 block">≈ {formatBillionVND(revenue)}</span>
  </div>
@@ -2090,7 +2090,7 @@ export function AnalysisView() {
  inputMode="numeric"
  value={formatInputValue(cogs)} 
  onChange={(e) => handleNumericInputChange(e.target.value, setCogs)} 
- className="w-full p-2 text-xs rounded-xl bg-background border focus:ring-2 focus:ring-primary/20 outline-none font-semibold text-foreground" 
+ className="w-full p-2 text-xs rounded-[10px] bg-background border focus:ring-2 focus:ring-primary/20 outline-none font-semibold text-foreground" 
  />
  <span className="text-xs text-muted-foreground mt-1 block">Tỷ suất gộp: {((grossProfit / revenue) * 100).toFixed(0)}%</span>
  </div>
@@ -2117,7 +2117,7 @@ export function AnalysisView() {
  inputMode="numeric"
  value={formatInputValue(quarterlyBudgetCeiling)} 
  onChange={(e) => handleNumericInputChange(e.target.value, setQuarterlyBudgetCeiling)} 
- className="w-full p-2 text-xs rounded-xl bg-background border focus:ring-2 focus:ring-primary/20 outline-none font-semibold text-foreground" 
+ className="w-full p-2 text-xs rounded-[10px] bg-background border focus:ring-2 focus:ring-primary/20 outline-none font-semibold text-foreground" 
  />
  <span className="text-xs text-muted-foreground mt-1 block">Hạn mức kiểm soát dự báo: {formatMillionVND(quarterlyBudgetCeiling)}</span>
  </div>
@@ -2127,19 +2127,19 @@ export function AnalysisView() {
  <div className="grid grid-cols-2 gap-2">
  <div>
  <span className="text-xs text-muted-foreground block">Voucher Cost</span>
- <input type="text" inputMode="numeric" value={formatInputValue(voucherCost)} onChange={e => handleNumericInputChange(e.target.value, setVoucherCost)} className="w-full p-1.5 text-xs bg-background border rounded-lg font-semibold text-foreground" />
+ <input type="text" inputMode="numeric" value={formatInputValue(voucherCost)} onChange={e => handleNumericInputChange(e.target.value, setVoucherCost)} className="w-full p-1.5 text-xs bg-background border rounded-[10px] font-semibold text-foreground" />
  </div>
  <div>
  <span className="text-xs text-muted-foreground block">Point Rewards</span>
- <input type="text" inputMode="numeric" value={formatInputValue(pointCost)} onChange={e => handleNumericInputChange(e.target.value, setPointCost)} className="w-full p-1.5 text-xs bg-background border rounded-lg font-semibold text-foreground" />
+ <input type="text" inputMode="numeric" value={formatInputValue(pointCost)} onChange={e => handleNumericInputChange(e.target.value, setPointCost)} className="w-full p-1.5 text-xs bg-background border rounded-[10px] font-semibold text-foreground" />
  </div>
  <div>
  <span className="text-xs text-muted-foreground block">Private Events</span>
- <input type="text" inputMode="numeric" value={formatInputValue(eventCost)} onChange={e => handleNumericInputChange(e.target.value, setEventCost)} className="w-full p-1.5 text-xs bg-background border rounded-lg font-semibold text-foreground" />
+ <input type="text" inputMode="numeric" value={formatInputValue(eventCost)} onChange={e => handleNumericInputChange(e.target.value, setEventCost)} className="w-full p-1.5 text-xs bg-background border rounded-[10px] font-semibold text-foreground" />
  </div>
  <div>
  <span className="text-xs text-muted-foreground block">High-end Gift</span>
- <input type="text" inputMode="numeric" value={formatInputValue(giftCost)} onChange={e => handleNumericInputChange(e.target.value, setGiftCost)} className="w-full p-1.5 text-xs bg-background border rounded-lg font-semibold text-foreground" />
+ <input type="text" inputMode="numeric" value={formatInputValue(giftCost)} onChange={e => handleNumericInputChange(e.target.value, setGiftCost)} className="w-full p-1.5 text-xs bg-background border rounded-[10px] font-semibold text-foreground" />
  </div>
  </div>
  </div>
@@ -2149,20 +2149,20 @@ export function AnalysisView() {
  {/* Simulated Outputs & Interactive ROI Analysis */}
  <div className="lg:col-span-2 space-y-6">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
- <div className="bg-sidebar border border-border/50 rounded-2xl p-5 flex flex-col justify-between">
+ <div className="bg-sidebar border border-border/50 rounded-[10px] p-5 flex flex-col justify-between">
  <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block text-left">Ngân sách Loyalty cho phép</span>
- <div className="p-2 bg-[#2f6cf5]/10 text-[#2f6cf5] rounded-xl shrink-0 mt-2 self-start">
+ <div className="p-2 bg-[#2f6cf5]/10 text-[#2f6cf5] rounded-[10px] shrink-0 mt-2 self-start">
   <DollarSign className="w-4 h-4" />
  </div>
  <h3 className="text-2xl font-black text-[#2f6cf5] tracking-tight mt-3 text-left">{formatMillionVND(loyaltyBudget)}</h3>
  <div className="text-[11px] text-muted-foreground mt-4 pt-2.5 border-t border-border/40 flex items-center justify-between">
   <span>Cơ chế trích quỹ:</span>
-  <span className="font-bold text-foreground bg-muted px-2 py-0.5 rounded-lg border text-[10px]">Lợi nhuận gộp x {loyaltyRatio}%</span>
+  <span className="font-bold text-foreground bg-muted px-2 py-0.5 rounded-[10px] border text-[10px]">Lợi nhuận gộp x {loyaltyRatio}%</span>
  </div>
  </div>
- <div className="bg-sidebar border border-border/50 rounded-2xl p-5 flex flex-col justify-between">
+ <div className="bg-sidebar border border-border/50 rounded-[10px] p-5 flex flex-col justify-between">
  <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block text-left">Chi phí thực tế phân bổ</span>
- <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl shrink-0 mt-2 self-start">
+ <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-[10px] shrink-0 mt-2 self-start">
   <Layers className="w-4 h-4 text-amber-500" />
  </div>
  <h3 className="text-2xl font-black text-[#2f6cf5] tracking-tight mt-3 text-left">{formatMillionVND(actualCost)}</h3>
@@ -2171,9 +2171,9 @@ export function AnalysisView() {
   <span className="font-semibold text-foreground italic text-[10px]">Voucher, điểm, quà tặng & event</span>
  </div>
  </div>
- <div className="bg-sidebar border border-border/50 rounded-2xl p-5 flex flex-col justify-between">
+ <div className="bg-sidebar border border-border/50 rounded-[10px] p-5 flex flex-col justify-between">
  <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block text-left">Hạn mức ngân sách thặng dư</span>
-<div className={`p-2 rounded-xl shrink-0 mt-2 self-start w-fit ${remainingBudget >= 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 text-rose-600 dark:text-rose-400"}`}>
+<div className={`p-2 rounded-[10px] shrink-0 mt-2 self-start w-fit ${remainingBudget >= 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 text-rose-600 dark:text-rose-400"}`}>
  {remainingBudget >= 0 ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
 </div>
  <h3 className={`text-3xl font-extrabold mt-1 ${remainingBudget >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
@@ -2181,27 +2181,27 @@ export function AnalysisView() {
  </h3>
  <div className="text-[11px] text-muted-foreground mt-4 pt-2.5 border-t border-border/40 flex items-center justify-between">
  <span>Trạng thái dòng ngân quỹ:</span>
- <span className={`px-2 py-0.5 rounded-lg border font-bold text-[9px] ${remainingBudget >= 0 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"}`}>
+ <span className={`px-2 py-0.5 rounded-[10px] border font-bold text-[9px] ${remainingBudget >= 0 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"}`}>
   {remainingBudget >= 0 ? "Thặng dư an toàn" : "Nguy cơ vượt hạn mức"}
  </span>
 </div>
  </div>
- <div className="bg-sidebar border border-border/50 rounded-2xl p-5 flex flex-col justify-between">
+ <div className="bg-sidebar border border-border/50 rounded-[10px] p-5 flex flex-col justify-between">
  <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block text-left">Tỷ lệ Chi phí / Doanh thu</span>
-<div className={`p-2 rounded-xl shrink-0 mt-2 self-start w-fit ${costRatioOfRevenue < 5 ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"}`}>
+<div className={`p-2 rounded-[10px] shrink-0 mt-2 self-start w-fit ${costRatioOfRevenue < 5 ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"}`}>
  <Percent className="w-4 h-4" />
 </div>
  <h3 className="text-3xl font-extrabold text-foreground mt-1">{costRatioOfRevenue.toFixed(2)}%</h3>
  <div className="text-[11px] text-muted-foreground mt-4 pt-2.5 border-t border-border/40 flex items-center justify-between">
  <span>Hiệu số chi tiêu (Target &lt; 5%):</span>
- <span className={`px-2 py-0.5 rounded-lg border font-bold text-[9px] ${costRatioOfRevenue < 5 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"}`}>
+ <span className={`px-2 py-0.5 rounded-[10px] border font-bold text-[9px] ${costRatioOfRevenue < 5 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"}`}>
   {costRatioOfRevenue < 5 ? "Đạt chỉ số vàng" : "Cần kiểm soát"}
  </span>
 </div>
  </div>
 
  {/* Conditional budget utilization card */}
- <div className={`md:col-span-2 border rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 ${actualCost > quarterlyBudgetCeiling ? 'bg-rose-500/10 dark:bg-rose-950/20 border-rose-500/40 text-rose-950 dark:text-rose-100' : 'bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/20 text-emerald-950 dark:text-emerald-100'}`}>
+ <div className={`md:col-span-2 border rounded-[10px] p-5 flex flex-col justify-between transition-all duration-300 ${actualCost > quarterlyBudgetCeiling ? 'bg-rose-500/10 dark:bg-rose-950/20 border-rose-500/40 text-rose-950 dark:text-rose-100' : 'bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/20 text-emerald-950 dark:text-emerald-100'}`}>
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
  <div>
  <span className="text-xs uppercase font-bold text-muted-foreground block">Chỉ báo sử dụng trần ngân sách hàng quý</span>
@@ -2238,7 +2238,7 @@ export function AnalysisView() {
  </div>
 
  {/* ROI specific box */}
- <div className="bg-sidebar border border-[#2f6cf5]/30 rounded-2xl p-6 space-y-4">
+ <div className="bg-sidebar border border-[#2f6cf5]/30 rounded-[10px] p-6 space-y-4">
  <div>
  <h4 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest">LOYALTY ROI - SỨC MẠNH BIÊN LỢI NHUẬN</h4>
  <p className="text-xs text-muted-foreground mt-0.5">Tính toán tỷ suất hoàn vốn dựa trên doanh số CLV bồi đắp thêm từ các chiến dịch VIP.</p>
@@ -2251,10 +2251,10 @@ export function AnalysisView() {
  inputMode="numeric"
  value={formatInputValue(clvIncrease)} 
  onChange={e => handleNumericInputChange(e.target.value, setClvIncrease)} 
- className="w-full p-2 text-xs rounded-lg bg-background border font-semibold text-foreground" 
+ className="w-full p-2 text-xs rounded-[10px] bg-background border font-semibold text-foreground" 
  />
  </div>
- <div className="text-center bg-muted/40 p-4 rounded-xl border border-border/35">
+ <div className="text-center bg-muted/40 p-4 rounded-[10px] border border-border/35">
  <span className="text-xs text-muted-foreground uppercase font-bold block">Tỷ Lệ ROI Ước Tính</span>
  <span className="text-4xl font-extrabold text-[#2f6cf5] tracking-tight">{calculatedROI.toFixed(0)}%</span>
  </div>
@@ -2262,7 +2262,7 @@ export function AnalysisView() {
  </div>
 
  {/* Doanh thu gộp vs Ngân sách Loyalty Chart */}
- <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+ <div className="bg-card border border-border/50 rounded-[10px] p-6 space-y-4">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 border-border/40">
  <div>
  <h3 className="text-sm font-bold text-foreground">XU HƯỚNG TƯƠNG QUAN: DOANH THU VS NGÂN SÁCH LOYALTY</h3>
@@ -2309,7 +2309,7 @@ export function AnalysisView() {
  </div>
 
  {/* Table of voucher campaigns */}
- <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+ <div className="bg-card border border-border/50 rounded-[10px] p-6 space-y-4">
  <h3 className="text-sm font-bold text-foreground">HIỆU QUẢ CÁC CHIẾN DỊCH VOUCHER</h3>
  <div className="overflow-x-auto">
  <table className="w-full text-left text-xs">
@@ -2348,7 +2348,7 @@ export function AnalysisView() {
   </div>
 
   {/* NEW DYNAMIC OPTIMIZER SECTION FOR '% GIÀNH RA' */}
-  <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-6">
+  <div className="bg-card border border-border/50 rounded-[10px] p-6 space-y-6">
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4 border-border/45">
       <div className="text-left">
         <h3 className="text-sm font-extrabold text-[#2f6cf5] flex items-center gap-2 uppercase tracking-wide">
@@ -2359,7 +2359,7 @@ export function AnalysisView() {
           Thiết kế đặc biệt để tính toán tỷ lệ trích quỹ lý tưởng từ biên lợi nhuận gộp nhằm thu hút và giữ chân khách VIP mà không bào mòn giá trị thương hiệu.
         </p>
       </div>
-      <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-500/20">
+      <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 text-xs font-bold px-3 py-1.5 rounded-[10px] border border-emerald-500/20">
         <Sparkles className="w-3.5 h-3.5 animate-pulse" />
         Phân Tích Động Chuyên Sâu
       </div>
@@ -2367,7 +2367,7 @@ export function AnalysisView() {
 
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* Target parameters inputs */}
-      <div className="lg:col-span-5 bg-muted/20 border border-border/40 p-5 rounded-2xl space-y-4 text-left">
+      <div className="lg:col-span-5 bg-muted/20 border border-border/40 p-5 rounded-[10px] space-y-4 text-left">
         <h4 className="text-[10px] font-bold text-foreground bg-primary/10 px-2 py-1 rounded inline-block tracking-wider uppercase">THAM SỐ HOẠCH ĐỊNH DOANH NGHIỆP</h4>
         
         {/* Dropdown Industry */}
@@ -2376,7 +2376,7 @@ export function AnalysisView() {
           <select 
             value={industrySector}
             onChange={(e) => setIndustrySector(e.target.value as any)}
-            className="w-full p-2 bg-background border border-border/60 rounded-xl text-xs font-semibold text-zinc-300 outline-none cursor-pointer"
+            className="w-full p-2 bg-background border border-border/60 rounded-[10px] text-xs font-semibold text-zinc-300 outline-none cursor-pointer"
           >
             <option value="luxury">Thời trang Thiết Kế & Kim Cương Cao Cấp (Sevago Style)</option>
             <option value="retail">Bán lẻ Cao Cấp & Nhập khẩu (Repeat Rate Vừa)</option>
@@ -2390,7 +2390,7 @@ export function AnalysisView() {
           <select 
             value={competitionLevel}
             onChange={(e) => setCompetitionLevel(e.target.value as any)}
-            className="w-full p-2 bg-background border border-border/60 rounded-xl text-xs font-semibold text-zinc-300 outline-none cursor-pointer"
+            className="w-full p-2 bg-background border border-border/60 rounded-[10px] text-xs font-semibold text-zinc-300 outline-none cursor-pointer"
           >
             <option value="low">Thấp (Đặc quyền thương hiệu độc quyền cao)</option>
             <option value="medium">Bình thường (Cạnh tranh dịch vụ cùng dòng)</option>
@@ -2424,7 +2424,7 @@ export function AnalysisView() {
             setLoyaltyRatio(recommendedRatio);
             triggerToast(`Đã áp dụng tỷ lệ trích quỹ tối ưu ${recommendedRatio}% vào bảng tính Loyalty từ AI!`);
           }}
-          className="w-full py-2.5 bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 text-white text-xs font-bold uppercase rounded-xl tracking-wider transition-all shadow-md hover:shadow-lg focus:outline-none flex items-center justify-center gap-2 cursor-pointer border-none"
+          className="w-full py-2.5 bg-[#2f6cf5] hover:bg-[#2f6cf5]/90 text-white text-xs font-bold uppercase rounded-[10px] tracking-wider transition-all shadow-md hover:shadow-lg focus:outline-none flex items-center justify-center gap-2 cursor-pointer border-none"
         >
           <CheckCircle className="w-4 h-4" />
           Áp dụng Tỷ lệ khuyến nghị AI ({recommendedRatio}%)
@@ -2434,7 +2434,7 @@ export function AnalysisView() {
       {/* AI Recommendation display */}
       <div className="lg:col-span-7 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-[#2f6cf5]/5 border border-[#2f6cf5]/20 rounded-2xl flex flex-col justify-between text-left">
+          <div className="p-4 bg-[#2f6cf5]/5 border border-[#2f6cf5]/20 rounded-[10px] flex flex-col justify-between text-left">
             <span className="text-xs text-muted-foreground font-bold uppercase block leading-none">Tỷ lệ trích quỹ tối ưu khuyên dùng</span>
             <div className="mt-2 flex items-baseline gap-1.5">
               <span className="text-3xl font-black text-[#2f6cf5]">{recommendedRatio}%</span>
@@ -2445,7 +2445,7 @@ export function AnalysisView() {
             </p>
           </div>
 
-          <div className="p-4 bg-muted/30 border border-border/50 rounded-2xl flex flex-col justify-between text-left">
+          <div className="p-4 bg-muted/30 border border-border/50 rounded-[10px] flex flex-col justify-between text-left">
             <span className="text-xs text-zinc-400 font-bold uppercase block leading-none">Hạn mức ngân sách tối ưu tương ứng</span>
             <div className="mt-2 flex items-baseline gap-1.5">
               <span className="text-2xl font-extrabold text-foreground">{formatShortVND(grossProfit * (recommendedRatio / 100))}</span>
@@ -2457,7 +2457,7 @@ export function AnalysisView() {
         </div>
 
         {/* Recommended allocation share */}
-        <div className="bg-muted/10 border border-border/40 p-5 rounded-2xl text-left space-y-3">
+        <div className="bg-muted/10 border border-border/40 p-5 rounded-[10px] text-left space-y-3">
           <h5 className="text-xs font-black text-foreground uppercase tracking-widest flex items-center gap-1.5">
             <Layers className="w-4 h-4 text-[#2f6cf5]" />
             Khung phân bổ đề xuất nguồn chi ngân sách ({recommendedRatio}%)
@@ -2495,7 +2495,7 @@ export function AnalysisView() {
     </div>
 
     {/* Sensitivity analysis chart */}
-    <div className="bg-muted/10 border border-border/40 p-5 rounded-2xl text-left">
+    <div className="bg-muted/10 border border-border/40 p-5 rounded-[10px] text-left">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-border/30 pb-3 mb-4">
         <div>
           <h4 className="text-xs font-black text-foreground uppercase tracking-wider">PHÂN TÍCH ĐỘ NHẠY LỢI ÍCH THEO PHẦN TRĂM TRÍCH LẬP</h4>
@@ -2533,7 +2533,7 @@ export function AnalysisView() {
   </div>
 
   <div className="flex justify-end pt-4">
-    <button onClick={() => toast.success("Đã lưu kết quả phân tích ngân sách!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
+    <button onClick={() => toast.success("Đã lưu kết quả phân tích ngân sách!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-[10px] shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
       <CheckCircle2 className="w-4 h-4" />
       Lưu kết quả
     </button>
@@ -2546,24 +2546,24 @@ export function AnalysisView() {
  <div className="space-y-6">
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  
- <div className="bg-sidebar border border-border/50 rounded-2xl p-6 space-y-4">
+ <div className="bg-sidebar border border-border/50 rounded-[10px] p-6 space-y-4">
  <h3 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest border-b pb-2 border-border/40">BỘ MÔ PHỎNG GIÁ TRỊ VÒNG ĐỜI (CLV)</h3>
  
  <div className="space-y-4">
  <div>
  <label className="block text-xs text-muted-foreground font-bold uppercase mb-1">Giá trị đơn hàng trung bình - AOV (₫)</label>
- <input type="text" inputMode="numeric" value={formatInputValue(aov)} onChange={e => handleNumericInputChange(e.target.value, setAov)} className="w-full p-2 text-xs rounded-xl bg-background border font-semibold text-foreground" />
+ <input type="text" inputMode="numeric" value={formatInputValue(aov)} onChange={e => handleNumericInputChange(e.target.value, setAov)} className="w-full p-2 text-xs rounded-[10px] bg-background border font-semibold text-foreground" />
  </div>
  <div>
  <label className="block text-xs text-muted-foreground font-bold uppercase mb-1">Tần suất mua sắm trung bình (Đơn/Năm)</label>
- <input type="number" value={purchaseFrequency} onChange={e => setPurchaseFrequency(Number(e.target.value))} className="w-full p-2 text-xs rounded-xl bg-background border" />
+ <input type="number" value={purchaseFrequency} onChange={e => setPurchaseFrequency(Number(e.target.value))} className="w-full p-2 text-xs rounded-[10px] bg-background border" />
  </div>
  <div>
  <label className="block text-xs text-muted-foreground font-bold uppercase mb-1">Thời gian gắn kết vòng đời (Năm)</label>
- <input type="number" value={customerLifespan} onChange={e => setCustomerLifespan(Number(e.target.value))} className="w-full p-2 text-xs rounded-xl bg-background border" />
+ <input type="number" value={customerLifespan} onChange={e => setCustomerLifespan(Number(e.target.value))} className="w-full p-2 text-xs rounded-[10px] bg-background border" />
  </div>
 
- <div className="p-4 bg-muted/50 rounded-2xl text-center border">
+ <div className="p-4 bg-muted/50 rounded-[10px] text-center border">
  <span className="text-xs text-muted-foreground font-bold block uppercase tracking-wider">Tổng CLV Ước Tính</span>
  <h3 className="text-3xl font-extrabold text-[#2f6cf5] mt-1">{formatMillionVND(calculatedCLV)}</h3>
  <span className="text-xs text-muted-foreground block mt-1">Công thức: AOV × Tần suất × Vòng đời</span>
@@ -2571,7 +2571,7 @@ export function AnalysisView() {
  </div>
  </div>
 
- <div className="lg:col-span-2 bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+ <div className="lg:col-span-2 bg-card border border-border/50 rounded-[10px] p-6 space-y-4">
  <h3 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest">TỶ LỆ LẶP LẠI THEO BỘ SƯU TẬP (COLLECTION)</h3>
  
  <div className="h-64">
@@ -2599,7 +2599,7 @@ export function AnalysisView() {
  </div>
 
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+ <div className="bg-card border border-border/50 rounded-[10px] p-6 space-y-4">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 border-border/40">
  <div>
  <h3 className="text-sm font-bold text-foreground font-heading">XU HƯỚNG TĂNG TRƯỞNG GIÁ TRỊ VÒNG ĐỜI (CLV) 12 THÁNG QUA CÁC HẠNG</h3>
@@ -2624,7 +2624,7 @@ export function AnalysisView() {
  </div>
  </div>
 
- <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+ <div className="bg-card border border-border/50 rounded-[10px] p-6 space-y-4">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 border-border/40">
  <div>
  <h3 className="text-sm font-bold text-foreground font-heading">DỰ PHÓNG XU HƯỚNG TĂNG TRƯỞNG CLV MÔ PHỎNG THEO THỜI GIAN</h3>
@@ -2649,7 +2649,7 @@ export function AnalysisView() {
  </div>
 
  <div className="flex justify-end pt-4">
-   <button onClick={() => toast.success("Đã lưu kết quả phân tích CLV và vòng đời!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
+   <button onClick={() => toast.success("Đã lưu kết quả phân tích CLV và vòng đời!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-[10px] shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
      <CheckCircle2 className="w-4 h-4" />
      Lưu kết quả
    </button>
@@ -2663,7 +2663,7 @@ export function AnalysisView() {
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  
  <div className="lg:col-span-2 space-y-4">
- <div className="bg-card border border-border/50 rounded-2xl p-6">
+ <div className="bg-card border border-border/50 rounded-[10px] p-6">
  <div className="flex items-center justify-between gap-3 mb-4">
  <h3 className="text-sm font-bold text-foreground">DANH SÁCH THÀNH VIÊN VIP ({filteredCustomers.length})</h3>
  <div className="relative w-48">
@@ -2673,7 +2673,7 @@ export function AnalysisView() {
  placeholder="Tìm kiếm..." 
  value={searchQuery} 
  onChange={e => setSearchQuery(e.target.value)} 
- className="w-full pl-8 pr-2 py-1.5 bg-background border rounded-xl text-xs" 
+ className="w-full pl-8 pr-2 py-1.5 bg-background border rounded-[10px] text-xs" 
  />
  </div>
  </div>
@@ -2710,7 +2710,7 @@ export function AnalysisView() {
  <td className="py-2.5 text-right">
  <button 
  onClick={() => { setActiveTab('ai_advisor'); setSelectedAIVip(c.id); }}
- className="px-2.5 py-1 text-xs uppercase font-bold text-[#2f6cf5] bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/35 rounded-xl transition-all"
+ className="px-2.5 py-1 text-xs uppercase font-bold text-[#2f6cf5] bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/35 rounded-[10px] transition-all"
  >
  AI Phân Tích
  </button>
@@ -2724,7 +2724,7 @@ export function AnalysisView() {
  </div>
 
  {/* Booking Form */}
- <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+ <div className="bg-card border border-border/50 rounded-[10px] p-6 space-y-4">
  <h3 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest flex items-center gap-1.5 border-b pb-2 border-border/40">
  <Calendar className="w-4 h-4 text-[#2f6cf5]" /> ĐẶT LỊCH ĐÓN TIẾP SHOWROOM VIP
  </h3>
@@ -2732,28 +2732,28 @@ export function AnalysisView() {
  <form onSubmit={handleBookAppointment} className="space-y-3">
  <div>
  <span className="text-xs text-muted-foreground font-bold uppercase block mb-1">Tên khách hàng VIP</span>
- <input type="text" placeholder="Đoàn Hương Giang" value={newBooking.customerName} onChange={e => setNewBooking({...newBooking, customerName: e.target.value})} className="w-full p-2 bg-background border text-xs rounded-xl" />
+ <input type="text" placeholder="Đoàn Hương Giang" value={newBooking.customerName} onChange={e => setNewBooking({...newBooking, customerName: e.target.value})} className="w-full p-2 bg-background border text-xs rounded-[10px]" />
  </div>
  <div>
  <span className="text-xs text-muted-foreground font-bold uppercase block mb-1">Loại hình Consultation đặc quyền</span>
- <select value={newBooking.type} onChange={e => setNewBooking({...newBooking, type: e.target.value})} className="w-full p-2 bg-background border text-xs rounded-xl">
- <option value="Showroom Private Viewing">Xem trang sức phòng riêng</option>
- <option value="Private Consultation">Tạo mẫu thiết kế độc bản</option>
- <option value="Tea Salon Experience">Thưởng thức Trà chiều & Thử nhẫn</option>
+ <select value={newBooking.type} onChange={e => setNewBooking({...newBooking, type: e.target.value})} className="w-full p-2 bg-background border text-xs rounded-[10px]">
+ <option value="Xem trang sức phòng riêng">Xem trang sức phòng riêng</option>
+ <option value="Tạo mẫu thiết kế độc bản">Tạo mẫu thiết kế độc bản</option>
+ <option value="Thưởng thức Trà chiều & Thử nhẫn">Thưởng thức Trà chiều & Thử nhẫn</option>
  </select>
  </div>
  <div className="grid grid-cols-2 gap-2">
  <div>
  <span className="text-xs text-muted-foreground block">Ngày hẹn</span>
- <input type="date" value={newBooking.date} onChange={e => setNewBooking({...newBooking, date: e.target.value})} className="w-full p-1.5 bg-background border text-xs rounded-lg" />
+ <input type="date" value={newBooking.date} onChange={e => setNewBooking({...newBooking, date: e.target.value})} className="w-full p-1.5 bg-background border text-xs rounded-[10px]" />
  </div>
  <div>
  <span className="text-xs text-muted-foreground block">Giờ hẹn</span>
- <input type="time" value={newBooking.time} onChange={e => setNewBooking({...newBooking, time: e.target.value})} className="w-full p-1.5 bg-background border text-xs rounded-lg" />
+ <input type="time" value={newBooking.time} onChange={e => setNewBooking({...newBooking, time: e.target.value})} className="w-full p-1.5 bg-background border text-xs rounded-[10px]" />
  </div>
  </div>
 
- <button type="submit" className="w-full py-2.5 text-xs font-bold text-white bg-primary hover:bg-primary/90 transition-all rounded-xl uppercase tracking-wider">
+ <button type="submit" className="w-full py-2.5 text-xs font-bold text-white bg-primary hover:bg-primary/90 transition-all rounded-[10px] uppercase tracking-wider">
  THIẾT LẬP LỊCH HẸN
  </button>
  </form>
@@ -2761,12 +2761,12 @@ export function AnalysisView() {
  <div className="pt-2 border-t space-y-2">
  <span className="text-xs text-muted-foreground font-bold uppercase block">Lịch Hẹn VIP Chờ Đón</span>
  {bookings.map((b, idx) => (
- <div key={idx} className="p-3 bg-muted/40 rounded-xl border flex items-center justify-between text-xs">
+ <div key={idx} className="p-3 bg-muted/40 rounded-[10px] border flex items-center justify-between text-xs">
  <div>
  <div className="font-bold">{b.customerName}</div>
  <span className="text-xs text-muted-foreground">{b.type}</span>
  </div>
- <span className="px-2 py-1 bg-background border rounded-lg text-xs font-bold text-[#2f6cf5]">{b.time}</span>
+ <span className="px-2 py-1 bg-background border rounded-[10px] text-xs font-bold text-[#2f6cf5]">{b.time}</span>
  </div>
  ))}
  </div>
@@ -2774,7 +2774,7 @@ export function AnalysisView() {
  </div>
 
  <div className="flex justify-end pt-4">
-   <button onClick={() => toast.success("Đã lưu kết quả phân tích VIP CRM!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
+   <button onClick={() => toast.success("Đã lưu kết quả phân tích VIP CRM!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-[10px] shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
      <CheckCircle2 className="w-4 h-4" />
      Lưu kết quả
    </button>
@@ -2787,7 +2787,7 @@ export function AnalysisView() {
  <div className="space-y-6">
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  
- <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-4">
+ <div className="bg-card border border-border/50 rounded-[10px] p-6 space-y-4">
  <h3 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest flex items-center gap-1.5 border-b pb-2 border-border/40">
  <Sparkles className="w-4 h-4 text-[#2f6cf5]" /> Cấu hình Trí khôn nhân tạo AI
  </h3>
@@ -2798,7 +2798,7 @@ export function AnalysisView() {
  <select 
  value={selectedAIVip} 
  onChange={e => setSelectedAIVip(e.target.value)}
- className="w-full p-2.5 bg-background border rounded-xl text-xs"
+ className="w-full p-2.5 bg-background border rounded-[10px] text-xs"
  >
  {customers.map(c => (
  <option key={c.id} value={c.id}>
@@ -2811,7 +2811,7 @@ export function AnalysisView() {
  {(() => {
  const client = customers.find(c => c.id === selectedAIVip) || customers[0];
  return (
- <div className="p-4 bg-muted/30 border rounded-xl space-y-2 text-xs">
+ <div className="p-4 bg-muted/30 border rounded-[10px] space-y-2 text-xs">
  <span className="text-xs text-muted-foreground font-bold uppercase block">Chân dung đồng bộ hiện tại</span>
  <div className="grid grid-cols-2 gap-2">
  <div>Vùng miền: <span className="font-bold text-foreground">{client.region}</span></div>
@@ -2829,14 +2829,14 @@ export function AnalysisView() {
  rows={3} 
  value={aiCustomPrompt} 
  onChange={e => setAiCustomPrompt(e.target.value)} 
- className="w-full p-2 bg-background border text-xs rounded-xl focus:ring-1" 
+ className="w-full p-2 bg-background border text-xs rounded-[10px] focus:ring-1" 
  />
  </div>
 
  <button 
  onClick={callGeminiAIAdvisor} 
  disabled={aiLoading}
- className="w-full py-3 bg-primary hover:bg-primary/95 text-primary-foreground font-bold text-xs rounded-xl uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-lg"
+ className="w-full py-3 bg-primary hover:bg-primary/95 text-primary-foreground font-bold text-xs rounded-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-lg"
  >
  {aiLoading ? (
  <>
@@ -2857,25 +2857,25 @@ export function AnalysisView() {
  <div className="lg:col-span-2 space-y-4">
  {aiResponse ? (
  <div className="space-y-4">
- <div className="bg-card border border-border/50 rounded-2xl p-5 space-y-2">
+ <div className="bg-card border border-border/50 rounded-[10px] p-5 space-y-2">
  <span className="text-xs font-bold text-[#2f6cf5] uppercase flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> Đánh giá Churn Risk</span>
  <p className="text-xs leading-relaxed text-foreground">{aiResponse.riskAnalysis}</p>
  </div>
- <div className="bg-card border border-border/50 rounded-2xl p-5 space-y-2">
+ <div className="bg-card border border-border/50 rounded-[10px] p-5 space-y-2">
  <span className="text-xs font-bold text-[#2f6cf5] uppercase flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Đề xuất Ưu đãi & Thặng dư tài chính</span>
  <p className="text-xs leading-relaxed text-foreground">{aiResponse.marketingStrategy}</p>
  </div>
- <div className="bg-card border border-border/50 rounded-2xl p-5 space-y-2">
+ <div className="bg-card border border-border/50 rounded-[10px] p-5 space-y-2">
  <span className="text-xs font-bold text-[#2f6cf5] uppercase flex items-center gap-2"><Calendar className="w-4 h-4" /> Kế hoạch Đón Tiếp & Trải nghiệm salon</span>
  <p className="text-xs leading-relaxed text-foreground">{aiResponse.privateExperience}</p>
  </div>
- <div className="bg-muted/40 p-5 rounded-2xl border border-dashed space-y-3">
+ <div className="bg-muted/40 p-5 rounded-[10px] border border-dashed space-y-3">
  <span className="text-xs font-bold text-[#2f6cf5] uppercase block border-b pb-2">Bản sao Thư Tri Ân Gửi Khách Hàng Cao Cấp</span>
  <p className="text-xs italic leading-relaxed whitespace-pre-line text-foreground/90">"{aiResponse.personalOffer}"</p>
  <div className="text-right">
  <button 
  onClick={() => triggerToast('Đã phê duyệt gửi lời mời tri ân cao cấp này tới VIP!')}
- className="px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl uppercase hover:scale-105 transition-all"
+ className="px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-[10px] uppercase hover:scale-105 transition-all"
  >
  Phê duyệt Gửi Lời Mời
  </button>
@@ -2883,7 +2883,7 @@ export function AnalysisView() {
  </div>
  </div>
  ) : (
- <div className="h-64 border border-dashed rounded-2xl flex flex-col items-center justify-center text-center p-6 bg-muted/20">
+ <div className="h-64 border border-dashed rounded-[10px] flex flex-col items-center justify-center text-center p-6 bg-muted/20">
  <Sparkles className="w-10 h-10 animate-pulse text-[#2f6cf5]/50 mb-3" />
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Sẵn Sàng Chẩn Đoán AI</span>
  <p className="text-xs text-muted-foreground max-w-sm mt-1">Lựa chọn khách hàng VIP và bấm nút để khởi tạo cố vấn trải nghiệm cá nhân hóa.</p>
@@ -2892,7 +2892,7 @@ export function AnalysisView() {
  </div>
 
  <div className="flex justify-end pt-4">
-   <button onClick={() => toast.success("Đã lưu kết quả phân tích AI!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
+   <button onClick={() => toast.success("Đã lưu kết quả phân tích AI!")} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-[10px] shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
      <CheckCircle2 className="w-4 h-4" />
      Lưu kết quả
    </button>
@@ -2910,7 +2910,7 @@ export function AnalysisView() {
 
  {/* 6. TAB: RULES */}
  {activeTab === 'rules' && (
- <div className="bg-sidebar border border-border/50 rounded-2xl p-6 space-y-6">
+ <div className="bg-sidebar border border-border/50 rounded-[10px] p-6 space-y-6">
  <div>
  <h3 className="text-sm font-bold text-foreground">QUY TẮC PHÂN BỔ LOYALTY ENGINE</h3>
  <p className="text-xs text-muted-foreground">Tùy biến các quy mẫu tích lũy điểm và bậc thềm phân hạng tích lũy.</p>
@@ -2921,11 +2921,11 @@ export function AnalysisView() {
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">1. TÍCH LŨY & ĐỔI ĐIỂM</span>
  <div>
  <span className="text-xs text-muted-foreground block mb-1">Mức Chi Tiêu Cho 1 Điểm (₫)</span>
- <input type="text" inputMode="numeric" value={formatInputValue(rules.pointEarningRate)} onChange={e => setRules({...rules, pointEarningRate: e.target.value.replace(/\./g, '').replace(/[^\d]/g, '') ? parseInt(e.target.value.replace(/\./g, '').replace(/[^\d]/g, ''), 10) : 0})} className="w-full p-2 bg-background border text-xs rounded-xl font-semibold text-foreground" />
+ <input type="text" inputMode="numeric" value={formatInputValue(rules.pointEarningRate)} onChange={e => setRules({...rules, pointEarningRate: e.target.value.replace(/\./g, '').replace(/[^\d]/g, '') ? parseInt(e.target.value.replace(/\./g, '').replace(/[^\d]/g, ''), 10) : 0})} className="w-full p-2 bg-background border text-xs rounded-[10px] font-semibold text-foreground" />
  </div>
  <div>
  <span className="text-xs text-muted-foreground block mb-1">Giá Trị Đổi Của 1 Điểm (₫)</span>
- <input type="text" inputMode="numeric" value={formatInputValue(rules.pointRedemptionValue)} onChange={e => setRules({...rules, pointRedemptionValue: e.target.value.replace(/\./g, '').replace(/[^\d]/g, '') ? parseInt(e.target.value.replace(/\./g, '').replace(/[^\d]/g, ''), 10) : 0})} className="w-full p-2 bg-background border text-xs rounded-xl font-semibold text-foreground" />
+ <input type="text" inputMode="numeric" value={formatInputValue(rules.pointRedemptionValue)} onChange={e => setRules({...rules, pointRedemptionValue: e.target.value.replace(/\./g, '').replace(/[^\d]/g, '') ? parseInt(e.target.value.replace(/\./g, '').replace(/[^\d]/g, ''), 10) : 0})} className="w-full p-2 bg-background border text-xs rounded-[10px] font-semibold text-foreground" />
  </div>
  </div>
 
@@ -2933,11 +2933,11 @@ export function AnalysisView() {
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">2. ĐỊNH MỨC ATELIER TIERS</span>
  <div>
  <span className="text-xs text-muted-foreground block mb-1">Hạn mức nâng hạng Atelier (₫)</span>
- <input type="text" inputMode="numeric" value={formatInputValue(rules.tierUpgradeAtelier)} onChange={e => setRules({...rules, tierUpgradeAtelier: e.target.value.replace(/\./g, '').replace(/[^\d]/g, '') ? parseInt(e.target.value.replace(/\./g, '').replace(/[^\d]/g, ''), 10) : 0})} className="w-full p-2 bg-background border text-xs rounded-xl font-semibold text-foreground" />
+ <input type="text" inputMode="numeric" value={formatInputValue(rules.tierUpgradeAtelier)} onChange={e => setRules({...rules, tierUpgradeAtelier: e.target.value.replace(/\./g, '').replace(/[^\d]/g, '') ? parseInt(e.target.value.replace(/\./g, '').replace(/[^\d]/g, ''), 10) : 0})} className="w-full p-2 bg-background border text-xs rounded-[10px] font-semibold text-foreground" />
  </div>
  <div>
  <span className="text-xs text-muted-foreground block mb-1">Hạn mức nâng hạng Icon (₫)</span>
- <input type="text" inputMode="numeric" value={formatInputValue(rules.tierUpgradeIcon)} onChange={e => setRules({...rules, tierUpgradeIcon: e.target.value.replace(/\./g, '').replace(/[^\d]/g, '') ? parseInt(e.target.value.replace(/\./g, '').replace(/[^\d]/g, ''), 10) : 0})} className="w-full p-2 bg-background border text-xs rounded-xl font-semibold text-foreground" />
+ <input type="text" inputMode="numeric" value={formatInputValue(rules.tierUpgradeIcon)} onChange={e => setRules({...rules, tierUpgradeIcon: e.target.value.replace(/\./g, '').replace(/[^\d]/g, '') ? parseInt(e.target.value.replace(/\./g, '').replace(/[^\d]/g, ''), 10) : 0})} className="w-full p-2 bg-background border text-xs rounded-[10px] font-semibold text-foreground" />
  </div>
  </div>
 
@@ -2945,11 +2945,11 @@ export function AnalysisView() {
  <div>
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-3">3. PHÊ DUYỆT TÍCH HỢP</span>
  <div className="space-y-2 text-xs">
- <div className="flex justify-between items-center bg-muted/40 p-2 rounded-lg">
+ <div className="flex justify-between items-center bg-muted/40 p-2 rounded-[10px]">
  <span>Zoho CRM API Hub</span>
  <span className="text-emerald-500 font-bold">● Active</span>
  </div>
- <div className="flex justify-between items-center bg-muted/40 p-2 rounded-lg">
+ <div className="flex justify-between items-center bg-muted/40 p-2 rounded-[10px]">
  <span>Omnichannel Webhooks</span>
  <span className="text-emerald-500 font-bold">● Active</span>
  </div>
@@ -2957,7 +2957,7 @@ export function AnalysisView() {
  </div>
  <button 
  onClick={() => triggerToast('Đã lưu cài đặt Loyalty Engine!')}
- className="w-full py-2.5 bg-primary text-primary-foreground font-bold text-xs rounded-xl uppercase"
+ className="w-full py-2.5 bg-primary text-primary-foreground font-bold text-xs rounded-[10px] uppercase"
  >
  LƯU CÀI ĐẶT ENGINE
  </button>

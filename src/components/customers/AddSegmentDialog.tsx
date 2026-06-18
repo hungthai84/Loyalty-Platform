@@ -121,7 +121,7 @@ export function AddSegmentDialog({ isOpen, onClose, editingSegment, onSave }: Ad
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-card border-border/50 text-left p-0 rounded-3xl overflow-hidden shadow-2xl">
+      <DialogContent className="max-w-2xl bg-card border-border/50 text-left p-0 rounded-[10px] overflow-hidden shadow-2xl">
         <DialogHeader className="p-6 pb-4 border-b border-border/50 bg-muted/20">
           <DialogTitle className="text-xl font-bold font-heading flex flex-col gap-1 text-foreground">
             {editingSegment ? "Chỉnh sửa Nhóm thành viên" : "Tạo Mới Nhóm Thành Viên"}
@@ -161,7 +161,7 @@ export function AddSegmentDialog({ isOpen, onClose, editingSegment, onSave }: Ad
             </div>
           </div>
 
-          <div className="border border-border/60 rounded-xl overflow-hidden">
+          <div className="border border-border/60 rounded-[10px] overflow-hidden">
             <div className="flex -mb-px">
               <button
                 className={`flex-1 py-3 text-xs font-bold transition-colors ${type === "criteria" ? "bg-background text-foreground border-b-2 border-[#2f6cf5]" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
@@ -187,9 +187,9 @@ export function AddSegmentDialog({ isOpen, onClose, editingSegment, onSave }: Ad
               {type === "criteria" ? (
                 <div className="space-y-3">
                   {conditions.map((cond, idx) => (
-                    <div key={idx} className="flex flex-col sm:flex-row gap-2 items-center bg-muted/10 p-2 rounded-lg border border-border/40">
+                    <div key={idx} className="flex flex-col sm:flex-row gap-2 items-center bg-muted/10 p-2 rounded-[10px] border border-border/40">
                       <select 
-                        className="h-9 w-full sm:w-1/3 bg-card border border-border rounded-md px-2 text-xs font-semibold outline-none text-foreground"
+                        className="h-9 w-full sm:w-1/3 bg-card border border-border rounded-[10px] px-2 text-xs font-semibold outline-none text-foreground"
                         value={cond.field}
                         onChange={(e) => {
                           const newConds = [...conditions];
@@ -203,7 +203,7 @@ export function AddSegmentDialog({ isOpen, onClose, editingSegment, onSave }: Ad
                       </select>
 
                       <select 
-                        className="h-9 w-full sm:w-1/4 bg-card border border-border rounded-md px-2 text-xs font-semibold outline-none text-foreground"
+                        className="h-9 w-full sm:w-1/4 bg-card border border-border rounded-[10px] px-2 text-xs font-semibold outline-none text-foreground"
                         value={cond.operator}
                         onChange={(e) => {
                           const newConds = [...conditions];
@@ -235,7 +235,7 @@ export function AddSegmentDialog({ isOpen, onClose, editingSegment, onSave }: Ad
                            newConds.splice(idx, 1);
                            setConditions(newConds);
                         }}
-                        className="w-9 h-9 shrink-0 flex items-center justify-center text-rose-500 hover:bg-rose-500/10 rounded-md transition-colors"
+                        className="w-9 h-9 shrink-0 flex items-center justify-center text-rose-500 hover:bg-rose-500/10 rounded-[10px] transition-colors"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -246,14 +246,14 @@ export function AddSegmentDialog({ isOpen, onClose, editingSegment, onSave }: Ad
                     onClick={() => {
                         setConditions([...conditions, { field: "spend", operator: "gte", value: "0" }]);
                     }}
-                    className="flex w-full items-center justify-center gap-1.5 py-2.5 mt-2 bg-muted/40 hover:bg-muted text-muted-foreground text-xs font-bold rounded-lg border border-dashed border-border transition-all cursor-pointer"
+                    className="flex w-full items-center justify-center gap-1.5 py-2.5 mt-2 bg-muted/40 hover:bg-muted text-muted-foreground text-xs font-bold rounded-[10px] border border-dashed border-border transition-all cursor-pointer"
                   >
                     <Plus className="w-4 h-4" /> Bổ sung thêm điều kiện AND
                   </button>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="border-2 border-dashed border-border/80 bg-muted/10 p-6 rounded-xl flex flex-col items-center justify-center text-center relative group hover:bg-muted/30 hover:border-[#2f6cf5]/50 transition-all cursor-pointer">
+                  <div className="border-2 border-dashed border-border/80 bg-muted/10 p-6 rounded-[10px] flex flex-col items-center justify-center text-center relative group hover:bg-muted/30 hover:border-[#2f6cf5]/50 transition-all cursor-pointer">
                     <input 
                       type="file" 
                       accept=".csv"
@@ -284,13 +284,13 @@ export function AddSegmentDialog({ isOpen, onClose, editingSegment, onSave }: Ad
         <div className="p-6 border-t border-border/50 bg-muted/10 flex justify-end gap-3 rounded-b-3xl">
           <button
             onClick={onClose}
-            className="px-5 py-2 text-xs font-bold text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-xl transition-all cursor-pointer"
+            className="px-5 py-2 text-xs font-bold text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-[10px] transition-all cursor-pointer"
           >
             Hủy Bỏ
           </button>
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 px-5 py-2 bg-[#2f6cf5] text-white rounded-xl text-xs font-bold shadow-xs hover:bg-[#2f6cf5]/90 hover:shadow-md transition-all cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2 bg-[#2f6cf5] text-white rounded-[10px] text-xs font-bold shadow-xs hover:bg-[#2f6cf5]/90 hover:shadow-md transition-all cursor-pointer"
           >
             <Save className="w-4 h-4" />
             Lưu Nhóm

@@ -119,7 +119,7 @@ export function SettingsView() {
   const bannerContent = (
     <motion.div
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className="bg-card/45 border border-[#2f6cf5]/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#2f6cf5]/50"
+      className="bg-card/45 border border-[#2f6cf5]/30 p-5 md:p-6 rounded-[10px] shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#2f6cf5]/50"
     >
       <div className="flex items-center gap-4 text-left">
         <div className="p-3 bg-[#2f6cf5]/10 rounded-[10px] text-[#2f6cf5] flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
@@ -152,11 +152,11 @@ export function SettingsView() {
       <div className="flex items-center gap-3 shrink-0 self-start lg:self-auto">
         <button
           onClick={() => {}}
-          className="flex items-center px-4 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer bg-background border-border hover:bg-muted text-foreground"
+          className="flex items-center px-4 py-2 rounded-[10px] text-xs font-bold transition-all border cursor-pointer bg-background border-border hover:bg-muted text-foreground"
         >
           <BookOpen className="w-4 h-4 mr-2 text-[#2f6cf5]" /> Tài liệu {tabs.find(t => t.id === activeTab)?.label}
         </button>
-        <div className="flex items-center gap-2 px-4 py-2 bg-muted/40 rounded-xl border border-border">
+        <div className="flex items-center gap-2 px-4 py-2 bg-muted/40 rounded-[10px] border border-border">
           <Shield className="w-4 h-4 text-[#2f6cf5]" />
           <span className="text-xs font-bold uppercase tracking-widest text-foreground">
             Enterprise
@@ -172,7 +172,7 @@ export function SettingsView() {
 
       <div className="pt-6 flex flex-col lg:flex-row gap-6">
         {/* Left Side: Vertical Tabs */}
-        <div className="w-full lg:w-72 bg-card/45 backdrop-blur-md border border-border/60 rounded-2xl flex flex-col p-4 shrink-0 gap-1 h-fit">
+        <div className="w-full lg:w-72 bg-card/45 backdrop-blur-md border border-border/60 rounded-[10px] flex flex-col p-4 shrink-0 gap-1 h-fit">
           <span className="text-xs font-extrabold text-muted-foreground/60 uppercase tracking-widest px-3 mb-2 block">
             Mục cấu hình
           </span>
@@ -185,7 +185,7 @@ export function SettingsView() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as SettingsTab)}
                 className={cn(
-                  "flex items-center px-4 py-2.5 rounded-xl text-xs font-bold transition-all gap-3 text-left w-full cursor-pointer relative overflow-hidden",
+                  "flex items-center px-4 py-2.5 rounded-[10px] text-xs font-bold transition-all gap-3 text-left w-full cursor-pointer relative overflow-hidden",
                   isActive
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
@@ -200,7 +200,7 @@ export function SettingsView() {
                 />
                 <span className="truncate flex-1">{tab.label}</span>
                 {isSaved ? (
-                  <span className="text-[10px] font-black uppercase text-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-0.5 rounded-md flex items-center gap-1 animate-pulse shrink-0">
+                  <span className="text-[10px] font-black uppercase text-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-0.5 rounded-[10px] flex items-center gap-1 animate-pulse shrink-0">
                     <Check className="w-3.5 h-3.5" /> Saved
                   </span>
                 ) : (
@@ -226,7 +226,7 @@ export function SettingsView() {
             >
               {activeTab === "general" && (
                 <div className="max-w-4xl mx-auto space-y-6">
-                  <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                  <div className="bg-card rounded-[10px] border border-border overflow-hidden shadow-sm">
                     <div className="p-6 border-b border-border bg-muted/10">
                       <h3 className="font-bold font-heading text-lg flex items-center gap-2">
                         <Globe className="w-5 h-5 text-primary" /> Ngôn ngữ & Tiền tệ
@@ -250,7 +250,7 @@ export function SettingsView() {
                                 window.dispatchEvent(new CustomEvent("crm-config-saved", { detail: { tab: "general" } }));
                               }}
                               className={cn(
-                                "flex flex-col items-center justify-center p-4 rounded-xl border transition-all gap-1",
+                                "flex flex-col items-center justify-center p-4 rounded-[10px] border transition-all gap-1",
                                 getCurrency().code === curr.code
                                   ? "bg-primary/10 border-primary text-primary ring-2 ring-primary/20"
                                   : "bg-muted/30 border-border hover:border-primary/30"
@@ -271,14 +271,14 @@ export function SettingsView() {
                           <Globe className="w-4 h-4 text-blue-500" /> Ngôn ngữ hệ thống
                         </label>
                         <div className="flex gap-3">
-                           <button className="px-4 py-2 bg-primary/10 border border-primary text-primary rounded-xl text-xs font-bold">Tiếng Việt</button>
-                           <button className="px-4 py-2 bg-muted/40 border border-border text-muted-foreground rounded-xl text-xs font-bold opacity-50 cursor-not-allowed">English (Coming soon)</button>
+                           <button className="px-4 py-2 bg-primary/10 border border-primary text-primary rounded-[10px] text-xs font-bold">Tiếng Việt</button>
+                           <button className="px-4 py-2 bg-muted/40 border border-border text-muted-foreground rounded-[10px] text-xs font-bold opacity-50 cursor-not-allowed">English (Coming soon)</button>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm text-left">
+                  <div className="bg-card rounded-[10px] border border-border overflow-hidden shadow-sm text-left">
                     <div className="p-6 border-b border-border bg-muted/10">
                       <h3 className="font-bold font-heading text-lg flex items-center gap-2">
                         <Bell className="w-5 h-5 text-primary" /> Đăng ký Nhận Cảnh báo Điểm thấp (Low Point Alerts)
@@ -289,7 +289,7 @@ export function SettingsView() {
                     </div>
 
                     <div className="p-6 space-y-6">
-                      <div className="flex items-center justify-between p-4 bg-muted/30 border border-border/60 rounded-xl">
+                      <div className="flex items-center justify-between p-4 bg-muted/30 border border-border/60 rounded-[10px]">
                         <div className="space-y-0.5 text-left flex-1 pr-4">
                           <label className="text-sm font-bold text-foreground">Kích hoạt thông báo cảnh báo</label>
                           <p className="text-xs text-muted-foreground">Admin và Quản trị viên sẽ nhận được email ngay lập tức khi số dư điểm của khách hàng bị sụt giảm quá hoặc bằng ngưỡng quy chuẩn.</p>
@@ -330,7 +330,7 @@ export function SettingsView() {
                                 setPointThreshold(val);
                                 localStorage.setItem("crm_alert_point_threshold", String(val));
                               }}
-                              className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25"
+                              className="w-full bg-muted/40 border border-border rounded-[10px] px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25"
                               min={0}
                               placeholder="Ví dụ: 500"
                             />
@@ -349,7 +349,7 @@ export function SettingsView() {
                                 setAlertEmail(val);
                                 localStorage.setItem("crm_alert_email", val);
                               }}
-                              className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25"
+                              className="w-full bg-muted/40 border border-border rounded-[10px] px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25"
                               placeholder="admin@sevaretail.com"
                               required
                             />
@@ -362,7 +362,7 @@ export function SettingsView() {
                         <div className="pt-4 border-t border-border/40 flex flex-wrap justify-between items-center gap-4">
                           <button
                             onClick={handleSendTestAlert}
-                            className="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+                            className="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-[10px] text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
                           >
                             <Mail className="w-3.5 h-3.5 text-primary" />
                             Gửi email thử nghiệm
@@ -373,7 +373,7 @@ export function SettingsView() {
                               toast.success("Cấu hình Đăng ký Cảnh báo hệ thống đã được lưu thành công!");
                               window.dispatchEvent(new CustomEvent("crm-config-saved", { detail: { tab: "general" } }));
                             }}
-                            className="px-6 py-2 bg-[#2f6cf5] text-white rounded-xl text-xs font-bold hover:shadow-lg transition-all"
+                            className="px-6 py-2 bg-[#2f6cf5] text-white rounded-[10px] text-xs font-bold hover:shadow-lg transition-all"
                           >
                             Lưu cấu hình nhận thông báo
                           </button>
@@ -387,7 +387,7 @@ export function SettingsView() {
               )}
               {activeTab === "api" && (
                 <div className="max-w-4xl mx-auto space-y-6">
-                  <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                  <div className="bg-card rounded-[10px] border border-border overflow-hidden shadow-sm">
                     <div className="p-6 border-b border-border bg-muted/10">
                       <h3 className="font-bold font-heading text-lg flex items-center gap-2">
                         <KeyIcon className="w-5 h-5 text-primary" /> API Keys
@@ -398,7 +398,7 @@ export function SettingsView() {
                       </p>
                     </div>
                     <div className="p-6 space-y-4">
-                      <div className="p-4 bg-muted/50 rounded-xl border border-border flex items-center justify-between">
+                      <div className="p-4 bg-muted/50 rounded-[10px] border border-border flex items-center justify-between">
                         <div className="text-sm">
                           sk_live_************************4k2p
                         </div>
@@ -423,7 +423,7 @@ export function SettingsView() {
                     </div>
                   </div>
 
-                  <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                  <div className="bg-card rounded-[10px] border border-border overflow-hidden shadow-sm">
                     <div className="p-6 border-b border-border bg-muted/10">
                       <h3 className="font-bold font-heading text-lg flex items-center gap-2">
                         <Webhook className="w-5 h-5 text-primary" /> Webhooks
@@ -434,12 +434,12 @@ export function SettingsView() {
                       </p>
                     </div>
                     <div className="p-6">
-                      <div className="text-center py-12 border-2 border-dashed border-border rounded-2xl">
+                      <div className="text-center py-12 border-2 border-dashed border-border rounded-[10px]">
                         <Webhook className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
                         <p className="text-sm text-muted-foreground">
                           Chưa có Webhook nào được cấu hình.
                         </p>
-                        <button className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold shadow-lg shadow-primary/20">
+                        <button className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-[10px] text-sm font-bold shadow-lg shadow-primary/20">
                           Thêm Webhook URL
                         </button>
                       </div>
@@ -449,7 +449,7 @@ export function SettingsView() {
               )}
               {activeTab === "automation" && (
                 <div className="max-w-4xl mx-auto space-y-6">
-                  <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                  <div className="bg-card rounded-[10px] border border-border overflow-hidden shadow-sm">
                     <div className="p-6 border-b border-border bg-muted/10 flex items-center justify-between">
                       <div>
                         <h3 className="font-bold font-heading text-lg flex items-center gap-2">
@@ -461,7 +461,7 @@ export function SettingsView() {
                       </div>
                       <button 
                         onClick={() => setShowRuleBuilder(true)}
-                        className="px-4 py-2 bg-[#2f6cf5] text-white rounded-xl text-xs font-bold hover:scale-105 transition-all shadow-md flex items-center gap-2"
+                        className="px-4 py-2 bg-[#2f6cf5] text-white rounded-[10px] text-xs font-bold hover:scale-105 transition-all shadow-md flex items-center gap-2"
                       >
                         <Plus className="w-4 h-4" /> Thêm quy tắc mới
                       </button>
@@ -492,7 +492,7 @@ export function SettingsView() {
                                       <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${rule.active ? 'left-5.5' : 'left-0.5'}`} />
                                    </div>
                                    <button 
-                                      className="p-2 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition-colors"
+                                      className="p-2 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-[10px] transition-colors"
                                       onClick={() => {
                                          setAutomationRules(rules => rules.filter(r => r.id !== rule.id));
                                          toast.error(`Đã xóa quy tắc "${rule.name}"`);
@@ -519,7 +519,7 @@ export function SettingsView() {
               )}
               {activeTab === "inventory" && (
                 <div className="max-w-4xl mx-auto space-y-6">
-                  <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                  <div className="bg-card rounded-[10px] border border-border overflow-hidden shadow-sm">
                     <div className="p-6 border-b border-border bg-muted/10 flex items-center justify-between">
                       <div>
                         <h3 className="font-bold font-heading text-lg flex items-center gap-2">
@@ -541,7 +541,7 @@ export function SettingsView() {
                                <input 
                                   type="number" 
                                   defaultValue={10} 
-                                  className="w-20 px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm font-bold text-center"
+                                  className="w-20 px-3 py-2 bg-muted/50 border border-border rounded-[10px] text-sm font-bold text-center"
                                />
                                <span className="text-xs text-muted-foreground font-bold">đơn vị</span>
                             </div>
@@ -560,7 +560,7 @@ export function SettingsView() {
                               { name: "Khăn lụa Tơ tằm Luxury", stock: 12, low: false },
                               { name: "Vé mời Private Showcase", stock: 3, low: true },
                             ].map((item, i) => (
-                               <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border/40 bg-muted/20">
+                               <div key={i} className="flex items-center justify-between p-3 rounded-[10px] border border-border/40 bg-muted/20">
                                   <div className="flex items-center gap-3">
                                      <div className={`w-2 h-2 rounded-full ${item.low ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`} />
                                      <span className="text-xs font-bold">{item.name}</span>
@@ -570,7 +570,7 @@ export function SettingsView() {
                                         <span className={`font-black ${item.low ? 'text-rose-500' : 'text-foreground'}`}>{item.stock}</span>
                                         <span className="text-muted-foreground ml-1">còn lại</span>
                                      </div>
-                                     <button className="p-1.5 hover:bg-muted rounded-lg text-primary transition-colors">
+                                     <button className="p-1.5 hover:bg-muted rounded-[10px] text-primary transition-colors">
                                         <Edit2 className="w-3.5 h-3.5" />
                                      </button>
                                   </div>
@@ -585,7 +585,7 @@ export function SettingsView() {
                                toast.success("Cấu hình Stock Watcher đã được lưu.");
                                window.dispatchEvent(new CustomEvent("crm-config-saved", { detail: { tab: "inventory" } }));
                             }}
-                            className="px-6 py-2 bg-[#2f6cf5] text-white rounded-xl text-xs font-bold hover:shadow-lg transition-all"
+                            className="px-6 py-2 bg-[#2f6cf5] text-white rounded-[10px] text-xs font-bold hover:shadow-lg transition-all"
                          >
                             Lưu cấu hình
                          </button>
@@ -643,7 +643,7 @@ function SystemHealthWidget() {
   };
 
   return (
-    <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm text-left">
+    <div className="bg-card rounded-[10px] border border-border overflow-hidden shadow-sm text-left">
       <div className="p-6 border-b border-border bg-muted/10 flex items-center justify-between flex-wrap gap-4">
         <div>
           <h3 className="font-bold font-heading text-lg flex items-center gap-2 text-foreground">
@@ -656,7 +656,7 @@ function SystemHealthWidget() {
         <button
           onClick={handleQuickCheck}
           disabled={testing}
-          className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 hover:scale-[1.02] transition-all rounded-xl text-xs font-bold cursor-pointer flex items-center gap-2 disabled:opacity-50"
+          className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 hover:scale-[1.02] transition-all rounded-[10px] text-xs font-bold cursor-pointer flex items-center gap-2 disabled:opacity-50"
         >
           <RefreshCw className={cn("w-3.5 h-3.5", testing && "animate-spin")} />
           {testing ? "Đang truy vấn..." : "Kiểm tra khẩn cấp"}
@@ -667,7 +667,7 @@ function SystemHealthWidget() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           
           {/* CRM Core API Gateway */}
-          <div className="p-4 rounded-xl border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
+          <div className="p-4 rounded-[10px] border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest flex items-center gap-1.5">
                 <Webhook className="w-3.5 h-3.5 text-blue-500" /> CRM Core API
@@ -687,7 +687,7 @@ function SystemHealthWidget() {
           </div>
 
           {/* Primary Firestore DB */}
-          <div className="p-4 rounded-xl border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
+          <div className="p-4 rounded-[10px] border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest flex items-center gap-1.5">
                 <Database className="w-3.5 h-3.5 text-[#2f6cf5]" /> Firestore DB
@@ -707,7 +707,7 @@ function SystemHealthWidget() {
           </div>
 
           {/* Loyalty Calculation Engine */}
-          <div className="p-4 rounded-xl border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
+          <div className="p-4 rounded-[10px] border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest flex items-center gap-1.5">
                 <Activity className="w-3.5 h-3.5 text-emerald-500" /> Loyalty Engine
@@ -727,7 +727,7 @@ function SystemHealthWidget() {
           </div>
 
           {/* SMS & Notification service */}
-          <div className="p-4 rounded-xl border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
+          <div className="p-4 rounded-[10px] border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest flex items-center gap-1.5">
                 <Webhook className="w-3.5 h-3.5 text-amber-500" /> Notifications
@@ -747,7 +747,7 @@ function SystemHealthWidget() {
           </div>
 
           {/* Cloud SQL Connection Pool */}
-          <div className="p-4 rounded-xl border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
+          <div className="p-4 rounded-[10px] border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest flex items-center gap-1.5">
                 <Database className="w-3.5 h-3.5 text-cyan-500" /> Cloud SQL Pool
@@ -767,7 +767,7 @@ function SystemHealthWidget() {
           </div>
 
           {/* Backup Replica Server */}
-          <div className="p-4 rounded-xl border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
+          <div className="p-4 rounded-[10px] border border-border/60 bg-muted/10 space-y-2.5 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-extrabold uppercase text-muted-foreground/80 tracking-widest flex items-center gap-1.5">
                 <Shield className="w-3.5 h-3.5 text-zinc-400" /> Backup Replica

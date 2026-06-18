@@ -12,27 +12,21 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import {
-  Search,
   Filter,
-  Download,
   Plus,
   Layers,
   Settings,
   Facebook,
   Linkedin,
   Instagram,
-  ArrowRight,
   User,
   Users,
   Cloud,
   CloudOff,
-  Upload,
   SlidersHorizontal,
   RotateCcw,
-  FileText,
   X,
   ChevronDown,
-  Check,
   BookOpen,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
@@ -50,13 +44,11 @@ import {
   doc,
   writeBatch,
   serverTimestamp,
-  where,
 } from "firebase/firestore";
 import { Customer, AttributeDefinition, Company, TierConfig } from "@/types";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
 import { AddCustomerDialog } from "@/components/customers/AddCustomerDialog";
 import { ImportCustomersDialog } from "@/components/customers/ImportCustomersDialog";
-import { AttributeManager } from "@/components/customers/AttributeManager";
 import { CrmSettingsDialog } from "@/components/customers/CrmSettingsDialog";
 import { CustomerDashboard } from "@/components/customers/CustomerDashboard";
 import { CustomerSearch } from "@/components/customers/CustomerSearch";
@@ -75,7 +67,6 @@ import {
   History,
   Crown,
   Mail,
-  Info,
   AlertCircle
 } from "lucide-react";
 import {
@@ -1447,7 +1438,7 @@ export function CustomersView() {
   const bannerContent = (
     <motion.div
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className="bg-card/45 border border-emerald-500/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-emerald-500/50"
+      className="bg-card/45 border border-emerald-500/30 p-5 md:p-6 rounded-[10px] shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-emerald-500/50"
     >
       <div className="flex items-center gap-4 text-left">
         <div className="p-3 bg-emerald-500/10 rounded-[10px] text-emerald-500 flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
@@ -1487,7 +1478,7 @@ export function CustomersView() {
         <button
           onClick={() => setShowDoc(!showDoc)}
           className={cn(
-            "px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer border",
+            "px-4 py-2.5 rounded-[10px] text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer border",
             showDoc
               ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
               : "bg-background border-border hover:bg-muted text-foreground"
@@ -1506,11 +1497,11 @@ export function CustomersView() {
 
       <div className={cn("w-full space-y-6 transition-all duration-300", currentCustomerData ? "blur-[2px] opacity-55 pointer-events-none select-none" : "")}>
         {/* Main Tab Navigation relocated from banner */}
-        <div className="flex bg-muted/40 p-1.5 rounded-2xl border border-border/40 max-w-fit select-none shrink-0 mb-6">
+        <div className="flex bg-muted/40 p-1.5 rounded-[10px] border border-border/40 max-w-fit select-none shrink-0 mb-6">
           <button
             onClick={() => setActiveViewTab("list")}
             className={cn(
-              "px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer",
+              "px-6 py-2 rounded-[10px] text-sm font-bold transition-all flex items-center gap-2 cursor-pointer",
               activeViewTab === "list"
                 ? "bg-white dark:bg-zinc-800 text-[#2f6cf5] shadow-sm border border-border/20 font-black scale-[1.02]"
                 : "text-muted-foreground hover:text-foreground border border-transparent"
@@ -1521,7 +1512,7 @@ export function CustomersView() {
           <button
             onClick={() => setActiveViewTab("segments")}
             className={cn(
-              "px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer",
+              "px-6 py-2 rounded-[10px] text-sm font-bold transition-all flex items-center gap-2 cursor-pointer",
               activeViewTab === "segments"
                 ? "bg-white dark:bg-zinc-800 text-[#2f6cf5] shadow-sm border border-border/20 font-black scale-[1.02]"
                 : "text-muted-foreground hover:text-foreground border border-transparent"
@@ -1532,7 +1523,7 @@ export function CustomersView() {
           <button
             onClick={() => setActiveViewTab("status_rules")}
             className={cn(
-              "px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer",
+              "px-6 py-2 rounded-[10px] text-sm font-bold transition-all flex items-center gap-2 cursor-pointer",
               activeViewTab === "status_rules"
                 ? "bg-white dark:bg-zinc-800 text-[#2f6cf5] shadow-sm border border-border/20 font-black scale-[1.02]"
                 : "text-muted-foreground hover:text-foreground border border-transparent"
@@ -1548,17 +1539,17 @@ export function CustomersView() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="border border-emerald-500/20 bg-emerald-500/[0.02] dark:bg-emerald-500/[0.01] p-6 rounded-2xl flex flex-col gap-4 text-left font-sans mb-6 backdrop-blur-xs relative overflow-hidden"
+              className="border border-emerald-500/20 bg-emerald-500/[0.02] dark:bg-emerald-500/[0.01] p-6 rounded-[10px] flex flex-col gap-4 text-left font-sans mb-6 backdrop-blur-xs relative overflow-hidden"
             >
               <button
                 onClick={() => setShowDoc(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
+                className="absolute top-4 right-4 p-1.5 rounded-[10px] text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
               
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-500 shrink-0">
+                <div className="p-2 bg-emerald-500/10 rounded-[10px] text-emerald-500 shrink-0">
                   <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
@@ -1577,7 +1568,7 @@ export function CustomersView() {
 
               {activeViewTab === "list" ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                  <div className="p-3.5 bg-background border border-border/60 rounded-[10px] space-y-1.5">
                     <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> phân cấp xếp hạng
                     </h5>
@@ -1590,7 +1581,7 @@ export function CustomersView() {
                     </p>
                   </div>
 
-                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                  <div className="p-3.5 bg-background border border-border/60 rounded-[10px] space-y-1.5">
                     <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#2f6cf5]" /> bộc lọc đa chiều
                     </h5>
@@ -1599,7 +1590,7 @@ export function CustomersView() {
                     </p>
                   </div>
 
-                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                  <div className="p-3.5 bg-background border border-border/60 rounded-[10px] space-y-1.5">
                     <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> tính năng cập nhật
                     </h5>
@@ -1610,7 +1601,7 @@ export function CustomersView() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                  <div className="p-3.5 bg-background border border-border/60 rounded-[10px] space-y-1.5">
                     <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> nhóm tiêu chí cơ bản
                     </h5>
@@ -1619,7 +1610,7 @@ export function CustomersView() {
                     </p>
                   </div>
 
-                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                  <div className="p-3.5 bg-background border border-border/60 rounded-[10px] space-y-1.5">
                     <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-purple-500" /> ghép nhóm đa điều kiện
                     </h5>
@@ -1628,7 +1619,7 @@ export function CustomersView() {
                     </p>
                   </div>
 
-                  <div className="p-3.5 bg-background border border-border/60 rounded-xl space-y-1.5">
+                  <div className="p-3.5 bg-background border border-border/60 rounded-[10px] space-y-1.5">
                     <h5 className="text-xs font-black text-foreground flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-rose-500" /> nhập danh sách file
                     </h5>
@@ -1647,121 +1638,125 @@ export function CustomersView() {
 
         {activeViewTab === "list" && (
           <div className="space-y-6">
-            <div className="relative overflow-hidden rounded-3xl border border-emerald-500/10 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
-              <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500 via-background to-background pointer-events-none" />
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-emerald-500 font-bold text-sm uppercase tracking-wider mb-2">
-                    <User className="w-5 h-5 animate-pulse" /> Danh sách
+            <div className="bg-card/45 border border-border/60 rounded-[10px] overflow-hidden shadow-xs backdrop-blur-md">
+              {/* Header Banner - Merged */}
+              <div className="relative overflow-hidden border-b border-border/40 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-6 md:p-8 text-left">
+                <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500 via-background to-background pointer-events-none" />
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-emerald-500 font-bold text-sm uppercase tracking-wider mb-2">
+                      <User className="w-5 h-5 animate-pulse" /> Danh sách
+                    </div>
+                    <h3 className="text-2xl font-bold font-heading text-foreground">
+                      Danh sách thành viên
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                      Quản lý bộ khung dữ liệu khách hàng. Tìm kiếm, sử dụng bộ lọc nâng cao và truy cập lịch trình cá nhân hóa của từng hội viên.
+                    </p>
                   </div>
-                  <h3 className="text-2xl font-bold font-heading text-foreground">
-                    Danh sách thành viên
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-                    Quản lý bộ khung dữ liệu khách hàng. Tìm kiếm, sử dụng bộ lọc nâng cao và truy cập lịch trình cá nhân hóa của từng hội viên.
-                  </p>
                 </div>
               </div>
-            </div>
 
-            <div className={cn(
-              "bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col gap-5 relative backdrop-blur-md w-full",
-              showColumnSettings ? "z-[100]" : "z-30"
-            )}>
-              {/* Filter & Action Section - Arranged into Row 1 & Row 2 */}
-              <div className="flex flex-col gap-5 w-full">
-                {/* Dòng 1 : Tìm kiếm khách hàng, Thêm khách hàng, Cài đặt khách hàng */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border/40 w-full">
-                  <div className="w-full md:max-w-md flex-1">
-                    <CustomerSearch
-                      customers={customers}
-                      value={search}
-                      onChange={setSearch}
-                      onSelectCustomer={(customer) => {
-                        setSearch(customer.name);
-                      }}
-                    />
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    {/* Thêm khách hàng */}
-                    <div className="relative">
-                      <button
-                        onClick={() => setShowAddDropdown(!showAddDropdown)}
-                        className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors flex items-center shadow-lg shadow-primary/25 cursor-pointer select-none"
-                      >
-                        <Plus className="w-4 h-4 mr-2" /> Thêm khách hàng
-                        <ChevronDown className="w-4 h-4 ml-1" />
-                      </button>
-                      {showAddDropdown && (
-                        <>
-                          <div 
-                            className="fixed inset-0 z-40" 
-                            onClick={() => setShowAddDropdown(false)} 
-                          />
-                          <div className="absolute right-0 mt-2 w-52 bg-card border border-border shadow-xl rounded-xl p-2 z-50 text-left backdrop-blur-xl">
-                            <button
-                              onClick={() => {
-                                setShowAddDropdown(false);
-                                setShowAddDialog(true);
-                              }}
-                              className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
-                            >
-                              <Plus className="w-3.5 h-3.5 text-primary" />
-                              <span>Thêm khách hàng</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                setShowAddDropdown(false);
-                                setActiveViewTab("list");
-                              }}
-                              className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
-                            >
-                              <Users className="w-3.5 h-3.5 text-blue-500" />
-                              <span>Danh sách</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                setShowAddDropdown(false);
-                                setShowCrmSettings(true);
-                              }}
-                              className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
-                            >
-                              <Settings className="w-3.5 h-3.5 text-indigo-500" />
-                              <span>Hệ thống tự động</span>
-                            </button>
-                          </div>
-                        </>
-                      )}
+              {/* Controls Section */}
+              <div className={cn(
+                "p-5 md:p-6 flex flex-col gap-5 relative w-full",
+                showColumnSettings ? "z-[100]" : "z-30"
+              )}>
+                {/* Filter & Action Section - Arranged into Row 1 & Row 2 */}
+                <div className="flex flex-col gap-5 w-full">
+                  {/* Dòng 1 : Tìm kiếm khách hàng, Thêm khách hàng, Cài đặt khách hàng */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border/40 w-full">
+                    <div className="w-full md:max-w-md flex-1">
+                      <CustomerSearch
+                        customers={customers}
+                        value={search}
+                        onChange={setSearch}
+                        onSelectCustomer={(customer) => {
+                          setSearch(customer.name);
+                        }}
+                      />
                     </div>
 
-                    {/* Cài đặt khách hàng */}
-                    <button
-                      onClick={() => setShowCrmSettings(true)}
-                      className="flex items-center justify-center px-4 py-2 border border-[#6366f1]/20 bg-[#6366f1]/5 text-[#6366f1] hover:bg-[#6366f1]/10 rounded-xl text-sm font-bold transition-all cursor-pointer"
-                    >
-                      <Settings className="w-4 h-4 mr-2 text-[#6366f1]" /> Cài đặt khách hàng
-                    </button>
+                    <div className="flex flex-wrap items-center gap-3">
+                      {/* Thêm khách hàng */}
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowAddDropdown(!showAddDropdown)}
+                          className="px-4 py-2 bg-primary text-primary-foreground rounded-[10px] text-sm font-bold hover:bg-primary/90 transition-colors flex items-center shadow-lg shadow-primary/25 cursor-pointer select-none"
+                        >
+                          <Plus className="w-4 h-4 mr-2" /> Thêm khách hàng
+                          <ChevronDown className="w-4 h-4 ml-1" />
+                        </button>
+                        {showAddDropdown && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-40" 
+                              onClick={() => setShowAddDropdown(false)} 
+                            />
+                            <div className="absolute right-0 mt-2 w-52 bg-card border border-border shadow-xl rounded-[10px] p-2 z-50 text-left backdrop-blur-xl">
+                              <button
+                                onClick={() => {
+                                  setShowAddDropdown(false);
+                                  setShowAddDialog(true);
+                                }}
+                                className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted rounded-[10px] transition-colors cursor-pointer"
+                              >
+                                <Plus className="w-3.5 h-3.5 text-primary" />
+                                <span>Thêm khách hàng</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowAddDropdown(false);
+                                  setActiveViewTab("list");
+                                }}
+                                className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted rounded-[10px] transition-colors cursor-pointer"
+                              >
+                                <Users className="w-3.5 h-3.5 text-blue-500" />
+                                <span>Danh sách</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowAddDropdown(false);
+                                  setShowCrmSettings(true);
+                                }}
+                                className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted rounded-[10px] transition-colors cursor-pointer"
+                              >
+                                <Settings className="w-3.5 h-3.5 text-indigo-500" />
+                                <span>Hệ thống tự động</span>
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
 
-                    {forceOffline && (
+                      {/* Cài đặt khách hàng */}
                       <button
-                        onClick={() => {
-                          setForceOffline(false);
-                          setLoading(true);
-                          toast.success("Đang kết nối lại Cloud Firestore...");
-                        }}
-                        className="flex items-center justify-center px-4 py-2 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-white rounded-xl text-sm font-medium bg-amber-500/10 transition-colors cursor-pointer animate-pulse"
+                        onClick={() => setShowCrmSettings(true)}
+                        className="flex items-center justify-center px-4 py-2 border border-[#6366f1]/20 bg-[#6366f1]/5 text-[#6366f1] hover:bg-[#6366f1]/10 rounded-[10px] text-sm font-bold transition-all cursor-pointer"
                       >
-                        <Cloud className="w-4 h-4 mr-2" /> Kết nối Cloud
+                        <Settings className="w-4 h-4 mr-2 text-[#6366f1]" /> Cài đặt khách hàng
                       </button>
-                    )}
+
+                      {forceOffline && (
+                        <button
+                          onClick={() => {
+                            setForceOffline(false);
+                            setLoading(true);
+                            toast.success("Đang kết nối lại Cloud Firestore...");
+                          }}
+                          className="flex items-center justify-center px-4 py-2 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-white rounded-[10px] text-sm font-medium bg-amber-500/10 transition-colors cursor-pointer animate-pulse"
+                        >
+                          <Cloud className="w-4 h-4 mr-2" /> Kết nối Cloud
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
+
 
                 {/* Dòng 2 : Tất cả chi nhánh, Tất cả thứ hạng, Tất cả trạng thái, Cột hiển thị và tùy chỉnh bộ lọc */}
                 <div className="flex flex-wrap items-center gap-3 w-full">
                   {/* Tất cả chi nhánh */}
-                  <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+                  <div className="flex items-center gap-2 bg-background border border-border rounded-[10px] px-2.5 py-1.5 h-9">
                     <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
                     <select
                       className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
@@ -1778,7 +1773,7 @@ export function CustomersView() {
                   </div>
 
                   {/* Tất cả thứ hạng */}
-                  <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+                  <div className="flex items-center gap-2 bg-background border border-border rounded-[10px] px-2.5 py-1.5 h-9">
                     <Award className="w-3.5 h-3.5 text-muted-foreground" />
                     <select
                       className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
@@ -1794,7 +1789,7 @@ export function CustomersView() {
                   </div>
 
                   {/* Tất cả trạng thái */}
-                  <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+                  <div className="flex items-center gap-2 bg-background border border-border rounded-[10px] px-2.5 py-1.5 h-9">
                     <Filter className="w-3.5 h-3.5 text-muted-foreground" />
                     <select
                       className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
@@ -1814,13 +1809,13 @@ export function CustomersView() {
                   <div className={cn("relative", showColumnSettings ? "z-[110]" : "z-auto")}>
                     <button
                       onClick={() => setShowColumnSettings(!showColumnSettings)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold bg-card hover:bg-muted/70 cursor-pointer text-foreground select-none transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-[10px] text-xs font-bold bg-card hover:bg-muted/70 cursor-pointer text-foreground select-none transition-colors"
                     >
                       <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
                       <span>Cột hiển thị</span>
                     </button>
                     {showColumnSettings && (
-                      <div className="absolute right-0 mt-2 w-56 bg-card border border-border hover:border-primary/20 shadow-xl rounded-xl p-3.5 z-[120] text-left backdrop-blur-xl">
+                      <div className="absolute right-0 mt-2 w-56 bg-card border border-border hover:border-primary/20 shadow-xl rounded-[10px] p-3.5 z-[120] text-left backdrop-blur-xl">
                         <div className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-2">
                           Ẩn/hiện cột bảng
                         </div>
@@ -1828,7 +1823,7 @@ export function CustomersView() {
                           {Object.keys(visibleColumns).map((colKey) => (
                             <label
                               key={colKey}
-                              className="flex items-center gap-2 px-2 py-1 hover:bg-muted rounded-md cursor-pointer text-xs font-semibold select-none"
+                              className="flex items-center gap-2 px-2 py-1 hover:bg-muted rounded-[10px] cursor-pointer text-xs font-semibold select-none"
                             >
                               <input
                                 type="checkbox"
@@ -1877,7 +1872,7 @@ export function CustomersView() {
                   {/* Tùy chỉnh bộ lọc */}
                   <button
                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold bg-card hover:bg-muted/70 cursor-pointer text-foreground select-none transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-[10px] text-xs font-bold bg-card hover:bg-muted/70 cursor-pointer text-foreground select-none transition-colors"
                   >
                     <Filter className="w-3.5 h-3.5 text-[#2f6cf5]" />
                     <span>Tùy chỉnh bộ lọc</span>
@@ -1886,21 +1881,20 @@ export function CustomersView() {
                     )}
                   </button>
                 </div>
-              </div>
 
               {/* Advanced Filters Panel */}
               {showAdvancedFilters && (
                 <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="border border-dashed border-border p-4 rounded-xl mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-left w-full h-full"
+                className="border border-dashed border-border p-4 rounded-[10px] mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-left w-full h-full"
               >
                 <div className="space-y-1">
                   <label className="text-xs uppercase font-black text-muted-foreground tracking-wider">
                     Nhóm hội viên
                   </label>
                   <select
-                    className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
+                    className="w-full bg-background border border-border rounded-[10px] text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
                     value={selectedTag}
                     onChange={(e) => setSelectedTag(e.target.value)}
                   >
@@ -1966,7 +1960,7 @@ export function CustomersView() {
                     Liên kết Mạng xã hội
                   </label>
                   <select
-                    className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
+                    className="w-full bg-background border border-border rounded-[10px] text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
                     value={selectedSocialType}
                     onChange={(e) => setSelectedSocialType(e.target.value)}
                   >
@@ -1984,7 +1978,7 @@ export function CustomersView() {
                     Loại khách hàng
                   </label>
                   <select
-                    className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
+                    className="w-full bg-background border border-border rounded-[10px] text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
                     value={selectedHasCompany}
                     onChange={(e) => setSelectedHasCompany(e.target.value)}
                   >
@@ -2010,7 +2004,7 @@ export function CustomersView() {
                       <button
                         key={opt.id}
                         onClick={() => setSortBy(opt.id)}
-                        className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${sortBy === opt.id ? "bg-primary/10 text-primary border-primary/30" : "bg-background hover:bg-muted border-border"}`}
+                        className={`px-2.5 py-1.5 rounded-[10px] text-xs font-semibold border transition-all ${sortBy === opt.id ? "bg-primary/10 text-primary border-primary/30" : "bg-background hover:bg-muted border-border"}`}
                       >
                         {opt.label}
                       </button>
@@ -2028,7 +2022,7 @@ export function CustomersView() {
                         {savedFilters.map((f) => (
                           <div
                             key={f.id}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted hover:bg-muted-hover border border-border rounded-lg text-xs font-semibold"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted hover:bg-muted-hover border border-border rounded-[10px] text-xs font-semibold"
                           >
                             <button
                               type="button"
@@ -2068,7 +2062,7 @@ export function CustomersView() {
 
                   <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-auto">
                     <span className="text-xs font-bold text-muted-foreground">Lưu bộ lọc hiện tại:</span>
-                    <div className="flex items-center gap-2 bg-background p-1 rounded-lg border border-border">
+                    <div className="flex items-center gap-2 bg-background p-1 rounded-[10px] border border-border">
                       <Input
                         type="text"
                         placeholder="Tên bộ lọc..."
@@ -2101,7 +2095,7 @@ export function CustomersView() {
                           setNewFilterName("");
                           toast.success(`Đã lưu bộ lọc: ${nFilter.name}`);
                         }}
-                        className="h-7 px-3 bg-[#2f6cf5] text-white text-xs font-bold rounded-md hover:bg-[#2f6cf5]/90 transition-all cursor-pointer flex items-center justify-center"
+                        className="h-7 px-3 bg-[#2f6cf5] text-white text-xs font-bold rounded-[10px] hover:bg-[#2f6cf5]/90 transition-all cursor-pointer flex items-center justify-center"
                       >
                         Lưu
                       </button>
@@ -2112,7 +2106,7 @@ export function CustomersView() {
                 <div className="sm:col-span-2 md:col-span-4 flex items-end justify-end border-t border-border/40 pt-2">
                   <button
                     onClick={resetFilters}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs text-rose-500 hover:text-white hover:bg-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-lg font-bold transition-all shrink-0 cursor-pointer"
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs text-rose-500 hover:text-white hover:bg-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-[10px] font-bold transition-all shrink-0 cursor-pointer"
                   >
                     <RotateCcw className="w-3 h-3" /> Đặt lại tất cả
                   </button>
@@ -2126,7 +2120,7 @@ export function CustomersView() {
             {selectedCustomerIds.length > 0 && (
               <div className="absolute top-0 left-0 right-0 z-50 bg-[#2f6cf5] text-white px-6 py-3 rounded-t-xl shadow-md flex items-center justify-between border-b border-[#2f6cf5]/20 animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center gap-3">
-                  <span className="bg-white/20 px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-xs">
+                  <span className="bg-white/20 px-2.5 py-1 rounded-[10px] text-xs font-bold text-white shadow-xs">
                     {selectedCustomerIds.length} đã chọn
                   </span>
                   <span className="text-sm font-bold">Thao tác hàng loạt</span>
@@ -2137,7 +2131,7 @@ export function CustomersView() {
                       setBulkActionType("tag");
                       setShowBulkActionDialog(true);
                     }}
-                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-bold transition-colors border border-white/20 cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-[10px] text-xs font-bold transition-colors border border-white/20 cursor-pointer flex items-center gap-1"
                   >
                     <Tag className="w-3 h-3" /> Gắn thẻ
                   </button>
@@ -2146,13 +2140,13 @@ export function CustomersView() {
                       setBulkActionType("tier");
                       setShowBulkActionDialog(true);
                     }}
-                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-bold transition-colors border border-white/20 cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-[10px] text-xs font-bold transition-colors border border-white/20 cursor-pointer flex items-center gap-1"
                   >
                     <Award className="w-3 h-3" /> Hạng (Tier)
                   </button>
                   <button
                     onClick={() => setShowBulkEmailDialog(true)}
-                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-bold transition-colors border border-white/20 cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-[10px] text-xs font-bold transition-colors border border-white/20 cursor-pointer flex items-center gap-1"
                   >
                     <Mail className="w-3 h-3" /> Gửi Email
                   </button>
@@ -2161,7 +2155,7 @@ export function CustomersView() {
                       setBulkActionType("status");
                       setShowBulkActionDialog(true);
                     }}
-                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-bold transition-colors border border-white/20 cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-[10px] text-xs font-bold transition-colors border border-white/20 cursor-pointer flex items-center gap-1"
                   >
                     <UserCheck className="w-3 h-3" /> Trạng thái
                   </button>
@@ -2170,7 +2164,7 @@ export function CustomersView() {
                       setBulkActionType("points");
                       setShowBulkActionDialog(true);
                     }}
-                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-bold transition-colors border border-white/20 cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-[10px] text-xs font-bold transition-colors border border-white/20 cursor-pointer flex items-center gap-1"
                   >
                     <Smartphone className="w-3 h-3" /> Điểm số
                   </button>
@@ -2197,13 +2191,13 @@ export function CustomersView() {
                         toast.error("Lỗi xóa dữ liệu", { id: toastId });
                       }
                     }}
-                    className="px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-xs font-bold transition-colors shadow-sm cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-[10px] text-xs font-bold transition-colors shadow-sm cursor-pointer flex items-center gap-1"
                   >
                     <ShieldAlert className="w-3 h-3" /> Xóa
                   </button>
                   <button
                     onClick={() => setSelectedCustomerIds([])}
-                    className="px-3 py-1.5 hover:bg-white/10 text-white/80 hover:text-white rounded-lg text-xs transition-colors cursor-pointer"
+                    className="px-3 py-1.5 hover:bg-white/10 text-white/80 hover:text-white rounded-[10px] text-xs transition-colors cursor-pointer"
                   >
                     Hủy
                   </button>
@@ -2222,7 +2216,7 @@ export function CustomersView() {
                     }}
                   />
 
-                  <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+                  <div className="flex items-center gap-2 bg-background border border-border rounded-[10px] px-2.5 py-1.5 h-9">
                     <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
                     <select
                       className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
@@ -2238,7 +2232,7 @@ export function CustomersView() {
                     </select>
                   </div>
 
-                  <div className="flex items-center gap-2 bg-background border border-border rounded-lg px-2.5 py-1.5 h-9">
+                  <div className="flex items-center gap-2 bg-background border border-border rounded-[10px] px-2.5 py-1.5 h-9">
                     <Filter className="w-3.5 h-3.5 text-muted-foreground" />
                     <select
                       className="bg-transparent text-xs font-semibold outline-none py-1 cursor-pointer"
@@ -2260,13 +2254,13 @@ export function CustomersView() {
                   <div className={cn("relative", showColumnSettings ? "z-[110]" : "z-auto")}>
                     <button
                       onClick={() => setShowColumnSettings(!showColumnSettings)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold hover:bg-muted transition-colors select-none ${showColumnSettings ? "bg-primary/10 border-primary/30 text-primary" : "bg-card text-foreground"}`}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-[10px] text-xs font-bold hover:bg-muted transition-colors select-none ${showColumnSettings ? "bg-primary/10 border-primary/30 text-primary" : "bg-card text-foreground"}`}
                     >
                       <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
                       <span>Cột hiển thị</span>
                     </button>
                     {showColumnSettings && (
-                      <div className="absolute right-0 mt-2 w-56 bg-card border border-border hover:border-primary/20 shadow-xl rounded-xl p-3.5 z-[120] text-left backdrop-blur-xl">
+                      <div className="absolute right-0 mt-2 w-56 bg-card border border-border hover:border-primary/20 shadow-xl rounded-[10px] p-3.5 z-[120] text-left backdrop-blur-xl">
                         <div className="text-xs font-black text-muted-foreground uppercase tracking-wider mb-2">
                           Ẩn/hiện cột bảng
                         </div>
@@ -2274,7 +2268,7 @@ export function CustomersView() {
                           {Object.keys(visibleColumns).map((colKey) => (
                             <label
                               key={colKey}
-                              className="flex items-center gap-2 px-2 py-1 hover:bg-muted rounded-md cursor-pointer text-xs font-semibold select-none"
+                              className="flex items-center gap-2 px-2 py-1 hover:bg-muted rounded-[10px] cursor-pointer text-xs font-semibold select-none"
                             >
                               <input
                                 type="checkbox"
@@ -2323,7 +2317,7 @@ export function CustomersView() {
                   {/* Toggle Advanced Filters */}
                   <button
                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-xl text-xs font-bold hover:bg-muted transition-all duration-200 select-none ${showAdvancedFilters || hasActiveFilters ? "bg-primary/10 border-primary/30 text-primary" : "bg-card text-foreground"}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 h-9 border border-border rounded-[10px] text-xs font-bold hover:bg-muted transition-all duration-200 select-none ${showAdvancedFilters || hasActiveFilters ? "bg-primary/10 border-primary/30 text-primary" : "bg-card text-foreground"}`}
                   >
                     <Filter
                       className={`w-3.5 h-3.5 ${hasActiveFilters ? "text-primary" : "text-muted-foreground"}`}
@@ -2341,14 +2335,14 @@ export function CustomersView() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="border border-dashed border-border p-4 rounded-xl mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-left"
+                  className="border border-dashed border-border p-4 rounded-[10px] mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-left"
                 >
                   <div className="space-y-1">
                     <label className="text-xs uppercase font-black text-muted-foreground tracking-wider">
                       Nhóm hội viên
                     </label>
                     <select
-                      className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
+                      className="w-full bg-background border border-border rounded-[10px] text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
                       value={selectedTag}
                       onChange={(e) => setSelectedTag(e.target.value)}
                     >
@@ -2391,7 +2385,7 @@ export function CustomersView() {
                       Liên kết Mạng xã hội
                     </label>
                     <select
-                      className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
+                      className="w-full bg-background border border-border rounded-[10px] text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
                       value={selectedSocialType}
                       onChange={(e) => setSelectedSocialType(e.target.value)}
                     >
@@ -2409,7 +2403,7 @@ export function CustomersView() {
                       Loại khách hàng
                     </label>
                     <select
-                      className="w-full bg-background border border-border rounded-lg text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
+                      className="w-full bg-background border border-border rounded-[10px] text-xs px-3 py-2 outline-none font-semibold cursor-pointer"
                       value={selectedHasCompany}
                       onChange={(e) => setSelectedHasCompany(e.target.value)}
                     >
@@ -2435,7 +2429,7 @@ export function CustomersView() {
                         <button
                           key={opt.id}
                           onClick={() => setSortBy(opt.id)}
-                          className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${sortBy === opt.id ? "bg-primary/10 text-primary border-primary/30" : "bg-background hover:bg-muted border-border"}`}
+                          className={`px-2.5 py-1.5 rounded-[10px] text-xs font-semibold border transition-all ${sortBy === opt.id ? "bg-primary/10 text-primary border-primary/30" : "bg-background hover:bg-muted border-border"}`}
                         >
                           {opt.label}
                         </button>
@@ -2446,7 +2440,7 @@ export function CustomersView() {
                   <div className="flex items-end justify-end">
                     <button
                       onClick={resetFilters}
-                      className="flex items-center gap-1 px-3 py-1.5 text-xs text-rose-500 hover:text-white hover:bg-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-lg font-bold transition-all shrink-0 cursor-pointer"
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs text-rose-500 hover:text-white hover:bg-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-[10px] font-bold transition-all shrink-0 cursor-pointer"
                     >
                       <RotateCcw className="w-3 h-3" /> Đặt lại tất cả
                     </button>
@@ -2522,7 +2516,7 @@ export function CustomersView() {
                         }
                         className="text-center py-12"
                       >
-                        <div className="flex flex-col items-center justify-center max-w-lg mx-auto p-8 rounded-2xl border border-dashed border-border bg-card shadow-xs text-center space-y-4">
+                        <div className="flex flex-col items-center justify-center max-w-lg mx-auto p-8 rounded-[10px] border border-dashed border-border bg-card shadow-xs text-center space-y-4">
                           <div className="p-3 bg-primary/10 text-primary rounded-full">
                             <User className="w-8 h-8" />
                           </div>
@@ -2542,7 +2536,7 @@ export function CustomersView() {
                               <button
                                 onClick={handleQuickSeed}
                                 disabled={seeding}
-                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/95 hover:shadow-xs rounded-xl cursor-pointer disabled:opacity-50 transition-all"
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/95 hover:shadow-xs rounded-[10px] cursor-pointer disabled:opacity-50 transition-all"
                               >
                                 {seeding ? (
                                   <span className="flex items-center gap-1.5 justify-center">
@@ -2564,7 +2558,7 @@ export function CustomersView() {
                                     "Đã kích hoạt chế độ mô phỏng! Xem ngay 200 khách hàng mẫu.",
                                   );
                                 }}
-                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold bg-muted text-muted-foreground hover:bg-muted/80 rounded-xl cursor-pointer transition-all"
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold bg-muted text-muted-foreground hover:bg-muted/80 rounded-[10px] cursor-pointer transition-all"
                               >
                                 <CloudOff className="w-3.5 h-3.5" />
                                 Xem offline sandbox (200 KH)
@@ -2575,7 +2569,7 @@ export function CustomersView() {
                           {customers.length > 0 && (
                             <button
                               onClick={resetFilters}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 rounded-xl cursor-pointer transition-all"
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 rounded-[10px] cursor-pointer transition-all"
                             >
                               Đặt lại tất cả bộ lọc
                             </button>
@@ -2631,7 +2625,7 @@ export function CustomersView() {
                         {visibleColumns.nameEmail && (
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-xl overflow-hidden border border-border bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-xs font-bold text-xs uppercase">
+                              <div className="w-9 h-9 rounded-[10px] overflow-hidden border border-border bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-xs font-bold text-xs uppercase">
                                 {customer.avatarUrl ? (
                                   <img
                                     src={customer.avatarUrl}
@@ -2755,7 +2749,7 @@ export function CustomersView() {
                           <TableCell>
                             {customer.companyId ? (
                               <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center overflow-hidden border border-border shrink-0">
+                                <div className="w-6 h-6 rounded-[10px] bg-muted flex items-center justify-center overflow-hidden border border-border shrink-0">
                                   {companies.find(
                                     (comp) => comp.id === customer.companyId,
                                   )?.logoUrl ? (
@@ -2794,7 +2788,7 @@ export function CustomersView() {
                                 <TooltipTrigger className="cursor-help">
                                   {renderStatusBadge(customer.activityStatus)}
                                 </TooltipTrigger>
-                                <TooltipContent className="bg-card border-border shadow-xl p-2 rounded-lg">
+                                <TooltipContent className="bg-card border-border shadow-xl p-2 rounded-[10px]">
                                   <p className="text-xs font-bold text-foreground">
                                     {getNextTierInfo(customer.points || 0)}
                                   </p>
@@ -2820,7 +2814,7 @@ export function CustomersView() {
                                         <span>AI Score: {risk.score}% ({risk.label})</span>
                                       </div>
                                     </TooltipTrigger>
-                                    <TooltipContent className="bg-card border border-border shadow-xl p-3 rounded-xl max-w-xs text-left">
+                                    <TooltipContent className="bg-card border border-border shadow-xl p-3 rounded-[10px] max-w-xs text-left">
                                       <div className="space-y-1.5">
                                         <p className="text-xs font-black text-rose-500 uppercase tracking-widest flex items-center gap-1">
                                           🧠 Đánh giá Churn AI
@@ -2866,14 +2860,14 @@ export function CustomersView() {
                             <div className="flex items-center justify-end gap-1 font-sans">
                               <button
                                 onClick={() => setSelectedCustomer(customer)}
-                                className="p-1.5 text-[#2f6cf5] hover:bg-primary/10 rounded-lg text-xs font-extrabold flex items-center cursor-pointer gap-0.5"
+                                className="p-1.5 text-[#2f6cf5] hover:bg-primary/10 rounded-[10px] text-xs font-extrabold flex items-center cursor-pointer gap-0.5"
                                 title="Chi tiết"
                               >
                                 Chi tiết ➜
                               </button>
                               <button
                                 onClick={() => setSelectedQrCustomer(customer)}
-                                className="p-1.5 text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-lg transition-all cursor-pointer"
+                                className="p-1.5 text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-[10px] transition-all cursor-pointer"
                                 title="Xuất mã Định danh QR"
                               >
                                 <QrCode className="w-3.5 h-3.5" />
@@ -2883,7 +2877,7 @@ export function CustomersView() {
                                   setLogCustomer(customer);
                                   setShowActivityLog(true);
                                 }}
-                                className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
+                                className="p-1.5 text-muted-foreground hover:bg-muted rounded-[10px] transition-colors cursor-pointer"
                                 title="Lịch sử hoạt động"
                               >
                                 <History className="w-3.5 h-3.5" />
@@ -2899,8 +2893,9 @@ export function CustomersView() {
             </CardContent>
           </Card>
           </div>
-      )}
-      </div>
+          </div>
+          </div>
+        )}
 
       {/* Popup chi tiết khách hàng chiếm 90% diện tích trang web */}
       <AnimatePresence>
@@ -2914,13 +2909,13 @@ export function CustomersView() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 15 }}
               transition={{ type: "spring", duration: 0.45, bounce: 0.1 }}
-              className="bg-background border border-border shadow-2xl rounded-2xl w-[92vw] h-[90vh] max-w-[1700px] flex flex-col relative overflow-hidden"
+              className="bg-background border border-border shadow-2xl rounded-[10px] w-[92vw] h-[90vh] max-w-[1700px] flex flex-col relative overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Nút đóng nổi bật ở góc phải trên cùng */}
               <button
                 onClick={() => setSelectedCustomer(null)}
-                className="absolute top-4 right-4 p-2.5 rounded-xl bg-card border border-border hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 transition-all z-50 cursor-pointer shadow-md"
+                className="absolute top-4 right-4 p-2.5 rounded-[10px] bg-card border border-border hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 transition-all z-50 cursor-pointer shadow-md"
                 title="Đóng cửa sổ"
               >
                 <X className="w-5 h-5" />
@@ -3028,6 +3023,7 @@ export function CustomersView() {
           );
         }}
       />
+      </div>
     </div>
   );
 }

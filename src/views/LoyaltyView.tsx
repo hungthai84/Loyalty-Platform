@@ -1,38 +1,24 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Plus,
   Star,
   Gift,
-  ChevronRight,
   Zap,
   Trophy,
   Scissors,
-  Calendar,
   Camera,
   Share2,
   Gem,
   TrendingUp,
   Tag,
-  AlertCircle,
   Sparkles,
-  CheckCircle2,
   Heart,
-  Trash2,
   Crown,
   Award,
-  Shield,
-  PlusCircle,
-  Download,
   X,
   Coins,
-  Settings2,
-  Diamond,
-  User,
-  Sliders,
   BookOpen,
   RefreshCw,
   UserPlus,
@@ -44,7 +30,7 @@ import {
   Search,
   Puzzle,
 } from "lucide-react";
-import { formatCurrency, getCurrency, CURRENCIES } from "@/lib/currency";
+import { formatCurrency, getCurrency } from "@/lib/currency";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
 import { useFirebase } from "@/components/FirebaseProvider";
@@ -60,15 +46,8 @@ import {
   serverTimestamp,
   deleteDoc,
 } from "firebase/firestore";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from "recharts";
+
+
 import {
   TierConfig,
   RedemptionRule,
@@ -82,13 +61,11 @@ import { EarnRuleDialog } from "@/components/loyalty/EarnRuleDialog";
 import { LoyaltyCampaignDialog } from "@/components/loyalty/LoyaltyCampaignDialog";
 import { SegmentationRuleDialog } from "@/components/loyalty/SegmentationRuleDialog";
 import { TierManagementView } from "@/components/loyalty/TierManagementView";
-import { GamificationProgress } from "@/components/loyalty/GamificationProgress";
-import { CustomerProgressGrid } from "@/components/loyalty/CustomerProgressGrid";
-import { LoyaltyProgressionTimeline } from "@/components/loyalty/LoyaltyProgressionTimeline";
 import { TierComparisonTable } from "@/components/loyalty/TierComparisonTable";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { PointRedemptionConfigView } from "@/components/loyalty/PointRedemptionConfigView";
 import { GiftsManagementView } from "@/components/loyalty/GiftsManagementView";
+import { PointsManagementView } from "@/components/loyalty/PointsManagementView";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -268,6 +245,7 @@ const EARN_STYLE_MAP: Record<string, { bg: string, text: string, border: string 
 
 const DEFAULT_EARN_STYLE = { bg: 'bg-slate-500/10', text: 'text-slate-500', border: 'border-slate-500/40 hover:border-slate-500/80 shadow-slate-500/10' };
 
+
 export function LoyaltyView() {
   const { user, loading: authLoading, signIn } = useFirebase();
   const [activeTab, setActiveTab] = useState<TabType>("tiers");
@@ -282,6 +260,7 @@ export function LoyaltyView() {
   >([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tierSearchTerm, setTierSearchTerm] = useState("");
 
   // Calculate Program Health (average points per member and redemption rate)
   const programHealthStats = useMemo(() => {
@@ -1135,13 +1114,15 @@ export function LoyaltyView() {
 
   const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
 
+  const activeTabInfo = tabs.find(t => t.id === activeTab);
+  
   const bannerContent = (
     <motion.div
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className="bg-card/45 border border-amber-500/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-amber-500/50"
+      className="bg-card/45 border border-[#2f6cf5]/20 p-5 md:p-6 rounded-[10px] shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#2f6cf5]/40"
     >
       <div className="flex items-center gap-4 text-left">
-        <div className="p-3 bg-amber-500/10 rounded-[10px] text-amber-500 flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
+        <div className="p-3 bg-[#2f6cf5]/10 rounded-[10px] text-[#2f6cf5] flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
           <motion.div
             animate={{
@@ -1154,7 +1135,7 @@ export function LoyaltyView() {
               ease: "easeInOut",
             }}
           >
-            <Trophy className="w-8 h-8 text-amber-500" />
+            <Trophy className="w-8 h-8" />
           </motion.div>
         </div>
         <div>
@@ -1164,7 +1145,7 @@ export function LoyaltyView() {
             </h2>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Thiết kế lộ trình thăng hạng, cấu hình công thức tích điểm và quản lý kho quà tặng.
+            Cấu hình công thức tích điểm và quản lý kho quà tặng đặc quyền.
           </p>
         </div>
       </div>
@@ -1172,13 +1153,14 @@ export function LoyaltyView() {
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => setShowDoc(!showDoc)}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer border ${
+          className={`px-4 py-2.5 rounded-[10px] text-xs font-bold transition-all shadow-sm flex items-center shrink-0 cursor-pointer border ${
             showDoc 
-              ? "bg-amber-500/20 border-amber-500/40 text-amber-700 dark:text-amber-400" 
+              ? "bg-[#2f6cf5]/20 border-[#2f6cf5]/40 text-[#2f6cf5]" 
               : "bg-background border-border hover:bg-muted text-foreground"
           }`}
         >
-          <BookOpen className="w-4 h-4 mr-2 text-amber-500" /> Tài liệu {tabs.find(t => t.id === activeTab)?.label}
+          <BookOpen className="w-4 h-4 mr-2" /> 
+          Tài liệu {activeTabInfo?.label}
         </button>
       </div>
     </motion.div>
@@ -1189,7 +1171,7 @@ export function LoyaltyView() {
       {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
 
       <div className="px-4 md:px-0 pt-6 pb-6 space-y-6">
-        <div className="flex gap-1 p-1 bg-muted/40 rounded-2xl w-fit">
+        <div className="flex gap-1 p-1 bg-muted/40 rounded-[10px] w-fit">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -1197,7 +1179,7 @@ export function LoyaltyView() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
                 className={cn(
-                  "flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-all gap-2",
+                  "flex items-center px-4 py-2 rounded-[10px] text-sm font-bold transition-all gap-2",
                   activeTab === tab.id
                     ? "bg-background text-primary shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-background/50",
@@ -1218,11 +1200,11 @@ export function LoyaltyView() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-sky-500/5 dark:bg-sky-950/10 border border-sky-500/10 dark:border-sky-900/30 rounded-3xl p-6 mb-8 space-y-6 overflow-hidden shadow-sm"
+              className="bg-sky-500/5 dark:bg-sky-950/10 border border-sky-500/10 dark:border-sky-900/30 rounded-[10px] p-6 mb-8 space-y-6 overflow-hidden shadow-sm"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-sky-500/10 rounded-xl text-sky-600 dark:text-sky-400">
+                  <div className="p-2.5 bg-sky-500/10 rounded-[10px] text-sky-600 dark:text-sky-400">
                     <BookOpen className="w-5 h-5" />
                   </div>
                   <div className="text-left">
@@ -1236,7 +1218,7 @@ export function LoyaltyView() {
                 </div>
                 <button
                   onClick={() => setShowDoc(false)}
-                  className="p-1.5 hover:bg-sky-500/10 text-sky-700 dark:text-sky-400 rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 hover:bg-sky-500/10 text-sky-700 dark:text-sky-400 rounded-[10px] transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4 animate-none" />
                 </button>
@@ -1244,7 +1226,7 @@ export function LoyaltyView() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
                 {/* CẤU HÌNH PHÂN HẠNG VIP */}
-                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
+                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-[10px] border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
                   <div>
                     <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
                       <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
@@ -1257,7 +1239,7 @@ export function LoyaltyView() {
                   <div className="space-y-2 flex-1">
                     {tiers && tiers.length > 0 ? (
                       tiers.map((t) => (
-                        <div key={t.id} className="flex items-center justify-between p-2.5 bg-muted/20 rounded-xl border border-border/10 text-xs">
+                        <div key={t.id} className="flex items-center justify-between p-2.5 bg-muted/20 rounded-[10px] border border-border/10 text-xs">
                           <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: t.color || "#94a3b8" }} />
                             <span className="font-bold text-foreground">{t.name}</span>
@@ -1277,7 +1259,7 @@ export function LoyaltyView() {
                 </div>
 
                 {/* QUY TẮC TÍCH LŨY ĐIỂM */}
-                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
+                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-[10px] border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
                   <div>
                     <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
                       <Zap className="w-4 h-4 text-sky-500 fill-sky-500" />
@@ -1290,7 +1272,7 @@ export function LoyaltyView() {
                   <div className="space-y-2 max-h-[180px] overflow-y-auto custom-scrollbar flex-1">
                     {earnRules && earnRules.length > 0 ? (
                       earnRules.filter(r => r.isActive).map((r) => (
-                        <div key={r.id} className="flex items-center justify-between p-2.5 bg-muted/20 rounded-xl border border-border/10 text-xs gap-2">
+                        <div key={r.id} className="flex items-center justify-between p-2.5 bg-muted/20 rounded-[10px] border border-border/10 text-xs gap-2">
                           <span className="font-semibold text-muted-foreground text-left truncate" title={r.name}>{r.name}</span>
                           <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded font-bold text-[10px] shrink-0">
                             +{r.points} pts
@@ -1304,7 +1286,7 @@ export function LoyaltyView() {
                 </div>
 
                 {/* QUY TẮC PHÂN KHÚC */}
-                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
+                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-[10px] border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
                   <div>
                     <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
                       <Tag className="w-4 h-4 text-purple-500 fill-purple-500" />
@@ -1330,7 +1312,7 @@ export function LoyaltyView() {
                         const operatorStr = r.operator === 'gte' ? '≥' : r.operator === 'lte' ? '≤' : r.operator === 'gt' ? '>' : r.operator === 'lt' ? '<' : '=';
 
                         return (
-                          <div key={r.id} className="p-2.5 bg-muted/20 rounded-xl border border-border/10 text-xs flex flex-col gap-1 text-left">
+                          <div key={r.id} className="p-2.5 bg-muted/20 rounded-[10px] border border-border/10 text-xs flex flex-col gap-1 text-left">
                             <div className="flex items-center justify-between">
                               <span className="font-bold text-foreground text-[11px] truncate">{r.name}</span>
                               <span className="bg-purple-500/15 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-black text-[9px] uppercase tracking-wider">
@@ -1350,7 +1332,7 @@ export function LoyaltyView() {
                 </div>
 
                 {/* ĐỔI QUÀ VÀ ƯU ĐÃI */}
-                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
+                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-[10px] border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between">
                   <div>
                     <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
                       <Gift className="w-4 h-4 text-rose-500 fill-rose-500" />
@@ -1363,7 +1345,7 @@ export function LoyaltyView() {
                   <div className="space-y-2 max-h-[180px] overflow-y-auto custom-scrollbar flex-1">
                     {rules && rules.length > 0 ? (
                       rules.map((r) => (
-                        <div key={r.id} className="flex items-center justify-between p-2.5 bg-muted/20 rounded-xl border border-border/10 text-xs gap-2">
+                        <div key={r.id} className="flex items-center justify-between p-2.5 bg-muted/20 rounded-[10px] border border-border/10 text-xs gap-2">
                           <div className="flex flex-col text-left min-w-0 flex-1">
                             <span className="font-bold text-foreground truncate">{r.name}</span>
                             <span className="text-[10px] text-muted-foreground">
@@ -1382,7 +1364,7 @@ export function LoyaltyView() {
                 </div>
 
                 {/* ĐẶC QUYỀN VIP */}
-                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-2xl border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between lg:col-span-2">
+                <div className="bg-white/70 dark:bg-slate-900/40 p-5 rounded-[10px] border border-sky-100/30 dark:border-sky-930/10 space-y-4 flex flex-col justify-between lg:col-span-2">
                   <div>
                     <h4 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-wider flex items-center gap-2 mb-2">
                       <Crown className="w-4 h-4 text-amber-500 fill-amber-300" />
@@ -1399,7 +1381,7 @@ export function LoyaltyView() {
                           ? t.benefits
                           : getFallbackBenefits(t.name);
                         return (
-                          <div key={t.id} className="p-3 bg-muted/20 rounded-xl border border-border/10 text-left space-y-2 flex flex-col justify-between">
+                          <div key={t.id} className="p-3 bg-muted/20 rounded-[10px] border border-border/10 text-left space-y-2 flex flex-col justify-between">
                             <div className="flex items-center justify-between border-b border-border/5 pb-1.5 mb-1 shrink-0">
                               <span className="font-bold text-xs uppercase tracking-wide" style={{ color: t.color || "#1e293b" }}>
                                 {t.name}
@@ -1446,163 +1428,47 @@ export function LoyaltyView() {
             className="space-y-8"
           >
             {activeTab === "tiers" && (
-              <div className="space-y-6">
-                {/* Banner / Header */}
-                <div className="relative overflow-hidden rounded-3xl border border-[#2f6cf5]/10 bg-gradient-to-r from-[#2f6cf5]/10 via-[#2f6cf5]/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
-                  <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#2f6cf5] via-background to-background pointer-events-none" />
-                  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-[#2f6cf5] font-bold text-sm uppercase tracking-wider mb-2">
-                        <Star className="w-5 h-5 animate-pulse" /> Chương trình cấp bậc
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <TierManagementView 
+                  rules={rules} 
+                  gifts={gifts} 
+                  searchTerm={tierSearchTerm}
+                />
+                
+                <div className="bg-card border border-border/50 rounded-[10px] p-6 space-y-6 shadow-sm">
+                   <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between px-1">
+                      <div className="text-left">
+                        <h5 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest">
+                          So sánh đặc quyền hội viên
+                        </h5>
+                        <p className="text-xs text-muted-foreground">
+                          Bảng trực quan hóa sự khác biệt giữa các phân hạng
+                        </p>
                       </div>
-                      <h3 className="text-2xl font-bold font-heading text-foreground">
-                        Cấu hình Cấp bậc
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-                        Quản lý các cấp bậc thành viên và thiết lập điều kiện thăng hạng, theo dõi đường thăng hạng của khách hàng.
-                      </p>
                     </div>
-                    <div className="flex flex-wrap gap-2.5 shrink-0 self-start md:self-auto">
-                      <button
-                        onClick={() => {
-                            window.dispatchEvent(new CustomEvent('open-add-tier-dialog'));
-                        }}
-                        className="px-5 py-2.5 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-[#2f6cf5]/20 flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <Plus className="w-4 h-4" /> Thêm hạng mới
-                      </button>
-                    </div>
-                  </div>
+                  <TierComparisonTable tiers={tiers} />
                 </div>
-
-                {/* Thẻ Lộ trình thăng cấp (Loyalty Journey) */}
-                <Card className="p-6 border border-border/50 bg-sidebar/40 backdrop-blur-md rounded-3xl shadow-lg text-left overflow-hidden mt-4">
-                  <LoyaltyProgressionTimeline currentPoints={1420} tierName="Essential" />
-                </Card>
-
-                {/* Thẻ tương ứng 4 hạng thành viên */}
-                <div className="w-full mt-4">
-                  <TierManagementView rules={rules} gifts={gifts} />
-                </div>
-
-                <TierComparisonTable />
               </div>
             )}
 
             {activeTab === "points" && (
-              <div className="space-y-6">
-                {/* Banner / Header */}
-                <div className="relative overflow-hidden rounded-3xl border border-amber-500/10 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
-                  <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-500 via-background to-background pointer-events-none" />
-                  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-amber-500 font-bold text-sm uppercase tracking-wider mb-2">
-                        <Award className="w-5 h-5 animate-pulse" /> Tích lũy điểm thưởng
-                      </div>
-                      <h3 className="text-2xl font-bold font-heading text-foreground">
-                        Quy tắc Cộng Điểm (Earn Rules)
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-                        Quản lý các quy tắc tích lũy điểm thưởng từ các hoạt động của khách hàng. Thiết lập hệ số, quy đổi tiền tệ và các chiến dịch tặng điểm bổ sung.
-                      </p>
-                    </div>
-                    <div className="flex gap-2.5 flex-wrap shrink-0 self-start md:self-auto">
-                      <button
-                        onClick={handleBootstrapEarnRules}
-                        className="px-4 py-2.5 bg-muted hover:bg-muted/80 text-foreground rounded-2xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <RefreshCw className="w-4 h-4 text-amber-500" /> Nạp Demo mẫu
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedEarnRule(undefined);
-                          setShowEarnDialog(true);
-                        }}
-                        className="px-5 py-2.5 bg-amber-500 text-white hover:bg-amber-600 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <Plus className="w-4 h-4" /> Thiết lập mới
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {earnRules && earnRules.length > 0 ? (
-                    earnRules.map((r) => {
-                      const style = EARN_STYLE_MAP[r.type] || DEFAULT_EARN_STYLE;
-                      return (
-                      <Card key={r.id} className={`p-5 border bg-card rounded-2xl shadow-sm transition-all shadow-md ${style.border}`}>
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-xl ${style.bg} ${style.text}`}>
-                              {React.createElement(EARN_ICON_MAP[r.type] || Zap, { className: "w-5 h-5" })}
-                            </div>
-                            <div className="text-left">
-                              <h4 className="font-bold text-foreground text-sm">{r.name}</h4>
-                              <p className="text-xs text-muted-foreground mt-0.5">{r.type === 'transaction' ? 'Giao dịch mua hàng' : 'Hành động tương tác'}</p>
-                            </div>
-                          </div>
-                            <div className="flex items-center gap-2">
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r.isActive ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
-                                    {r.isActive ? "Active" : "Inactive"}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="mt-5 space-y-3">
-                          <div className="flex items-center justify-between text-xs p-2.5 bg-muted/40 rounded-xl border border-border/40">
-                            <span className="text-muted-foreground font-semibold">Điểm hệ số cơ bản:</span>
-                            <span className="font-black text-[#2f6cf5]">+{r.points} pts</span>
-                          </div>
-                          
-                           <div className="flex items-center justify-between text-xs p-2.5 bg-muted/40 rounded-xl border border-border/40">
-                             <span className="text-muted-foreground font-semibold">Ngày tạo:</span>
-                             <span className="font-medium text-foreground">
-                               {r.createdAt ? (
-                                 typeof r.createdAt.toDate === 'function' ? r.createdAt.toDate().toISOString().substring(0, 10) :
-                                 r.createdAt instanceof Date ? r.createdAt.toISOString().substring(0, 10) :
-                                 typeof r.createdAt === 'string' ? r.createdAt.substring(0, 10) : 'Hệ thống'
-                               ) : 'Hệ thống'}
-                             </span>
-                           </div>
-                        </div>
-
-                        <div className="mt-5 flex items-center justify-end gap-2 pt-4 border-t border-border/40">
-                          <button
-                            onClick={() => {
-                              setSelectedEarnRule(r);
-                              setShowEarnDialog(true);
-                            }}
-                            className="px-3 py-1.5 text-xs font-bold text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer"
-                          >
-                            Chỉnh sửa
-                          </button>
-                        </div>
-                      </Card>
-                      );
-                    })
-                  ) : (
-                    <div className="col-span-full py-12 flex flex-col items-center justify-center text-center border-2 border-dashed border-border rounded-xl bg-muted/20">
-                      <Zap className="w-8 h-8 text-muted-foreground/30 mb-3" />
-                      <p className="text-sm font-semibold text-muted-foreground">Chưa có quy tắc tích điểm nào</p>
-                      <button
-                        onClick={() => {
-                          setSelectedEarnRule(undefined);
-                          setShowEarnDialog(true);
-                        }}
-                        className="mt-4 px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg text-xs font-bold transition-all cursor-pointer"
-                      >
-                         Thiết lập quy tắc đầu tiên
-                      </button>
-                    </div>
-                  )}
-                </div>
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <PointsManagementView 
+                  onEditRule={(rule) => {
+                    setSelectedEarnRule(rule);
+                    setShowEarnDialog(true);
+                  }}
+                  onAddRule={() => {
+                      setSelectedEarnRule(undefined);
+                      setShowEarnDialog(true);
+                  }}
+                />
               </div>
             )}
 
             {activeTab === "redemption" && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-left">
-                <PointRedemptionConfigView />
+                <PointRedemptionConfigView onAddRule={() => setShowRuleDialog(true)} />
               </div>
             )}
 
@@ -1651,7 +1517,7 @@ export function LoyaltyView() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="w-full max-w-lg bg-card border border-border rounded-3xl shadow-2xl p-6 space-y-6 relative overflow-hidden"
+            className="w-full max-w-lg bg-card border border-border rounded-[10px] shadow-2xl p-6 space-y-6 relative overflow-hidden"
           >
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-indigo-500 to-purple-500" />
             
@@ -1670,7 +1536,7 @@ export function LoyaltyView() {
                   setPrivilegeValue("");
                   setSelectedTiersForPrivilege([]);
                 }}
-                className="text-muted-foreground hover:text-foreground p-1 hover:bg-muted rounded-xl transition-all font-bold cursor-pointer text-sm"
+                className="text-muted-foreground hover:text-foreground p-1 hover:bg-muted rounded-[10px] transition-all font-bold cursor-pointer text-sm"
               >
                 Hủy
               </button>
@@ -1687,7 +1553,7 @@ export function LoyaltyView() {
                   value={privilegeName}
                   onChange={(e) => setPrivilegeName(e.target.value)}
                   placeholder="v.d. Miễn phí gói vệ sinh trang sức cao cấp bọc Platinum"
-                  className="w-full bg-muted/40 border border-border focus:border-primary/50 focus:ring-1 focus:ring-primary/20 rounded-xl px-4 py-2.5 text-sm outline-none transition-all placeholder:text-muted-foreground/60"
+                  className="w-full bg-muted/40 border border-border focus:border-primary/50 focus:ring-1 focus:ring-primary/20 rounded-[10px] px-4 py-2.5 text-sm outline-none transition-all placeholder:text-muted-foreground/60"
                 />
               </div>
 
@@ -1700,7 +1566,7 @@ export function LoyaltyView() {
                   value={privilegeValue}
                   onChange={(e) => setPrivilegeValue(e.target.value)}
                   placeholder="v.d. Áp dụng trọn đời hoặc Định kỳ 6 tháng/lần"
-                  className="w-full bg-muted/40 border border-border focus:border-primary/50 focus:ring-1 focus:ring-primary/20 rounded-xl px-4 py-2.5 text-sm outline-none transition-all placeholder:text-muted-foreground/60"
+                  className="w-full bg-muted/40 border border-border focus:border-primary/50 focus:ring-1 focus:ring-primary/20 rounded-[10px] px-4 py-2.5 text-sm outline-none transition-all placeholder:text-muted-foreground/60"
                 />
               </div>
 
@@ -1719,7 +1585,7 @@ export function LoyaltyView() {
                           backgroundColor: isChecked ? `${tier.color}08` : undefined
                         }}
                         className={cn(
-                          "flex items-center gap-3 p-3 border border-border/80 rounded-2xl cursor-pointer hover:bg-muted/40 transition-all select-none"
+                          "flex items-center gap-3 p-3 border border-border/80 rounded-[10px] cursor-pointer hover:bg-muted/40 transition-all select-none"
                         )}
                       >
                         <input
@@ -1760,13 +1626,13 @@ export function LoyaltyView() {
                     setPrivilegeValue("");
                     setSelectedTiersForPrivilege([]);
                   }}
-                  className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                  className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-[10px] text-xs font-bold transition-all cursor-pointer"
                 >
                   Đóng
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-xl text-xs font-bold transition-all shadow-md shadow-primary/10 flex items-center gap-1 cursor-pointer"
+                  className="px-5 py-2 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-[10px] text-xs font-bold transition-all shadow-md shadow-primary/10 flex items-center gap-1 cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
                   Kích hoạt đặc quyền
@@ -1784,7 +1650,7 @@ export function LoyaltyView() {
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="w-full max-w-md bg-[#ffffff] dark:bg-zinc-900 border border-border rounded-3xl overflow-hidden shadow-2xl relative"
+            className="w-full max-w-md bg-[#ffffff] dark:bg-zinc-900 border border-border rounded-[10px] overflow-hidden shadow-2xl relative"
           >
             <div className="p-6 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -1806,7 +1672,7 @@ export function LoyaltyView() {
                 Hệ số tích luỹ toàn cầu (Global Multiplier) nhân trực tiếp toàn bộ điểm tích luỹ khách hàng khi họ hoàn thành nhiệm vụ hoặc mua hàng trong thời gian chạy sự kiện.
               </p>
 
-              <div className="p-4 bg-amber-500/5 rounded-2xl border border-amber-500/10 space-y-3">
+              <div className="p-4 bg-amber-500/5 rounded-[10px] border border-amber-500/10 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5 text-left">
                     <span className="text-xs font-bold text-foreground">Kích hoạt Promo Multiplier</span>
@@ -1834,7 +1700,7 @@ export function LoyaltyView() {
                 <label className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground block">
                   Hệ số nhân điểm thưởng (Multiplier Value)
                 </label>
-                <div className="flex items-center gap-4 bg-muted/40 p-3 rounded-xl border border-border">
+                <div className="flex items-center gap-4 bg-muted/40 p-3 rounded-[10px] border border-border">
                   <input
                     type="range"
                     min="1.0"
@@ -1859,7 +1725,7 @@ export function LoyaltyView() {
                   type="text"
                   value={globalMultiplierReason}
                   onChange={(e) => setGlobalMultiplierReason(e.target.value)}
-                  className="w-full bg-muted/40 border border-border p-3 rounded-xl font-bold text-xs outline-none focus:border-amber-500 text-foreground"
+                  className="w-full bg-muted/40 border border-border p-3 rounded-[10px] font-bold text-xs outline-none focus:border-amber-500 text-foreground"
                   placeholder="Ví dụ: Sự kiện Tri ân Hè Seva Glow"
                   disabled={!isGlobalMultiplierActive}
                 />
@@ -1869,7 +1735,7 @@ export function LoyaltyView() {
                 <button
                   type="button"
                   onClick={() => setShowGlobalMultiplierDialog(false)}
-                  className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                  className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-[10px] text-xs font-bold transition-all cursor-pointer"
                 >
                   Đóng
                 </button>
@@ -1882,7 +1748,7 @@ export function LoyaltyView() {
                     setShowGlobalMultiplierDialog(false);
                     toast.success("Cấu hình Global Multiplier được áp dụng thành công!");
                   }}
-                  className="px-5 py-2 bg-[#2f6cf5] text-[#ffffff] hover:bg-[#2f6cf5]/90 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+                  className="px-5 py-2 bg-[#2f6cf5] text-[#ffffff] hover:bg-[#2f6cf5]/90 rounded-[10px] text-xs font-bold transition-all shadow-md cursor-pointer"
                 >
                   Lưu cấu hình
                 </button>

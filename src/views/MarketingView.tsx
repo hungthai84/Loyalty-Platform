@@ -3,13 +3,10 @@ import { createPortal } from "react-dom";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Mail, 
-  Zap,
+  Mail,
   Megaphone, 
-  CheckCircle2, 
   Activity, 
   Send, 
-  Laptop, 
   History, 
   CheckCircle, 
   Eye, 
@@ -407,7 +404,7 @@ export function MarketingView() {
   const bannerContent = (
     <motion.div
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className="bg-card/45 border border-rose-500/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-rose-500/50"
+      className="bg-card/45 border border-rose-500/30 p-5 md:p-6 rounded-[10px] shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-rose-500/50"
     >
       <div className="flex items-center gap-4 text-left">
         <div className="p-3 bg-rose-500/10 rounded-[10px] text-rose-500 flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
@@ -442,7 +439,7 @@ export function MarketingView() {
         <button
           onClick={() => {}}
           className={cn(
-            "flex items-center px-4 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer",
+            "flex items-center px-4 py-2 rounded-[10px] text-xs font-bold transition-all border cursor-pointer",
             "bg-background border-border hover:bg-muted text-foreground"
           )}
         >
@@ -458,11 +455,11 @@ export function MarketingView() {
       {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
 
       <div className="px-4 md:px-0 pt-4">
-        <div className="flex gap-1 p-1 bg-muted/40 rounded-2xl w-fit">
+        <div className="flex gap-1 p-1 bg-muted/40 rounded-[10px] w-fit">
           <button
             onClick={() => setActiveTab2("messages")}
             className={cn(
-              "flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-all gap-2 cursor-pointer",
+              "flex items-center px-4 py-2 rounded-[10px] text-sm font-bold transition-all gap-2 cursor-pointer",
               activeTab2 === "messages"
                 ? "bg-background text-primary shadow-sm font-extrabold"
                 : "text-muted-foreground hover:text-foreground hover:bg-background/50"
@@ -474,7 +471,7 @@ export function MarketingView() {
           <button
             onClick={() => setActiveTab2("campaigns")}
             className={cn(
-              "flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-all gap-2 cursor-pointer",
+              "flex items-center px-4 py-2 rounded-[10px] text-sm font-bold transition-all gap-2 cursor-pointer",
               activeTab2 === "campaigns"
                 ? "bg-background text-primary shadow-sm font-extrabold"
                 : "text-muted-foreground hover:text-foreground hover:bg-background/50"
@@ -497,7 +494,7 @@ export function MarketingView() {
               transition={{ duration: 0.2 }}
               className="space-y-6 text-left"
             >
-              <div className="relative overflow-hidden rounded-3xl border border-blue-500/10 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
+              <div className="relative overflow-hidden rounded-[10px] border border-blue-500/10 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
                 <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500 via-background to-background pointer-events-none" />
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-1">
@@ -518,11 +515,11 @@ export function MarketingView() {
                 
                 {/* Editor Column */}
                 <div className="lg:col-span-4 space-y-6">
-                  <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
+                  <div className="bg-card border border-border rounded-[10px] p-6 shadow-sm">
                     <div className="space-y-6">
                       <div>
                         <label className="block text-xs text-muted-foreground font-bold uppercase mb-3">Kênh Tương Tác</label>
-                        <div className="grid grid-cols-4 gap-2 bg-muted p-1 rounded-2xl">
+                        <div className="grid grid-cols-4 gap-2 bg-muted p-1 rounded-[10px]">
                           {[
                             { id: "email", icon: Mail, label: "Email" },
                             { id: "sms", icon: MessageSquare, label: "SMS" },
@@ -533,7 +530,7 @@ export function MarketingView() {
                               key={ch.id}
                               onClick={() => setSelectedChannel(ch.id as any)}
                               className={cn(
-                                "flex flex-col items-center justify-center py-2.5 rounded-xl transition-all gap-1 cursor-pointer",
+                                "flex flex-col items-center justify-center py-2.5 rounded-[10px] transition-all gap-1 cursor-pointer",
                                 selectedChannel === ch.id 
                                   ? "bg-background shadow-sm text-primary" 
                                   : "text-muted-foreground hover:text-foreground hover:bg-background/25"
@@ -561,7 +558,7 @@ export function MarketingView() {
                               key={tmpl.id}
                               onClick={() => setSelectedTemplate(tmpl.id as any)}
                               className={cn(
-                                "py-2 px-3 text-[11px] font-bold rounded-xl transition-all text-left cursor-pointer",
+                                "py-2 px-3 text-[11px] font-bold rounded-[10px] transition-all text-left cursor-pointer",
                                 selectedTemplate === tmpl.id 
                                   ? "bg-primary/10 text-primary border border-primary/20 shadow-sm" 
                                   : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -581,7 +578,7 @@ export function MarketingView() {
                               type="text" 
                               value={subject}
                               onChange={(e) => setSubject(e.target.value)}
-                              className="w-full p-2.5 bg-background border rounded-xl text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
+                              className="w-full p-2.5 bg-background border rounded-[10px] text-sm font-semibold focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
                             />
                           </div>
                         )}
@@ -606,13 +603,13 @@ export function MarketingView() {
                               value={selectedChannel === "sms" ? smsContent : selectedChannel === "zalo" ? zaloContent : callScript}
                               onChange={(e) => setContent(e.target.value)}
                               rows={6}
-                              className="w-full p-3 bg-background border rounded-xl text-sm font-medium resize-none focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
+                              className="w-full p-3 bg-background border rounded-[10px] text-sm font-medium resize-none focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
                             />
                           )}
                         </div>
                         
                         {selectedChannel !== "email" && (
-                          <div className="bg-muted/50 p-3 rounded-xl">
+                          <div className="bg-muted/50 p-3 rounded-[10px]">
                             <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">Biến hệ thống khả dụng</p>
                             <div className="flex flex-wrap gap-2">
                               {['{name}', '{code}', '{points}', '{tier}', '{branch}'].map(tag => (
@@ -626,7 +623,7 @@ export function MarketingView() {
                           <button 
                             onClick={handleSimulateSend}
                             disabled={isSending}
-                            className="w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl text-sm flex items-center justify-center transition-all shadow-md active:scale-[0.98] cursor-pointer"
+                            className="w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-[10px] text-sm flex items-center justify-center transition-all shadow-md active:scale-[0.98] cursor-pointer"
                           >
                             {isSending ? <Activity className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-2" /> Gửi thử nghiệm ngay</>}
                           </button>
@@ -636,7 +633,7 @@ export function MarketingView() {
                               value={testEmail}
                               onChange={(e) => setTestEmail(e.target.value)}
                               placeholder="Nhập email nhận..."
-                              className="w-full mt-2 p-2.5 bg-background border rounded-xl text-xs font-semibold text-center text-foreground"
+                              className="w-full mt-2 p-2.5 bg-background border rounded-[10px] text-xs font-semibold text-center text-foreground"
                             />
                           )}
                         </div>
@@ -647,7 +644,7 @@ export function MarketingView() {
 
                 {/* Preview Column */}
                 <div className="lg:col-span-8">
-                  <div className="bg-muted/30 border rounded-3xl p-6 shadow-sm min-h-[600px] flex flex-col">
+                  <div className="bg-muted/30 border rounded-[10px] p-6 shadow-sm min-h-[600px] flex flex-col">
                     <div className="flex items-center justify-between mb-4 border-b pb-4 flex-wrap gap-3">
                       <div>
                         <h4 className="font-bold text-sm uppercase flex items-center gap-2">
@@ -657,11 +654,11 @@ export function MarketingView() {
                       </div>
                       
                       {selectedChannel === "email" && (
-                        <div className="flex bg-muted p-1 rounded-xl border border-border">
+                        <div className="flex bg-muted p-1 rounded-[10px] border border-border">
                           <button
                             onClick={() => setPreviewMode("light")}
                             className={cn(
-                              "px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all cursor-pointer",
+                              "px-3 py-1.5 text-[11px] font-bold rounded-[10px] transition-all cursor-pointer",
                               previewMode === "light" ? "bg-background shadow-xs text-primary" : "text-muted-foreground hover:text-foreground"
                             )}
                           >
@@ -670,7 +667,7 @@ export function MarketingView() {
                           <button
                             onClick={() => setPreviewMode("dark")}
                             className={cn(
-                              "px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all cursor-pointer",
+                              "px-3 py-1.5 text-[11px] font-bold rounded-[10px] transition-all cursor-pointer",
                               previewMode === "dark" ? "bg-background shadow-xs text-primary" : "text-muted-foreground hover:text-foreground"
                             )}
                           >
@@ -680,7 +677,7 @@ export function MarketingView() {
                       )}
                     </div>
 
-                    <div className="flex-1 flex justify-center items-center py-4 bg-background border rounded-2xl overflow-hidden shadow-inner">
+                    <div className="flex-1 flex justify-center items-center py-4 bg-background border rounded-[10px] overflow-hidden shadow-inner">
                       {selectedChannel === "email" ? (
                         <div className="w-full max-w-[600px] h-full flex flex-col scale-95 lg:scale-100">
                           <div className="bg-muted/50 px-4 py-3 border-b flex items-center gap-3 rounded-t-2xl">
@@ -689,12 +686,12 @@ export function MarketingView() {
                                 <div className="w-3 h-3 bg-amber-400/80 rounded-full" />
                                 <div className="w-3 h-3 bg-emerald-500/80 rounded-full" />
                               </div>
-                              <div className="bg-background text-xs px-4 py-1.5 rounded-lg w-full truncate border font-medium text-muted-foreground">
+                              <div className="bg-background text-xs px-4 py-1.5 rounded-[10px] w-full truncate border font-medium text-muted-foreground">
                                 {subject}
                               </div>
                           </div>
                           <div className="p-4 bg-[#f8fafc] dark:bg-[#020617] flex-1 flex justify-center custom-scrollbar overflow-y-auto min-h-[500px]">
-                            <div className="w-full max-w-[550px] shadow-sm bg-white dark:bg-black rounded-xl overflow-hidden self-start" dangerouslySetInnerHTML={{ __html: getHtmlPreview() }} />
+                            <div className="w-full max-w-[550px] shadow-sm bg-white dark:bg-black rounded-[10px] overflow-hidden self-start" dangerouslySetInnerHTML={{ __html: getHtmlPreview() }} />
                           </div>
                         </div>
                       ) : selectedChannel === "sms" || selectedChannel === "zalo" ? (
@@ -734,7 +731,7 @@ export function MarketingView() {
                                </div>
                                
                                <div className="flex items-start gap-2">
-                                   <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[85%]">
+                                   <div className="bg-white dark:bg-slate-800 p-3 rounded-[10px] rounded-tl-none shadow-sm max-w-[85%]">
                                       <p className="text-xs whitespace-pre-wrap leading-relaxed dark:text-slate-200">
                                         {selectedChannel === 'sms' ? smsContent.replace('{name}', 'Thái Hồng Hưng').replace('{code}', 'BDAYVIP') : zaloContent.replace('{name}', 'Thái Hồng Hưng').replace('{code}', 'BDAYVIP')}
                                       </p>
@@ -769,7 +766,7 @@ export function MarketingView() {
                                 </div>
                              </div>
 
-                             <div className="bg-slate-800/50 backdrop-blur-md rounded-2xl p-6 border border-slate-700/50 relative">
+                             <div className="bg-slate-800/50 backdrop-blur-md rounded-[10px] p-6 border border-slate-700/50 relative">
                                 <div className="absolute -top-3 left-6 px-3 py-1 bg-primary text-[10px] font-bold text-white rounded-full">KỊCH BẢN NÓI CHUYỆN</div>
                                 <div className="mt-2 text-slate-300 italic text-sm leading-relaxed font-serif">
                                    &ldquo;{callScript.replace('{name}', 'Anh Hưng').replace('{code}', 'BDAYVIP')}&rdquo;
@@ -799,7 +796,7 @@ export function MarketingView() {
               </div>
 
               {/* Notification History Log */}
-              <div className="mt-8 bg-card border border-border rounded-3xl p-6 shadow-sm mb-10 text-left">
+              <div className="mt-8 bg-card border border-border rounded-[10px] p-6 shadow-sm mb-10 text-left">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-bold text-sm uppercase tracking-wider flex items-center gap-2">
                     <History className="w-4 h-4 text-[#2f6cf5]" /> Lịch sử gửi thông báo
@@ -831,7 +828,7 @@ export function MarketingView() {
                           <TableCell className="text-left">
                              <div className="flex items-center gap-2">
                                 <div className={cn(
-                                  "p-1.5 rounded-lg shrink-0",
+                                  "p-1.5 rounded-[10px] shrink-0",
                                   log.channel === 'email' ? "bg-blue-500/10 text-blue-500" :
                                   log.channel === 'sms' ? "bg-amber-500/10 text-amber-500" :
                                   log.channel === 'zalo' ? "bg-indigo-500/10 text-indigo-500" :
@@ -879,7 +876,7 @@ export function MarketingView() {
               transition={{ duration: 0.2 }}
               className="space-y-6"
             >
-              <div className="relative overflow-hidden rounded-3xl border border-amber-500/10 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
+              <div className="relative overflow-hidden rounded-[10px] border border-amber-500/10 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
                 <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-500 via-background to-background pointer-events-none" />
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-1">
@@ -899,7 +896,7 @@ export function MarketingView() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-left items-start mb-10">
               {/* Campaign Creation Form (Left) */}
               <div className="lg:col-span-5">
-                <div className="bg-card border border-border rounded-3xl p-6 shadow-sm space-y-6">
+                <div className="bg-card border border-border rounded-[10px] p-6 shadow-sm space-y-6">
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-bold text-lg flex items-center gap-2 text-foreground font-heading">
@@ -925,7 +922,7 @@ export function MarketingView() {
                         value={newCampName}
                         onChange={(e) => setNewCampName(e.target.value)}
                         placeholder="Ví dụ: Đại Tiệc Mua Sắm Giao Niên"
-                        className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50 text-foreground"
+                        className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50 text-foreground"
                       />
                     </div>
 
@@ -935,7 +932,7 @@ export function MarketingView() {
                         <select
                           value={newCampMultiplier}
                           onChange={(e) => setNewCampMultiplier(Number(e.target.value))}
-                          className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
+                          className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
                         >
                           <option value={1.5}>x1.5 Điểm thưởng</option>
                           <option value={2.0}>x2.0 Điểm vàng</option>
@@ -950,7 +947,7 @@ export function MarketingView() {
                         <select
                           value={newCampAudience}
                           onChange={(e) => setNewCampAudience(e.target.value)}
-                          className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
+                          className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
                         >
                           <option value="Tất cả hội viên">Tất cả thành viên</option>
                           <option value="Chỉ hạng Essential">Chỉ hạng Essential</option>
@@ -969,7 +966,7 @@ export function MarketingView() {
                           type="date"
                           value={newCampStart}
                           onChange={(e) => setNewCampStart(e.target.value)}
-                          className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
+                          className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
                         />
                       </div>
 
@@ -981,7 +978,7 @@ export function MarketingView() {
                           type="date"
                           value={newCampEnd}
                           onChange={(e) => setNewCampEnd(e.target.value)}
-                          className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
+                          className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
                         />
                       </div>
                     </div>
@@ -993,13 +990,13 @@ export function MarketingView() {
                         onChange={(e) => setNewCampNotes(e.target.value)}
                         placeholder="Mô tả điều kiện đặc trưng của hệ thống nhân điểm..."
                         rows={3}
-                        className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50 resize-none text-foreground"
+                        className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50 resize-none text-foreground"
                       />
                     </div>
 
                     <button
                       type="submit"
-                      className="w-full py-3 bg-primary hover:bg-primary/95 text-primary-foreground font-black rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md mt-4"
+                      className="w-full py-3 bg-primary hover:bg-primary/95 text-primary-foreground font-black rounded-[10px] text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md mt-4"
                     >
                       <Plus className="w-4 h-4" /> Khởi tạo chiến dịch nhân điểm
                     </button>
@@ -1009,7 +1006,7 @@ export function MarketingView() {
 
               {/* Active Campaigns List (Right) */}
               <div className="lg:col-span-7 space-y-6">
-                <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
+                <div className="bg-card border border-border rounded-[10px] p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4 flex-wrap gap-2 text-left">
                     <div>
                       <h3 className="font-bold text-sm uppercase tracking-wider flex items-center gap-2">
@@ -1024,7 +1021,7 @@ export function MarketingView() {
 
                   <div className="space-y-4 border-l-2 border-border/60 ml-3 pl-6 relative">
                     {campaigns.length === 0 ? (
-                      <div className="p-12 text-center border border-dashed rounded-2xl bg-muted/20">
+                      <div className="p-12 text-center border border-dashed rounded-[10px] bg-muted/20">
                         <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto opacity-50 mb-3" />
                         <p className="text-xs font-bold text-muted-foreground">Chưa có chiến dịch nhân điểm nào hoạt động.</p>
                         <p className="text-[10px] text-muted-foreground/80 mt-1">Sử dụng bảng bên trái để kiến tạo chiến dịch kích cầu.</p>
@@ -1038,7 +1035,7 @@ export function MarketingView() {
                           <div
                             key={camp.id}
                             className={cn(
-                              "relative p-5 rounded-2xl border transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-left shadow-sm",
+                              "relative p-5 rounded-[10px] border transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-left shadow-sm",
                               camp.isActive 
                                 ? "bg-card hover:bg-muted/10 border-border md:border-l-4 md:border-l-primary text-card-foreground"
                                 : "bg-muted/30 border-dashed border-border/40 opacity-70"
@@ -1084,13 +1081,13 @@ export function MarketingView() {
                               </div>
 
                               {camp.notes && (
-                                <p className="text-[11px] text-muted-foreground italic bg-muted/40 p-2 rounded-lg border border-border/40 mt-1">{camp.notes}</p>
+                                <p className="text-[11px] text-muted-foreground italic bg-muted/40 p-2 rounded-[10px] border border-border/40 mt-1">{camp.notes}</p>
                               )}
                             </div>
 
                             <div className="flex items-center gap-4 self-end md:self-auto shrink-0">
                               {/* Big glow multiplier badge */}
-                              <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex flex-col items-center justify-center shrink-0">
+                              <div className="w-16 h-16 rounded-[10px] bg-primary/10 border border-primary/20 flex flex-col items-center justify-center shrink-0">
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70">hệ số</span>
                                 <span className="text-xl font-black text-primary -mt-1 font-mono leading-none">x{camp.multiplier.toFixed(1)}</span>
                               </div>
@@ -1099,7 +1096,7 @@ export function MarketingView() {
                                 <button
                                   onClick={() => handleToggleCampaign(camp.id)}
                                   className={cn(
-                                    "px-3 py-1.5 text-[10px] font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap text-center",
+                                    "px-3 py-1.5 text-[10px] font-bold rounded-[10px] transition-all cursor-pointer whitespace-nowrap text-center",
                                     camp.isActive 
                                       ? "bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/20"
                                       : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20"
@@ -1109,7 +1106,7 @@ export function MarketingView() {
                                 </button>
                                 <button
                                   onClick={() => handleDeleteCampaign(camp.id)}
-                                  className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 text-[10px] font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                                  className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 text-[10px] font-bold rounded-[10px] transition-all cursor-pointer flex items-center justify-center gap-1.5"
                                 >
                                   <Trash2 className="w-3 h-3" /> Xóa bỏ
                                 </button>

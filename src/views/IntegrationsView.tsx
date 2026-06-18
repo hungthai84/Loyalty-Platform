@@ -172,7 +172,7 @@ export function IntegrationsView() {
             >
               <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm h-full flex flex-col">
                 <CardHeader>
-                  <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 mb-2">
+                  <div className="w-10 h-10 rounded-[10px] bg-orange-500/10 flex items-center justify-center text-orange-500 mb-2">
                     <ShoppingCart className="w-5 h-5" />
                   </div>
                   <CardTitle className="font-heading flex items-center justify-between">
@@ -223,7 +223,7 @@ export function IntegrationsView() {
             >
               <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm h-full flex flex-col">
                 <CardHeader>
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2">
+                  <div className="w-10 h-10 rounded-[10px] bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2">
                     <Ticket className="w-5 h-5" />
                   </div>
                   <CardTitle className="font-heading flex items-center justify-between">

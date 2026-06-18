@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { Plus, Users, Calendar, Gift, ChevronRight, FileSpreadsheet, Search, CheckCircle2, ChevronLeft, MapPin } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Users, Calendar, Gift, FileSpreadsheet, Search, CheckCircle2, ChevronLeft, MapPin } from "lucide-react";
+import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -127,7 +126,7 @@ export function MembershipProjectsView() {
           <ChevronLeft className="w-4 h-4" /> Quay lại dự án
         </button>
 
-        <div className="bg-card/45 border border-border/60 rounded-3xl p-6 shadow-sm backdrop-blur-md relative">
+        <div className="bg-card/45 border border-border/60 rounded-[10px] p-6 shadow-sm backdrop-blur-md relative">
            <h2 className="text-xl font-black text-foreground mb-1">Danh sách hội viên: {selectedProject.name}</h2>
            <p className="text-sm font-medium text-muted-foreground mb-6">Tổng {selectedProject.membersCount} thành viên trong danh sách</p>
            
@@ -136,7 +135,7 @@ export function MembershipProjectsView() {
               <Input placeholder="Tìm kiếm hội viên..." className="pl-9 h-10 font-medium max-w-sm" />
            </div>
 
-           <div className="border border-border/50 rounded-2xl overflow-hidden">
+           <div className="border border-border/50 rounded-[10px] overflow-hidden">
              <table className="w-full text-left font-medium text-sm">
                <thead className="bg-muted/50 border-b border-border/50 text-xs font-black uppercase tracking-wider text-muted-foreground">
                  <tr>
@@ -179,7 +178,7 @@ export function MembershipProjectsView() {
           <ChevronLeft className="w-4 h-4" /> Quay lại danh sách
         </button>
 
-        <div className="bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-sm backdrop-blur-md relative">
+        <div className="bg-card/45 border border-border/60 rounded-[10px] overflow-hidden shadow-sm backdrop-blur-md relative">
           <div className="h-64 w-full relative">
             <img src={selectedProject.coverUrl} className="w-full h-full object-cover" alt="Cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -204,7 +203,7 @@ export function MembershipProjectsView() {
                  <h3 className="text-sm font-black uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2"><Gift className="w-4 h-4" /> Quyền lợi đặc exclusive</h3>
                  <ul className="space-y-3">
                    {selectedProject.benefits.map((b, i) => (
-                     <li key={i} className="flex items-start gap-3 bg-muted/30 p-3 rounded-xl border border-border/50">
+                     <li key={i} className="flex items-start gap-3 bg-muted/30 p-3 rounded-[10px] border border-border/50">
                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                        <span className="text-sm font-bold text-foreground">{b}</span>
                      </li>
@@ -214,11 +213,11 @@ export function MembershipProjectsView() {
             </div>
             
             <div className="space-y-6">
-                <div className="bg-[#2f6cf5]/5 border border-[#2f6cf5]/20 rounded-2xl p-5">
+                <div className="bg-[#2f6cf5]/5 border border-[#2f6cf5]/20 rounded-[10px] p-5">
                    <h3 className="text-sm font-black uppercase tracking-wider text-[#2f6cf5] mb-4 flex items-center gap-2"> Ưu đãi áp dụng đính kèm</h3>
                    <div className="space-y-2">
                      {selectedProject.offers.map((o, i) => (
-                       <div key={i} className="bg-white dark:bg-zinc-900 border border-border rounded-xl p-3 shadow-xs font-bold text-xs">
+                       <div key={i} className="bg-white dark:bg-zinc-900 border border-border rounded-[10px] p-3 shadow-xs font-bold text-xs">
                          {o}
                        </div>
                      ))}
@@ -227,7 +226,7 @@ export function MembershipProjectsView() {
 
                 <div 
                   onClick={() => setViewingMembers(true)}
-                  className="bg-card border border-border/80 rounded-2xl p-5 text-center cursor-pointer hover:bg-muted/30 transition-colors group"
+                  className="bg-card border border-border/80 rounded-[10px] p-5 text-center cursor-pointer hover:bg-muted/30 transition-colors group"
                 >
                    <Users className="w-8 h-8 text-muted-foreground mx-auto mb-3 group-hover:text-[#2f6cf5] transition-colors" />
                    <h3 className="text-lg font-black mb-1 group-hover:text-[#2f6cf5] transition-colors">{selectedProject.membersCount}</h3>
@@ -257,7 +256,7 @@ export function MembershipProjectsView() {
           <ChevronLeft className="w-4 h-4" /> Bỏ qua & Quay lại
         </button>
 
-        <form onSubmit={handleCreate} className="bg-card/45 border border-border/60 rounded-3xl p-6 md:p-8 max-w-3xl space-y-6 backdrop-blur-md shadow-sm">
+        <form onSubmit={handleCreate} className="bg-card/45 border border-border/60 rounded-[10px] p-6 md:p-8 max-w-3xl space-y-6 backdrop-blur-md shadow-sm">
            <div>
              <h2 className="text-xl font-black text-foreground">Tạo danh sách Dự án hội viên mới</h2>
              <p className="text-xs font-medium text-muted-foreground mt-1">Thiết lập nhóm hội viên đặc biệt kèm quyền lợi và ưu đãi dự án.</p>
@@ -271,7 +270,7 @@ export function MembershipProjectsView() {
 
               <div>
                 <label className="text-xs font-black uppercase tracking-wider text-muted-foreground mb-1 block">Mô tả chi tiết</label>
-                <textarea required value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-background border border-border rounded-xl p-3 text-sm font-medium outline-none h-24" placeholder="Mục đích của dự án..."></textarea>
+                <textarea required value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-background border border-border rounded-[10px] p-3 text-sm font-medium outline-none h-24" placeholder="Mục đích của dự án..."></textarea>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -287,7 +286,7 @@ export function MembershipProjectsView() {
 
               <div>
                 <label className="text-xs font-black uppercase tracking-wider text-muted-foreground mb-1 block">Nạp danh sách hội viên (File đính kèm)</label>
-                <div className="border-2 border-dashed border-border/60 rounded-xl p-6 text-center hover:bg-muted/30 transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-border/60 rounded-[10px] p-6 text-center hover:bg-muted/30 transition-colors cursor-pointer">
                    <FileSpreadsheet className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
                    <p className="text-sm font-bold">Kéo thả file CSV/Excel hoặc click để tải lên</p>
                    <p className="text-xs text-muted-foreground mt-1">Hỗ trợ định dạng: .csv, .xlsx</p>
@@ -303,7 +302,7 @@ export function MembershipProjectsView() {
                     "Voucher 500k tại Golden Dragon", "Combo Món Âu giá đặc biệt",
                     "Giảm 30% phụ kiện công nghệ", "Gói bảo hành mở rộng miễn phí"
                   ].map((offer, idx) => (
-                    <label key={idx} className="flex items-center gap-2 text-sm font-bold text-foreground cursor-pointer bg-muted/20 p-2 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors">
+                    <label key={idx} className="flex items-center gap-2 text-sm font-bold text-foreground cursor-pointer bg-muted/20 p-2 rounded-[10px] border border-border/40 hover:bg-muted/50 transition-colors">
                       <input 
                         type="checkbox" 
                         className="rounded border-border text-[#2f6cf5] focus:ring-[#2f6cf5] w-4 h-4"
@@ -324,7 +323,7 @@ export function MembershipProjectsView() {
 
               <div>
                 <label className="text-xs font-black uppercase tracking-wider text-muted-foreground mb-1 block">Thêm mục quyền lợi: thêm từng dòng ghi chú về quyền lợi</label>
-                <textarea value={benefits} onChange={e => setBenefits(e.target.value)} className="w-full bg-background border border-border rounded-xl p-3 text-sm font-medium outline-none h-24" placeholder="Ví dụ:&#10;Miễn phí vé vào cửa&#10;Quà tặng cao cấp"></textarea>
+                <textarea value={benefits} onChange={e => setBenefits(e.target.value)} className="w-full bg-background border border-border rounded-[10px] p-3 text-sm font-medium outline-none h-24" placeholder="Ví dụ:&#10;Miễn phí vé vào cửa&#10;Quà tặng cao cấp"></textarea>
               </div>
            </div>
 
@@ -339,44 +338,49 @@ export function MembershipProjectsView() {
 
   return (
     <div className="w-full flex md:flex flex-col gap-6 w-full">
-      {/* Banner / Header */}
-      <div className="relative overflow-hidden rounded-3xl border border-emerald-500/10 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
-        <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500 via-background to-background pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-emerald-500 font-bold text-sm uppercase tracking-wider mb-2">
-              <Users className="w-5 h-5 animate-pulse" /> Phân loại trạng thái
+      <div className="bg-card/45 border border-border/60 rounded-[10px] overflow-hidden shadow-xs backdrop-blur-md">
+        {/* Banner / Header - Merged */}
+        <div className="relative overflow-hidden border-b border-border/40 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-6 md:p-8 text-left">
+          <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500 via-background to-background pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-emerald-500 font-bold text-sm uppercase tracking-wider mb-2">
+                <Users className="w-5 h-5 animate-pulse" /> Phân loại trạng thái
+              </div>
+              <h3 className="text-2xl font-bold font-heading text-foreground">
+                Dự án Phân Nhóm Hội Viên
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                Nhóm các khách hàng vào các dự án ưu đãi độc quyền. Thiết lập đặc quyền, voucher và phần quà đặc biệt, và kiểm soát danh sách tham gia theo thời gian thực.
+              </p>
             </div>
-            <h3 className="text-2xl font-bold font-heading text-foreground">
-              Dự án Phân Nhóm Hội Viên
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-              Nhóm các khách hàng vào các dự án ưu đãi độc quyền. Thiết lập đặc quyền, voucher và phần quà đặc biệt, và kiểm soát danh sách tham gia theo thời gian thực.
-            </p>
+
+            <Button 
+              onClick={() => setShowCreateForm(true)}
+              className="bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 font-bold px-5 h-10 shadow-md flex items-center gap-2 cursor-pointer relative z-20 shrink-0"
+            >
+              <Plus className="w-4 h-4" /> Tạo nhóm dự án mới
+            </Button>
+          </div>
+        </div>
+
+        {/* Search Bar - Part of the merged container */}
+        <div className="p-5 md:p-6 border-b border-border/40 bg-muted/20">
+          <div className="relative flex-1 max-w-md text-left">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Tìm kiếm dự án hội viên..." className="pl-9 h-10 font-medium" />
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
-        <div className="relative flex-1 max-w-md text-left">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Tìm kiếm dự án hội viên..." className="pl-9 h-10 font-medium" />
-        </div>
-        <Button 
-          onClick={() => setShowCreateForm(true)}
-          className="bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 font-bold px-5 h-10 shadow-md flex items-center gap-2 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" /> Tạo nhóm dự án mới
-        </Button>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+
          {projects.map(proj => (
            <motion.div
              key={proj.id}
              whileHover={{ y: -4 }}
              onClick={() => setSelectedProject(proj)}
-             className="bg-card/45 border border-border/60 rounded-3xl overflow-hidden shadow-xs cursor-pointer group hover:shadow-md transition-all text-left flex flex-col"
+             className="bg-card/45 border border-border/60 rounded-[10px] overflow-hidden shadow-xs cursor-pointer group hover:shadow-md transition-all text-left flex flex-col"
            >
              <div className="h-32 w-full relative overflow-hidden">
                <img src={proj.coverUrl} alt="Cover" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />

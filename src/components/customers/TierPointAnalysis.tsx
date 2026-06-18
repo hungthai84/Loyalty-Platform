@@ -194,7 +194,7 @@ export function TierPointAnalysis() {
               </div>
             </div>
             
-            <div className="p-4 bg-muted/40 rounded-xl border border-dashed border-border mt-4">
+            <div className="p-4 bg-muted/40 rounded-[10px] border border-dashed border-border mt-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-muted-foreground uppercase">TÓM TẮT THUẬT TOÁN</span>
               </div>
@@ -208,12 +208,12 @@ export function TierPointAnalysis() {
               <button 
                 onClick={() => {
                   const toastElement = document.createElement('div');
-                  toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
+                  toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-[10px] border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
                   toastElement.innerHTML = `<div class="text-xs font-bold text-foreground">Lưu cấu hình phân tích hạng & điểm thành công!</div>`;
                   document.body.appendChild(toastElement);
                   setTimeout(() => document.body.removeChild(toastElement), 3000);
                 }}
-                className="w-full px-6 py-2.5 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow flex items-center justify-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent"
+                className="w-full px-6 py-2.5 bg-black text-white dark:bg-white dark:text-black font-bold rounded-[10px] shadow flex items-center justify-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent"
               >
                 <Calculator className="w-4 h-4" />
                 Lưu định dạng tính toán
@@ -239,7 +239,7 @@ export function TierPointAnalysis() {
               <CardHeader className="pb-2 border-b border-border/30 bg-muted/10">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tier.bg} ${tier.color}`}>
+                    <div className={`w-10 h-10 rounded-[10px] flex items-center justify-center ${tier.bg} ${tier.color}`}>
                       <tier.icon className="w-5 h-5" />
                     </div>
                     <div>
@@ -277,7 +277,7 @@ export function TierPointAnalysis() {
                   
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Mức tiền quy đổi:</span>
-                    <span className="font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-md">
+                    <span className="font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-[10px]">
                       {Math.floor(tier.amountGainedInVnd).toLocaleString()}đ
                     </span>
                   </div>
@@ -302,7 +302,7 @@ export function TierPointAnalysis() {
         </Card>
 
         {/* 1. MÔ PHỎNG CẤU TRÚC PHÂN HẠNG SEVA CLUB (DEMO) */}
-        <Card className="p-6 border border-[#2f6cf5]/20 bg-[#2f6cf5]/5 rounded-3xl mt-8">
+        <Card className="p-6 border border-[#2f6cf5]/20 bg-[#2f6cf5]/5 rounded-[10px] mt-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
               <h4 className="font-bold text-lg flex items-center gap-2 text-[#2f6cf5] font-heading">
@@ -317,7 +317,7 @@ export function TierPointAnalysis() {
             </Badge>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 bg-background/50 p-5 rounded-2xl border border-border/60">
+          <div className="grid gap-6 md:grid-cols-2 bg-background/50 p-5 rounded-[10px] border border-border/60">
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground block mb-2">
@@ -332,7 +332,7 @@ export function TierPointAnalysis() {
                       const clean = e.target.value.replace(/\./g, "").replace(/[^\d]/g, "");
                       setSimSpent(clean ? clean : "0");
                     }}
-                    className="w-full bg-background border border-border/80 p-3 pl-4 rounded-xl font-bold font-mono text-base outline-none focus:border-primary tracking-tight text-foreground"
+                    className="w-full bg-background border border-border/80 p-3 pl-4 rounded-[10px] font-bold font-mono text-base outline-none focus:border-primary tracking-tight text-foreground"
                     placeholder="Ví dụ: 120.000.000"
                   />
                   <span className="absolute right-3.5 top-3.5 text-xs font-bold text-muted-foreground">VND</span>
@@ -352,7 +352,7 @@ export function TierPointAnalysis() {
                     <button
                       key={option.value}
                       onClick={() => setSimSpent(option.value)}
-                      className="px-3 py-2 bg-muted/40 text-xs font-bold rounded-xl text-left hover:bg-muted hover:border-primary/20 border border-transparent transition-all cursor-pointer"
+                      className="px-3 py-2 bg-muted/40 text-xs font-bold rounded-[10px] text-left hover:bg-muted hover:border-primary/20 border border-transparent transition-all cursor-pointer"
                     >
                       {option.label}
                     </button>
@@ -396,7 +396,7 @@ export function TierPointAnalysis() {
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-border/40 text-xs text-muted-foreground flex justify-between items-center bg-muted/20 p-2.5 rounded-lg mt-3">
+                  <div className="pt-3 border-t border-border/40 text-xs text-muted-foreground flex justify-between items-center bg-muted/20 p-2.5 rounded-[10px] mt-3">
                     {res.remainingToNext > 0 ? (
                       <span>Cần thêm <strong className="text-foreground font-semibold">{res.remainingToNext.toLocaleString("vi-VN")} đ</strong> để thăng hạng VIP kế tiếp ({res.nextThreshold})</span>
                     ) : (

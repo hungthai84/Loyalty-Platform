@@ -130,7 +130,7 @@ const OPERATORS = [
 
  return (
  <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
- <div className="bg-card w-full max-w-xl rounded-2xl shadow-2xl border border-border overflow-hidden">
+ <div className="bg-card w-full max-w-xl rounded-[10px] shadow-2xl border border-border overflow-hidden">
  <form onSubmit={handleSubmit}>
  <div className="px-6 py-4 border-b flex justify-between items-center bg-muted/30">
  <div>
@@ -145,7 +145,7 @@ const OPERATORS = [
  <button 
  type="button"
  onClick={onClose} 
- className="p-1.5 hover:bg-muted rounded-xl transition-colors"
+ className="p-1.5 hover:bg-muted rounded-[10px] transition-colors"
  >
  <X className="w-5 h-5" />
  </button>
@@ -159,7 +159,7 @@ const OPERATORS = [
  type="text"
  required
  placeholder="Ví dụ: Dự án chăm sóc VIP quý 2..."
- className="w-full px-4 py-2 bg-background border rounded-xl focus:ring-1 focus:ring-primary outline-none text-sm transition-all"
+ className="w-full px-4 py-2 bg-background border rounded-[10px] focus:ring-1 focus:ring-primary outline-none text-sm transition-all"
  value={name}
  onChange={e => setName(e.target.value)}
  />
@@ -171,7 +171,7 @@ const OPERATORS = [
  <textarea
  placeholder="Chính sách đặc biệt dành riêng, thời gian áp dụng..."
  rows={2}
- className="w-full px-4 py-2 bg-background border rounded-xl focus:ring-1 focus:ring-primary outline-none text-sm transition-all resize-none"
+ className="w-full px-4 py-2 bg-background border rounded-[10px] focus:ring-1 focus:ring-primary outline-none text-sm transition-all resize-none"
  value={description}
  onChange={e => setDescription(e.target.value)}
  />
@@ -189,7 +189,7 @@ const OPERATORS = [
  type="button"
  onClick={() => setCriteriaType(c.id as SegmentationRule['criteriaType'])}
  className={cn(
- "p-3 rounded-2xl border flex flex-col items-center justify-center text-center transition-all gap-1.5 shadow-2xs cursor-pointer",
+ "p-3 rounded-[10px] border flex flex-col items-center justify-center text-center transition-all gap-1.5 shadow-2xs cursor-pointer",
  criteriaType === c.id 
  ? "border-primary bg-primary/5 text-primary scale-[1.02]" 
  : "border-border hover:border-foreground/20 hover:bg-muted/30"
@@ -210,7 +210,7 @@ const OPERATORS = [
  <select
  value={operator}
  onChange={e => setOperator(e.target.value as SegmentationRule['operator'])}
- className="w-full px-3 py-2 bg-background border rounded-xl focus:ring-1 focus:ring-primary outline-none text-sm transition-all"
+ className="w-full px-3 py-2 bg-background border rounded-[10px] focus:ring-1 focus:ring-primary outline-none text-sm transition-all"
  >
  {OPERATORS.map((o) => (
  <option key={o.id} value={o.id}>{o.label}</option>
@@ -226,7 +226,7 @@ const OPERATORS = [
  type="number"
  required
  placeholder={CRITERIA_TYPES.find(c => c.id === criteriaType)?.placeholder}
- className="w-full px-4 py-2 bg-background border rounded-xl focus:ring-1 focus:ring-primary outline-none text-sm transition-all "
+ className="w-full px-4 py-2 bg-background border rounded-[10px] focus:ring-1 focus:ring-primary outline-none text-sm transition-all "
  value={value}
  onChange={e => setValue(e.target.value)}
  />
@@ -238,7 +238,7 @@ const OPERATORS = [
  <label className="text-xs font-bold uppercase text-muted-foreground block">Hoặc: Tải lên danh sách thành viên (Excel/CSV)</label>
  <div 
  onClick={() => fileInputRef.current?.click()}
- className="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/30 hover:border-primary/50 transition-all"
+ className="border-2 border-dashed border-border rounded-[10px] p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/30 hover:border-primary/50 transition-all"
  >
  <input 
  type="file" 
@@ -264,7 +264,7 @@ const OPERATORS = [
  </div>
 
  {/* Active Switch */}
- <div className="flex items-center justify-between p-4 border rounded-2xl bg-muted/20">
+ <div className="flex items-center justify-between p-4 border rounded-[10px] bg-muted/20">
  <div>
  <span className="text-sm font-bold block">Trạng thái áp dụng</span>
  <span className="text-xs text-muted-foreground leading-none">Quy tắc tự động chạy khi kích hoạt</span>
@@ -297,14 +297,14 @@ const OPERATORS = [
  type="button"
  onClick={onClose}
  disabled={submitting}
- className="px-4 py-2 border border-border rounded-xl text-xs font-bold hover:bg-muted transition-colors cursor-pointer"
+ className="px-4 py-2 border border-border rounded-[10px] text-xs font-bold hover:bg-muted transition-colors cursor-pointer"
  >
  Hủy bỏ
  </button>
  <button
  type="submit"
  disabled={submitting}
- className="px-5 py-2 bg-primary text-primary-foreground font-bold rounded-xl text-xs hover:bg-primary/90 flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-primary/10"
+ className="px-5 py-2 bg-primary text-primary-foreground font-bold rounded-[10px] text-xs hover:bg-primary/90 flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-primary/10"
  >
  <Save className="w-4 h-4" /> {rule ? "Lưu thay đổi" : "Tạo quy tắc"}
  </button>

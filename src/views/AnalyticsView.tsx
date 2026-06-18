@@ -497,7 +497,7 @@ const heatmapData = [
   const bannerContent = (
     <motion.div
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className="bg-card/45 border border-[#2f6cf5]/30 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#2f6cf5]/50"
+      className="bg-card/45 border border-[#2f6cf5]/30 p-5 md:p-6 rounded-[10px] shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-[#2f6cf5]/50"
     >
       <div className="flex items-center gap-4 text-left">
         <div className="p-3 bg-[#2f6cf5]/10 rounded-[10px] text-[#2f6cf5] flex items-center justify-center relative overflow-hidden shadow-xs shrink-0 group">
@@ -529,7 +529,7 @@ const heatmapData = [
   );
 
   const actionControls = (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-card/65 border border-border/80 rounded-3xl backdrop-blur-md">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-card/65 border border-border/80 rounded-[10px] backdrop-blur-md">
       <div className="text-left">
         <h3 className="text-base font-bold font-heading text-foreground">
           Bộ lọc báo cáo & Thao tác
@@ -544,7 +544,7 @@ const heatmapData = [
         <div className="relative">
           <button 
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-bold hover:bg-primary/95 transition-all cursor-pointer shadow-lg shadow-primary/20 focus:ring-2 focus:ring-primary/20 outline-none"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-[10px] text-xs font-bold hover:bg-primary/95 transition-all cursor-pointer shadow-lg shadow-primary/20 focus:ring-2 focus:ring-primary/20 outline-none"
           >
             <Calendar className="w-4 h-4 text-primary-foreground" />
             <span>{formatRangeText()}</span>
@@ -559,7 +559,7 @@ const heatmapData = [
                 className="fixed inset-0 z-10"
                 onClick={() => setIsOpen(false)}
               />
-              <div className="absolute right-0 mt-2 w-72 bg-card border border-border/80 shadow-2xl rounded-2xl p-4.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150 font-sans">
+              <div className="absolute right-0 mt-2 w-72 bg-card border border-border/80 shadow-2xl rounded-[10px] p-4.5 z-20 text-left animate-in fade-in-50 slide-in-from-top-2 duration-150 font-sans">
                 <div className="space-y-4">
                   <div className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest flex items-center gap-1.5">
                     <Filter className="w-3.5 h-3.5" />
@@ -577,7 +577,7 @@ const heatmapData = [
                           onClick={() =>
                             handlePresetSelect(p.id, range.start, range.end)
                           }
-                          className={`px-3 py-2 text-xs font-bold rounded-xl text-left transition-all cursor-pointer ${
+                          className={`px-3 py-2 text-xs font-bold rounded-[10px] text-left transition-all cursor-pointer ${
                             isActive
                               ? "bg-primary text-primary-foreground shadow-sm"
                               : "bg-muted/40 hover:bg-muted text-foreground"
@@ -604,7 +604,7 @@ const heatmapData = [
                           onChange={(e) =>
                             handleCustomDateChange("start", e.target.value)
                           }
-                          className="w-full bg-background border border-border/80 rounded-xl p-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                          className="w-full bg-background border border-border/80 rounded-[10px] p-2 text-xs outline-none focus:border-primary/50 text-foreground"
                         />
                       </div>
                       <div className="space-y-1">
@@ -617,7 +617,7 @@ const heatmapData = [
                           onChange={(e) =>
                             handleCustomDateChange("end", e.target.value)
                           }
-                          className="w-full bg-background border border-border/80 rounded-xl p-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                          className="w-full bg-background border border-border/80 rounded-[10px] p-2 text-xs outline-none focus:border-primary/50 text-foreground"
                         />
                       </div>
                     </div>
@@ -627,7 +627,7 @@ const heatmapData = [
                     <button
                       type="button"
                       onClick={() => setIsOpen(false)}
-                      className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-primary/95 shadow-sm"
+                      className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-[10px] cursor-pointer hover:bg-primary/95 shadow-sm"
                     >
                       Áp dụng
                     </button>
@@ -668,7 +668,7 @@ const heatmapData = [
  <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
  {stat.title}
  </CardTitle>
- <div className="p-2 bg-primary/10 rounded-xl text-primary">
+ <div className="p-2 bg-primary/10 rounded-[10px] text-primary">
   <stat.icon className="h-4 w-4" />
  </div>
  </CardHeader>
@@ -728,14 +728,14 @@ const heatmapData = [
          </div>
        </div>
        
-       <div className="mt-8 p-4 bg-primary/10 rounded-2xl border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+       <div className="mt-8 p-4 bg-primary/10 rounded-[10px] border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-             <div className="p-2 bg-[#2f6cf5] rounded-xl text-white">
+             <div className="p-2 bg-[#2f6cf5] rounded-[10px] text-white">
                 <Zap className="w-4 h-4" />
              </div>
              <p className="text-xs font-bold">Kích hoạt chiến dịch "Win-back" ngay để tối ưu hóa ROI?</p>
           </div>
-          <button className="px-6 py-2 bg-[#2f6cf5] text-white rounded-xl text-xs font-bold hover:scale-105 transition-all shadow-lg shadow-[#2f6cf5]/20">
+          <button className="px-6 py-2 bg-[#2f6cf5] text-white rounded-[10px] text-xs font-bold hover:scale-105 transition-all shadow-lg shadow-[#2f6cf5]/20">
              Khởi chạy chiến dịch
           </button>
        </div>
@@ -758,33 +758,33 @@ const heatmapData = [
     </CardDescription>
    </div>
    <div className="flex flex-wrap items-center gap-3">
-    <button className="flex items-center gap-2 border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-semibold rounded-xl hover:bg-muted transition-colors shadow-xs text-foreground cursor-pointer">
+    <button className="flex items-center gap-2 border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-semibold rounded-[10px] hover:bg-muted transition-colors shadow-xs text-foreground cursor-pointer">
      <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
      Tháng 6, 2026 - Tùy chỉnh
      <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-1" />
     </button>
-    <div className="flex items-center gap-1 bg-background/60 border border-border/60 p-1 rounded-xl shadow-xs">
+    <div className="flex items-center gap-1 bg-background/60 border border-border/60 p-1 rounded-[10px] shadow-xs">
      <button 
        onClick={() => setClvPeriod("week")}
-       className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${clvPeriod === "week" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+       className={`px-3 py-1.5 text-xs font-bold rounded-[10px] transition-all ${clvPeriod === "week" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
      >
        Tuần
      </button>
      <button 
        onClick={() => setClvPeriod("month")}
-       className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${clvPeriod === "month" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+       className={`px-3 py-1.5 text-xs font-bold rounded-[10px] transition-all ${clvPeriod === "month" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
      >
        Tháng
      </button>
      <button 
        onClick={() => setClvPeriod("quarter")}
-       className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${clvPeriod === "quarter" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+       className={`px-3 py-1.5 text-xs font-bold rounded-[10px] transition-all ${clvPeriod === "quarter" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
      >
        Quý
      </button>
     </div>
     
-    <label className="flex items-center gap-2 cursor-pointer border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-semibold rounded-xl hover:bg-muted transition-colors shadow-xs">
+    <label className="flex items-center gap-2 cursor-pointer border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-semibold rounded-[10px] hover:bg-muted transition-colors shadow-xs">
       <input 
        type="checkbox" 
        checked={clvCompare}
@@ -1041,7 +1041,7 @@ const heatmapData = [
   </CardContent>
   <div className="px-6 pb-6 pt-2 flex flex-wrap gap-4 border-t border-border/40 mt-4">
    {predictedSpendData.slice(0, 3).map((d, i) => (
-     <div key={i} className="flex-1 min-w-[120px] bg-muted/30 p-3 rounded-xl border border-border/50">
+     <div key={i} className="flex-1 min-w-[120px] bg-muted/30 p-3 rounded-[10px] border border-border/50">
        <p className="text-[10px] uppercase font-black text-muted-foreground tracking-wider">{d.month}</p>
        <p className="text-sm font-bold text-foreground mt-0.5">~{formatCurrency(d.spend, currentCurrency)}</p>
        <p className="text-[10px] text-emerald-500 font-bold mt-1">Độ tin cậy: {d.confidence}%</p>
@@ -1067,7 +1067,7 @@ const heatmapData = [
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl border border-border/60">
+          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-[10px] border border-border/60">
             <div className="space-y-0.5">
               <Label className="text-sm font-bold">Kích hoạt chuyển phát hàng tuần</Label>
               <p className="text-[10px] text-muted-foreground">Gửi vào thứ Hai hàng tuần, 08:00 AM</p>
@@ -1089,7 +1089,7 @@ const heatmapData = [
               />
               <Button 
                 variant="outline" 
-                className="rounded-xl font-bold"
+                className="rounded-[10px] font-bold"
                 onClick={() => toast.success(`Đã gửi bản xem trước tới ${reportEmail}`)}
               >
                 <Send className="w-3.5 h-3.5 mr-2" /> Gửi thử
@@ -1097,7 +1097,7 @@ const heatmapData = [
             </div>
           </div>
 
-          <div className="p-4 rounded-xl border border-dashed border-border bg-muted/10 space-y-2">
+          <div className="p-4 rounded-[10px] border border-dashed border-border bg-muted/10 space-y-2">
              <p className="text-[10px] font-bold text-muted-foreground uppercase">Nội dung bao gồm:</p>
              <ul className="text-[11px] space-y-1.5 list-disc pl-4 text-foreground/80">
                 <li>Biểu đồ tăng trưởng thành viên mới</li>
@@ -1108,7 +1108,7 @@ const heatmapData = [
           </div>
 
           {scheduledEnabled && (
-             <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-2 rounded-lg border border-emerald-500/20">
+             <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-2 rounded-[10px] border border-emerald-500/20">
                 <CheckCircle2 className="w-3 h-3" /> Chế độ chuyển phát định kỳ đang hoạt động
              </div>
           )}
@@ -1127,12 +1127,12 @@ const heatmapData = [
            <CardDescription>Các lưu ý quan trọng trong việc phân tích dữ liệu.</CardDescription>
          </CardHeader>
          <CardContent className="space-y-4">
-            <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
+            <div className="p-4 bg-primary/5 rounded-[10px] border border-primary/10">
                <p className="text-xs text-foreground/80 leading-relaxed italic">
                  "Dữ liệu Doanh thu ước tính được tính toán dựa trên điểm tích lũy và tỷ lệ chuyển đổi trung bình. Các chỉ số này có thể thay đổi tùy thuộc vào cấu hình Earn Rule của bạn."
                </p>
             </div>
-            <div className="p-4 bg-amber-500/5 rounded-2xl border border-amber-500/10">
+            <div className="p-4 bg-amber-500/5 rounded-[10px] border border-amber-500/10">
                <p className="text-xs text-foreground/80 leading-relaxed">
                  Phân khúc "Classic Elegant" hiện đang mang lại ROI cao nhất, hãy cân nhắc tập trung các chiến dịch Marekting cá nhân hóa vào nhóm này.
                </p>
@@ -1303,7 +1303,7 @@ const heatmapData = [
  Atelier: "#2f6cf5"
  };
  return (
- <div className="bg-card border border-border rounded-xl p-3 shadow-xl backdrop-blur-md">
+ <div className="bg-card border border-border rounded-[10px] p-3 shadow-xl backdrop-blur-md">
  <p className="font-bold text-xs flex items-center gap-1.5" style={{ color: colors[data.tier] }}>
  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[data.tier] }} />
  {data.label}

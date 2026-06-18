@@ -173,7 +173,7 @@ export function ShoppingBehaviorAnalysis() {
               <button
                 key={customer.id}
                 onClick={() => setSelectedCustomer(customer.id)}
-                className={`w-full text-left px-3 py-2.5 rounded-lg text-xs transition-colors ${selectedCustomer === customer.id ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-muted-foreground'}`}
+                className={`w-full text-left px-3 py-2.5 rounded-[10px] text-xs transition-colors ${selectedCustomer === customer.id ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-muted-foreground'}`}
               >
                 <div className="font-bold text-foreground mb-0.5">{customer.name}</div>
                 <div className="flex items-center justify-between">
@@ -196,7 +196,7 @@ export function ShoppingBehaviorAnalysis() {
             className="space-y-6"
           >
             {/* Header info */}
-            <div className="flex items-center justify-between border border-border/50 bg-card/50 p-5 rounded-2xl shadow-sm">
+            <div className="flex items-center justify-between border border-border/50 bg-card/50 p-5 rounded-[10px] shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-lg font-heading">
                   {customerInfo.name.charAt(0)}
@@ -276,7 +276,7 @@ export function ShoppingBehaviorAnalysis() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {collectionAnalysis.length > 0 ? collectionAnalysis.map((ca, i) => (
-                  <div key={i} className="bg-muted/30 p-4 rounded-xl border border-border/40">
+                  <div key={i} className="bg-muted/30 p-4 rounded-[10px] border border-border/40">
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="font-semibold text-sm">{ca.collection}</h4>
                       <Badge variant="secondary">{ca.completionRate}% Mức độ hoàn thiện</Badge>
@@ -323,8 +323,8 @@ export function ShoppingBehaviorAnalysis() {
                 {productRecommendations.length > 0 ? (
                   <div className="space-y-3 relative z-10">
                     {productRecommendations.map((rec, i) => (
-                      <div key={i} className="flex gap-4 p-4 rounded-xl border border-border/60 bg-background/50 hover:bg-muted/30 transition-colors">
-                        <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500">
+                      <div key={i} className="flex gap-4 p-4 rounded-[10px] border border-border/60 bg-background/50 hover:bg-muted/30 transition-colors">
+                        <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-[10px] bg-emerald-500/10 text-emerald-500">
                           <ShoppingCart className="w-5 h-5" />
                         </div>
                         <div className="flex-1 space-y-1">
@@ -371,7 +371,7 @@ export function ShoppingBehaviorAnalysis() {
                     <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Chiến lược Tư vấn (Next Best Action)</h4>
                     <ul className="space-y-2">
                       {aiSuggestion.recommendations.map((rec, i) => (
-                        <li key={i} className="text-sm flex items-start gap-2 bg-background/50 p-2.5 rounded-lg border border-border/40">
+                        <li key={i} className="text-sm flex items-start gap-2 bg-background/50 p-2.5 rounded-[10px] border border-border/40">
                           <div className="mt-0.5"><Shirt className="w-4 h-4 text-primary" /></div>
                           <span>{rec}</span>
                         </li>
@@ -386,12 +386,12 @@ export function ShoppingBehaviorAnalysis() {
               <button 
                 onClick={() => {
                   const toastElement = document.createElement('div');
-                  toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
+                  toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-[10px] border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
                   toastElement.innerHTML = `<div class="text-xs font-bold text-foreground">Lưu kết quả phân tích hành vi mua sắm thành công!</div>`;
                   document.body.appendChild(toastElement);
                   setTimeout(() => document.body.removeChild(toastElement), 3000);
                 }}
-                className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent"
+                className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-[10px] shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 Lưu lại

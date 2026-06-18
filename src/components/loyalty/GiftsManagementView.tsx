@@ -4,22 +4,12 @@ import {
   Plus,
   Trash2,
   Edit2,
-  Sliders,
-  Sparkles,
   Coins,
   Save,
   Search,
-  Package,
   RefreshCw,
-  Power,
-  Layers,
   X,
-  PlusCircle,
   Database,
-  CheckCircle2,
-  AlertCircle,
-  Trophy,
-  ChevronRight,
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -309,7 +299,7 @@ export function GiftsManagementView() {
       stockQuantity: Number(editingGift.stockQuantity || 10),
       description: (editingGift.description || "").trim(),
       source: editingGift.source || "manual",
-      imageUrl: editingGift.imageUrl || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=450&auto=format&fit=crop&q=60",
+      imageUrl: editingGift.imageUrl || "",
     };
 
     if (user && !user.isLocal) {
@@ -348,7 +338,7 @@ export function GiftsManagementView() {
       stockQuantity: 15,
       description: "",
       source: "manual",
-      imageUrl: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=450&auto=format&fit=crop&q=60",
+      imageUrl: "",
     });
     setShowEditor(true);
   };
@@ -370,7 +360,7 @@ export function GiftsManagementView() {
   return (
     <div className="space-y-6">
       {/* Banner / Header */}
-      <div className="relative overflow-hidden rounded-3xl border border-rose-500/10 bg-gradient-to-r from-rose-550/10 via-rose-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
+      <div className="relative overflow-hidden rounded-[10px] border border-rose-500/10 bg-gradient-to-r from-rose-550/10 via-rose-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
         <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-rose-500 via-background to-background pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
@@ -388,14 +378,14 @@ export function GiftsManagementView() {
             <button
               onClick={handleSyncFromPOS}
               disabled={syncing}
-              className="px-4 py-2.5 bg-muted hover:bg-muted/80 text-foreground rounded-2xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="px-4 py-2.5 bg-muted hover:bg-muted/80 text-foreground rounded-[10px] text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <Database className={cn("w-4 h-4 text-rose-500", syncing && "animate-spin")} />
               Đồng bộ POS API
             </button>
             <button
               onClick={handleNewGift}
-              className="px-5 py-2.5 bg-rose-500 text-white hover:bg-rose-600 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-rose-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
+              className="px-5 py-2.5 bg-rose-500 text-white hover:bg-rose-600 rounded-[10px] text-xs font-bold transition-all shadow-lg shadow-rose-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Thêm quà thủ công
@@ -423,14 +413,14 @@ export function GiftsManagementView() {
               placeholder="Tìm kiếm quà..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-xl text-xs outline-none focus:border-rose-500/50 text-foreground"
+              className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:border-rose-500/50 text-foreground"
             />
           </div>
 
           <select
             value={filterTier}
             onChange={(e) => setFilterTier(e.target.value)}
-            className="bg-background border border-border rounded-xl px-2.5 py-1.5 text-xs outline-none focus:border-rose-500/50 text-foreground font-medium"
+            className="bg-background border border-border rounded-[10px] px-2.5 py-1.5 text-xs outline-none focus:border-rose-500/50 text-foreground font-medium"
           >
             <option value="all">Tất cả nhóm VIP</option>
             {AVAILABLE_TIERS.map((tier) => (
@@ -444,12 +434,12 @@ export function GiftsManagementView() {
 
       {/* Grid listing */}
       {loading ? (
-        <div className="py-16 text-center text-muted-foreground italic bg-card border border-border rounded-3xl">
+        <div className="py-16 text-center text-muted-foreground italic bg-card border border-border rounded-[10px]">
           <RefreshCw className="w-6 h-6 animate-spin mx-auto text-rose-500 mb-2" />
           Đang tải kho quà tặng...
         </div>
       ) : filteredGifts.length === 0 ? (
-        <div className="py-20 text-center border border-dashed border-border rounded-3xl space-y-4 bg-card/10">
+        <div className="py-20 text-center border border-dashed border-border rounded-[10px] space-y-4 bg-card/10">
           <Gift className="w-12 h-12 text-muted-foreground/30 mx-auto" />
           <div>
             <p className="text-sm font-bold text-muted-foreground">
@@ -461,7 +451,7 @@ export function GiftsManagementView() {
           </div>
           <button
             onClick={handleNewGift}
-            className="px-4 py-2 bg-rose-500 text-white hover:bg-rose-600 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md"
+            className="px-4 py-2 bg-rose-500 text-white hover:bg-rose-600 rounded-[10px] text-xs font-bold transition-all cursor-pointer shadow-md"
           >
             Tạo quà tặng mới
           </button>
@@ -475,10 +465,10 @@ export function GiftsManagementView() {
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
               className="group h-full flex"
             >
-              <Card className="border border-border/80 bg-card overflow-hidden rounded-[1.75rem] flex flex-col justify-between w-full shadow-sm hover:shadow-xl hover:border-rose-500/25 transition-all duration-300">
+              <Card className="p-0 border border-border/80 bg-card overflow-hidden rounded-[10px] flex flex-col justify-between w-full shadow-sm hover:shadow-xl hover:border-rose-500/25 transition-all duration-300">
                 <div className="relative h-44 w-full bg-muted overflow-hidden">
                   <img
-                    src={gift.imageUrl}
+                    src={gift.imageUrl || `https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(gift.id || gift.name)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`}
                     alt={gift.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     referrerPolicy="no-referrer"
@@ -512,7 +502,7 @@ export function GiftsManagementView() {
 
                   {/* Points display prominently overlay */}
                   <div className="absolute bottom-3 left-3 right-3 text-left">
-                    <div className="flex justify-between items-center bg-black/40 backdrop-blur-md py-1 border border-white/10 px-2.5 rounded-xl w-fit">
+                    <div className="flex justify-between items-center bg-black/40 backdrop-blur-md py-1 border border-white/10 px-2.5 rounded-[10px] w-fit">
                       <span className="text-[10px] font-bold text-amber-400 flex items-center gap-1">
                         <Coins className="w-3.5 h-3.5 fill-amber-400/10" />
                         Trừ {gift.pointsRequired.toLocaleString()} pts
@@ -548,7 +538,7 @@ export function GiftsManagementView() {
                       <button
                         type="button"
                         onClick={() => handleEditGift(gift)}
-                        className="p-1.5 bg-background border border-border hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 bg-background border border-border hover:bg-muted text-muted-foreground hover:text-foreground rounded-[10px] transition-colors cursor-pointer"
                         title="Chỉnh sửa quà tặng"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -556,7 +546,7 @@ export function GiftsManagementView() {
                       <button
                         type="button"
                         onClick={() => handleDeleteGift(gift.id, gift.name)}
-                        className="p-1.5 bg-background border border-border text-muted-foreground hover:text-red-500 hover:bg-red-50/10 rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 bg-background border border-border text-muted-foreground hover:text-red-500 hover:bg-red-50/10 rounded-[10px] transition-colors cursor-pointer"
                         title="Xóa quà tặng"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -589,13 +579,13 @@ export function GiftsManagementView() {
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="relative w-full max-w-md bg-background border border-border/80 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col text-left"
+              className="relative w-full max-w-md bg-background border border-border/80 rounded-[10px] shadow-2xl overflow-hidden flex flex-col text-left"
             >
               <form onSubmit={handleSaveGift} className="flex flex-col h-full">
                 {/* Header */}
                 <div className="p-6 border-b border-border bg-muted/10 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-rose-500/10 text-rose-500 rounded-xl">
+                    <div className="p-2 bg-rose-500/10 text-rose-500 rounded-[10px]">
                       <Gift className="w-5 h-5 animate-pulse" />
                     </div>
                     <div>
@@ -615,7 +605,7 @@ export function GiftsManagementView() {
                       setShowEditor(false);
                       setEditingGift(null);
                     }}
-                    className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
+                    className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-[10px] transition-colors cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -633,7 +623,7 @@ export function GiftsManagementView() {
                       value={editingGift.name}
                       onChange={(e) => setEditingGift({ ...editingGift, name: e.target.value })}
                       placeholder="Ví dụ: Vòng tay Seva Blossom Gold..."
-                      className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-rose-500/50 text-foreground font-semibold"
+                      className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-rose-500/50 text-foreground font-semibold"
                     />
                   </div>
 
@@ -645,7 +635,7 @@ export function GiftsManagementView() {
                       value={editingGift.description}
                       onChange={(e) => setEditingGift({ ...editingGift, description: e.target.value })}
                       placeholder="Mô tả cụ thể (Ví dụ: Chế tác bằng bạc S925 mạ bạch kim v.v.)"
-                      className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs min-h-[60px] outline-none focus:border-rose-500/50 text-foreground"
+                      className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs min-h-[60px] outline-none focus:border-rose-500/50 text-foreground"
                     />
                   </div>
 
@@ -660,7 +650,7 @@ export function GiftsManagementView() {
                         value={editingGift.imageUrl}
                         onChange={(e) => setEditingGift({ ...editingGift, imageUrl: e.target.value })}
                         placeholder="Hãy dán URL hình ảnh Unsplash..."
-                        className="flex-1 bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-rose-500/50 text-foreground"
+                        className="flex-1 bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-rose-500/50 text-foreground"
                       />
                       <button
                         type="button"
@@ -671,7 +661,7 @@ export function GiftsManagementView() {
                             imageUrl: `https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=450&auto=format&fit=crop&q=60`,
                           });
                         }}
-                        className="px-3 bg-muted hover:bg-muted/80 text-foreground text-xs font-medium rounded-xl border border-border cursor-pointer transition-all shrink-0"
+                        className="px-3 bg-muted hover:bg-muted/80 text-foreground text-xs font-medium rounded-[10px] border border-border cursor-pointer transition-all shrink-0"
                       >
                         Nạp ảnh mẫu
                       </button>
@@ -692,7 +682,7 @@ export function GiftsManagementView() {
                         onChange={(e) =>
                           setEditingGift({ ...editingGift, pointsRequired: Number(e.target.value) })
                         }
-                        className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-rose-500/50 text-foreground font-bold"
+                        className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-rose-500/50 text-foreground font-bold"
                         placeholder="Ví dụ: 300"
                       />
                     </div>
@@ -709,7 +699,7 @@ export function GiftsManagementView() {
                         onChange={(e) =>
                           setEditingGift({ ...editingGift, stockQuantity: Number(e.target.value) })
                         }
-                        className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-rose-500/50 text-foreground"
+                        className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-rose-500/50 text-foreground"
                         placeholder="Ví dụ: 25"
                       />
                     </div>
@@ -720,7 +710,7 @@ export function GiftsManagementView() {
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight block">
                       Thành viên đủ điều kiện nhận quà
                     </label>
-                    <div className="p-3 bg-muted/40 rounded-2xl border border-border/20 grid grid-cols-2 gap-2">
+                    <div className="p-3 bg-muted/40 rounded-[10px] border border-border/20 grid grid-cols-2 gap-2">
                       {AVAILABLE_TIERS.map((tier) => {
                         const active = editingGift.eligibleTiers?.includes(tier);
                         return (
@@ -735,7 +725,7 @@ export function GiftsManagementView() {
                               setEditingGift({ ...editingGift, eligibleTiers: updated });
                             }}
                             className={cn(
-                              "flex items-center gap-2 p-2 rounded-xl text-xs font-bold transition-all border text-left cursor-pointer",
+                              "flex items-center gap-2 p-2 rounded-[10px] text-xs font-bold transition-all border text-left cursor-pointer",
                               active
                                 ? "bg-rose-500/10 text-rose-500 border-rose-500/30"
                                 : "bg-background text-muted-foreground border-border hover:bg-muted"
@@ -763,13 +753,13 @@ export function GiftsManagementView() {
                       setShowEditor(false);
                       setEditingGift(null);
                     }}
-                    className="flex-1 px-4 py-2.5 border border-border hover:bg-muted text-xs font-bold rounded-xl transition-all cursor-pointer text-center text-foreground"
+                    className="flex-1 px-4 py-2.5 border border-border hover:bg-muted text-xs font-bold rounded-[10px] transition-all cursor-pointer text-center text-foreground"
                   >
                     Ủy thác Hủy
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2.5 bg-rose-500 text-white hover:bg-rose-600 text-xs font-bold rounded-xl transition-all shadow-md shadow-rose-500/10 cursor-pointer text-center flex items-center justify-center gap-1.5"
+                    className="flex-1 px-4 py-2.5 bg-rose-500 text-white hover:bg-rose-600 text-xs font-bold rounded-[10px] transition-all shadow-md shadow-rose-500/10 cursor-pointer text-center flex items-center justify-center gap-1.5"
                   >
                     <Save className="w-4 h-4" />
                     Lưu quà tặng

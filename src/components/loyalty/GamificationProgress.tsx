@@ -26,7 +26,7 @@ export function GamificationProgress({ currentPoints = 1420, nextTierPoints = 25
             <CardContent className="relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Current Status */}
-                    <div className="col-span-1 border border-border/40 rounded-xl p-5 bg-background/50 flex flex-col items-center justify-center text-center">
+                    <div className="col-span-1 border border-border/40 rounded-[10px] p-5 bg-background/50 flex flex-col items-center justify-center text-center">
                         <div className="w-16 h-16 rounded-full bg-[#10b981]/10 flex items-center justify-center mb-3 text-[#10b981] ring-4 ring-[#10b981]/5">
                             <Star className="w-8 h-8 fill-[#10b981]/20" />
                         </div>
@@ -73,13 +73,13 @@ export function GamificationProgress({ currentPoints = 1420, nextTierPoints = 25
                         {ACHIEVEMENTS.map((achievement) => (
                             <div 
                                 key={achievement.id} 
-                                className={`relative group p-4 rounded-2xl border transition-all duration-300 ${
+                                className={`relative group p-4 rounded-[10px] border transition-all duration-300 ${
                                     achievement.unlocked 
                                         ? 'bg-gradient-to-br from-background to-muted/30 border-primary/20 shadow-md hover:shadow-lg' 
                                         : 'bg-muted/10 border-transparent opacity-40 grayscale pointer-events-none'
                                 }`}
                             >
-                                <div className={`w-12 h-12 rounded-xl mb-3 flex items-center justify-center text-2xl shadow-inner bg-gradient-to-tr ${achievement.color} text-white`}>
+                                <div className={`w-12 h-12 rounded-[10px] mb-3 flex items-center justify-center text-2xl shadow-inner bg-gradient-to-tr ${achievement.color} text-white`}>
                                     {achievement.icon}
                                 </div>
                                 <h6 className="text-[11px] font-black tracking-tight mb-1">{achievement.name}</h6>

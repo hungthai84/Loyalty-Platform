@@ -22,7 +22,7 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98, y: 10 }}
         transition={{ duration: 0.2 }}
-        className="w-full max-w-5xl bg-card border border-border shadow-2xl rounded-[1.5rem] flex flex-col h-[85vh] overflow-hidden"
+        className="w-full max-w-5xl bg-card border border-border shadow-2xl rounded-[10px] flex flex-col h-[85vh] overflow-hidden"
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-muted/20">
@@ -55,7 +55,7 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   isActive
                     ? "bg-background shadow-xs text-foreground ring-1 ring-border"
                     : "text-muted-foreground hover:bg-background/40 hover:text-foreground"
@@ -72,7 +72,7 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
         <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-background/50">
           {activeTab === "companies" && (
             <div className="max-w-4xl mx-auto space-y-6">
-              <div className="bg-white/50 backdrop-blur-sm p-6 rounded-3xl border border-border/50 mb-6 flex items-center justify-between text-left">
+              <div className="bg-white/50 backdrop-blur-sm p-6 rounded-[10px] border border-border/50 mb-6 flex items-center justify-between text-left">
                 <div>
                   <h3 className="text-lg font-bold font-heading flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-blue-500" /> Quản lý Công ty & Chi nhánh
@@ -88,7 +88,7 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
 
           {activeTab === "custom_fields" && (
             <div className="max-w-4xl mx-auto space-y-6">
-              <div className="bg-white/50 backdrop-blur-sm p-6 rounded-3xl border border-border/50 mb-4 flex items-center justify-between text-left">
+              <div className="bg-white/50 backdrop-blur-sm p-6 rounded-[10px] border border-border/50 mb-4 flex items-center justify-between text-left">
                 <div>
                   <h3 className="text-lg font-bold font-heading flex items-center gap-2">
                     <SlidersHorizontal className="w-5 h-5 text-emerald-500" /> Quản lý thuộc tính mở rộng
@@ -98,7 +98,7 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
                   </p>
                 </div>
               </div>
-              <div className="bg-card border rounded-2xl shadow-xs overflow-hidden">
+              <div className="bg-card border rounded-[10px] shadow-xs overflow-hidden">
                 <AttributeManager inline attributes={attributes} />
               </div>
             </div>

@@ -106,7 +106,7 @@ export function CustomerActivityLog({ customer, isOpen, onClose }: CustomerActiv
       <SheetContent className="sm:max-w-md overflow-y-auto">
         <SheetHeader className="pb-6 border-b border-border/50">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#2f6cf5]/10 rounded-xl">
+            <div className="p-2.5 bg-[#2f6cf5]/10 rounded-[10px]">
               <History className="w-5 h-5 text-[#2f6cf5]" />
             </div>
             <div>
@@ -148,9 +148,9 @@ export function CustomerActivityLog({ customer, isOpen, onClose }: CustomerActiv
                     )}
                   </div>
 
-                  <div className="bg-muted/30 p-4 rounded-2xl border border-border/40 hover:border-[#2f6cf5]/30 transition-all group/card">
+                  <div className="bg-muted/30 p-4 rounded-[10px] border border-border/40 hover:border-[#2f6cf5]/30 transition-all group/card">
                     <div className="flex items-center gap-3 mb-2">
-                       <div className={`p-1.5 rounded-lg ${activity.bg} ${activity.color}`}>
+                       <div className={`p-1.5 rounded-[10px] ${activity.bg} ${activity.color}`}>
                           <Icon className="w-4 h-4" />
                        </div>
                        <h4 className="text-sm font-bold text-foreground">{activity.title}</h4>
@@ -170,7 +170,7 @@ export function CustomerActivityLog({ customer, isOpen, onClose }: CustomerActiv
           )}
         </div>
 
-        <div className="mt-12 p-6 bg-[#2f6cf5]/5 rounded-3xl border border-[#2f6cf5]/10 space-y-3">
+        <div className="mt-12 p-6 bg-[#2f6cf5]/5 rounded-[10px] border border-[#2f6cf5]/10 space-y-3">
           <h5 className="text-xs font-bold text-[#2f6cf5] flex items-center gap-2">
             <TrendingUp className="w-3.5 h-3.5" /> Thống kê tóm tắt
           </h5>

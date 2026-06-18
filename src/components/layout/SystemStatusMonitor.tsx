@@ -353,7 +353,7 @@ export function SystemStatusMonitor() {
  return (
  <div className="space-y-6">
  {/* Visual Header with Health Indicator */}
- <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-sidebar/50 border border-border/80 rounded-3xl backdrop-blur-md gap-4">
+ <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-sidebar/50 border border-border/80 rounded-[10px] backdrop-blur-md gap-4">
  <div className="flex items-center gap-4">
  <div className="relative">
  <span className={cn(
@@ -379,7 +379,7 @@ export function SystemStatusMonitor() {
  <button
  onClick={runDiagnostics}
  disabled={runningDiagnostics}
- className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl text-xs hover:bg-primary/95 transition-all shadow-md shadow-primary/10 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+ className="px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-[10px] text-xs hover:bg-primary/95 transition-all shadow-md shadow-primary/10 flex items-center gap-2 cursor-pointer disabled:opacity-50"
  >
  <Play className="w-4 h-4" />
  {runningDiagnostics ? "Đang dò quét..." : "Chạy Diagnostics chẩn đoán"}
@@ -388,7 +388,7 @@ export function SystemStatusMonitor() {
 
  {/* Stats Cards */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
- <div className="p-5 bg-card border border-border/60 rounded-2xl shadow-xs space-y-3 relative overflow-hidden">
+ <div className="p-5 bg-card border border-border/60 rounded-[10px] shadow-xs space-y-3 relative overflow-hidden">
  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full pointer-events-none blur-xl" />
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 ">
@@ -411,7 +411,7 @@ export function SystemStatusMonitor() {
  </div>
  </div>
 
- <div className="p-5 bg-card border border-border/60 rounded-2xl shadow-xs space-y-3 relative overflow-hidden">
+ <div className="p-5 bg-card border border-border/60 rounded-[10px] p-6 shadow-xs space-y-4 shadow-xs space-y-3 relative overflow-hidden">
  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full pointer-events-none blur-xl" />
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 ">
@@ -431,7 +431,7 @@ export function SystemStatusMonitor() {
  </div>
  </div>
 
- <div className="p-5 bg-card border border-border/60 rounded-2xl shadow-xs space-y-3 relative overflow-hidden">
+ <div className="p-5 bg-card border border-border/60 rounded-[10px] p-6 shadow-xs space-y-4 shadow-xs space-y-3 relative overflow-hidden">
  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full pointer-events-none blur-xl" />
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 ">
@@ -453,7 +453,7 @@ export function SystemStatusMonitor() {
  </div>
 
  {/* Real-time Latency Chart */}
- <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-xs space-y-4">
+ <div className="bg-card border border-border/60 rounded-[10px] p-6 shadow-xs space-y-4">
  <div>
  <h4 className="text-sm font-bold tracking-tight text-foreground">Biểu đồ Giám sát Độ trễ liên kết thực tế (Real-time latency trend)</h4>
  <p className="text-xs text-muted-foreground mt-0.5">Tự động ping cập nhật mới mỗi 8 giây đảm bảo phản hồi kết nối nhanh.</p>
@@ -461,7 +461,7 @@ export function SystemStatusMonitor() {
 
  <div className="h-[240px] w-full mt-2 text-xs">
  {latencyHistory.length === 0 ? (
- <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-2 border border-dashed rounded-xl">
+ <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-2 border border-dashed rounded-[10px]">
  <Wifi className="w-8 h-8 animate-bounce text-muted-foreground/40" />
  <span>Chờ gán & đo đạc mẫu liên kết đầu tiên...</span>
  </div>
@@ -513,7 +513,7 @@ export function SystemStatusMonitor() {
  </div>
 
  {/* Background Tasks Section */}
- <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-xs space-y-4">
+ <div className="bg-card border border-border/60 rounded-[10px] p-6 shadow-xs space-y-4 p-6 shadow-xs space-y-4">
    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
      <div>
        <h4 className="text-sm font-bold tracking-tight text-foreground flex items-center gap-2">
@@ -526,14 +526,14 @@ export function SystemStatusMonitor() {
        <button
          onClick={scanForStuckTasks}
          disabled={scanningTasks}
-         className="px-4 py-2 border border-border bg-sidebar/50 text-foreground font-bold rounded-xl text-xs hover:bg-muted transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 animate-fade-in"
+         className="px-4 py-2 border border-border bg-sidebar/50 text-foreground font-bold rounded-[10px] text-xs hover:bg-muted transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 animate-fade-in"
        >
          <RefreshCw className={cn("w-4 h-4", scanningTasks && "animate-spin")} />
          Dò quét tác vụ treo
        </button>
        <button
          onClick={cancelAllStuckTasks}
-         className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 cursor-pointer animate-fade-in"
+         className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 font-bold rounded-[10px] text-xs transition-all flex items-center gap-1.5 cursor-pointer animate-fade-in"
        >
          <XCircle className="w-4 h-4" />
          Hủy toàn bộ tác vụ
@@ -552,7 +552,7 @@ export function SystemStatusMonitor() {
          <div 
            key={task.id} 
            className={cn(
-             "p-4 border rounded-xl flex flex-col justify-between transition-all space-y-3",
+             "p-4 border rounded-[10px] flex flex-col justify-between transition-all space-y-3",
              isStalled && "bg-rose-500/5 border-rose-500/20 ring-1 ring-rose-500/10",
              isRunning && "bg-[#2f6cf5]/5 border-[#2f6cf5]/20",
              isCompleted && "bg-emerald-500/5 border-emerald-500/20",
@@ -563,7 +563,7 @@ export function SystemStatusMonitor() {
              <div className="flex items-start justify-between">
                <span className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground/80">{task.type}</span>
                <span className={cn(
-                 "px-2 py-0.5 text-[9px] rounded-md font-bold border uppercase tracking-wider leading-none",
+                 "px-2 py-0.5 text-[9px] rounded-[10px] font-bold border uppercase tracking-wider leading-none",
                  isStalled && "bg-rose-500/10 text-rose-600 border-rose-500/35 animate-pulse",
                  isRunning && "bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5]/30",
                  isCompleted && "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
@@ -609,7 +609,7 @@ export function SystemStatusMonitor() {
  {/* Diagnostics progress steps and Console logs */}
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
  {/* Diagnostic Steps Column */}
- <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-xs space-y-4 flex flex-col justify-between">
+ <div className="bg-card border border-border/60 rounded-[10px] p-6 shadow-xs space-y-4 p-6 shadow-xs space-y-4 flex flex-col justify-between">
  <div>
  <h4 className="text-sm font-bold tracking-tight text-foreground">Bản tự chẩn đoán nút dịch vụ (SLA Node Discovery)</h4>
  <p className="text-xs text-muted-foreground mt-0.5">Tiến trình chẩn đoán các lớp và vùng đệm xử lý thông tin CRM.</p>
@@ -626,9 +626,9 @@ export function SystemStatusMonitor() {
  }[step.status];
 
  return (
- <div key={step.id} className="flex items-center justify-between p-3.5 border rounded-xl hover:bg-muted/10 transition-colors">
+ <div key={step.id} className="flex items-center justify-between p-3.5 border rounded-[10px] hover:bg-muted/10 transition-colors">
  <div className="flex items-center gap-3">
- <span className={cn("px-2.5 py-1 text-xs rounded-lg border font-black", statusColors)}>
+ <span className={cn("px-2.5 py-1 text-xs rounded-[10px] border font-black", statusColors)}>
  {step.status === "idle" && "READY"}
  {step.status === "running" && "RUNNING"}
  {step.status === "success" && "PASS"}
@@ -649,7 +649,7 @@ export function SystemStatusMonitor() {
  </div>
 
  {/* Console logs Terminal Column */}
- <div className="bg-zinc-950 text-white rounded-2xl p-5 border border-zinc-800 shadow-xl flex flex-col h-full min-h-[350px]">
+ <div className="bg-zinc-950 text-white rounded-[10px] p-5 border border-zinc-800 shadow-xl flex flex-col h-full min-h-[350px]">
  <div className="flex items-center justify-between border-b border-zinc-900 pb-3 mb-3">
  <span className="text-xs uppercase font-bold tracking-wider text-primary flex items-center gap-1.5 ">
  <Terminal className="w-4 h-4" /> CRM-SLA-SYS-CONSOLE

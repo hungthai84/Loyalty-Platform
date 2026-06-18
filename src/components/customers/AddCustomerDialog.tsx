@@ -147,7 +147,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  <motion.div 
  initial={{ opacity: 0, y: 30 }}
  animate={{ opacity: 1, y: 0 }}
- className="w-full max-w-4xl bg-sidebar border border-border shadow-2xl rounded-3xl overflow-hidden max-h-[90vh] flex flex-col"
+ className="w-full max-w-4xl bg-sidebar border border-border shadow-2xl rounded-[10px] overflow-hidden max-h-[90vh] flex flex-col"
  >
  <div className="flex items-center justify-between p-6 border-b border-border bg-muted/20">
  <div>
@@ -169,7 +169,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  <label className="text-xs font-semibold uppercase text-muted-foreground">Họ và tên *</label>
  <input 
  required
- className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all"
+ className="w-full px-4 py-2 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all"
  value={name}
  onChange={e => setName(e.target.value)}
  placeholder="Ví dụ: Nguyễn Văn A"
@@ -181,7 +181,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  <label className="text-xs font-semibold uppercase text-muted-foreground">Địa chỉ Email</label>
  <input 
  type="email"
- className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all"
+ className="w-full px-4 py-2 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all"
  value={email}
  onChange={e => setEmail(e.target.value)}
  placeholder="email@vidu.com"
@@ -190,7 +190,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  <div className="space-y-2">
  <label className="text-xs font-semibold uppercase text-muted-foreground">Số điện thoại</label>
  <input 
- className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all"
+ className="w-full px-4 py-2 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all"
  value={phone}
  onChange={e => setPhone(e.target.value)}
  placeholder="0901234567"
@@ -204,7 +204,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  <Building2 className="w-3.5 h-3.5" /> Công ty
  </label>
  <select
- className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none appearance-none text-sm transition-all"
+ className="w-full px-4 py-2 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none appearance-none text-sm transition-all"
  value={selectedCompanyId}
  onChange={e => setSelectedCompanyId(e.target.value)}
  >
@@ -217,7 +217,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  <div className="space-y-2">
  <label className="text-xs font-semibold uppercase text-muted-foreground">Phân nhóm trạng thái</label>
  <select
- className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none appearance-none text-sm transition-all"
+ className="w-full px-4 py-2 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none appearance-none text-sm transition-all"
  value={activityStatus}
  onChange={e => setActivityStatus(e.target.value)}
  >
@@ -246,14 +246,14 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  
  {attr.type === 'textarea' ? (
  <textarea 
- className="w-full px-3 py-2 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[80px] resize-y"
+ className="w-full px-3 py-2 bg-background border border-border rounded-[10px] text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[80px] resize-y"
  placeholder={attr.placeholder}
  value={value}
  onChange={e => setCustomFields({ ...customFields, [attr.key]: e.target.value })}
  />
  ) : attr.type === 'select' ? (
  <select
- className="w-full px-3 py-2 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+ className="w-full px-3 py-2 bg-background border border-border rounded-[10px] text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
  value={value}
  onChange={e => setCustomFields({ ...customFields, [attr.key]: e.target.value })}
  >
@@ -305,7 +305,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  ) : (
  <input 
  type={attr.type === 'number' ? 'number' : attr.type === 'time' ? 'time' : attr.type === 'date' ? 'date' : 'text'}
- className="w-full px-3 py-2 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+ className="w-full px-3 py-2 bg-background border border-border rounded-[10px] text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
  placeholder={attr.placeholder}
  value={value}
  onChange={e => setCustomFields({
@@ -323,7 +323,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  </div>
 
  {/* HÌNH ẢNH & MẠNG XÃ HỘI (Cột 2) */}
- <div className="space-y-4 bg-muted/20 p-6 rounded-2xl border border-border/40">
+ <div className="space-y-4 bg-muted/20 p-6 rounded-[10px] border border-border/40">
  <h4 className="text-xs font-bold text-primary uppercase tracking-wider pb-1 border-b">2. Ảnh đại diện & Mạng xã hội</h4>
  
  {/* Avatar Selection */}
@@ -340,14 +340,14 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  />
  <label 
  htmlFor="customer-dialog-upload"
- className="text-xs font-bold uppercase py-1 px-2.5 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-lg cursor-pointer transition-colors flex items-center gap-1.5"
+ className="text-xs font-bold uppercase py-1 px-2.5 bg-[#2f6cf5]/10 hover:bg-[#2f6cf5]/20 border border-[#2f6cf5]/30 text-[#2f6cf5] rounded-[10px] cursor-pointer transition-colors flex items-center gap-1.5"
  >
  <Upload className="w-3 h-3" /> Tự tải từ thiết bị
  </label>
  </div>
  </div>
  <div className="flex items-center gap-4">
- <div className="w-16 h-16 rounded-2xl border border-border overflow-hidden bg-primary/10 shrink-0 shadow-sm flex items-center justify-center text-primary font-bold text-xl uppercase">
+ <div className="w-16 h-16 rounded-[10px] border border-border overflow-hidden bg-primary/10 shrink-0 shadow-sm flex items-center justify-center text-primary font-bold text-xl uppercase">
  {avatarUrl ? (
  <img src={avatarUrl} className="w-full h-full object-cover" alt="Preview" />
  ) : (
@@ -382,11 +382,11 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  {/* Facebook */}
  <div className="flex items-center gap-2">
  <span className="w-24 text-xs font-semibold text-muted-foreground flex items-center gap-1.5 shrink-0">
- <span className="bg-blue-600/10 text-blue-600 p-1 rounded-lg"><Facebook className="w-3.5 h-3.5" /></span>
+ <span className="bg-blue-600/10 text-blue-600 p-1 rounded-[10px]"><Facebook className="w-3.5 h-3.5" /></span>
  Facebook:
  </span>
  <input 
- className="flex-1 px-3 py-1.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+ className="flex-1 px-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
  value={facebook}
  onChange={e => setFacebook(e.target.value)}
  placeholder="https://facebook.com/user..."
@@ -396,11 +396,11 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  {/* Zalo */}
  <div className="flex items-center gap-2">
  <span className="w-24 text-xs font-semibold text-muted-foreground flex items-center gap-1.5 shrink-0">
- <span className="bg-sky-500/10 text-sky-600 px-1 py-0.5 rounded-lg font-bold text-xs leading-tight font-sans">Z</span>
+ <span className="bg-sky-500/10 text-sky-600 px-1 py-0.5 rounded-[10px] font-bold text-xs leading-tight font-sans">Z</span>
  Zalo Sđt:
  </span>
  <input 
- className="flex-1 px-3 py-1.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+ className="flex-1 px-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
  value={zalo}
  onChange={e => setZalo(e.target.value)}
  placeholder="0901234567 hoặc link cá nhân zalo"
@@ -410,11 +410,11 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  {/* LinkedIn */}
  <div className="flex items-center gap-2">
  <span className="w-24 text-xs font-semibold text-muted-foreground flex items-center gap-1.5 shrink-0">
- <span className="bg-blue-700/10 text-blue-700 p-1 rounded-lg"><Linkedin className="w-3.5 h-3.5" /></span>
+ <span className="bg-blue-700/10 text-blue-700 p-1 rounded-[10px]"><Linkedin className="w-3.5 h-3.5" /></span>
  LinkedIn:
  </span>
  <input 
- className="flex-1 px-3 py-1.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
+ className="flex-1 px-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
  value={linkedin}
  onChange={e => setLinkedin(e.target.value)}
  placeholder="https://linkedin.com/in/user..."
@@ -424,11 +424,11 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  {/* Instagram */}
  <div className="flex items-center gap-2">
  <span className="w-24 text-xs font-semibold text-muted-foreground flex items-center gap-1.5 shrink-0">
- <span className="bg-pink-600/10 text-pink-600 p-1 rounded-lg"><Instagram className="w-3.5 h-3.5" /></span>
+ <span className="bg-pink-600/10 text-pink-600 p-1 rounded-[10px]"><Instagram className="w-3.5 h-3.5" /></span>
  Instagram:
  </span>
  <input 
- className="flex-1 px-3 py-1.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+ className="flex-1 px-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
  value={instagram}
  onChange={e => setInstagram(e.target.value)}
  placeholder="https://instagram.com/user..."
@@ -438,11 +438,11 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  {/* TikTok */}
  <div className="flex items-center gap-2">
  <span className="w-24 text-xs font-semibold text-muted-foreground flex items-center gap-1.5 shrink-0">
- <span className="bg-foreground/10 text-foreground p-1 rounded-lg font-bold text-xs font-sans">TT</span>
+ <span className="bg-foreground/10 text-foreground p-1 rounded-[10px] font-bold text-xs font-sans">TT</span>
  TikTok:
  </span>
  <input 
- className="flex-1 px-3 py-1.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+ className="flex-1 px-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
  value={tiktok}
  onChange={e => setTiktok(e.target.value)}
  placeholder="https://tiktok.com/@user..."
@@ -456,7 +456,7 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  <Crown className="w-4 h-4 text-amber-500 fill-amber-500/10" /> Nhập đặc quyền riêng (Mỗi dòng một đặc quyền)
  </label>
  <textarea
- className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-xs transition-all min-h-[90px] resize-y"
+ className="w-full px-4 py-2 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none text-xs transition-all min-h-[90px] resize-y"
  value={privilegesText}
  onChange={e => setPrivilegesText(e.target.value)}
  placeholder="Ví dụ:&#10;Bàn VIP vị trí trung tâm&#10;Tặng champagne chào mừng Dom Pérignon&#10;Xe Limousine đưa đón tận showroom"
@@ -474,13 +474,13 @@ export function AddCustomerDialog({ onClose, attributes }: AddCustomerDialogProp
  <button 
  type="button"
  onClick={onClose}
- className="px-6 py-2 border border-border rounded-xl text-sm font-semibold hover:bg-muted transition-colors"
+ className="px-6 py-2 border border-border rounded-[10px] text-sm font-semibold hover:bg-muted transition-colors"
  >
  Hủy
  </button>
  <button 
  disabled={submitting}
- className="px-8 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 min-w-[140px]"
+ className="px-8 py-2 bg-primary text-primary-foreground rounded-[10px] text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 min-w-[140px]"
  >
  {submitting ? 'Đang lưu...' : 'Thêm khách hàng'}
  </button>

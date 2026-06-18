@@ -82,7 +82,7 @@ export function TierComparisonTable() {
   ];
 
   return (
-    <Card id="tier-comparison-matrix" className="p-6 md:p-8 border border-border/80 bg-background/50 dark:bg-zinc-950/40 backdrop-blur-md rounded-3xl shadow-xl text-left overflow-hidden relative">
+    <Card id="tier-comparison-matrix" className="p-6 md:p-8 border border-border/80 bg-background/50 dark:bg-zinc-950/40 backdrop-blur-md rounded-[10px] shadow-xl text-left overflow-hidden relative">
       <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-amber-500/5 via-primary/5 to-transparent rounded-full blur-3xl pointer-events-none" />
       
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 border-b border-border/10 pb-6 relative z-10">
@@ -98,7 +98,7 @@ export function TierComparisonTable() {
           </p>
         </div>
 
-        <div className="bg-muted/40 p-4 rounded-2xl border border-border/60 max-w-xs w-full lg:w-auto">
+        <div className="bg-muted/40 p-4 rounded-[10px] border border-border/60 max-w-xs w-full lg:w-auto">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
               <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" /> Giả lập điểm tích:
@@ -112,12 +112,12 @@ export function TierComparisonTable() {
             step="50"
             value={currentSimPoints} 
             onChange={(e) => setCurrentSimPoints(Number(e.target.value))}
-            className="w-full accent-amber-500 cursor-pointer h-1.5 bg-muted-foreground/25 rounded-lg"
+            className="w-full accent-amber-500 cursor-pointer h-1.5 bg-muted-foreground/25 rounded-[10px]"
           />
         </div>
       </div>
 
-      <div className="hidden md:block overflow-x-auto relative z-10 border border-border/50 rounded-2xl bg-card/60 backdrop-blur-sm">
+      <div className="hidden md:block overflow-x-auto relative z-10 border border-border/50 rounded-[10px] bg-card/60 backdrop-blur-sm">
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="border-b border-border bg-sidebar/55">
@@ -127,7 +127,7 @@ export function TierComparisonTable() {
               
               <th className="p-4 text-center w-[18%] relative border-l border-border/10">
                 <div className="flex flex-col items-center gap-1">
-                  <span className="p-1 px-2 text-[9px] font-black uppercase text-zinc-500 bg-zinc-500/10 rounded-md">
+                  <span className="p-1 px-2 text-[9px] font-black uppercase text-zinc-500 bg-zinc-500/10 rounded-[10px]">
                     CƠ BẢN
                   </span>
                   <div className="flex items-center gap-1 text-zinc-500 mt-1">
@@ -139,7 +139,7 @@ export function TierComparisonTable() {
 
               <th className={`p-4 text-center w-[18%] relative border-l border-border/10`}>
                 <div className="flex flex-col items-center gap-1">
-                  <span className="p-1 px-2 text-[9px] font-black uppercase text-amber-500 bg-amber-500/10 rounded-md">
+                  <span className="p-1 px-2 text-[9px] font-black uppercase text-amber-500 bg-amber-500/10 rounded-[10px]">
                     PHỔ BIẾN
                   </span>
                   <div className="flex items-center gap-1 text-amber-500 mt-1">
@@ -151,7 +151,7 @@ export function TierComparisonTable() {
 
               <th className={`p-4 text-center w-[18%] relative border-l border-border/10`}>
                 <div className="flex flex-col items-center gap-1">
-                  <span className="p-1 px-2 text-[9px] font-black uppercase text-sky-400 bg-sky-400/10 rounded-md">
+                  <span className="p-1 px-2 text-[9px] font-black uppercase text-sky-400 bg-sky-400/10 rounded-[10px]">
                     CAO CẤP
                   </span>
                   <div className="flex items-center gap-1 text-sky-400 mt-1">
@@ -163,7 +163,7 @@ export function TierComparisonTable() {
               
               <th className={`p-4 text-center w-[18%] relative border-l border-border/10`}>
                 <div className="flex flex-col items-center gap-1">
-                  <span className="p-1 px-2 text-[9px] font-black uppercase text-indigo-500 bg-indigo-500/10 rounded-md">
+                  <span className="p-1 px-2 text-[9px] font-black uppercase text-indigo-500 bg-indigo-500/10 rounded-[10px]">
                     TỐI THƯỢNG
                   </span>
                   <div className="flex items-center gap-1 text-indigo-500 mt-1">

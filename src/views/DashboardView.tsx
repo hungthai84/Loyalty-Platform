@@ -834,7 +834,7 @@ export function DashboardView() {
   const bannerContent = (
     <motion.div
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-2xl shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-primary/25"
+      className="bg-card/45 border border-border/60 p-5 md:p-6 rounded-[10px] shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-30 backdrop-blur-md w-full mt-4 hover:shadow-md hover:border-primary/25"
     >
       {/* Title container + Date Range Picker right next to it */}
       <div className="flex items-center gap-4 text-left">
@@ -869,7 +869,7 @@ export function DashboardView() {
       <div className="flex items-center gap-2 shrink-0">
         <button
           onClick={() => {}}
-          className="flex items-center px-4 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer bg-background border-border hover:bg-muted text-foreground"
+          className="flex items-center px-4 py-2 rounded-[10px] text-xs font-bold transition-all border cursor-pointer bg-background border-border hover:bg-muted text-foreground"
         >
           <BookOpen className="w-4 h-4 mr-2 text-primary" /> Tài liệu Tổng quan
         </button>
@@ -878,7 +878,7 @@ export function DashboardView() {
   );
 
   const actionControls = (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-card/65 border border-border/80 rounded-3xl backdrop-blur-md font-sans">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-card/65 border border-border/80 rounded-[10px] backdrop-blur-md font-sans">
       <div className="text-left">
         <h3 className="text-base font-bold font-heading text-foreground">Bộ lọc tổng quan</h3>
         <p className="text-xs text-muted-foreground mt-0.5">Lọc dữ liệu thống kê theo thời gian và phân hạng hội viên.</p>
@@ -978,7 +978,7 @@ export function DashboardView() {
                     <button
                       type="button"
                       onClick={() => setIsOpen(false)}
-                      className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-primary/95 shadow-sm"
+                      className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-[10px] cursor-pointer hover:bg-primary/95 shadow-sm"
                     >
                       Áp dụng
                     </button>
@@ -996,7 +996,7 @@ export function DashboardView() {
               setIsTierOpen(!isTierOpen);
               setIsOpen(false);
             }}
-            className="flex items-center gap-2 px-3.5 py-2 bg-card hover:bg-muted/50 text-foreground border border-border rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-primary/20 outline-none"
+            className="flex items-center gap-2 px-3.5 py-2 bg-card hover:bg-muted/50 text-foreground border border-border rounded-[10px] text-xs font-bold transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-primary/20 outline-none"
           >
             <Award className="w-4 h-4 text-amber-500" />
             <span>
@@ -1032,7 +1032,7 @@ export function DashboardView() {
                           setSelectedTier(opt.id);
                           setIsTierOpen(false);
                         }}
-                        className={`w-full px-2.5 py-1.5 text-xs font-bold rounded-lg text-left transition-all cursor-pointer flex items-center justify-between ${
+                        className={`w-full px-2.5 py-1.5 text-xs font-bold rounded-[10px] text-left transition-all cursor-pointer flex items-center justify-between ${
                           isSel
                             ? "bg-primary text-primary-foreground shadow-sm"
                             : "hover:bg-muted text-foreground"
@@ -1055,7 +1055,7 @@ export function DashboardView() {
         {(selectedTier !== "all" || activePreset !== "30days") && (
           <button
             onClick={handleClearFilters}
-            className="flex items-center gap-1.5 px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer animate-in fade-in duration-200"
+            className="flex items-center gap-1.5 px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-[10px] text-xs font-bold transition-all shadow-xs cursor-pointer animate-in fade-in duration-200"
             id="clear-filters-btn"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -1129,11 +1129,11 @@ export function DashboardView() {
               </div>
               
               <div className="flex flex-wrap items-center gap-3">
-                <div className="flex bg-muted/60 p-1 rounded-xl border border-border/40 shrink-0">
+                <div className="flex bg-muted/60 p-1 rounded-[10px] border border-border/40 shrink-0">
                   <button
                     onClick={() => setChartView("distribution")}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                      "px-3 py-1.5 rounded-[10px] text-xs font-bold transition-all cursor-pointer",
                       chartView === "distribution"
                         ? "bg-white dark:bg-zinc-800 text-foreground shadow-xs border border-border/20"
                         : "text-muted-foreground hover:text-foreground"
@@ -1144,7 +1144,7 @@ export function DashboardView() {
                   <button
                     onClick={() => setChartView("trend")}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                      "px-3 py-1.5 rounded-[10px] text-xs font-bold transition-all cursor-pointer",
                       chartView === "trend"
                         ? "bg-white dark:bg-zinc-800 text-foreground shadow-xs border border-border/20"
                         : "text-muted-foreground hover:text-foreground"
@@ -1293,7 +1293,7 @@ export function DashboardView() {
                                <span className="text-sm font-black tabular-nums">{(customer.points || 0).toLocaleString()} <span className="text-[10px] text-muted-foreground ml-0.5">pts</span></span>
                             </TableCell>
                             <TableCell className="text-right">
-                               <button className="p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted rounded-lg">
+                               <button className="p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted rounded-[10px]">
                                   <ArrowRight className="w-4 h-4 text-primary" />
                                </button>
                             </TableCell>
@@ -1322,11 +1322,11 @@ export function DashboardView() {
             </div>
             
             <div className="flex flex-wrap items-center gap-2.5 mt-5">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold">
                 <Plus className="w-3 h-3 text-emerald-500" />
                 <span>+ $ 2,319.00</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-extrabold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-extrabold">
                 <Minus className="w-3.5 h-3.5 text-rose-500" />
                 <span>- $ 919.00</span>
               </span>
@@ -1339,7 +1339,7 @@ export function DashboardView() {
               <span className="text-xs font-bold text-slate-400 tracking-wide">information</span>
               <button 
                 onClick={() => toast.info("Tính năng chỉnh sửa thông tin vị trí sẽ sớm khả dụng.")}
-                className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 dark:text-slate-300 rounded-lg transition-all"
+                className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 dark:text-slate-300 rounded-[10px] transition-all"
               >
                 <HelpCircle className="w-4 h-4" />
               </button>
@@ -1367,7 +1367,7 @@ export function DashboardView() {
                     <span>Copy</span>
                   </button>
                 </div>
-                <p className="font-mono text-[10px] break-all bg-slate-50 dark:bg-slate-900 p-2 rounded-lg text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-800 text-left select-all">
+                <p className="font-mono text-[10px] break-all bg-slate-50 dark:bg-slate-900 p-2 rounded-[10px] text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-800 text-left select-all">
                   4d2ca285e64945c7fe88772bb5fda24b
                 </p>
               </div>
@@ -1384,7 +1384,7 @@ export function DashboardView() {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3.5 rounded-[10px] bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#eb7a2e]/10 text-[#eb7a2e] rounded-xl">
+                  <div className="p-2 bg-[#eb7a2e]/10 text-[#eb7a2e] rounded-[10px]">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div className="text-left">
@@ -1407,7 +1407,7 @@ export function DashboardView() {
 
               <div className="flex items-center justify-between p-3.5 rounded-[10px] bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl">
+                  <div className="p-2 bg-amber-500/10 text-amber-500 rounded-[10px]">
                     <Lock className="w-4 h-4" />
                   </div>
                   <div className="text-left">
@@ -1418,7 +1418,7 @@ export function DashboardView() {
                 
                 <button 
                   onClick={() => toast.info("Vui lòng truy cập trang cấu hình bảo mật hệ thống để sửa khóa mã hóa.")}
-                  className="px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-[11px] font-bold transition-all shadow-xs"
+                  className="px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-[10px] text-[11px] font-bold transition-all shadow-xs"
                 >
                   Change
                 </button>
@@ -1437,7 +1437,7 @@ export function DashboardView() {
             {/* Hologram card chip & Power Service brand */}
             <div className="flex items-start justify-between">
               {/* Chip container with stylized metallic grid */}
-              <div className="w-10 h-7 rounded-md bg-gradient-to-br from-amber-200 via-amber-300 to-amber-100 p-1 flex flex-col justify-between border border-amber-400/30 opacity-90 shadow-md">
+              <div className="w-10 h-7 rounded-[10px] bg-gradient-to-br from-amber-200 via-amber-300 to-amber-100 p-1 flex flex-col justify-between border border-amber-400/30 opacity-90 shadow-md">
                 <div className="border-b border-amber-600/20 h-2 w-full" />
                 <div className="grid grid-cols-2 gap-1 h-3">
                   <div className="border-r border-amber-600/20" />
@@ -1485,7 +1485,7 @@ export function DashboardView() {
               <button 
                 type="button"
                 onClick={() => setActiveWalletAction("send")}
-                className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer ${activeWalletAction === 'send' ? 'bg-[#131924] text-white dark:bg-white dark:text-[#131924] shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`py-2 px-4 rounded-[10px] text-xs font-black transition-all cursor-pointer ${activeWalletAction === 'send' ? 'bg-[#131924] text-white dark:bg-white dark:text-[#131924] shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
               >
                 Send
               </button>
@@ -1495,7 +1495,7 @@ export function DashboardView() {
                   setActiveWalletAction("apply");
                   toast.info("Tính năng đăng ký hạn mức thẻ tín dụng (Apply for Limit) hiện đang thuộc giai đoạn thử nghiệm bảo mật.");
                 }}
-                className={`py-2 px-4 rounded-xl text-xs font-black transition-all cursor-pointer ${activeWalletAction === 'apply' ? 'bg-[#131924] text-white dark:bg-white dark:text-[#131924] shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`py-2 px-4 rounded-[10px] text-xs font-black transition-all cursor-pointer ${activeWalletAction === 'apply' ? 'bg-[#131924] text-white dark:bg-white dark:text-[#131924] shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
               >
                 Apply for
               </button>
@@ -1512,7 +1512,7 @@ export function DashboardView() {
                   value={payToAddress}
                   onChange={(e) => setPayToAddress(e.target.value)}
                   placeholder="Nhập mã ví nhận..."
-                  className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
+                  className="w-full px-4 py-3 text-xs font-bold rounded-[10px] border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
                   required
                 />
                 <span className="text-[10px] text-slate-400 block mt-0.5">Please enter the Wallet ID or destination email.</span>
@@ -1527,7 +1527,7 @@ export function DashboardView() {
                     value={transferAmount}
                     onChange={(e) => setTransferAmount(Number(e.target.value))}
                     min="1"
-                    className="w-full px-4 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
+                    className="w-full px-4 py-3 text-xs font-bold rounded-[10px] border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
                     required
                   />
                 </div>
@@ -1537,7 +1537,7 @@ export function DashboardView() {
                   <select
                     value={transferReason}
                     onChange={(e) => setTransferReason(e.target.value)}
-                    className="w-full px-3 py-3 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
+                    className="w-full px-3 py-3 text-xs font-bold rounded-[10px] border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-[#eb7a2e]/20 text-slate-800 dark:text-slate-100"
                     required
                   >
                     <option value="Games">Games</option>
@@ -1702,7 +1702,7 @@ export function DashboardView() {
                     }}
                   />
                   <Tooltip
-                    wrapperClassName="rounded-xl border shadow-lg bg-card text-card-foreground"
+                    wrapperClassName="rounded-[10px] border shadow-lg bg-card text-card-foreground"
                     contentStyle={{ borderRadius: "8px", border: "none" }}
                     cursor={{ stroke: "var(--color-border)" }}
                     formatter={(value: number) => [
@@ -1796,7 +1796,7 @@ export function DashboardView() {
          <motion.div
            initial={{ opacity: 0, scale: 0.95 }}
            animate={{ opacity: 1, scale: 1 }}
-           className="col-span-1 md:col-span-2 bg-gradient-to-br from-[#2f6cf5] to-[#1e4db7] text-white rounded-3xl p-6 shadow-xl shadow-blue-500/20 relative overflow-hidden"
+           className="col-span-1 md:col-span-2 bg-gradient-to-br from-[#2f6cf5] to-[#1e4db7] text-white rounded-[10px] p-6 shadow-xl shadow-blue-500/20 relative overflow-hidden"
          >
             <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
                <Trophy className="w-48 h-48 rotate-12" />
@@ -1814,10 +1814,10 @@ export function DashboardView() {
 
                <div className="grid grid-cols-1 gap-2">
                   {topPerformers.map((customer, i) => (
-                    <div key={customer.id} className="flex items-center justify-between p-3 bg-white/10 rounded-2xl hover:bg-white/15 transition-colors group">
+                    <div key={customer.id} className="flex items-center justify-between p-3 bg-white/10 rounded-[10px] hover:bg-white/15 transition-colors group">
                        <div className="flex items-center gap-3">
                           <span className={cn(
-                            "w-6 h-6 flex items-center justify-center rounded-lg text-[10px] font-bold",
+                            "w-6 h-6 flex items-center justify-center rounded-[10px] text-[10px] font-bold",
                             i === 0 ? "bg-amber-400 text-amber-950" : 
                             i === 1 ? "bg-slate-300 text-slate-900" :
                             i === 2 ? "bg-amber-600 text-white" : "bg-white/20 text-white"
@@ -1850,10 +1850,10 @@ export function DashboardView() {
 
       {/* Quick Action Overlay Modals */}
       <Dialog open={showAddCustomerModal} onOpenChange={setShowAddCustomerModal}>
-        <DialogContent className="max-w-md bg-card border border-border p-6 rounded-2xl shadow-xl">
+        <DialogContent className="max-w-md bg-card border border-border p-6 rounded-[10px] shadow-xl">
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-border">
-              <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg">
+              <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-[10px]">
                 <UserPlus className="w-5 h-5" />
               </div>
               <div>
@@ -1871,7 +1871,7 @@ export function DashboardView() {
                   placeholder="Ví dụ: Nguyễn Văn A"
                   value={newCustName}
                   onChange={(e) => setNewCustName(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
+                  className="w-full bg-background border border-border rounded-[10px] text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
                 />
               </div>
 
@@ -1883,7 +1883,7 @@ export function DashboardView() {
                     placeholder="09xx xxx xxx"
                     value={newCustPhone}
                     onChange={(e) => setNewCustPhone(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
+                    className="w-full bg-background border border-border rounded-[10px] text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -1893,7 +1893,7 @@ export function DashboardView() {
                     placeholder="name@gmail.com"
                     value={newCustEmail}
                     onChange={(e) => setNewCustEmail(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
+                    className="w-full bg-background border border-border rounded-[10px] text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
                   />
                 </div>
               </div>
@@ -1904,7 +1904,7 @@ export function DashboardView() {
                   <select
                     value={newCustTier}
                     onChange={(e) => setNewCustTier(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
+                    className="w-full bg-background border border-border rounded-[10px] text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
                   >
                     <option value="Essential">Essential (Bạc)</option>
                     <option value="Icon">Icon (Vàng)</option>
@@ -1918,7 +1918,7 @@ export function DashboardView() {
                     min="0"
                     value={newCustPoints}
                     onChange={(e) => setNewCustPoints(Number(e.target.value))}
-                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
+                    className="w-full bg-background border border-border rounded-[10px] text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
                   />
                 </div>
               </div>
@@ -1927,13 +1927,13 @@ export function DashboardView() {
                 <button
                   type="button"
                   onClick={() => setShowAddCustomerModal(false)}
-                  className="px-4 py-2 bg-muted hover:bg-muted/80 text-muted-foreground rounded-lg text-xs font-bold transition-all cursor-pointer"
+                  className="px-4 py-2 bg-muted hover:bg-muted/80 text-muted-foreground rounded-[10px] text-xs font-bold transition-all cursor-pointer"
                 >
                   Hủy bỏ
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-lg text-xs font-bold transition-all shadow-md shadow-[#2f6cf5]/20 cursor-pointer"
+                  className="px-4 py-2 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-[10px] text-xs font-bold transition-all shadow-md shadow-[#2f6cf5]/20 cursor-pointer"
                 >
                   Lưu thông tin
                 </button>
@@ -1944,10 +1944,10 @@ export function DashboardView() {
       </Dialog>
 
       <Dialog open={showLaunchCampaignModal} onOpenChange={setShowLaunchCampaignModal}>
-        <DialogContent className="max-w-md bg-card border border-border p-6 rounded-2xl shadow-xl">
+        <DialogContent className="max-w-md bg-card border border-border p-6 rounded-[10px] shadow-xl">
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-border">
-              <div className="p-2 bg-[#2f6cf5]/10 text-[#2f6cf5] rounded-lg">
+              <div className="p-2 bg-[#2f6cf5]/10 text-[#2f6cf5] rounded-[10px]">
                 <Megaphone className="w-5 h-5" />
               </div>
               <div>
@@ -1965,7 +1965,7 @@ export function DashboardView() {
                   placeholder="Ví dụ: Lễ hội ngọc bích x2 điểm"
                   value={newCampName}
                   onChange={(e) => setNewCampName(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
+                  className="w-full bg-background border border-border rounded-[10px] text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors"
                 />
               </div>
 
@@ -1975,7 +1975,7 @@ export function DashboardView() {
                   <select
                     value={newCampMultiplier}
                     onChange={(e) => setNewCampMultiplier(Number(e.target.value))}
-                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
+                    className="w-full bg-background border border-border rounded-[10px] text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
                   >
                     <option value="1.5">x1.5 Điểm tích lũy</option>
                     <option value="2.0">x2.0 Điểm vàng</option>
@@ -1988,7 +1988,7 @@ export function DashboardView() {
                   <select
                     value={newCampDays}
                     onChange={(e) => setNewCampDays(Number(e.target.value))}
-                    className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
+                    className="w-full bg-background border border-border rounded-[10px] text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
                   >
                     <option value="3">3 ngày ngắn hạn</option>
                     <option value="7">1 tuần lễ (7 ngày)</option>
@@ -2003,7 +2003,7 @@ export function DashboardView() {
                 <select
                   value={newCampTarget}
                   onChange={(e) => setNewCampTarget(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
+                  className="w-full bg-background border border-border rounded-[10px] text-xs px-3.5 py-2.5 outline-none font-semibold focus:border-primary/50 transition-colors cursor-pointer"
                 >
                   <option value="Tất cả thành viên">Tất cả hạng thành viên (All)</option>
                   <option value="Chỉ từ hạng Vàng trở lên">Thành viên Thường Xuyên (Icon+)</option>
@@ -2015,13 +2015,13 @@ export function DashboardView() {
                 <button
                   type="button"
                   onClick={() => setShowLaunchCampaignModal(false)}
-                  className="px-4 py-2 bg-muted hover:bg-muted/80 text-muted-foreground rounded-lg text-xs font-bold transition-all cursor-pointer"
+                  className="px-4 py-2 bg-muted hover:bg-muted/80 text-muted-foreground rounded-[10px] text-xs font-bold transition-all cursor-pointer"
                 >
                   Hủy bỏ
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-lg text-xs font-bold transition-all shadow-md shadow-[#2f6cf5]/20 cursor-pointer"
+                  className="px-4 py-2 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-[10px] text-xs font-bold transition-all shadow-md shadow-[#2f6cf5]/20 cursor-pointer"
                 >
                   Kích hoạt ngay
                 </button>

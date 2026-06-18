@@ -253,7 +253,7 @@ export function SegmentationView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 bg-sidebar/50 border border-border/80 rounded-3xl backdrop-blur-md">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 bg-sidebar/50 border border-border/80 rounded-[10px] backdrop-blur-md">
         <div>
           <h3 className="text-xl font-bold font-heading flex items-center gap-2">
             <Tag className="w-5 h-5 text-primary" /> Nhóm Khách Hàng Dự Án
@@ -267,7 +267,7 @@ export function SegmentationView() {
           {segmentationRules.length === 0 && (
             <button
               onClick={handleBootstrapRules}
-              className="px-4 py-2 border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary rounded-[10px] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" /> Khởi tạo mẫu lọc nhanh
             </button>
@@ -280,7 +280,7 @@ export function SegmentationView() {
               customers.length === 0 ||
               segmentationRules.length === 0
             }
-            className={`px-4 py-2 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 ${
+            className={`px-4 py-2 text-white rounded-[10px] text-xs font-bold transition-all shadow-md flex items-center gap-1.5 ${
               syncing
                 ? "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                 : "bg-emerald-500 hover:bg-emerald-600 hover:shadow-lg shadow-emerald-500/30 cursor-pointer"
@@ -301,7 +301,7 @@ export function SegmentationView() {
               setSelectedRule(undefined);
               setShowRuleDialog(true);
             }}
-            className="px-4 py-2 bg-gradient-to-r from-primary to-blue-600 text-primary-foreground rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:shadow-xl transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 bg-gradient-to-r from-primary to-blue-600 text-primary-foreground rounded-[10px] text-xs font-bold shadow-lg shadow-primary/20 hover:shadow-xl transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Thêm Dự Án
           </button>
@@ -317,7 +317,7 @@ export function SegmentationView() {
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
           <div className="lg:col-span-4 grid gap-4 place-content-start">
             {segmentationRules.length === 0 ? (
-              <Card className="p-12 border-2 border-dashed border-border/60 bg-sidebar/30 rounded-3xl text-center flex flex-col items-center justify-center">
+              <Card className="p-12 border-2 border-dashed border-border/60 bg-sidebar/30 rounded-[10px] text-center flex flex-col items-center justify-center">
                 <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                   <Tag className="w-8 h-8 text-muted-foreground/60" />
                 </div>
@@ -329,7 +329,7 @@ export function SegmentationView() {
                 </p>
                 <button
                   onClick={handleBootstrapRules}
-                  className="px-6 py-2 border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-6 py-2 border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary rounded-[10px] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4" /> Khởi tạo quy tắc mẫu
                 </button>
@@ -342,7 +342,7 @@ export function SegmentationView() {
                 return (
                   <Card
                     key={rule.id}
-                    className={`p-0 overflow-hidden border transition-all duration-300 rounded-3xl ${
+                    className={`p-0 overflow-hidden border transition-all duration-300 rounded-[10px] ${
                       isViewing
                         ? "border-primary/50 shadow-md shadow-primary/5 ring-1 ring-primary/20 -translate-y-0.5"
                         : "border-border/60 hover:border-border hover:shadow-sm"
@@ -370,7 +370,7 @@ export function SegmentationView() {
                             <button
                               onClick={() => setViewingMetricsId(isViewing ? null : rule.id)}
                               className={cn(
-                                "px-2.5 py-1 text-[10px] font-bold rounded-lg transition-colors border",
+                                "px-2.5 py-1 text-[10px] font-bold rounded-[10px] transition-colors border",
                                 isViewing
                                   ? "bg-primary text-white border-transparent shadow-sm"
                                   : "bg-muted/50 text-muted-foreground hover:bg-muted border-border"
@@ -383,13 +383,13 @@ export function SegmentationView() {
                                 setSelectedRule(rule);
                                 setShowRuleDialog(true);
                               }}
-                              className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                              className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-[10px] transition-colors"
                             >
                               <Settings className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteRule(rule.id)}
-                              className="p-1.5 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-lg transition-colors"
+                              className="p-1.5 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-[10px] transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -397,7 +397,7 @@ export function SegmentationView() {
                         </div>
 
                         <div className="flex flex-wrap gap-2 text-[10px]">
-                            <span className="px-2 py-1 bg-muted/40 border text-muted-foreground font-bold rounded-lg flex items-center gap-1">
+                            <span className="px-2 py-1 bg-muted/40 border text-muted-foreground font-bold rounded-[10px] flex items-center gap-1">
                               {getMetricIcon(rule.criteriaType)}
                               {getMetricLabel(rule.criteriaType)} {rule.operator.toUpperCase()} {rule.value.toLocaleString()}
                             </span>
@@ -419,7 +419,7 @@ export function SegmentationView() {
                 const listFiltered = filterCustomersByRule(customers, activeRule);
                 
                 return (
-                  <Card className="p-0 border border-primary/20 bg-card rounded-3xl overflow-hidden shadow-lg sticky top-6">
+                  <Card className="p-0 border border-primary/20 bg-card rounded-[10px] overflow-hidden shadow-lg sticky top-6">
                     <div className="p-4 border-b border-border/60 bg-sidebar/50 flex justify-between items-center">
                        <div>
                           <h4 className="font-bold text-sm text-foreground flex items-center gap-2">
@@ -441,7 +441,7 @@ export function SegmentationView() {
                           const inactiveDays = calculateInactivityDays(c.lastOrderDate);
 
                           return (
-                            <div key={c.id} className="flex items-center justify-between p-3 border border-border/50 bg-background/50 rounded-xl hover:bg-background transition-colors">
+                            <div key={c.id} className="flex items-center justify-between p-3 border border-border/50 bg-background/50 rounded-[10px] hover:bg-background transition-colors">
                               <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center font-black text-xs text-muted-foreground">
                                   {(c.name || "?").charAt(0).toUpperCase()}
@@ -473,7 +473,7 @@ export function SegmentationView() {
                 );
               })()
             ) : (
-              <Card className="p-8 border border-border/50 bg-sidebar/30 rounded-2xl text-center flex flex-col items-center justify-center min-h-[300px]">
+              <Card className="p-8 border border-border/50 bg-sidebar/30 rounded-[10px] text-center flex flex-col items-center justify-center min-h-[300px]">
                 <Tag className="w-10 h-10 text-muted-foreground/50 animate-bounce mb-3" />
                 <h5 className="font-bold text-sm text-foreground">
                   Trình kiểm tra trực quan

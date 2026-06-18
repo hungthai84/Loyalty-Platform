@@ -36,7 +36,7 @@ export function UpcomingBirthdays() {
       <CardContent>
         <div className="space-y-4">
             {birthdays.map((b, i) => (
-                <div key={b.id + i} className="flex items-center justify-between p-3 rounded-xl border border-border/40 bg-background/40 hover:bg-muted/50 transition-colors">
+                <div key={b.id + i} className="flex items-center justify-between p-3 rounded-[10px] border border-border/40 bg-background/40 hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 flex items-center justify-center text-xs font-bold shrink-0">
                             {b.avatar}
@@ -50,7 +50,7 @@ export function UpcomingBirthdays() {
                     </div>
                     <button 
                       onClick={() => handleSendPromo(String(b.name))}
-                      className="px-3 py-1.5 h-8 bg-black dark:bg-white text-white dark:text-black rounded-lg text-xs font-bold hover:opacity-80 transition flex items-center shrink-0 cursor-pointer"
+                      className="px-3 py-1.5 h-8 bg-black dark:bg-white text-white dark:text-black rounded-[10px] text-xs font-bold hover:opacity-80 transition flex items-center shrink-0 cursor-pointer"
                     >
                         <Gift className="w-3.5 h-3.5 mr-1.5" /> Gửi quà
                     </button>

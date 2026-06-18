@@ -114,7 +114,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
    <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-8 h-full max-h-[70vh]">
     <div className="space-y-4">
      <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider pl-1 font-heading text-left">Thêm mới trường tùy chỉnh</h4>
-     <div className="bg-muted/30 p-5 rounded-2xl border border-border space-y-4">
+     <div className="bg-muted/30 p-5 rounded-[10px] border border-border space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
        <div className="space-y-1.5 focus-within:text-primary transition-colors text-left font-sans">
         <label className="text-xs font-semibold text-muted-foreground group-focus-within:text-primary block pl-1">
@@ -124,7 +124,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
          value={label}
          onChange={e => setLabel(e.target.value)}
          placeholder="VD: Sở thích..."
-         className="w-full px-4 py-2.5 bg-background border-border border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
+         className="w-full px-4 py-2.5 bg-background border-border border rounded-[10px] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
         />
        </div>
 
@@ -133,7 +133,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
         <select 
          value={selectedType}
          onChange={e => setSelectedType(e.target.value)}
-         className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
+         className="w-full px-4 py-2.5 bg-background border border-border rounded-[10px] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
         >
          {FIELD_TYPES.map(type => (
           <option key={type.id} value={type.id}>{type.label}</option>
@@ -144,7 +144,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
 
       {/* Tùy chọn cho danh sách (select, radio, checkbox) */}
       {prefersOptions && (
-       <div className="space-y-3 p-4 rounded-xl border border-primary/20 bg-primary/5 text-left">
+       <div className="space-y-3 p-4 rounded-[10px] border border-primary/20 bg-primary/5 text-left">
         <label className="text-xs font-semibold text-foreground block pl-1 font-sans">Các tùy chọn (Nhấn chọn 'Thêm')</label>
         <div className="flex gap-2">
          <input 
@@ -152,12 +152,12 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
           onChange={e => setNewOption(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleAddOption(e)}
           placeholder="Nhập giá trị tùy chọn..."
-          className="flex-1 px-4 py-2 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground font-sans"
+          className="flex-1 px-4 py-2 bg-background border border-border rounded-[10px] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground font-sans"
          />
          <button 
           type="button"
           onClick={handleAddOption}
-          className="px-4 py-2 bg-primary/10 text-primary font-medium rounded-xl hover:bg-primary/20 transition-colors text-sm font-sans"
+          className="px-4 py-2 bg-primary/10 text-primary font-medium rounded-[10px] hover:bg-primary/20 transition-colors text-sm font-sans"
          >
           Thêm
          </button>
@@ -165,7 +165,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
         {options.length > 0 && (
          <div className="flex flex-wrap gap-2 pt-2">
           {options.map((opt, i) => (
-           <div key={i} className="flex items-center gap-2 px-3 py-1 bg-background border border-border rounded-lg text-xs shadow-sm text-foreground font-mono">
+           <div key={i} className="flex items-center gap-2 px-3 py-1 bg-background border border-border rounded-[10px] text-xs shadow-sm text-foreground font-mono">
             <span>{opt}</span>
             <button 
              type="button"
@@ -188,7 +188,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
          value={placeholder}
          onChange={e => setPlaceholder(e.target.value)}
          placeholder="Tùy chọn..."
-         className="w-full px-4 py-2 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground font-sans"
+         className="w-full px-4 py-2 bg-background border border-border rounded-[10px] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground font-sans"
         />
        </div>
        <div className="space-y-1.5 pt-6 flex items-center justify-between">
@@ -207,7 +207,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
        <button 
         disabled={submitting || !label.trim()}
         onClick={handleAdd}
-        className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50 text-sm font-sans"
+        className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-[10px] shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50 text-sm font-sans"
        >
         {submitting ? 'Đang tạo...' : 'Lưu Thuộc Tính'}
        </button>
@@ -218,13 +218,13 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
     <div className="space-y-4">
      <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider pl-1 font-heading text-left">Thuộc tính đã có</h4>
      {attributes.length === 0 ? (
-      <div className="text-center py-6 bg-muted/20 border border-dashed rounded-xl">
+      <div className="text-center py-6 bg-muted/20 border border-dashed rounded-[10px]">
        <p className="text-xs text-muted-foreground font-sans">Chưa có thuộc tính mở rộng nào.</p>
       </div>
      ) : (
       <div className="space-y-2">
        {attributes.map(attr => (
-        <div key={attr.id} className="flex items-center justify-between bg-card border rounded-xl p-3 shadow-sm hover:border-primary/20 transition-all">
+        <div key={attr.id} className="flex items-center justify-between bg-card border rounded-[10px] p-3 shadow-sm hover:border-primary/20 transition-all">
          <div className="flex flex-col text-left font-sans">
           <div className="flex items-center gap-2">
            <span className="font-semibold text-sm">{attr.label}</span>
@@ -234,7 +234,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
          </div>
          <button 
           onClick={() => handleDelete(attr.id)}
-          className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+          className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[10px] transition-colors"
           title="Xóa thuộc tính"
          >
           <Trash2 className="w-4 h-4" />
@@ -265,7 +265,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
     <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-8">
      <div className="space-y-4">
       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Thêm mới</h3>
-      <div className="bg-muted/30 p-5 rounded-2xl border border-border space-y-4">
+      <div className="bg-muted/30 p-5 rounded-[10px] border border-border space-y-4">
        <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5 focus-within:text-primary transition-colors">
          <label className="text-xs font-semibold text-muted-foreground group-focus-within:text-primary block pl-1">
@@ -275,7 +275,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
           value={label}
           onChange={e => setLabel(e.target.value)}
           placeholder="VD: Sở thích..."
-          className="w-full px-4 py-2.5 bg-background border-border border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
+          className="w-full px-4 py-2.5 bg-background border-border border rounded-[10px] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
          />
         </div>
 
@@ -284,7 +284,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
          <select 
           value={selectedType}
           onChange={e => setSelectedType(e.target.value)}
-          className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
+          className="w-full px-4 py-2.5 bg-background border border-border rounded-[10px] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
          >
           {FIELD_TYPES.map(type => (
            <option key={type.id} value={type.id}>{type.label}</option>
@@ -295,7 +295,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
 
        {/* Tùy chọn cho danh sách (select, radio, checkbox) */}
        {prefersOptions && (
-        <div className="space-y-3 p-4 rounded-xl border border-primary/20 bg-primary/5">
+        <div className="space-y-3 p-4 rounded-[10px] border border-primary/20 bg-primary/5">
          <label className="text-xs font-semibold text-foreground block pl-1">Các tùy chọn (Nhấn chọn 'Thêm')</label>
          <div className="flex gap-2">
           <input 
@@ -303,12 +303,12 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
            onChange={e => setNewOption(e.target.value)}
            onKeyDown={e => e.key === 'Enter' && handleAddOption(e)}
            placeholder="Nhập giá trị tùy chọn..."
-           className="flex-1 px-4 py-2 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
+           className="flex-1 px-4 py-2 bg-background border border-border rounded-[10px] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
           />
           <button 
            type="button"
            onClick={handleAddOption}
-           className="px-4 py-2 bg-primary/10 text-primary font-medium rounded-xl hover:bg-primary/20 transition-colors text-sm"
+           className="px-4 py-2 bg-primary/10 text-primary font-medium rounded-[10px] hover:bg-primary/20 transition-colors text-sm"
           >
            Thêm
           </button>
@@ -316,7 +316,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
          {options.length > 0 && (
           <div className="flex flex-wrap gap-2 pt-2">
            {options.map((opt, i) => (
-            <div key={i} className="flex items-center gap-2 px-3 py-1 bg-background border border-border rounded-lg text-xs shadow-sm text-foreground">
+            <div key={i} className="flex items-center gap-2 px-3 py-1 bg-background border border-border rounded-[10px] text-xs shadow-sm text-foreground">
              <span>{opt}</span>
              <button 
               type="button"
@@ -339,7 +339,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
           value={placeholder}
           onChange={e => setPlaceholder(e.target.value)}
           placeholder="Tùy chọn..."
-          className="w-full px-4 py-2 bg-background border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
+          className="w-full px-4 py-2 bg-background border border-border rounded-[10px] text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
          />
         </div>
         <div className="space-y-1.5 pt-6 flex items-center justify-between">
@@ -358,7 +358,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
         <button 
          disabled={submitting || !label.trim()}
          onClick={handleAdd}
-         className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50 text-sm"
+         className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-[10px] shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50 text-sm"
         >
          {submitting ? 'Đang tạo...' : 'Lưu Thuộc Tính'}
         </button>
@@ -369,13 +369,13 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
      <div className="space-y-4">
       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Thuộc tính đã có</h3>
       {attributes.length === 0 ? (
-       <div className="text-center py-6 bg-muted/20 border border-dashed rounded-xl">
+       <div className="text-center py-6 bg-muted/20 border border-dashed rounded-[10px]">
         <p className="text-xs text-muted-foreground">Chưa có thuộc tính mở rộng nào.</p>
        </div>
       ) : (
        <div className="space-y-2">
         {attributes.map(attr => (
-         <div key={attr.id} className="flex items-center justify-between bg-card border rounded-xl p-3 shadow-sm hover:border-primary/20 transition-all">
+         <div key={attr.id} className="flex items-center justify-between bg-card border rounded-[10px] p-3 shadow-sm hover:border-primary/20 transition-all">
           <div className="flex flex-col">
            <div className="flex items-center gap-2">
             <span className="font-semibold text-sm">{attr.label}</span>
@@ -385,7 +385,7 @@ export function AttributeManager({ onClose, attributes, inline = false }: Attrib
           </div>
           <button 
            onClick={() => handleDelete(attr.id)}
-           className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+           className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[10px] transition-colors"
            title="Xóa thuộc tính"
           >
            <Trash2 className="w-4 h-4" />

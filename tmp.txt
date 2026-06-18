@@ -1,0 +1,16 @@
+423:      toast.error("Điểm yêu cầu đổi phải lớn hơn 0");
+468:        `Đã cập nhật điểm cho khách hàng ${customer.name}: ${finalPoints.toLocaleString()} pts`,
+472:      toast.error("Không thể thay đổi điểm tài khoản");
+483:        `Khách hàng không đủ điểm tích luỹ. Cần thêm ${rule.pointsRequired - currentPoints} pts.`,
+537:            . Điểm còn lại: {newPoints} pts
+553:        `Không đủ điểm! Cần thêm ${rule.pointsRequired - pts} điểm để đổi ưu đãi này.`,
+568:          Bạn đã trích điểm đổi thành công: <strong>{rule.name}</strong>
+571:          Đã khấu trừ: -{rule.pointsRequired} pts. Điểm ảo còn lại: {nextPoints}{" "}
+614:              Quản lý các gói ưu đãi mà khách hàng có thể dùng điểm để đổi.
+646:                  Tạo các gói kích cầu mua sắm bằng điểm của khách hàng
+797:                              {rule.pointsRequired.toLocaleString()} điểm
+845:                  Hệ thống đề xuất các mẫu chương trình tích điểm đổi thưởng mang
+870:                  <span>Số điểm giả lập</span>
+1045:                        Số Điểm Yêu Cầu Đổi
+1058:                        placeholder="Số điểm đổi (v.d. 150)"
+1111:                        Kích hoạt để cho phép đổi điểm lấy ưu đãi này

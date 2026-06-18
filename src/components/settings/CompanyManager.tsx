@@ -260,8 +260,8 @@ export function CompanyManager() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-[#2f6cf5]/5 border border-[#2f6cf5]/25 rounded-2xl p-5 flex items-start gap-4">
-        <div className="p-2.5 bg-[#2f6cf5]/15 rounded-xl text-[#2f6cf5] shrink-0">
+      <div className="bg-[#2f6cf5]/5 border border-[#2f6cf5]/25 rounded-[10px] p-5 flex items-start gap-4">
+        <div className="p-2.5 bg-[#2f6cf5]/15 rounded-[10px] text-[#2f6cf5] shrink-0">
           <Building2 className="w-5 h-5" />
         </div>
         <div className="space-y-1">
@@ -282,20 +282,20 @@ export function CompanyManager() {
         <div className="flex items-center gap-2">
           <button
             onClick={seedDemoData}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-sm font-bold rounded-xl hover:bg-emerald-500 hover:text-white transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-sm font-bold rounded-[10px] hover:bg-emerald-500 hover:text-white transition-colors"
           >
             Tạo dữ liệu Demo
           </button>
           <button
             onClick={() => handleOpenForm()}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-[10px] hover:bg-primary/90 transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" /> Thêm Công ty
           </button>
         </div>
       </div>
 
-      <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-sm min-h-[400px]">
+      <div className="bg-card border border-border/50 rounded-[10px] p-6 shadow-sm min-h-[400px]">
         {loading ? (
           <div className="flex justify-center p-10">
             <span className="text-muted-foreground text-sm">Đang tải...</span>
@@ -308,7 +308,7 @@ export function CompanyManager() {
             </p>
             <button
               onClick={seedDemoData}
-              className="px-6 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl text-sm font-bold hover:bg-primary/20 transition-all flex items-center gap-2"
+              className="px-6 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-[10px] text-sm font-bold hover:bg-primary/20 transition-all flex items-center gap-2"
             >
               <Layers className="w-4 h-4" /> Khởi tạo dữ liệu mẫu (Seva Retail)
             </button>
@@ -324,7 +324,7 @@ export function CompanyManager() {
               return (
                 <div
                   key={company.id}
-                  className="border border-border/60 rounded-xl overflow-hidden hover:border-border transition-colors"
+                  className="border border-border/60 rounded-[10px] overflow-hidden hover:border-border transition-colors"
                 >
                   <div
                     onClick={(e) =>
@@ -344,7 +344,7 @@ export function CompanyManager() {
                       ) : (
                         <div className="w-5" /> // spacer
                       )}
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <div className="w-10 h-10 rounded-[10px] bg-primary/10 flex items-center justify-center text-primary shrink-0">
                         <Briefcase className="w-5 h-5" />
                       </div>
                       <div>
@@ -366,7 +366,7 @@ export function CompanyManager() {
                     >
                       <button
                         onClick={() => handleOpenForm(undefined, company.id)}
-                        className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors"
+                        className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded-[10px] transition-colors"
                         title="Thêm chi nhánh"
                       >
                         <Plus className="w-4 h-4" />
@@ -393,7 +393,7 @@ export function CompanyManager() {
                       {companyBranches.map((branch, index) => (
                         <div
                           key={branch.id}
-                          className="group relative flex items-center justify-between pl-4 py-2 hover:bg-muted/30 rounded-lg transition-colors border border-transparent hover:border-border/60"
+                          className="group relative flex items-center justify-between pl-4 py-2 hover:bg-muted/30 rounded-[10px] transition-colors border border-transparent hover:border-border/60"
                         >
                           {/* Tree connecting line */}
                           <div
@@ -460,7 +460,7 @@ export function CompanyManager() {
                     .map((branch) => (
                       <div
                         key={branch.id}
-                        className="flex items-center justify-between p-3 border border-border/60 rounded-xl bg-card"
+                        className="flex items-center justify-between p-3 border border-border/60 rounded-[10px] bg-card"
                       >
                         <div className="flex items-center gap-3">
                           <Layers className="w-4 h-4 text-muted-foreground" />
@@ -498,7 +498,7 @@ export function CompanyManager() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-card w-full max-w-md rounded-2xl shadow-xl overflow-hidden border border-border/60 flex flex-col">
+          <div className="bg-card w-full max-w-md rounded-[10px] shadow-xl overflow-hidden border border-border/60 flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-border/50 bg-muted/20">
               <h3 className="font-bold text-lg">
                 {isEditing
@@ -527,14 +527,14 @@ export function CompanyManager() {
                         parentId: "",
                       })
                     }
-                    className={`flex-1 py-2 text-sm font-bold rounded-xl border ${formData.type === "company" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
+                    className={`flex-1 py-2 text-sm font-bold rounded-[10px] border ${formData.type === "company" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
                   >
                     Công ty mẹ
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, type: "branch" })}
-                    className={`flex-1 py-2 text-sm font-bold rounded-xl border ${formData.type === "branch" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
+                    className={`flex-1 py-2 text-sm font-bold rounded-[10px] border ${formData.type === "branch" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
                   >
                     Chi nhánh
                   </button>
@@ -551,7 +551,7 @@ export function CompanyManager() {
                     onChange={(e) =>
                       setFormData({ ...formData, parentId: e.target.value })
                     }
-                    className="w-full bg-background border border-border rounded-xl p-2.5 text-sm font-medium focus:ring-1 focus:ring-primary focus:outline-none"
+                    className="w-full bg-background border border-border rounded-[10px] p-2.5 text-sm font-medium focus:ring-1 focus:ring-primary focus:outline-none"
                     required
                   >
                     <option value="">-- Chọn công ty mẹ --</option>
@@ -574,7 +574,7 @@ export function CompanyManager() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full bg-background border border-border rounded-xl p-2.5 text-sm font-medium focus:ring-1 focus:ring-primary focus:outline-none"
+                  className="w-full bg-background border border-border rounded-[10px] p-2.5 text-sm font-medium focus:ring-1 focus:ring-primary focus:outline-none"
                   placeholder="Vd: Atelier VN, Chi nhánh Quận 1..."
                   required
                 />
@@ -589,7 +589,7 @@ export function CompanyManager() {
                   onChange={(e) =>
                     setFormData({ ...formData, address: e.target.value })
                   }
-                  className="w-full bg-background border border-border rounded-xl p-2.5 text-sm font-medium focus:ring-1 focus:ring-primary focus:outline-none min-h-[80px]"
+                  className="w-full bg-background border border-border rounded-[10px] p-2.5 text-sm font-medium focus:ring-1 focus:ring-primary focus:outline-none min-h-[80px]"
                   placeholder="Địa chỉ cụ thể..."
                 />
               </div>
@@ -598,13 +598,13 @@ export function CompanyManager() {
                 <button
                   type="button"
                   onClick={handleCloseForm}
-                  className="px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-muted rounded-xl transition-colors"
+                  className="px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-muted rounded-[10px] transition-colors"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-xl shadow-md hover:scale-105 transition-all"
+                  className="px-6 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-[10px] shadow-md hover:scale-105 transition-all"
                 >
                   Lưu thay đổi
                 </button>
@@ -628,13 +628,13 @@ export function CompanyManager() {
             <div className="flex gap-3 w-full">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="flex-1 py-2.5 text-sm font-bold bg-muted text-foreground rounded-xl hover:bg-muted/80 transition-colors"
+                className="flex-1 py-2.5 text-sm font-bold bg-muted text-foreground rounded-[10px] hover:bg-muted/80 transition-colors"
               >
                 Hủy
               </button>
               <button
                 onClick={executeDelete}
-                className="flex-1 py-2.5 text-sm font-bold bg-rose-500 text-white rounded-xl shadow-md hover:bg-rose-600 hover:shadow-lg transition-all"
+                className="flex-1 py-2.5 text-sm font-bold bg-rose-500 text-white rounded-[10px] shadow-md hover:bg-rose-600 hover:shadow-lg transition-all"
               >
                 Xóa ngay
               </button>

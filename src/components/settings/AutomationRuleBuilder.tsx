@@ -71,7 +71,7 @@ export function AutomationRuleBuilder({ isOpen, onClose, onSave }: AutomationRul
         
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-2xl font-black italic tracking-tighter">
-            <div className="p-2 bg-amber-500/20 rounded-lg text-amber-500">
+            <div className="p-2 bg-amber-500/20 rounded-[10px] text-amber-500">
                <Zap className="w-6 h-6" />
             </div>
             TRÌNH TẠO QUY TẮC TỰ ĐỘNG
@@ -106,7 +106,7 @@ export function AutomationRuleBuilder({ isOpen, onClose, onSave }: AutomationRul
                        <button
                           key={opt.id}
                           onClick={() => setTrigger(opt.id)}
-                          className={`p-4 rounded-xl border text-left transition-all ${
+                          className={`p-4 rounded-[10px] border text-left transition-all ${
                              trigger === opt.id 
                              ? 'border-[#2f6cf5] bg-[#2f6cf5]/10 shadow-[0_0_15px_rgba(47,108,245,0.2)]' 
                              : 'border-slate-800 bg-slate-900/30 hover:border-slate-700'
@@ -130,7 +130,7 @@ export function AutomationRuleBuilder({ isOpen, onClose, onSave }: AutomationRul
                        <button
                           key={opt.id}
                           onClick={() => setAction(opt.id)}
-                          className={`p-4 rounded-xl border text-left transition-all ${
+                          className={`p-4 rounded-[10px] border text-left transition-all ${
                              action === opt.id 
                              ? 'border-purple-500 bg-purple-500/10 shadow-[0_0_15px_rgba(168,85,247,0.2)]' 
                              : 'border-slate-800 bg-slate-900/30 hover:border-slate-700'
@@ -159,7 +159,7 @@ export function AutomationRuleBuilder({ isOpen, onClose, onSave }: AutomationRul
 
           {step === 3 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-               <div className="p-6 rounded-3xl bg-slate-900/50 border border-slate-800 relative overflow-hidden">
+               <div className="p-6 rounded-[10px] bg-slate-900/50 border border-slate-800 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-4 opacity-10">
                      <Zap className="w-24 h-24" />
                   </div>
@@ -190,8 +190,8 @@ export function AutomationRuleBuilder({ isOpen, onClose, onSave }: AutomationRul
                   </div>
                </div>
                
-               <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl flex items-start gap-3">
-                  <div className="p-2 bg-amber-500/20 rounded-lg text-amber-500 shrink-0">
+               <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-[10px] flex items-start gap-3">
+                  <div className="p-2 bg-amber-500/20 rounded-[10px] text-amber-500 shrink-0">
                      <Zap className="w-4 h-4" />
                   </div>
                   <p className="text-[11px] font-medium text-amber-200/70">
@@ -206,7 +206,7 @@ export function AutomationRuleBuilder({ isOpen, onClose, onSave }: AutomationRul
           {step > 1 && (
             <button 
               onClick={() => setStep(s => s - 1)}
-              className="px-6 py-3 rounded-xl border border-slate-800 font-bold text-xs hover:bg-slate-900 transition-all"
+              className="px-6 py-3 rounded-[10px] border border-slate-800 font-bold text-xs hover:bg-slate-900 transition-all"
             >
               Quay lại
             </button>
@@ -215,14 +215,14 @@ export function AutomationRuleBuilder({ isOpen, onClose, onSave }: AutomationRul
           {step < 3 ? (
             <button 
               onClick={() => setStep(s => s + 1)}
-              className="px-8 py-3 rounded-xl bg-[#2f6cf5] text-white font-black text-xs hover:bg-[#2f6cf5]/90 transition-all shadow-lg shadow-[#2f6cf5]/20 flex items-center gap-2"
+              className="px-8 py-3 rounded-[10px] bg-[#2f6cf5] text-white font-black text-xs hover:bg-[#2f6cf5]/90 transition-all shadow-lg shadow-[#2f6cf5]/20 flex items-center gap-2"
             >
               Tiếp tục <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
             <button 
               onClick={handleSave}
-              className="px-10 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black text-xs hover:scale-105 transition-all shadow-lg shadow-emerald-500/20"
+              className="px-10 py-3 rounded-[10px] bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black text-xs hover:scale-105 transition-all shadow-lg shadow-emerald-500/20"
             >
               LƯU QUY TẮC & KÍCH HOẠT
             </button>

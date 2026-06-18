@@ -123,7 +123,7 @@ export function LoyaltySettingsView() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-start gap-4 p-6 bg-primary/5 border border-primary/10 rounded-3xl">
+      <div className="flex items-start gap-4 p-6 bg-primary/5 border border-primary/10 rounded-[10px]">
         <Info className="w-6 h-6 text-primary shrink-0 mt-1" />
         <div className="space-y-1">
           <h4 className="font-bold">Cấu hình Trạng thái & Rủi ro</h4>
@@ -136,10 +136,10 @@ export function LoyaltySettingsView() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card className="border-none shadow-xl rounded-3xl overflow-hidden">
+        <Card className="border-none shadow-xl rounded-[10px] overflow-hidden">
           <CardContent className="p-8 space-y-10">
             <div className="space-y-6">
-              <div className="flex items-start gap-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+              <div className="flex items-start gap-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-[10px]">
                 <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="text-sm font-bold text-amber-700">
@@ -157,18 +157,18 @@ export function LoyaltySettingsView() {
                   min="7"
                   max="180"
                   step="1"
-                  className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  className="flex-1 h-2 bg-muted rounded-[10px] appearance-none cursor-pointer accent-amber-500"
                   value={inactiveDays}
                   onChange={(e) => setInactiveDays(Number(e.target.value))}
                 />
-                <div className="w-24 text-center bg-muted/50 px-4 py-2 rounded-xl border border-border font-bold text-lg text-amber-600">
+                <div className="w-24 text-center bg-muted/50 px-4 py-2 rounded-[10px] border border-border font-bold text-lg text-amber-600">
                   {inactiveDays}d
                 </div>
               </div>
             </div>
 
             <div className="space-y-6">
-              <div className="flex items-start gap-4 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
+              <div className="flex items-start gap-4 p-4 bg-rose-500/10 border border-rose-500/20 rounded-[10px]">
                 <Zap className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="text-sm font-bold text-rose-700">
@@ -185,17 +185,17 @@ export function LoyaltySettingsView() {
                   min="30"
                   max="365"
                   step="1"
-                  className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-rose-500"
+                  className="flex-1 h-2 bg-muted rounded-[10px] appearance-none cursor-pointer accent-rose-500"
                   value={churnDays}
                   onChange={(e) => setChurnDays(Number(e.target.value))}
                 />
-                <div className="w-24 text-center bg-muted/50 px-4 py-2 rounded-xl border border-border font-bold text-lg text-rose-600">
+                <div className="w-24 text-center bg-muted/50 px-4 py-2 rounded-[10px] border border-border font-bold text-lg text-rose-600">
                   {churnDays}d
                 </div>
               </div>
             </div>
 
-            <div className="p-6 bg-muted/20 rounded-3xl border border-border flex items-center justify-between">
+            <div className="p-6 bg-muted/20 rounded-[10px] border border-border flex items-center justify-between">
               <div className="space-y-1">
                 <p className="font-bold">Tự động gắn nhãn trạng thái</p>
                 <p className="text-xs text-muted-foreground">
@@ -219,7 +219,7 @@ export function LoyaltySettingsView() {
           <button
             type="submit"
             disabled={submitting}
-            className="px-8 py-3 bg-primary text-primary-foreground rounded-2xl text-sm font-bold hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-primary/20 flex items-center disabled:opacity-50"
+            className="px-8 py-3 bg-primary text-primary-foreground rounded-[10px] text-sm font-bold hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-primary/20 flex items-center disabled:opacity-50"
           >
             <Save className="w-4 h-4 mr-2" />
             {submitting ? "Đang lưu..." : "Cập nhật cấu hình"}
@@ -247,20 +247,20 @@ export function LoyaltySettingsView() {
               <input
                 type="search"
                 placeholder="Tìm trạng thái, định nghĩa..."
-                className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-xl text-xs outline-none focus:border-primary/50"
+                className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:border-primary/50"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
-            <div className="flex gap-1 p-1 bg-muted/40 rounded-xl">
+            <div className="flex gap-1 p-1 bg-muted/40 rounded-[10px]">
               {(["all", "New", "Active", "Suspended", "Inactive"] as const).map(
                 (tab) => (
                   <button
                     key={tab}
                     type="button"
                     onClick={() => setSystemStatusFilter(tab)}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    className={`px-3 py-1 rounded-[10px] text-xs font-bold transition-all ${
                       systemStatusFilter === tab
                         ? "bg-background text-primary shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -276,7 +276,7 @@ export function LoyaltySettingsView() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Status List */}
-          <div className="lg:col-span-7 bg-card border border-border rounded-3xl overflow-hidden shadow-md max-h-[610px] flex flex-col">
+          <div className="lg:col-span-7 bg-card border border-border rounded-[10px] overflow-hidden shadow-md max-h-[610px] flex flex-col">
             <div className="p-4 border-b border-border bg-muted/10 flex items-center justify-between">
               <span className="text-xs font-bold text-muted-foreground">
                 DANH SÁCH PHÂN LOẠI Trạng thái ({filteredStatuses.length})
@@ -322,7 +322,7 @@ export function LoyaltySettingsView() {
                               {status.code}
                             </span>
                             <span
-                              className={`text-xs font-bold px-1.5 py-0.2 rounded-md ${status.color.bg} ${status.color.text} border ${status.color.border}`}
+                              className={`text-xs font-bold px-1.5 py-0.2 rounded-[10px] ${status.color.bg} ${status.color.text} border ${status.color.border}`}
                             >
                               {status.classification}
                             </span>
@@ -443,7 +443,7 @@ export function LoyaltySettingsView() {
           {/* Details Pane */}
           <div className="lg:col-span-5 space-y-6">
             <div
-              className={`bg-card border border-border/80 rounded-3xl p-6 shadow-xl relative overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/5 before:to-transparent before:pointer-events-none`}
+              className={`bg-card border border-border/80 rounded-[10px] p-6 shadow-xl relative overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/5 before:to-transparent before:pointer-events-none`}
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -452,7 +452,7 @@ export function LoyaltySettingsView() {
                       {activeSelectedStatus.code}
                     </span>
                     <span
-                      className={`text-xs font-bold px-2.5 py-0.5 rounded-lg border ${activeSelectedStatus.color.bg} ${activeSelectedStatus.color.text} ${activeSelectedStatus.color.border}`}
+                      className={`text-xs font-bold px-2.5 py-0.5 rounded-[10px] border ${activeSelectedStatus.color.bg} ${activeSelectedStatus.color.text} ${activeSelectedStatus.color.border}`}
                     >
                       {activeSelectedStatus.classification}
                     </span>
@@ -476,7 +476,7 @@ export function LoyaltySettingsView() {
                 </div>
 
                 <span
-                  className={`w-10 h-10 rounded-2xl flex items-center justify-center ${activeSelectedStatus.color.bg} ${activeSelectedStatus.color.text} border ${activeSelectedStatus.color.border}`}
+                  className={`w-10 h-10 rounded-[10px] flex items-center justify-center ${activeSelectedStatus.color.bg} ${activeSelectedStatus.color.text} border ${activeSelectedStatus.color.border}`}
                 >
                   {activeSelectedStatus.systemStatus === "Active" ? (
                     <HeartPulse className="w-5 h-5" />
@@ -495,7 +495,7 @@ export function LoyaltySettingsView() {
                   <h4 className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
                     Định nghĩa
                   </h4>
-                  <p className="text-xs text-foreground mt-1.5 bg-muted/40 p-3 rounded-xl border border-border/30">
+                  <p className="text-xs text-foreground mt-1.5 bg-muted/40 p-3 rounded-[10px] border border-border/30">
                     {activeSelectedStatus.definition}
                   </p>
                 </div>
@@ -504,7 +504,7 @@ export function LoyaltySettingsView() {
                   <h4 className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
                     Điều kiện kích hoạt
                   </h4>
-                  <p className="text-xs text-foreground mt-1.5 bg-muted/20 p-3 rounded-xl border border-border/20 italic">
+                  <p className="text-xs text-foreground mt-1.5 bg-muted/20 p-3 rounded-[10px] border border-border/20 italic">
                     {activeSelectedStatus.triggerCondition}
                   </p>
                 </div>
@@ -515,7 +515,7 @@ export function LoyaltySettingsView() {
                     Quyền & Phép hạn chế trong hệ thống
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="p-3 bg-muted/30 rounded-xl border border-border/20 flex flex-col justify-between">
+                    <div className="p-3 bg-muted/30 rounded-[10px] border border-border/20 flex flex-col justify-between">
                       <span className="text-xs text-muted-foreground font-medium">
                         Quyền truy cập Cổng VIP
                       </span>
@@ -548,7 +548,7 @@ export function LoyaltySettingsView() {
                       </div>
                     </div>
 
-                    <div className="p-3 bg-muted/30 rounded-xl border border-border/20 flex flex-col justify-between">
+                    <div className="p-3 bg-muted/30 rounded-[10px] border border-border/20 flex flex-col justify-between">
                       <span className="text-xs text-muted-foreground font-medium">
                         Tích luỹ điểm
                       </span>
@@ -581,7 +581,7 @@ export function LoyaltySettingsView() {
                       </div>
                     </div>
 
-                    <div className="p-3 bg-muted/30 rounded-xl border border-border/20 flex flex-col justify-between">
+                    <div className="p-3 bg-muted/30 rounded-[10px] border border-border/20 flex flex-col justify-between">
                       <span className="text-xs text-muted-foreground font-medium">
                         Đổi mã quà tặng
                       </span>
@@ -623,7 +623,7 @@ export function LoyaltySettingsView() {
                       </div>
                     </div>
 
-                    <div className="p-3 bg-muted/30 rounded-xl border border-border/20 flex flex-col justify-between">
+                    <div className="p-3 bg-muted/30 rounded-[10px] border border-border/20 flex flex-col justify-between">
                       <span className="text-xs text-muted-foreground font-medium">
                         Giao dịch mua hàng
                       </span>
@@ -658,7 +658,7 @@ export function LoyaltySettingsView() {
                     </div>
                   </div>
 
-                  <div className="mt-2 p-3 bg-muted/40 rounded-xl border border-border/20 flex items-center justify-between">
+                  <div className="mt-2 p-3 bg-muted/40 rounded-[10px] border border-border/20 flex items-center justify-between">
                     <div>
                       <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider block">
                         Campaign tiếp thị
@@ -679,7 +679,7 @@ export function LoyaltySettingsView() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="bg-primary/5 p-3 rounded-xl border border-primary/10">
+                  <div className="bg-primary/5 p-3 rounded-[10px] border border-primary/10">
                     <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider block">
                       Kịch bản tự động
                     </span>
@@ -689,7 +689,7 @@ export function LoyaltySettingsView() {
                   </div>
 
                   <div
-                    className={`p-3 rounded-xl border ${
+                    className={`p-3 rounded-[10px] border ${
                       activeSelectedStatus.riskLevel === "Thấp" ||
                       activeSelectedStatus.riskLevel === "None"
                         ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-600"

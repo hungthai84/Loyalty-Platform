@@ -210,7 +210,7 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 text-left font-sans">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-100">
+      <div className="bg-white rounded-[10px] shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-100">
         
         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white">
           <div>
@@ -275,7 +275,7 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
                 <button
                   type="button"
                   onClick={openOfficialPicker}
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-xs py-2.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer w-full md:w-auto shrink-0"
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-xs py-2.5 px-4 rounded-[10px] shadow-md hover:shadow-lg transition-all cursor-pointer w-full md:w-auto shrink-0"
                 >
                   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z" />
@@ -310,10 +310,10 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
                       placeholder="Tìm kiếm tệp..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-8 pr-4 py-1.5 text-xs border-gray-200 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-36 bg-gray-50/50"
+                      className="pl-8 pr-4 py-1.5 text-xs border-gray-200 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-36 bg-gray-50/50"
                     />
                   </form>
-                  <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Đăng xuất Google">
+                  <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-[10px] transition-colors cursor-pointer" title="Đăng xuất Google">
                     <LogOut className="w-4 h-4" />
                   </button>
                 </div>
@@ -326,7 +326,7 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
                     <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 ) : files.length === 0 ? (
-                  <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200 p-8 max-w-md mx-auto my-4">
+                  <div className="text-center py-12 text-gray-400 bg-white rounded-[10px] border border-dashed border-gray-200 p-8 max-w-md mx-auto my-4">
                     <FileIcon className="w-10 h-10 mx-auto text-gray-300 mb-3" />
                     <p className="text-xs">Không có tệp CSV hoặc trang tính phù hợp tại đây.</p>
                   </div>
@@ -337,9 +337,9 @@ export function GoogleDrivePicker({ onPick, onCancel }: GoogleDrivePickerProps) 
                         key={file.id}
                         type="button"
                         onClick={() => handleFileClick(file)}
-                        className="flex flex-col items-center p-3 bg-white border border-gray-150 rounded-xl hover:border-blue-500 hover:shadow-sm transition-all text-center group cursor-pointer"
+                        className="flex flex-col items-center p-3 bg-white border border-gray-150 rounded-[10px] hover:border-blue-500 hover:shadow-sm transition-all text-center group cursor-pointer"
                       >
-                        <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-lg mb-2 group-hover:bg-blue-50 transition-colors">
+                        <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-[10px] mb-2 group-hover:bg-blue-50 transition-colors">
                           {file.thumbnailLink ? (
                             <img src={file.thumbnailLink} alt={file.name} referrerPolicy="no-referrer" className="w-8 h-8 object-cover rounded" />
                           ) : (

@@ -69,7 +69,7 @@ export function BulkActionDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] rounded-3xl">
+      <DialogContent className="sm:max-w-[425px] rounded-[10px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-heading">
             {actionType === "tag" && <Tag className="w-5 h-5 text-indigo-500" />}
@@ -88,10 +88,10 @@ export function BulkActionDialog({
             <div className="space-y-2">
               <Label htmlFor="status">Cập nhật trạng thái thành</Label>
               <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger id="status" className="rounded-xl">
+                <SelectTrigger id="status" className="rounded-[10px]">
                   <SelectValue placeholder="Chọn trạng thái" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
+                <SelectContent className="rounded-[10px]">
                   <SelectItem value="active">Active (Đang hoạt động)</SelectItem>
                   <SelectItem value="new">New (Mới)</SelectItem>
                   <SelectItem value="churn_risk">Churn Risk (Nguy cơ rời bỏ)</SelectItem>
@@ -121,7 +121,7 @@ export function BulkActionDialog({
                 placeholder="Hoặc nhập thẻ tự chọn..." 
                 value={tag}
                 onChange={(e) => setTag(e.target.value)}
-                className="rounded-xl"
+                className="rounded-[10px]"
               />
             </div>
           )}
@@ -135,7 +135,7 @@ export function BulkActionDialog({
                 value={points}
                 onChange={(e) => setPoints(parseInt(e.target.value) || 0)}
                 placeholder="VD: 50 hoặc -50"
-                className="rounded-xl"
+                className="rounded-[10px]"
               />
               <p className="text-[10px] text-muted-foreground italic flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3 text-amber-500" />
@@ -173,10 +173,10 @@ export function BulkActionDialog({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={onClose} className="rounded-xl">Hủy</Button>
+          <Button variant="outline" onClick={onClose} className="rounded-[10px]">Hủy</Button>
           <Button 
             onClick={handleConfirm} 
-            className="rounded-xl bg-primary text-primary-foreground font-bold"
+            className="rounded-[10px] bg-primary text-primary-foreground font-bold"
             disabled={loading}
           >
             {loading ? "Đang xử lý..." : "Xác nhận thay đổi"}

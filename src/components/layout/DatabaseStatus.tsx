@@ -98,7 +98,7 @@ export function DatabaseStatus() {
         
         <CardContent className="space-y-3 pt-2">
           <div className="grid grid-cols-2 gap-2">
-            <div className="bg-muted/30 rounded-lg p-2 border border-border/40">
+            <div className="bg-muted/30 rounded-[10px] p-2 border border-border/40">
               <div className="flex items-center gap-1.5 mb-1">
                 <Timer className="w-3 h-3 text-muted-foreground" />
                 <span className="text-[10px] font-bold text-muted-foreground uppercase">Độ trễ</span>
@@ -107,7 +107,7 @@ export function DatabaseStatus() {
                 {status?.latency ? `${status.latency}ms` : "--"}
               </div>
             </div>
-            <div className="bg-muted/30 rounded-lg p-2 border border-border/40">
+            <div className="bg-muted/30 rounded-[10px] p-2 border border-border/40">
               <div className="flex items-center gap-1.5 mb-1">
                 <ShieldCheck className="w-3 h-3 text-muted-foreground" />
                 <span className="text-[10px] font-bold text-muted-foreground uppercase">Health</span>
@@ -125,7 +125,7 @@ export function DatabaseStatus() {
               </span>
               <span className="text-primary/60">Real-time</span>
             </div>
-            <div className={`text-[11px] leading-relaxed p-2.5 rounded-xl border ${status?.success ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-700/80 dark:text-emerald-400/80" : "bg-rose-500/5 border-rose-500/10 text-rose-700/80 dark:text-rose-400/80"}`}>
+            <div className={`text-[11px] leading-relaxed p-2.5 rounded-[10px] border ${status?.success ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-700/80 dark:text-emerald-400/80" : "bg-rose-500/5 border-rose-500/10 text-rose-700/80 dark:text-rose-400/80"}`}>
               {status?.message || "Nhấp để làm mới cấu hình kết nối..."}
             </div>
           </div>

@@ -169,7 +169,7 @@ export function IntegrationsManager() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm h-full flex flex-col">
               <CardHeader className="pb-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 mb-2">
+                <div className="w-10 h-10 rounded-[10px] bg-orange-500/10 flex items-center justify-center text-orange-500 mb-2">
                   <ShoppingCart className="w-5 h-5" />
                 </div>
                 <CardTitle className="font-heading text-base flex items-center justify-between">
@@ -209,7 +209,7 @@ export function IntegrationsManager() {
 
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm h-full flex flex-col">
               <CardHeader className="pb-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2">
+                <div className="w-10 h-10 rounded-[10px] bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2">
                   <Ticket className="w-5 h-5" />
                 </div>
                 <CardTitle className="font-heading text-base flex items-center justify-between">
@@ -248,7 +248,7 @@ export function IntegrationsManager() {
             </Card>
           </div>
           
-          <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm overflow-hidden rounded-2xl">
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm overflow-hidden rounded-[10px]">
             <div className="p-4 border-b border-border/40 bg-muted/10 font-bold text-sm">
               Recent Sync Events
             </div>
@@ -285,7 +285,7 @@ export function IntegrationsManager() {
         </TabsContent>
 
         <TabsContent value="orders" className="space-y-6 mt-6">
-          <Card className="border-border/50 bg-card rounded-2xl overflow-hidden shadow-sm">
+          <Card className="border-border/50 bg-card rounded-[10px] overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -318,7 +318,7 @@ export function IntegrationsManager() {
         </TabsContent>
         
         <TabsContent value="tickets" className="mt-6">
-           <Card className="p-8 border-dashed border-2 flex flex-col items-center justify-center text-center rounded-3xl bg-muted/10">
+           <Card className="p-8 border-dashed border-2 flex flex-col items-center justify-center text-center rounded-[10px] bg-muted/10">
               <Ticket className="w-10 h-10 text-muted-foreground/30 mb-3" />
               <p className="text-sm text-muted-foreground">Chưa có dữ liệu phiếu hỗ trợ CRM mới nhất trong kỳ sync này.</p>
               <Button variant="outline" size="sm" className="mt-4 text-xs font-bold" onClick={handleSyncTickets}>Thử sync lại</Button>

@@ -27,7 +27,7 @@ function AppContent() {
   const safeActiveView = activeView;
 
   return (
-    <div className="h-full w-full flex bg-background rounded-2xl overflow-hidden shadow-[0_45px_120px_-15px_rgba(0,0,0,0.95),_0_0_80px_rgba(255,255,255,0.035)] border-2 border-black dark:border-white relative selection:bg-[#eb7a2e]/10">
+    <div className="h-full w-full flex bg-background rounded-[10px] overflow-hidden shadow-[0_45px_120px_-15px_rgba(0,0,0,0.95),_0_0_80px_rgba(255,255,255,0.035)] border-2 border-black dark:border-white relative selection:bg-[#eb7a2e]/10">
       <Sidebar 
         className="hidden md:flex shrink-0" 
         activeView={safeActiveView} 
@@ -45,8 +45,6 @@ function AppContent() {
             {safeActiveView === "customers" && <CustomersView />}
             {safeActiveView === "loyalty" && <LoyaltyView />}
             {safeActiveView === "marketing" && <MarketingView />}
-            {safeActiveView === "analytics" && <AnalyticsView />}
-            {safeActiveView === "analysis" && <AnalysisView />}
             {safeActiveView === "settings" && <SettingsView />}
             {safeActiveView === "portal" && <CustomerPortalView />}
             

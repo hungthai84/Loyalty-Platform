@@ -78,7 +78,7 @@ export function NotificationBell({ isSidebar, collapsed }: NotificationBellProps
       <button 
         onClick={() => setShowNotifications(!showNotifications)}
         className={cn(
-          "relative rounded-2xl flex items-center transition-all group cursor-pointer",
+          "relative rounded-[10px] flex items-center transition-all group cursor-pointer",
           isSidebar 
             ? collapsed 
               ? "w-11 h-11 mx-auto justify-center px-0 bg-sidebar-accent/50 text-sidebar-foreground/75" 
@@ -118,7 +118,7 @@ export function NotificationBell({ isSidebar, collapsed }: NotificationBellProps
             animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             className={cn(
-              "absolute z-[200] w-80 sm:w-96 rounded-2xl border border-border/80 bg-background/95 backdrop-blur-md shadow-2xl p-4 text-xs text-foreground",
+              "absolute z-[200] w-80 sm:w-96 rounded-[10px] border border-border/80 bg-background/95 backdrop-blur-md shadow-2xl p-4 text-xs text-foreground",
               isSidebar 
                 ? "left-full ml-4 bottom-0 origin-bottom-left" 
                 : "right-0 top-11 origin-top-right"
@@ -145,7 +145,7 @@ export function NotificationBell({ isSidebar, collapsed }: NotificationBellProps
                     key={notif.id} 
                     onClick={() => toggleRead(notif.id)}
                     className={cn(
-                      "pt-2 flex gap-3 transition-colors cursor-pointer group rounded-lg p-1.5",
+                      "pt-2 flex gap-3 transition-colors cursor-pointer group rounded-[10px] p-1.5",
                       notif.read ? "opacity-60 hover:opacity-100" : "bg-primary/5 hover:bg-primary/10"
                     )}
                   >

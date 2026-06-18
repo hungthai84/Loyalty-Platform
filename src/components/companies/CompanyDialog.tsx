@@ -116,7 +116,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
 
  return (
  <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
- <div className="bg-card w-full max-w-md rounded-2xl shadow-2xl border border-border overflow-hidden">
+ <div className="bg-card w-full max-w-md rounded-[10px] shadow-2xl border border-border overflow-hidden">
  <form onSubmit={handleSubmit}>
  <div className="px-6 py-4 border-b flex justify-between items-center bg-muted/30">
  <h3 className="text-xl font-bold font-heading flex items-center gap-2">
@@ -131,14 +131,14 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  <div className="p-6 space-y-4">
  <div className="flex justify-center mb-6">
  <div className="relative group">
- <div className="w-24 h-24 rounded-2xl bg-muted border border-border overflow-hidden flex items-center justify-center">
+ <div className="w-24 h-24 rounded-[10px] bg-muted border border-border overflow-hidden flex items-center justify-center">
  {logoUrl ? (
  <img src={logoUrl} alt="Logo preview" className="w-full h-full object-cover" />
  ) : (
  <Building2 className="w-10 h-10 text-muted-foreground" />
  )}
  </div>
- <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl">
+ <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-[10px]">
  <ImageIcon className="w-6 h-6 text-white" />
  </div>
  </div>
@@ -148,7 +148,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  <label className="text-sm font-medium">Tên Công ty / Thương hiệu</label>
  <input 
  autoFocus
- className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+ className="w-full px-4 py-2 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none"
  placeholder="Ví dụ: SEVA Boutique - CN Quận 1"
  value={name}
  onChange={e => setName(e.target.value)}
@@ -187,7 +187,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  <div className="space-y-2">
  <label className="text-sm font-medium">Công ty quản lý</label>
  <select 
- className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+ className="w-full px-4 py-2 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none"
  value={parentId}
  onChange={e => setParentId(e.target.value)}
  >
@@ -202,7 +202,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  <div className="space-y-2">
  <label className="text-sm font-medium">Link Logo (URL)</label>
  <input 
- className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+ className="w-full px-4 py-2 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none"
  placeholder="https://example.com/logo.png"
  value={logoUrl}
  onChange={e => setLogoUrl(e.target.value)}
@@ -213,7 +213,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  <div className="space-y-2">
  <label className="text-sm font-medium">Địa chỉ</label>
  <input 
- className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+ className="w-full px-4 py-2 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none"
  placeholder="123 Đường ABC, Quận X, TP. HCM"
  value={address}
  onChange={e => setAddress(e.target.value)}
@@ -227,7 +227,7 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  type="button" 
  onClick={handleDelete}
  disabled={submitting}
- className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+ className="p-2 text-rose-500 hover:bg-rose-50 rounded-[10px] transition-colors"
  title="Xóa"
  >
  <Trash2 className="w-5 h-5" />
@@ -238,14 +238,14 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  <button 
  type="button" 
  onClick={onClose}
- className="px-6 py-2 border border-border rounded-xl text-sm font-medium hover:bg-muted transition-colors"
+ className="px-6 py-2 border border-border rounded-[10px] text-sm font-medium hover:bg-muted transition-colors"
  >
  Hủy
  </button>
  <button 
  type="submit"
  disabled={submitting}
- className="px-6 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center disabled:opacity-50"
+ className="px-6 py-2 bg-primary text-primary-foreground rounded-[10px] text-sm font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center disabled:opacity-50"
  >
  <Save className="w-4 h-4 mr-2" />
  {submitting ? "Đang lưu..." : "Lưu thông tin"}
@@ -268,14 +268,14 @@ export function CompanyDialog({ onClose, company }: CompanyDialogProps) {
  <div className="flex gap-3 w-full">
  <button
  onClick={() => setDeleteConfirm(false)}
- className="flex-1 py-2.5 text-sm font-bold bg-muted text-foreground rounded-xl hover:bg-muted/80 transition-colors"
+ className="flex-1 py-2.5 text-sm font-bold bg-muted text-foreground rounded-[10px] hover:bg-muted/80 transition-colors"
  >
  Hủy
  </button>
  <button
  onClick={executeDelete}
  disabled={submitting}
- className="flex-1 py-2.5 text-sm font-bold bg-rose-500 text-white rounded-xl shadow-md hover:bg-rose-600 hover:shadow-lg transition-all disabled:opacity-50"
+ className="flex-1 py-2.5 text-sm font-bold bg-rose-500 text-white rounded-[10px] shadow-md hover:bg-rose-600 hover:shadow-lg transition-all disabled:opacity-50"
  >
  Xóa ngay
  </button>

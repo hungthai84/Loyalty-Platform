@@ -103,6 +103,7 @@ const EARN_CATEGORIES = [
 export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
   const { user } = useFirebase();
   const [name, setName] = useState(rule?.name || "");
+  const [description, setDescription] = useState(rule?.description || "");
   const [type, setType] = useState<string>(rule?.type || "purchase");
   const [points, setPoints] = useState(rule?.points || 0);
   const [value, setValue] = useState(rule?.value || 0);
@@ -130,6 +131,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
     const ruleData: EarnRule = {
       id,
       name,
+      description,
       type,
       points: Number(points),
       value: type === "purchase" ? Number(value) : 0,
@@ -190,7 +192,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div className="bg-card w-full max-w-2xl rounded-2xl shadow-2xl border border-border overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-card w-full max-w-2xl rounded-[10px] shadow-2xl border border-border overflow-hidden flex flex-col max-h-[90vh]">
         <div className="px-6 py-4 border-b flex justify-between items-center bg-muted/30">
           <h3 className="text-xl font-bold font-heading">
             {rule ? "Sửa quy tắc tích điểm" : "Chọn một nhiệm vụ & thiết lập"}
@@ -205,7 +207,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
             <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Loại hoạt động</label>
             <div className="space-y-4">
               {EARN_CATEGORIES.map((category) => (
-                <div key={category.id} className="border border-border/80 rounded-xl overflow-hidden bg-muted/10">
+                <div key={category.id} className="border border-border/80 rounded-[10px] overflow-hidden bg-muted/10">
                   <button 
                     type="button" 
                     onClick={() => toggleCategory(category.id)}
@@ -229,7 +231,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
                               if (!name) setName(t.label);
                             }}
                             className={cn(
-                              "flex flex-col items-center justify-center p-3 rounded-xl border transition-all text-center gap-2 h-full",
+                              "flex flex-col items-center justify-center p-3 rounded-[10px] border transition-all text-center gap-2 h-full",
                               isSelected 
                                 ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary" 
                                 : "border-border hover:border-muted-foreground/30 hover:bg-muted/50 bg-background"
@@ -251,15 +253,25 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
 
           <div className="space-y-5 pt-4 border-t border-border/50">
             <h4 className="font-bold text-base text-foreground">Thiết lập điểm thưởng</h4>
-            <div className="space-y-4 bg-muted/20 p-5 rounded-2xl border border-border/50">
+            <div className="space-y-4 bg-muted/20 p-5 rounded-[10px] border border-border/50">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Tên quy tắc hiển thị</label>
                 <input 
                   autoFocus
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  className="w-full px-4 py-2.5 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   placeholder="Ví dụ: Đánh giá App tặng 500 điểm"
                   value={name}
                   onChange={e => setName(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Mô tả (Ghi chú)</label>
+                <textarea 
+                  className="w-full px-4 py-2.5 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none min-h-[80px]"
+                  placeholder="Nhập mô tả chi tiết cho nhiệm vụ này..."
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
                 />
               </div>
 
@@ -269,7 +281,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
                   <div className="relative">
                     <input 
                       type="number"
-                      className="w-full pl-4 pr-12 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                      className="w-full pl-4 pr-12 py-2.5 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                       value={points}
                       onChange={e => setPoints(Number(e.target.value))}
                     />
@@ -282,7 +294,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
                     <div className="relative">
                       <input 
                         type="number"
-                        className="w-full pl-8 pr-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                        className="w-full pl-8 pr-4 py-2.5 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                         value={value}
                         onChange={e => setValue(Number(e.target.value))}
                       />
@@ -293,11 +305,11 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
               </div>
             </div>
             
-            <div className="flex items-center space-x-3 p-4 bg-muted/30 rounded-xl border border-border/50">
+            <div className="flex items-center space-x-3 p-4 bg-muted/30 rounded-[10px] border border-border/50">
               <input 
                 type="checkbox" 
                 id="active"
-                className="w-5 h-5 rounded-md text-primary focus:ring-primary border-border"
+                className="w-5 h-5 rounded-[10px] text-primary focus:ring-primary border-border"
                 checked={isActive}
                 onChange={e => setIsActive(e.target.checked)}
               />
@@ -312,7 +324,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
               type="button" 
               onClick={handleDelete}
               disabled={submitting}
-              className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+              className="p-2 text-rose-500 hover:bg-rose-50 rounded-[10px] transition-colors"
               title="Xóa quy tắc"
             >
               <Trash2 className="w-5 h-5" />
@@ -323,7 +335,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
             <button 
               type="button" 
               onClick={onClose}
-              className="px-6 py-2 border border-border rounded-xl text-sm font-medium hover:bg-muted transition-colors cursor-pointer"
+              className="px-6 py-2 border border-border rounded-[10px] text-sm font-medium hover:bg-muted transition-colors cursor-pointer"
             >
               Hủy
             </button>
@@ -331,7 +343,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
               type="button"
               onClick={handleSubmit}
               disabled={submitting}
-              className="px-6 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center disabled:opacity-50 cursor-pointer"
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-[10px] text-sm font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center disabled:opacity-50 cursor-pointer"
             >
               <Save className="w-4 h-4 mr-2" />
               {submitting ? "Đang lưu..." : "Lưu nhiệm vụ"}

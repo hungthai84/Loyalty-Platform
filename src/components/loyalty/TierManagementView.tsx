@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Plus, Settings, TrendingUp, Zap, Medal, Award, Crown, Gem, Shield } from "lucide-react";
+import { Star, Plus, Settings, TrendingUp, Zap, Medal, Award, Crown, Gem, Shield, Search } from "lucide-react";
 import * as motion from "motion/react-client";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -9,10 +9,12 @@ import { TierConfig } from "@/types";
 import { TierConfigDialog } from "@/components/loyalty/TierConfigDialog";
 import { getGuestTiers } from "@/data/guestData";
 import { toast } from "sonner";
+import { LoyaltyTiersBanner } from "./LoyaltyTiersBanner";
 
 interface TierManagementViewProps {
   rules?: any[];
   gifts?: any[];
+  searchTerm?: string;
 }
 
 export function TierManagementView({ rules = [], gifts = [] }: TierManagementViewProps) {
@@ -21,7 +23,12 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
   const [loading, setLoading] = useState(true);
   const [selectedTier, setSelectedTier] = useState<TierConfig | undefined>(undefined);
   const [showDialog, setShowDialog] = useState(false);
-  const [newBenefit, setNewBenefit] = useState<Record<string, {name: string, value: string}>>({});
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
+
+  const filteredTiers = tiers.filter(tier => 
+    tier.name.toLowerCase().includes(localSearchTerm.toLowerCase()) ||
+    tier.benefits?.some(b => b.name.toLowerCase().includes(localSearchTerm.toLowerCase()) || b.value.toLowerCase().includes(localSearchTerm.toLowerCase()))
+  );
 
   const handleAddInlineBenefit = async (tier: TierConfig) => {
     const input = newBenefit[tier.id];
@@ -115,11 +122,40 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      <LoyaltyTiersBanner
+        onAddTier={() => {
+            setSelectedTier(undefined);
+            setShowDialog(true);
+        }}
+      />
+
+      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between px-1">
+        <div className="text-left">
+          <h5 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest">
+            Danh sách phân hạng ({filteredTiers.length})
+          </h5>
+          <p className="text-xs text-muted-foreground">
+            Quản lý đặc quyền & điều kiện thăng hạng
+          </p>
+        </div>
+
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Tìm kiếm hạng hội viên..."
+            className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:border-[#2f6cf5]/50 text-foreground"
+            value={localSearchTerm}
+            onChange={(e) => setLocalSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {loading ? (
           <div className="py-12 text-center text-muted-foreground col-span-full">Đang tải cấu hình...</div>
         ) : tiers.length === 0 ? (
-          <div className="py-20 text-center border-2 border-dashed border-border rounded-3xl space-y-6 flex flex-col items-center justify-center col-span-full">
+          <div className="py-20 text-center border-2 border-dashed border-border rounded-[10px] space-y-6 flex flex-col items-center justify-center col-span-full">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
               <Star className="w-8 h-8 text-muted-foreground" />
             </div>
@@ -128,14 +164,24 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
               <p className="text-sm text-muted-foreground mb-6">Hãy bắt đầu bằng cách tạo Hạng Đồng hoặc Hạng Bạc đầu tiên.</p>
               <button 
                 onClick={seedDemoData}
-                className="px-8 py-3 bg-primary/10 text-primary border border-primary/20 rounded-2xl text-sm font-bold hover:bg-primary/20 transition-all flex items-center gap-2"
+                className="px-8 py-3 bg-primary/10 text-primary border border-primary/20 rounded-[10px] text-sm font-bold hover:bg-primary/20 transition-all flex items-center gap-2 cursor-pointer"
               >
                 <Zap className="w-4 h-4" /> Khởi tạo phân hạng mẫu (Member, Essential, Icon, Atelier)
               </button>
             </div>
           </div>
+        ) : filteredTiers.length === 0 ? (
+          <div className="py-20 text-center border-2 border-dashed border-border rounded-[10px] space-y-4 flex flex-col items-center justify-center col-span-full bg-muted/5">
+            <div className="w-12 h-12 bg-muted/40 rounded-full flex items-center justify-center">
+              <Star className="w-6 h-6 text-muted-foreground/40" />
+            </div>
+            <div>
+              <p className="text-base font-bold text-foreground">Không tìm thấy kết quả</p>
+              <p className="text-xs text-muted-foreground">Không tìm thấy hạng hội viên nào khớp với "{searchTerm}".</p>
+            </div>
+          </div>
         ) : (
-          tiers.slice(0, 4).map((tier) => {
+          filteredTiers.map((tier) => {
             const nameLower = tier.name.toLowerCase();
             let TierIcon = Star;
             if (nameLower.includes("member")) TierIcon = Shield;
@@ -151,12 +197,12 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
                 className="relative cursor-pointer h-full"
                 onClick={() => { setSelectedTier(tier); setShowDialog(true); }}
               >
-                <Card className="h-full border border-border/80 bg-card overflow-hidden flex flex-col hover:shadow-lg hover:border-primary/20 transition-all rounded-3xl p-6 relative">
+                <Card className="h-full border border-border/80 bg-card overflow-hidden flex flex-col hover:shadow-lg hover:border-primary/20 transition-all rounded-[10px] p-6 relative">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white via-transparent to-transparent opacity-10 pointer-events-none rounded-bl-full" style={{ backgroundImage: `linear-gradient(to bottom left, ${tier.color}, transparent)` }} />
                   
                   <div className="flex items-start justify-between relative z-10">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: tier.color }}>
+                      <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: tier.color }}>
                         <TierIcon className="w-6 h-6 fill-current" />
                       </div>
                       <div>
@@ -179,7 +225,7 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
                       </h5>
                       <div className="space-y-2">
                         {rules.length > 0 ? rules.slice(0, 2).map((r, i) => (
-                          <div key={i} className="text-xs font-semibold px-3 py-2 bg-muted/40 text-foreground border border-border/40 rounded-xl truncate transition-all hover:bg-muted/60">
+                          <div key={i} className="text-xs font-semibold px-3 py-2 bg-muted/40 text-foreground border border-border/40 rounded-[10px] truncate transition-all hover:bg-muted/60">
                             ✨ {r.name}
                           </div>
                         )) : (
@@ -194,7 +240,7 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
                       </h5>
                       <div className="space-y-2">
                         {gifts.length > 0 ? gifts.slice(0, 2).map((g, i) => (
-                          <div key={i} className="text-xs font-semibold px-3 py-2 bg-amber-500/5 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-xl truncate transition-all hover:bg-amber-500/10">
+                          <div key={i} className="text-xs font-semibold px-3 py-2 bg-amber-500/5 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-[10px] truncate transition-all hover:bg-amber-500/10">
                             🎁 {g.name}
                           </div>
                         )) : (

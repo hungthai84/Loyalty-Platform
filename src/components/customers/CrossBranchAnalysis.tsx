@@ -79,7 +79,7 @@ export function CrossBranchAnalysis({ customers, companies, attributes }: Props)
  <div className="w-full bg-card border border-border shadow-sm rounded-[1.25rem] flex flex-col overflow-hidden">
  <div className="flex items-center justify-between p-6 border-b border-border bg-muted/10">
  <div className="flex items-center gap-3">
- <div className="p-2 bg-primary/10 rounded-xl text-primary">
+ <div className="p-2 bg-primary/10 rounded-[10px] text-primary">
  <Users className="w-5 h-5" />
  </div>
  <div>
@@ -90,7 +90,7 @@ export function CrossBranchAnalysis({ customers, companies, attributes }: Props)
  </div>
 
  <div className="p-6 flex flex-col gap-6">
- <div className="space-y-4 border border-border rounded-xl p-5 bg-card">
+ <div className="space-y-4 border border-border rounded-[10px] p-5 bg-card">
  <div>
  <h3 className="text-sm font-bold">Chọn các trường dữ liệu để đối chiếu:</h3>
  <p className="text-xs text-muted-foreground mt-1">Các chi nhánh có khách hàng khớp giá trị hoàn toàn ở TẤT CẢ các trường được chọn dưới đây sẽ được nhóm lại.</p>
@@ -105,7 +105,7 @@ export function CrossBranchAnalysis({ customers, companies, attributes }: Props)
  setSelectedFields(options);
  setAnalyzed(false);
  }}
- className="w-full bg-muted/50 border border-border rounded-lg text-sm p-2 outline-none focus:border-primary/50 min-h-[140px]"
+ className="w-full bg-muted/50 border border-border rounded-[10px] text-sm p-2 outline-none focus:border-primary/50 min-h-[140px]"
  >
  {allFields.map(field => (
  <option key={field.key} value={field.key} className="p-1.5 hover:bg-background rounded cursor-pointer">
@@ -120,12 +120,12 @@ export function CrossBranchAnalysis({ customers, companies, attributes }: Props)
  <button
  onClick={() => {
  const toastElement = document.createElement('div');
- toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
+ toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-[10px] border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
  toastElement.innerHTML = `<div class="text-xs font-bold text-foreground">Lưu kết quả phân tích trùng lặp chi nhánh thành công!</div>`;
  document.body.appendChild(toastElement);
  setTimeout(() => document.body.removeChild(toastElement), 3000);
  }}
- className="px-6 py-2 bg-muted text-foreground border border-border font-bold rounded-xl shadow-sm hover:bg-muted/80 transition-all text-sm flex items-center gap-2"
+ className="px-6 py-2 bg-muted text-foreground border border-border font-bold rounded-[10px] shadow-sm hover:bg-muted/80 transition-all text-sm flex items-center gap-2"
  >
  <Check className="w-4 h-4" />
  Lưu lại
@@ -133,7 +133,7 @@ export function CrossBranchAnalysis({ customers, companies, attributes }: Props)
  <button
  onClick={() => setAnalyzed(true)}
  disabled={selectedFields.length === 0}
- className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all text-sm flex items-center gap-2 disabled:opacity-50"
+ className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-[10px] shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all text-sm flex items-center gap-2 disabled:opacity-50"
  >
  <RefreshCw className="w-4 h-4" />
  Bắt đầu phân tích
@@ -148,13 +148,13 @@ export function CrossBranchAnalysis({ customers, companies, attributes }: Props)
  </h3>
  
  {overlapResults.length === 0 ? (
- <div className="text-center py-12 px-4 border border-dashed rounded-xl bg-muted/10">
+ <div className="text-center py-12 px-4 border border-dashed rounded-[10px] bg-muted/10">
  <p className="text-sm font-medium">Tuyệt vời! Không phát hiện sự trùng lặp khách hàng nào ở các chi nhánh qua các trường đối chiếu trên.</p>
  </div>
  ) : (
  <div className="space-y-4">
  {overlapResults.map((group, idx) => (
- <div key={idx} className="border border-border/80 rounded-xl overflow-hidden shadow-sm">
+ <div key={idx} className="border border-border/80 rounded-[10px] overflow-hidden shadow-sm">
  <div className="bg-muted/30 p-3 px-4 flex items-center justify-between border-b border-border">
  <div className="text-xs font-bold text-primary">Biến số chung: <span className="text-foreground">{group.matchValue}</span></div>
  <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-background border px-2 py-0.5 rounded-full">

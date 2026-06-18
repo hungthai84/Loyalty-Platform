@@ -74,8 +74,10 @@ export interface RedemptionRule {
  pointsRequired: number;
  rewardValue: number;
  value?: number;
- rewardType: 'discount' | 'voucher' | 'item';
+ rewardType: 'discount' | 'voucher' | 'item' | 'ticket' | 'warranty';
+ imageUrl?: string;
  userId: string;
+ applicableTiers?: string[];
  createdAt: any;
 }
 
@@ -86,6 +88,8 @@ export interface EarnRule {
  value?: number; // per unit (e.g. per 100k)
  points: number; // points awarded
  pointsAwarded?: number;
+ description?: string;
+ imageUrl?: string;
  isActive: boolean;
  userId: string;
  createdAt: any;
@@ -97,6 +101,7 @@ export interface LoyaltyCampaign {
  type: 'birthday' | 'anniversary' | 'winback' | 'milestone' | 'event';
  description?: string;
  rewardType: 'points' | 'voucher' | 'gift';
+ imageUrl?: string;
  rewardValue: number;
  pointsMultiplier?: number;
  isActive: boolean;

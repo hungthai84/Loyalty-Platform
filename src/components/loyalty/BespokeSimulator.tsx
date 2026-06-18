@@ -11,7 +11,7 @@ export function BespokeSimulator() {
   const globalMultiplierReason = "";
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-b from-amber-500/[0.02] to-amber-500/[0.05] p-6 md:p-8 shadow-xl mt-4 text-left">
+    <div className="relative overflow-hidden rounded-[10px] border border-amber-500/20 bg-gradient-to-b from-amber-500/[0.02] to-amber-500/[0.05] p-6 md:p-8 shadow-xl mt-4 text-left">
       <div className="absolute top-0 right-0 p-8 opacity-5 text-amber-500 pointer-events-none">
         <Crown className="w-24 h-24 stroke-1" />
       </div>
@@ -31,7 +31,7 @@ export function BespokeSimulator() {
       <div className="grid gap-8 lg:grid-cols-12 items-start mt-6">
         {/* LEFT PANEL: CONFIGURATOR AND POINT CONVERTER */}
         <div className="lg:col-span-6 space-y-6">
-          <div className="bg-background border border-border/80 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="bg-background border border-border/80 rounded-[10px] p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <span className="text-xs font-bold text-foreground flex items-center gap-1.5 uppercase">
                 <Coins className="w-4 h-4 text-amber-500" /> Máy tính tích điểm Seva Club
@@ -69,7 +69,7 @@ export function BespokeSimulator() {
                       }
                     }}
                     className={cn(
-                      "p-2.5 rounded-xl border text-center transition-all cursor-pointer hover:border-amber-500/40 text-left flex flex-col justify-between active:scale-95",
+                      "p-2.5 rounded-[10px] border text-center transition-all cursor-pointer hover:border-amber-500/40 text-left flex flex-col justify-between active:scale-95",
                       simAovValue === preset.value
                         ? "bg-amber-500/10 border-amber-500/80 text-amber-700 dark:text-amber-400 font-bold"
                         : "bg-muted/30 border-border/60 hover:bg-muted/60"
@@ -109,7 +109,7 @@ export function BespokeSimulator() {
                     else if (val >= 1500000) setSelectedSimTierId("tier-essential");
                     else setSelectedSimTierId("tier-member");
                   }}
-                  className="flex-1 accent-amber-500 h-1.5 bg-muted rounded-lg appearance-none cursor-pointer"
+                  className="flex-1 accent-amber-500 h-1.5 bg-muted rounded-[10px] appearance-none cursor-pointer"
                 />
                 <input
                   type="text"
@@ -123,7 +123,7 @@ export function BespokeSimulator() {
                     else if (raw >= 1500000) setSelectedSimTierId("tier-essential");
                     else setSelectedSimTierId("tier-member");
                   }}
-                  className="w-[120px] px-3 py-1.5 border border-border/80 rounded-xl text-right font-semibold font-mono text-xs focus:border-amber-500 outline-none text-foreground bg-background"
+                  className="w-[120px] px-3 py-1.5 border border-border/80 rounded-[10px] text-right font-semibold font-mono text-xs focus:border-amber-500 outline-none text-foreground bg-background"
                 />
               </div>
             </div>
@@ -133,7 +133,7 @@ export function BespokeSimulator() {
               <label className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground block text-left">
                 Cấu hình hạng thẻ đại diện (Click để so sánh chéo)
               </label>
-              <div className="grid grid-cols-4 gap-1.5 bg-muted/40 p-1.5 rounded-2xl border border-border/60">
+              <div className="grid grid-cols-4 gap-1.5 bg-muted/40 p-1.5 rounded-[10px] border border-border/60">
                 {[
                   { id: "tier-member", name: "Member", val: "0-1.5M", color: "#94a3b8" },
                   { id: "tier-essential", name: "Essential", val: "1.5M-3.5M", color: "#10b981" },
@@ -145,7 +145,7 @@ export function BespokeSimulator() {
                     type="button"
                     onClick={() => setSelectedSimTierId(item.id)}
                     className={cn(
-                      "py-2 rounded-xl text-center cursor-pointer transition-all flex flex-col items-center justify-center relative",
+                      "py-2 rounded-[10px] text-center cursor-pointer transition-all flex flex-col items-center justify-center relative",
                       selectedSimTierId === item.id
                         ? "bg-background text-foreground font-extrabold shadow-sm ring-1 ring-border"
                         : "text-muted-foreground hover:bg-background/20 hover:text-foreground"
@@ -186,7 +186,7 @@ export function BespokeSimulator() {
               const equivalentValue = totalPoints * 100;
 
               return (
-                <div className="p-4 rounded-2xl bg-zinc-950 text-slate-100 font-mono text-left relative overflow-hidden space-y-3">
+                <div className="p-4 rounded-[10px] bg-zinc-950 text-slate-100 font-mono text-left relative overflow-hidden space-y-3">
                   <div className="absolute right-0 bottom-0 p-3 opacity-10 font-bold tracking-tighter text-[40px] pointer-events-none select-none text-zinc-700">
                     SEVA CLUB
                   </div>
@@ -271,7 +271,7 @@ export function BespokeSimulator() {
               <div className="space-y-6">
                 {/* Visual Simulated VIP Card representation */}
                 <div className={cn(
-                  "relative overflow-hidden rounded-3xl p-6 text-white shadow-2xl transition-all duration-300 transform hover:scale-[1.01] aspect-[1.58/1] flex flex-col justify-between bg-gradient-to-r",
+                  "relative overflow-hidden rounded-[10px] p-6 text-white shadow-2xl transition-all duration-300 transform hover:scale-[1.01] aspect-[1.58/1] flex flex-col justify-between bg-gradient-to-r",
                   selectedInfo.cardAccent
                 )}>
                   <div className="absolute right-[-40px] top-[-30px] w-48 h-48 rounded-full bg-white/[0.03] blur-xl pointer-events-none" />
@@ -309,7 +309,7 @@ export function BespokeSimulator() {
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     {/* Perk Item: Packaging */}
-                    <div className="p-3 bg-background border border-border/60 hover:border-amber-500/10 rounded-xl transition-all text-left">
+                    <div className="p-3 bg-background border border-border/60 hover:border-amber-500/10 rounded-[10px] transition-all text-left">
                       <div className="flex items-center gap-1.5 mb-1 text-slate-900 dark:text-slate-100 font-bold">
                         <Gift className="w-3.5 h-3.5 text-pink-500" />
                         <span className="text-[10px] font-black uppercase tracking-wider text-foreground">Bao bì & Đóng gói</span>
@@ -320,7 +320,7 @@ export function BespokeSimulator() {
                     </div>
 
                     {/* Perk Item: Birthday */}
-                    <div className="p-3 bg-background border border-border/60 hover:border-amber-500/10 rounded-xl transition-all text-left">
+                    <div className="p-3 bg-background border border-border/60 hover:border-amber-500/10 rounded-[10px] transition-all text-left">
                       <div className="flex items-center gap-1.5 mb-1 text-slate-900 dark:text-slate-100 font-bold">
                         <Calendar className="w-3.5 h-3.5 text-indigo-500" />
                         <span className="text-[10px] font-black uppercase tracking-wider text-foreground">Sinh nhật vàng</span>
@@ -331,7 +331,7 @@ export function BespokeSimulator() {
                     </div>
 
                     {/* Perk Item: Spa */}
-                    <div className="p-3 bg-background border border-border/60 hover:border-amber-500/10 rounded-xl transition-all text-left">
+                    <div className="p-3 bg-background border border-border/60 hover:border-amber-500/10 rounded-[10px] transition-all text-left">
                       <div className="flex items-center gap-1.5 mb-1 text-slate-900 dark:text-slate-100 font-bold">
                         <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                         <span className="text-[10px] font-black uppercase tracking-wider text-foreground">Spa trang sức & Bảo hảo</span>
@@ -342,7 +342,7 @@ export function BespokeSimulator() {
                     </div>
 
                     {/* Perk Item: Service */}
-                    <div className="p-3 bg-background border border-border/60 hover:border-amber-500/10 rounded-xl transition-all text-left">
+                    <div className="p-3 bg-background border border-border/60 hover:border-amber-500/10 rounded-[10px] transition-all text-left">
                       <div className="flex items-center gap-1.5 mb-1 text-slate-900 dark:text-slate-100 font-bold">
                         <Crown className="w-3.5 h-3.5 text-blue-500" />
                         <span className="text-[10px] font-black uppercase tracking-wider text-foreground">Trải nghiệm thượng hạng</span>

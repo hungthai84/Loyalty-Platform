@@ -61,7 +61,7 @@ export function CustomerSearch({ customers, onSelectCustomer, value, onChange }:
         }}
       />
       {isOpen && searchResults.length > 0 && (
-        <div className="absolute top-10 left-0 w-full bg-card border border-border shadow-lg rounded-xl z-50 overflow-hidden py-1">
+        <div className="absolute top-10 left-0 w-full bg-card border border-border shadow-lg rounded-[10px] z-50 overflow-hidden py-1">
           <div className="px-3 py-2 border-b border-border/50 bg-muted/30">
             <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Kết quả tìm kiếm</h4>
           </div>
@@ -89,7 +89,7 @@ export function CustomerSearch({ customers, onSelectCustomer, value, onChange }:
         </div>
       )}
       {isOpen && value && searchResults.length === 0 && (
-        <div className="absolute top-10 left-0 w-full bg-card border border-border shadow-lg rounded-xl z-50 p-4 text-center">
+        <div className="absolute top-10 left-0 w-full bg-card border border-border shadow-lg rounded-[10px] z-50 p-4 text-center">
           <p className="text-sm text-muted-foreground">Không tìm thấy khách hàng nào khớp với tìm kiếm.</p>
         </div>
       )}

@@ -813,50 +813,53 @@ export function StatusTransitionConfigView() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Banner / Header */}
-      <div className="relative overflow-hidden rounded-3xl border border-[#2f6cf5]/10 bg-gradient-to-r from-[#2f6cf5]/10 via-[#2f6cf5]/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
-        <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#2f6cf5] via-background to-background pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-[#2f6cf5] font-bold text-sm uppercase tracking-wider mb-2">
-              <GitCompare className="w-5 h-5 animate-pulse" /> Luồng trạng thái
+      <div className="bg-card/45 border border-border/60 rounded-[10px] overflow-hidden shadow-xs backdrop-blur-md">
+        {/* Banner / Header - Merged */}
+        <div className="relative overflow-hidden border-b border-border/40 bg-gradient-to-r from-[#2f6cf5]/10 via-[#2f6cf5]/5 to-transparent p-6 md:p-8 text-left">
+          <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#2f6cf5] via-background to-background pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-[#2f6cf5] font-bold text-sm uppercase tracking-wider mb-2">
+                <GitCompare className="w-5 h-5 animate-pulse" /> Luồng trạng thái
+              </div>
+              <h3 className="text-2xl font-bold font-heading text-foreground">
+                Quy tắc chuyển đổi trạng thái khách hàng
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                Thiết lập luồng phân luồng và gán thẻ theo thời gian thực nhằm phát hiện rời bỏ hoặc vinh danh tệp hội viên.
+              </p>
             </div>
-            <h3 className="text-2xl font-bold font-heading text-foreground">
-              Quy tắc chuyển đổi trạng thái khách hàng
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
-              Thiết lập luồng phân luồng và gán thẻ theo thời gian thực nhằm phát hiện rời bỏ hoặc vinh danh tệp hội viên.
-            </p>
-          </div>
-          <div className="flex gap-2.5 flex-wrap shrink-0 self-start md:self-auto">
-            <button
-               onClick={handleNewRule}
-               className="px-5 py-2.5 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-[#2f6cf5]/20 flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" /> Thêm quy tắc mới
-            </button>
+            <div className="flex gap-2.5 flex-wrap shrink-0 self-start md:self-auto">
+              <button
+                 onClick={handleNewRule}
+                 className="px-5 py-2.5 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-[10px] text-xs font-bold transition-all shadow-lg shadow-[#2f6cf5]/20 flex items-center justify-center gap-1.5 cursor-pointer relative z-20"
+              >
+                <Plus className="w-4 h-4" /> Thêm quy tắc mới
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        <div className="p-6">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+
         {/* Rules List (Left side - Col 7) */}
         <div className="xl:col-span-7 space-y-4">
           <div className="flex items-center justify-between px-1">
             <h5 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
               Danh sách quy tắc kích hoạt ({rules.length})
             </h5>
-            <span className="text-xs bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-md font-bold">
+            <span className="text-xs bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-[10px] font-bold">
               Thời gian thực (Firestore)
             </span>
           </div>
 
           {loading ? (
-            <div className="py-12 text-center text-muted-foreground italic bg-card border border-border rounded-3xl">
+            <div className="py-12 text-center text-muted-foreground italic bg-card border border-border rounded-[10px]">
               Đang tải cấu hình quy tắc...
             </div>
           ) : rules.length === 0 ? (
-            <div className="py-16 text-center border-2 border-dashed border-border rounded-3xl space-y-3">
+            <div className="py-16 text-center border-2 border-dashed border-border rounded-[10px] space-y-3">
               <Zap className="w-10 h-10 text-muted-foreground/30 mx-auto" />
               <p className="text-sm text-muted-foreground font-medium">
                 Chưa có quy tắc chuyển đổi tùy biến nào
@@ -881,7 +884,7 @@ export function StatusTransitionConfigView() {
                 return (
                   <Card
                     key={rule.id}
-                    className={`border-none ${rule.enabled ? "bg-card" : "bg-muted/10 opacity-70"} hover:shadow-lg transition-all duration-300 rounded-3xl overflow-hidden border border-border/40`}
+                    className={`border-none ${rule.enabled ? "bg-card" : "bg-muted/10 opacity-70"} hover:shadow-lg transition-all duration-300 rounded-[10px] overflow-hidden border border-border/40`}
                   >
                     <CardContent className="p-6 space-y-4">
                       <div className="flex items-start justify-between gap-4">
@@ -905,7 +908,7 @@ export function StatusTransitionConfigView() {
                           <button
                             type="button"
                             onClick={() => handleToggleRule(rule)}
-                            className="p-1.5 hover:bg-muted rounded-lg transition-colors"
+                            className="p-1.5 hover:bg-muted rounded-[10px] transition-colors"
                             title={
                               rule.enabled
                                 ? "Tạm ngưng quy tắc"
@@ -921,7 +924,7 @@ export function StatusTransitionConfigView() {
                           <button
                             type="button"
                             onClick={() => handleEditRule(rule)}
-                            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-muted rounded-lg transition-colors"
+                            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-muted rounded-[10px] transition-colors"
                             title="Sửa điều kiện"
                           >
                             <Settings2 className="w-4 h-4" />
@@ -929,7 +932,7 @@ export function StatusTransitionConfigView() {
                           <button
                             type="button"
                             onClick={() => handleDeleteRule(rule.id)}
-                            className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-colors"
+                            className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-[10px] transition-colors"
                             title="Xóa quy tắc"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -938,7 +941,7 @@ export function StatusTransitionConfigView() {
                       </div>
 
                       {/* Transition visual indicator */}
-                      <div className="p-3 bg-muted/30 rounded-2xl flex items-center justify-between border border-border/20 text-xs">
+                      <div className="p-3 bg-muted/30 rounded-[10px] flex items-center justify-between border border-border/20 text-xs">
                         <div className="flex items-center gap-2 ">
                           <span className="text-muted-foreground">Từ:</span>
                           {rule.fromStatus === "ALL" ? (
@@ -1005,7 +1008,7 @@ export function StatusTransitionConfigView() {
                             return (
                               <span
                                 key={index}
-                                className="inline-flex items-center gap-1.5 text-xs bg-muted px-3 py-1.5 rounded-xl border border-border/40 font-semibold"
+                                className="inline-flex items-center gap-1.5 text-xs bg-muted px-3 py-1.5 rounded-[10px] border border-border/40 font-semibold"
                               >
                                 <span className="text-muted-foreground">
                                   {opt?.label}
@@ -1028,27 +1031,27 @@ export function StatusTransitionConfigView() {
                           Hành vi tự động:
                         </span>
                         {rule.automations.sendZalo && (
-                          <span className="bg-[#2f6cf5]/5 text-[#2f6cf5] font-bold py-0.5 px-2 rounded-lg border border-[#2f6cf5]/15">
+                          <span className="bg-[#2f6cf5]/5 text-[#2f6cf5] font-bold py-0.5 px-2 rounded-[10px] border border-[#2f6cf5]/15">
                             Gửi Zalo ZNS
                           </span>
                         )}
                         {rule.automations.grantVoucher && (
-                          <span className="bg-amber-500/5 text-amber-600 font-bold py-0.5 px-2 rounded-lg border border-amber-500/15">
+                          <span className="bg-amber-500/5 text-amber-600 font-bold py-0.5 px-2 rounded-[10px] border border-amber-500/15">
                             Tặng quà/Voucher
                           </span>
                         )}
                         {rule.automations.notifySupport && (
-                          <span className="bg-indigo-500/5 text-indigo-600 font-bold py-0.5 px-2 rounded-lg border border-indigo-500/15">
+                          <span className="bg-indigo-500/5 text-indigo-600 font-bold py-0.5 px-2 rounded-[10px] border border-indigo-500/15">
                             Thông báo CSKH
                           </span>
                         )}
                         {rule.automations.enableDoublePoints && (
-                          <span className="bg-purple-500/5 text-purple-600 font-bold py-0.5 px-2 rounded-lg border border-purple-500/15">
+                          <span className="bg-purple-500/5 text-purple-600 font-bold py-0.5 px-2 rounded-[10px] border border-purple-500/15">
                             Nhân đôi x2 điểm
                           </span>
                         )}
                         {rule.automations.lockAccount && (
-                          <span className="bg-rose-500/5 text-rose-600 font-bold py-0.5 px-2 rounded-lg border border-rose-500/15">
+                          <span className="bg-rose-500/5 text-rose-600 font-bold py-0.5 px-2 rounded-[10px] border border-rose-500/15">
                             Khóa quyền hội viên
                           </span>
                         )}
@@ -1063,7 +1066,7 @@ export function StatusTransitionConfigView() {
 
         {/* Sandbox Simulation Panel (Right side - Col 5) */}
         <div className="xl:col-span-5 space-y-6">
-          <Card className="border-none bg-card rounded-3xl shadow-xl overflow-hidden border border-border/40">
+          <Card className="border-none bg-card rounded-[10px] shadow-xl overflow-hidden border border-border/40">
             <div className="p-6 border-b border-border bg-muted/10">
               <h5 className="font-bold font-heading text-base flex items-center gap-2">
                 <Play className="w-5 h-5 text-primary fill-current" />
@@ -1083,7 +1086,7 @@ export function StatusTransitionConfigView() {
                   <select
                     value={simCurrentStatus}
                     onChange={(e) => setSimCurrentStatus(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                   >
                     {CUSTOMER_STATUSES.map((s) => (
                       <option key={s.code} value={s.code}>
@@ -1100,7 +1103,7 @@ export function StatusTransitionConfigView() {
                   <select
                     value={simCurrentTier}
                     onChange={(e) => setSimCurrentTier(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                   >
                     {TIER_VALUES.map((t) => (
                       <option key={t.value} value={t.value}>
@@ -1120,7 +1123,7 @@ export function StatusTransitionConfigView() {
                     type="number"
                     value={simSpend}
                     onChange={(e) => setSimSpend(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                     placeholder="₫"
                   />
                 </div>
@@ -1133,7 +1136,7 @@ export function StatusTransitionConfigView() {
                     type="number"
                     value={simPoints}
                     onChange={(e) => setSimPoints(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                     placeholder="pts"
                   />
                 </div>
@@ -1148,7 +1151,7 @@ export function StatusTransitionConfigView() {
                     type="number"
                     value={simInactive}
                     onChange={(e) => setSimInactive(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                   />
                 </div>
 
@@ -1160,7 +1163,7 @@ export function StatusTransitionConfigView() {
                     type="number"
                     value={simDropRate}
                     onChange={(e) => setSimDropRate(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                   />
                 </div>
               </div>
@@ -1174,7 +1177,7 @@ export function StatusTransitionConfigView() {
                     type="number"
                     value={simBadReviews}
                     onChange={(e) => setSimBadReviews(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                   />
                 </div>
 
@@ -1186,7 +1189,7 @@ export function StatusTransitionConfigView() {
                     type="number"
                     value={simFraudAlerts}
                     onChange={(e) => setSimFraudAlerts(e.target.value)}
-                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                   />
                 </div>
               </div>
@@ -1194,7 +1197,7 @@ export function StatusTransitionConfigView() {
               <button
                 type="button"
                 onClick={runSimulation}
-                className="w-full py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-lg hover:bg-indigo-700 transition-all cursor-pointer flex items-center justify-center gap-2 mt-4"
+                className="w-full py-3 bg-indigo-600 text-white rounded-[10px] text-xs font-bold shadow-lg hover:bg-indigo-700 transition-all cursor-pointer flex items-center justify-center gap-2 mt-4"
               >
                 <RefreshCw className="w-4 h-4 animate-spin-hover" />
                 Kiểm thử và Phân tích Quy tắc
@@ -1211,7 +1214,7 @@ export function StatusTransitionConfigView() {
                     {simResults.map((res) => (
                       <div
                         key={res.ruleId}
-                        className={`p-4 rounded-2xl border ${res.isMatched ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-950 dark:text-emerald-100" : "bg-muted/40 border-border/40 opacity-75"} text-xs`}
+                        className={`p-4 rounded-[10px] border ${res.isMatched ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-950 dark:text-emerald-100" : "bg-muted/40 border-border/40 opacity-75"} text-xs`}
                       >
                         <div className="flex items-start justify-between gap-2.5">
                           <div className="space-y-0.5">
@@ -1273,7 +1276,7 @@ export function StatusTransitionConfigView() {
           </Card>
 
           {/* Vận hành Thực tế CRM Transition Engine */}
-          <Card className="border-none bg-card rounded-3xl shadow-xl overflow-hidden border border-border/40 mt-6">
+          <Card className="border-none bg-card rounded-[10px] shadow-xl overflow-hidden border border-border/40 mt-6">
             <div className="p-6 border-b border-border bg-primary/5">
               <h5 className="font-bold font-heading text-base flex items-center gap-2 text-primary">
                 <Zap className="w-5 h-5 fill-current" />
@@ -1285,7 +1288,7 @@ export function StatusTransitionConfigView() {
               </p>
             </div>
             <CardContent className="p-6 space-y-4 text-left">
-              <div className="bg-amber-500/10 dark:bg-amber-500/5 p-4 rounded-2xl border border-amber-500/20 text-xs text-amber-800 dark:text-amber-400 leading-relaxed font-sans flex items-start gap-2.5">
+              <div className="bg-amber-500/10 dark:bg-amber-500/5 p-4 rounded-[10px] border border-amber-500/20 text-xs text-amber-800 dark:text-amber-400 leading-relaxed font-sans flex items-start gap-2.5">
                 <AlertCircle className="w-5 h-5 shrink-0" />
                 <span>
                   <strong>Lưu ý:</strong> Hành động này sẽ thay đổi nhãn trạng
@@ -1301,7 +1304,7 @@ export function StatusTransitionConfigView() {
                   executing || rules.filter((r) => r.enabled).length === 0
                 }
                 onClick={handleExecuteLiveTransitions}
-                className="w-full py-3 bg-primary text-primary-foreground rounded-xl text-xs font-bold shadow-lg hover:bg-primary/95 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3 bg-primary text-primary-foreground rounded-[10px] text-xs font-bold shadow-lg hover:bg-primary/95 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {executing ? (
                   <>
@@ -1332,7 +1335,7 @@ export function StatusTransitionConfigView() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3.5 text-center">
-                    <div className="bg-muted/40 p-3 rounded-2xl border border-border/10">
+                    <div className="bg-muted/40 p-3 rounded-[10px] border border-border/10">
                       <span className="text-xs text-muted-foreground uppercase block font-medium">
                         Tổng số khách hàng quét
                       </span>
@@ -1340,7 +1343,7 @@ export function StatusTransitionConfigView() {
                         {executionReport.totalCustomers}
                       </span>
                     </div>
-                    <div className="bg-emerald-500/10 p-3 rounded-2xl border border-emerald-500/15 text-emerald-800 dark:text-emerald-400">
+                    <div className="bg-emerald-500/10 p-3 rounded-[10px] border border-emerald-500/15 text-emerald-800 dark:text-emerald-400">
                       <span className="text-xs text-muted-foreground uppercase block font-medium">
                         Khách hàng được cập nhật
                       </span>
@@ -1355,7 +1358,7 @@ export function StatusTransitionConfigView() {
                       {executionReport.details.map((log, i) => (
                         <div
                           key={i}
-                          className="p-3 bg-muted/30 rounded-xl border border-border/30 text-xs space-y-1"
+                          className="p-3 bg-muted/30 rounded-[10px] border border-border/30 text-xs space-y-1"
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-foreground">
@@ -1378,7 +1381,7 @@ export function StatusTransitionConfigView() {
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-muted/20 p-4 text-center rounded-2xl border border-dashed border-border/80 text-xs text-muted-foreground">
+                    <div className="bg-muted/20 p-4 text-center rounded-[10px] border border-dashed border-border/80 text-xs text-muted-foreground">
                       Không có khách hàng nào thay đổi trạng thái trong lượt
                       quét này.
                     </div>
@@ -1389,8 +1392,10 @@ export function StatusTransitionConfigView() {
           </Card>
         </div>
       </div>
+    </div>
+  </div>
 
-      {/* Editor Dialog/Modal using Radix / native layout styled absolute */}
+  {/* Editor Dialog/Modal using Radix / native layout styled absolute */}
       <AnimatePresence>
         {showEditor && editingRule && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1408,7 +1413,7 @@ export function StatusTransitionConfigView() {
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="relative w-full max-w-2xl bg-background border border-border/80 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-2xl bg-background border border-border/80 rounded-[10px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
               <form
                 onSubmit={handleSaveRule}
@@ -1431,7 +1436,7 @@ export function StatusTransitionConfigView() {
                   <button
                     type="button"
                     onClick={() => setShowEditor(false)}
-                    className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors cursor-pointer"
+                    className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-[10px] transition-colors cursor-pointer"
                   >
                     X
                   </button>
@@ -1451,7 +1456,7 @@ export function StatusTransitionConfigView() {
                         setEditingRule({ ...editingRule, name: e.target.value })
                       }
                       placeholder="Ví dụ: Tăng cấp VIP khi đủ điểm chi tiêu..."
-                      className="w-full bg-background border border-border rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-primary/50"
+                      className="w-full bg-background border border-border rounded-[10px] px-3.5 py-2.5 text-xs outline-none focus:border-primary/50"
                     />
                   </div>
 
@@ -1468,12 +1473,12 @@ export function StatusTransitionConfigView() {
                         })
                       }
                       placeholder="Nhập ghi chú ý nghĩa hoặc mục đích của quy tắc chuyển trạng thái này..."
-                      className="w-full bg-background border border-border rounded-xl px-3.5 py-2 text-xs min-h-[60px] outline-none focus:border-primary/50"
+                      className="w-full bg-background border border-border rounded-[10px] px-3.5 py-2 text-xs min-h-[60px] outline-none focus:border-primary/50"
                     />
                   </div>
 
                   {/* Transition Matrix Config */}
-                  <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-2xl border border-border/40">
+                  <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-[10px] border border-border/40">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
                         Trạng thái gốc (Source)
@@ -1486,7 +1491,7 @@ export function StatusTransitionConfigView() {
                             fromStatus: e.target.value,
                           })
                         }
-                        className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                        className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                       >
                         <option value="ALL">MỌI TRẠNG THÁI (ALL)</option>
                         {CUSTOMER_STATUSES.map((s) => (
@@ -1509,7 +1514,7 @@ export function StatusTransitionConfigView() {
                             toStatus: e.target.value,
                           })
                         }
-                        className="w-full bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                        className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                       >
                         {CUSTOMER_STATUSES.map((s) => (
                           <option key={s.code} value={s.code}>
@@ -1528,13 +1533,13 @@ export function StatusTransitionConfigView() {
                       </label>
 
                       {/* Combination logic picker AND/OR */}
-                      <div className="flex items-center bg-muted/70 p-1 rounded-xl border border-transparent gap-1 scale-90 origin-right">
+                      <div className="flex items-center bg-muted/70 p-1 rounded-[10px] border border-transparent gap-1 scale-90 origin-right">
                         <button
                           type="button"
                           onClick={() =>
                             setEditingRule({ ...editingRule, matchType: "and" })
                           }
-                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          className={`px-3 py-1 rounded-[10px] text-xs font-bold transition-all cursor-pointer ${
                             editingRule.matchType === "and"
                               ? "bg-primary text-primary-foreground shadow-sm"
                               : "text-muted-foreground hover:text-foreground"
@@ -1547,7 +1552,7 @@ export function StatusTransitionConfigView() {
                           onClick={() =>
                             setEditingRule({ ...editingRule, matchType: "or" })
                           }
-                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          className={`px-3 py-1 rounded-[10px] text-xs font-bold transition-all cursor-pointer ${
                             editingRule.matchType === "or"
                               ? "bg-primary text-primary-foreground shadow-sm"
                               : "text-muted-foreground hover:text-foreground"
@@ -1568,7 +1573,7 @@ export function StatusTransitionConfigView() {
                         return (
                           <div
                             key={index}
-                            className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center bg-muted/20 p-3 rounded-2xl border border-border/30"
+                            className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center bg-muted/20 p-3 rounded-[10px] border border-border/30"
                           >
                             {/* Metric Selector */}
                             <select
@@ -1580,7 +1585,7 @@ export function StatusTransitionConfigView() {
                                   e.target.value as any,
                                 )
                               }
-                              className="flex-1 min-w-[150px] bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                              className="flex-1 min-w-[150px] bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                             >
                               {METRIC_OPTIONS.map((m) => (
                                 <option key={m.value} value={m.value}>
@@ -1599,7 +1604,7 @@ export function StatusTransitionConfigView() {
                                   e.target.value as any,
                                 )
                               }
-                              className="w-32 bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                              className="w-32 bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                             >
                               {OPERATOR_OPTIONS.map((o) => (
                                 <option key={o.value} value={o.value}>
@@ -1619,7 +1624,7 @@ export function StatusTransitionConfigView() {
                                     e.target.value,
                                   )
                                 }
-                                className="w-44 bg-background border border-border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary/50"
+                                className="w-44 bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
                               >
                                 {TIER_VALUES.map((t) => (
                                   <option key={t.value} value={t.value}>
@@ -1640,7 +1645,7 @@ export function StatusTransitionConfigView() {
                                       e.target.value,
                                     )
                                   }
-                                  className="w-full bg-background border border-border rounded-xl pl-3 pr-8 py-2 text-xs outline-none focus:border-primary/50"
+                                  className="w-full bg-background border border-border rounded-[10px] pl-3 pr-8 py-2 text-xs outline-none focus:border-primary/50"
                                   placeholder="0"
                                 />
                                 {currentMetricType?.unit && (
@@ -1655,7 +1660,7 @@ export function StatusTransitionConfigView() {
                             <button
                               type="button"
                               onClick={() => handleRemoveCondition(index)}
-                              className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-colors cursor-pointer self-end sm:self-auto shrink-0"
+                              className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-[10px] transition-colors cursor-pointer self-end sm:self-auto shrink-0"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -1666,7 +1671,7 @@ export function StatusTransitionConfigView() {
                       <button
                         type="button"
                         onClick={handleAddCondition}
-                        className="w-full py-2 bg-muted/40 hover:bg-muted/75 border border-dashed border-border text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground"
+                        className="w-full py-2 bg-muted/40 hover:bg-muted/75 border border-dashed border-border text-xs font-bold rounded-[10px] transition-all cursor-pointer flex items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground"
                       >
                         <Plus className="w-4 h-4" />
                         Thêm điều kiện so khớp mới
@@ -1681,7 +1686,7 @@ export function StatusTransitionConfigView() {
                     </label>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                      <label className="flex items-center gap-3 p-3 bg-muted/15 border border-border/20 rounded-2xl cursor-pointer hover:bg-muted/30 transition-colors">
+                      <label className="flex items-center gap-3 p-3 bg-muted/15 border border-border/20 rounded-[10px] cursor-pointer hover:bg-muted/30 transition-colors">
                         <input
                           type="checkbox"
                           checked={editingRule.automations?.sendZalo || false}
@@ -1706,7 +1711,7 @@ export function StatusTransitionConfigView() {
                         </div>
                       </label>
 
-                      <label className="flex items-center gap-3 p-3 bg-muted/15 border border-border/20 rounded-2xl cursor-pointer hover:bg-muted/30 transition-colors">
+                      <label className="flex items-center gap-3 p-3 bg-muted/15 border border-border/20 rounded-[10px] cursor-pointer hover:bg-muted/30 transition-colors">
                         <input
                           type="checkbox"
                           checked={
@@ -1733,7 +1738,7 @@ export function StatusTransitionConfigView() {
                         </div>
                       </label>
 
-                      <label className="flex items-center gap-3 p-3 bg-muted/15 border border-border/20 rounded-2xl cursor-pointer hover:bg-muted/30 transition-colors">
+                      <label className="flex items-center gap-3 p-3 bg-muted/15 border border-border/20 rounded-[10px] cursor-pointer hover:bg-muted/30 transition-colors">
                         <input
                           type="checkbox"
                           checked={
@@ -1760,7 +1765,7 @@ export function StatusTransitionConfigView() {
                         </div>
                       </label>
 
-                      <label className="flex items-center gap-3 p-3 bg-muted/15 border border-border/20 rounded-2xl cursor-pointer hover:bg-muted/30 transition-colors">
+                      <label className="flex items-center gap-3 p-3 bg-muted/15 border border-border/20 rounded-[10px] cursor-pointer hover:bg-muted/30 transition-colors">
                         <input
                           type="checkbox"
                           checked={
@@ -1787,7 +1792,7 @@ export function StatusTransitionConfigView() {
                         </div>
                       </label>
 
-                      <label className="flex items-center gap-3 p-3 bg-muted/15 border border-border/20 rounded-2xl cursor-pointer hover:bg-muted/30 transition-colors sm:col-span-2">
+                      <label className="flex items-center gap-3 p-3 bg-muted/15 border border-border/20 rounded-[10px] cursor-pointer hover:bg-muted/30 transition-colors sm:col-span-2">
                         <input
                           type="checkbox"
                           checked={
@@ -1823,13 +1828,13 @@ export function StatusTransitionConfigView() {
                   <button
                     type="button"
                     onClick={() => setShowEditor(false)}
-                    className="px-5 py-2.5 bg-background border border-border text-xs font-bold rounded-xl transition-all hover:bg-muted cursor-pointer"
+                    className="px-5 py-2.5 bg-background border border-border text-xs font-bold rounded-[10px] transition-all hover:bg-muted cursor-pointer"
                   >
                     Hủy bỏ
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-primary text-primary-foreground text-xs font-bold rounded-xl transition-all hover:bg-primary/95 flex items-center gap-2 cursor-pointer shadow-lg shadow-primary/15"
+                    className="px-6 py-2.5 bg-primary text-primary-foreground text-xs font-bold rounded-[10px] transition-all hover:bg-primary/95 flex items-center gap-2 cursor-pointer shadow-lg shadow-primary/15"
                   >
                     <Save className="w-4 h-4" />
                     Lưu quy tắc cấu hình

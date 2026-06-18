@@ -473,7 +473,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  initial={{ opacity: 0, scale: 0.95, y: 15 }}
  animate={{ opacity: 1, scale: 1, y: 0 }}
  exit={{ opacity: 0, scale: 0.95, y: 15 }}
- className="bg-card border border-border/80 shadow-2xl w-full max-w-4xl max-h-[90vh] rounded-[2rem] overflow-hidden flex flex-col text-left"
+ className="bg-card border border-border/80 shadow-2xl w-full max-w-4xl max-h-[90vh] rounded-[10px] overflow-hidden flex flex-col text-left"
  >
  {/* Header toolbar */}
  <div className="p-6 border-b border-border/60 flex items-center justify-between bg-primary/5">
@@ -529,7 +529,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
       <button
         type="button"
         onClick={() => setSourceMode("csv")}
-        className={`py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 font-bold text-xs border transition-all cursor-pointer ${
+        className={`py-3 px-4 rounded-[10px] flex items-center justify-center gap-2.5 font-bold text-xs border transition-all cursor-pointer ${
           sourceMode === "csv"
             ? "bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5] shadow-xs"
             : "bg-background border-border hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -541,7 +541,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
       <button
         type="button"
         onClick={() => setSourceMode("contacts")}
-        className={`py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 font-bold text-xs border transition-all cursor-pointer ${
+        className={`py-3 px-4 rounded-[10px] flex items-center justify-center gap-2.5 font-bold text-xs border transition-all cursor-pointer ${
           sourceMode === "contacts"
             ? "bg-[#2f6cf5]/10 text-[#2f6cf5] border-[#2f6cf5] shadow-xs"
             : "bg-background border-border hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -560,7 +560,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
         onDragLeave={handleDrag}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-3xl p-10 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-4 ${
+        className={`border-2 border-dashed rounded-[10px] p-10 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-4 ${
         dragActive 
         ? "border-primary bg-primary/5 scale-[0.99] shadow-inner" 
         : "border-border/80 hover:border-primary/50 hover:bg-muted/30"
@@ -600,7 +600,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
                 link.click();
                 toast.success("Đã tải xuống tệp mẫu CSV!");
               }}
-              className="flex items-center gap-1.5 text-xs font-bold bg-[#2f6cf5]/10 text-[#2f6cf5] hover:bg-[#2f6cf5]/20 px-4 py-2.5 rounded-xl border border-[#2f6cf5]/20 transition-all cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 text-xs font-bold bg-[#2f6cf5]/10 text-[#2f6cf5] hover:bg-[#2f6cf5]/20 px-4 py-2.5 rounded-[10px] border border-[#2f6cf5]/20 transition-all cursor-pointer shadow-xs"
             >
               <Download className="w-3.5 h-3.5" /> Tải tệp mẫu
             </button>
@@ -609,17 +609,17 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
           <button
             type="button"
             onClick={() => setShowDrivePicker(true)}
-            className="flex items-center gap-1.5 text-xs font-bold bg-muted hover:bg-muted/85 text-foreground px-4 py-2.5 rounded-xl border border-border/60 transition-all cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 text-xs font-bold bg-muted hover:bg-muted/85 text-foreground px-4 py-2.5 rounded-[10px] border border-border/60 transition-all cursor-pointer shadow-xs"
           >
             <RefreshCw className="w-3.5 h-3.5" /> Google Drive
           </button>
         </div>
 
         {/* Sample standard template help */}
-        <div className="bg-muted/40 p-4 rounded-2xl border border-border/40 text-left space-y-2">
+        <div className="bg-muted/40 p-4 rounded-[10px] border border-border/40 text-left space-y-2">
         <span className="text-xs font-black uppercase text-muted-foreground tracking-widest block">Mẫu tệp CSV tiêu chuẩn gợi ý</span>
         <p className="text-xs text-muted-foreground">Hệ thống phân tích thông minh sẽ tự động liên kết các cột dựa trên tên tiêu đề. Bạn có thể xây dựng CSV với các dòng tương ứng:</p>
-        <div className="text-xs p-3 bg-card border border-border/80 rounded-xl text-foreground overflow-x-auto whitespace-nowrap">
+        <div className="text-xs p-3 bg-card border border-border/80 rounded-[10px] text-foreground overflow-x-auto whitespace-nowrap">
         Họ tên, Email, Số điện thoại, Điểm số, Link FB, Zalo, Mã chi nhánh, v.v.
         </div>
         </div>
@@ -628,7 +628,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
       /* GOOGLE CONTACTS FLOW */
       <div className="space-y-4">
         {contactsNeedsAuth ? (
-          <div className="border border-border/60 rounded-3xl p-8 bg-muted/20 text-center flex flex-col items-center justify-center space-y-4">
+          <div className="border border-border/60 rounded-[10px] p-8 bg-muted/20 text-center flex flex-col items-center justify-center space-y-4">
             <div className="w-16 h-16 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center border border-blue-500/15">
               <Users className="w-8 h-8" />
             </div>
@@ -642,7 +642,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
               type="button"
               onClick={handleContactsLogin}
               disabled={isContactsAuthLoading}
-              className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold px-6 py-3 rounded-2xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold px-6 py-3 rounded-[10px] text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isContactsAuthLoading ? (
                 <>
@@ -659,7 +659,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
         ) : (
           <div className="space-y-4 font-sans">
             {/* Search, metrics and logout */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-muted/45 p-3.5 rounded-2xl border border-border/50">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-muted/45 p-3.5 rounded-[10px] border border-border/50">
               <div className="relative flex-1">
                 <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -667,7 +667,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
                   placeholder="Lọc liên hệ theo tên, SĐT hoặc email..."
                   value={contactsSearch}
                   onChange={(e) => handleContactsSearchChange(e.target.value)}
-                  className="pl-9 pr-4 py-2 w-full text-xs border border-border/80 bg-background rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 animate-none"
+                  className="pl-9 pr-4 py-2 w-full text-xs border border-border/80 bg-background rounded-[10px] focus:outline-none focus:ring-2 focus:ring-primary/20 animate-none"
                 />
               </div>
               <div className="flex items-center gap-3 shrink-0">
@@ -677,7 +677,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
                 <button
                   type="button"
                   onClick={handleContactsLogout}
-                  className="text-xs font-bold text-rose-500 hover:text-rose-600 bg-rose-500/10 border border-rose-500/15 py-1.5 px-3 rounded-xl transition-all flex items-center gap-1.5 shrink-0"
+                  className="text-xs font-bold text-rose-500 hover:text-rose-600 bg-rose-500/10 border border-rose-500/15 py-1.5 px-3 rounded-[10px] transition-all flex items-center gap-1.5 shrink-0"
                 >
                   <LogOut className="w-3.5 h-3.5" /> Đăng xuất
                 </button>
@@ -685,7 +685,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
             </div>
 
             {/* Contacts Table / Checklist view */}
-            <div className="border border-border/80 rounded-2xl overflow-hidden max-h-[250px] overflow-y-auto shadow-xs bg-card">
+            <div className="border border-border/80 rounded-[10px] overflow-hidden max-h-[250px] overflow-y-auto shadow-xs bg-card">
               {contactsLoading ? (
                 <div className="flex flex-col items-center justify-center p-12 space-y-3">
                   <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -765,7 +765,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
                 <button
                   type="button"
                   onClick={executeContactsImport}
-                  className="bg-primary hover:bg-primary/95 text-primary-foreground font-black px-5 py-2.5 rounded-xl text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="bg-primary hover:bg-primary/95 text-primary-foreground font-black px-5 py-2.5 rounded-[10px] text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" /> Tiến hành nhập vào CRM
                 </button>
@@ -781,7 +781,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
 {/* STEP 2: COLUMN MAPPING DIALOG PANEL */}
  {step === 2 && (
  <div className="space-y-4">
- <div className="bg-amber-500/10 text-amber-800 dark:text-amber-400 p-3.5 rounded-2xl border border-amber-500/20 text-xs flex items-start gap-2.5">
+ <div className="bg-amber-500/10 text-amber-800 dark:text-amber-400 p-3.5 rounded-[10px] border border-amber-500/20 text-xs flex items-start gap-2.5">
  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
  <div className="space-y-0.5">
  <p className="font-bold">Thiết Lập Ánh Xạ Cột Cấu Hình</p>
@@ -790,7 +790,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  </div>
 
  {/* Fields List details */}
- <div className="border border-border rounded-2xl overflow-hidden shadow-xs">
+ <div className="border border-border rounded-[10px] overflow-hidden shadow-xs">
  <table className="w-full text-left text-xs">
  <thead className="bg-muted font-bold text-muted-foreground uppercase text-xs tracking-wider border-b border-border">
  <tr>
@@ -842,7 +842,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  [field.key]: val
  }));
  }}
- className="bg-background border border-border rounded-xl text-xs px-2.5 py-1.5 outline-none font-bold w-full max-w-xs focus:ring-2 focus:ring-primary/20"
+ className="bg-background border border-border rounded-[10px] text-xs px-2.5 py-1.5 outline-none font-bold w-full max-w-xs focus:ring-2 focus:ring-primary/20"
  >
  <option value={-1}>-- Bỏ qua không nhập --</option>
  {csvHeaders.map((header, idx) => (
@@ -862,7 +862,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  <button
  type="button"
  onClick={() => setStep(1)}
- className="flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted px-4 py-2 rounded-xl transition-all"
+ className="flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted px-4 py-2 rounded-[10px] transition-all"
  >
  <ArrowLeft className="w-4 h-4" /> Quay lại chọn tệp
  </button>
@@ -874,7 +874,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  setStep(3);
  }
  }}
- className="flex items-center gap-2 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/95 shadow-md px-5 py-2.5 rounded-xl transition-all cursor-pointer"
+ className="flex items-center gap-2 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/95 shadow-md px-5 py-2.5 rounded-[10px] transition-all cursor-pointer"
  >
  Xác nhận ánh xạ, Xem thử <ChevronRight className="w-4 h-4" />
  </button>
@@ -891,7 +891,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  </div>
 
  {/* Matched Data Table */}
- <div className="border border-border/85 rounded-2xl overflow-hidden shadow-2xs">
+ <div className="border border-border/85 rounded-[10px] overflow-hidden shadow-2xs">
  <div className="overflow-x-auto">
  <table className="w-full text-left text-xs whitespace-nowrap">
  <thead className="bg-muted font-bold text-muted-foreground uppercase text-xs border-b border-border/80">
@@ -913,7 +913,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  <td className="p-3 text-muted-foreground ">{cust.phone || "Chưa thiết lập"}</td>
  <td className="p-3 font-bold text-[#2f6cf5]">{cust.points ?? 0} pts</td>
  <td className="p-3">
- <span className="bg-muted px-2 py-0.5 rounded-md text-xs text-muted-foreground">
+ <span className="bg-muted px-2 py-0.5 rounded-[10px] text-xs text-muted-foreground">
  {cust.companyId ? companies.find(c => c.id === cust.companyId)?.name || cust.companyId : "Cá nhân"}
  </span>
  </td>
@@ -944,12 +944,12 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
 
  {/* Summary stat cards */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="bg-blue-500/5 p-4 rounded-2xl border border-blue-500/10 text-left">
+ <div className="bg-blue-500/5 p-4 rounded-[10px] border border-blue-500/10 text-left">
  <span className="text-xs font-black uppercase text-muted-foreground">Phân tích tệp</span>
  <div className="text-xl font-bold text-foreground mt-1">{csvRows.length} KH</div>
  <p className="text-xs text-muted-foreground mt-0.5">Tổng số khách hàng được phát hiện trong tệp CSV hiện tại.</p>
  </div>
- <div className="bg-emerald-500/5 p-4 rounded-2xl border border-emerald-500/10 text-left">
+ <div className="bg-emerald-500/5 p-4 rounded-[10px] border border-emerald-500/10 text-left">
  <span className="text-xs font-black uppercase text-primary">Các chính sách mặc định</span>
  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
  Khách hàng mới tạo mặc định mang nhãn <strong>NEW_MEMBER</strong> để áp dụng luật chuyển đổi sau này. Điểm tự động tích lũy dựa trên cấu hình.
@@ -962,7 +962,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  <button
  type="button"
  onClick={() => setStep(2)}
- className="flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted px-4 py-2 rounded-xl"
+ className="flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted px-4 py-2 rounded-[10px]"
  >
  <ArrowLeft className="w-4 h-4" /> Quay lại ánh xạ cột
  </button>
@@ -970,7 +970,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  <button
  type="button"
  onClick={executeImport}
- className="flex items-center gap-2 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/95 shadow-md px-6 py-3 rounded-xl cursor-pointer"
+ className="flex items-center gap-2 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/95 shadow-md px-6 py-3 rounded-[10px] cursor-pointer"
  >
  <Play className="w-4 h-4 fill-current" /> Bắt đầu ghi vào hệ thống
  </button>
@@ -1013,7 +1013,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  </p>
  </div>
 
- <div className="bg-muted/40 p-4.5 rounded-2xl border border-border/80 text-left text-xs space-y-2">
+ <div className="bg-muted/40 p-4.5 rounded-[10px] border border-border/80 text-left text-xs space-y-2">
  <div className="flex justify-between border-b border-border/40 pb-2">
  <span className="text-muted-foreground text-xs uppercase font-sans">Chi tiết tác vụ</span>
  <span className="text-primary font-bold">IMPORT REPORT</span>
@@ -1035,7 +1035,7 @@ export function ImportCustomersDialog({ onClose, attributes, companies, userId }
  <button
  type="button"
  onClick={onClose}
- className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl text-xs hover:bg-primary/95 transition-all shadow-md cursor-pointer"
+ className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-[10px] text-xs hover:bg-primary/95 transition-all shadow-md cursor-pointer"
  >
  Hoàn tất & Đóng trình nhập liệu
  </button>

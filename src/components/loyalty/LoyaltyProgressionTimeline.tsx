@@ -133,7 +133,7 @@ export function LoyaltyProgressionTimeline({ currentPoints, tierName }: LoyaltyP
                 </div>
 
                 {idx < milestones.length - 1 && !milestones[idx+1].isUnlocked && ms.isUnlocked && (
-                  <div className="mt-3 p-2 bg-primary/5 border border-primary/20 rounded-xl animate-pulse absolute -bottom-[4.5rem] w-[180%] z-20 shadow-md">
+                  <div className="mt-3 p-2 bg-primary/5 border border-primary/20 rounded-[10px] animate-pulse absolute -bottom-[4.5rem] w-[180%] z-20 shadow-md">
                     <p className="text-[10px] font-bold text-primary flex items-center justify-center gap-1 text-center">
                        <ChevronRight className="w-3 h-3 shrink-0" /> Cần {(milestones[idx+1].points - currentPoints).toLocaleString()} điểm để lên hạng
                     </p>

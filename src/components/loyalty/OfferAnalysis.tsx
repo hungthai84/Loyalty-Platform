@@ -229,9 +229,9 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  <div className="space-y-6">
  
  {/* Title Header */}
- <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-sidebar/50 border border-[#2f6cf5]/20 rounded-3xl backdrop-blur-md gap-4">
+ <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-sidebar/50 border border-[#2f6cf5]/20 rounded-[10px] backdrop-blur-md gap-4">
  <div className="flex items-center gap-3">
- <div className="p-2.5 bg-[#2f6cf5]/10 rounded-2xl text-[#2f6cf5]">
+ <div className="p-2.5 bg-[#2f6cf5]/10 rounded-[10px] text-[#2f6cf5]">
  <Calculator className="w-6 h-6 animate-pulse" />
  </div>
  <div>
@@ -252,7 +252,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  <select 
  value={selectedCamId} 
  onChange={(e) => setSelectedCamId(e.target.value)}
- className="p-2 bg-muted border border-border/80 rounded-xl text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+ className="p-2 bg-muted border border-border/80 rounded-[10px] text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
  >
  {campaignOptions.map((opt) => (
  <option key={opt.id} value={opt.id}>{opt.name}</option>
@@ -264,7 +264,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  
  {/* Controls Column */}
- <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-xs space-y-4">
+ <div className="bg-card border border-border/60 rounded-[10px] p-6 shadow-xs space-y-4">
  <h4 className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest border-b pb-2.5 border-border/40 flex items-center gap-1.5 ">
  <Layers className="w-4 h-4 text-[#2f6cf5]" /> THIẾT LẬP THAM SỐ CHIẾN DỊCH
  </h4>
@@ -368,7 +368,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  const cleaned = Number(e.target.value.replace(/\./g, "").replace(/[^\d]/g, ""));
  setFixedOverhead(cleaned || 0);
  }}
- className="w-full p-2 bg-background border rounded-xl text-xs font-semibold text-foreground"
+ className="w-full p-2 bg-background border rounded-[10px] text-xs font-semibold text-foreground"
  />
  </div>
  </div>
@@ -379,7 +379,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  
  {/* Quick Metrics Cards */}
  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
- <div className="p-4 bg-sidebar/50 rounded-2xl border border-border/50 flex flex-col justify-between">
+ <div className="p-4 bg-sidebar/50 rounded-[10px] border border-border/50 flex flex-col justify-between">
  <span className="text-xs uppercase font-bold text-muted-foreground leading-none flex items-center gap-1">
  <Users className="w-3.5 h-3.5" /> Thể tích đổi quà
  </span>
@@ -391,7 +391,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  </span>
  </div>
 
- <div className="p-4 bg-sidebar/50 rounded-2xl border border-border/50 flex flex-col justify-between">
+ <div className="p-4 bg-sidebar/50 rounded-[10px] border border-border/50 flex flex-col justify-between">
  <span className="text-xs uppercase font-bold text-muted-foreground leading-none flex items-center gap-1">
  <Coins className="w-3.5 h-3.5 text-[#2f6cf5]" /> Tổng chi phí
  </span>
@@ -403,7 +403,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  </span>
  </div>
 
- <div className="p-4 bg-sidebar/50 rounded-2xl border border-border/50 flex flex-col justify-between">
+ <div className="p-4 bg-sidebar/50 rounded-[10px] border border-border/50 flex flex-col justify-between">
  <span className="text-xs uppercase font-bold text-emerald-500 leading-none flex items-center gap-1">
  <TrendingUp className="w-3.5 h-3.5" /> Doanh thu bồi đắp
  </span>
@@ -415,7 +415,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  </span>
  </div>
 
- <div className="p-4 bg-sidebar/50 rounded-2xl border border-[#2f6cf5]/30 flex flex-col justify-between relative overflow-hidden">
+ <div className="p-4 bg-sidebar/50 rounded-[10px] border border-[#2f6cf5]/30 flex flex-col justify-between relative overflow-hidden">
  <div className="absolute top-0 right-0 w-12 h-12 bg-primary/5 rounded-full blur-xs" />
  <span className="text-xs uppercase font-bold text-primary leading-none flex items-center gap-1">
  <Percent className="w-3.5 h-3.5" /> Tỷ lệ hoàn vốn ROI
@@ -430,7 +430,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  </div>
 
  {/* Graphical Projections Section */}
- <div className="bg-card border border-border/60 rounded-2xl p-6 space-y-4">
+ <div className="bg-card border border-border/60 rounded-[10px] p-6 space-y-4">
  <h4 className="text-xs font-bold text-foreground">XU THẾ LŨY KẾ CHI PHÍ VS DOANH THU (6 THÁNG HƯỞNG ƯU ĐÃI)</h4>
  <div className="h-[180px] w-full mt-2 text-xs ">
  <ResponsiveContainer width="100%" height="100%">
@@ -460,7 +460,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
  
  {/* Left side: chart of simulated contribution */}
- <div className="bg-card border border-border/60 rounded-2xl p-5 md:col-span-2 space-y-3">
+ <div className="bg-card border border-border/60 rounded-[10px] p-5 md:col-span-2 space-y-3">
  <h5 className="text-xs font-bold text-foreground">HIỆU QUẢ PHÂN BỔ THEO PHÂN CẤP CỦA HỘI VIÊN</h5>
  <div className="h-[130px] w-full text-xs ">
  <ResponsiveContainer width="100%" height="100%">
@@ -476,7 +476,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  </div>
 
  {/* Right side: AI Advisor call */}
- <div className="bg-[#2f6cf5]/5 border border-[#2f6cf5]/20 rounded-2xl p-5 flex flex-col justify-between">
+ <div className="bg-[#2f6cf5]/5 border border-[#2f6cf5]/20 rounded-[10px] p-5 flex flex-col justify-between">
  <div>
  <span className="text-xs uppercase font-bold tracking-widest text-[#2f6cf5] block">AI Advisor Suite</span>
  <h5 className="text-xs font-bold text-foreground mt-1">Chẩn đoán và Đề xuất Thâm dụng ngân sách</h5>
@@ -488,7 +488,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  <button
  onClick={runAIEstimation}
  disabled={aiOptimizing}
- className="w-full mt-3 py-2 bg-[#2f6cf5] hover:bg-[#1652f1] disabled:opacity-50 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-1 px-3 transition-all tracking-wider uppercase cursor-pointer"
+ className="w-full mt-3 py-2 bg-[#2f6cf5] hover:bg-[#1652f1] disabled:opacity-50 text-slate-950 font-black rounded-[10px] text-xs flex items-center justify-center gap-1 px-3 transition-all tracking-wider uppercase cursor-pointer"
  >
  <Sparkles className="w-3.5 h-3.5" />
  {aiOptimizing ? "Chẩn đoán..." : "Tối ưu hóa bằng AI"}
@@ -502,7 +502,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
 
  {/* AI Analysis detailed feedback block */}
  {aiAnalysisResult && (
- <div className="bg-gradient-to-r from-[#2f6cf5]/10 via-[#2f6cf5]/5 to-[#2f6cf5]/10 border border-[#2f6cf5]/40 rounded-3xl p-6 relative overflow-hidden animate-fade-in">
+ <div className="bg-gradient-to-r from-[#2f6cf5]/10 via-[#2f6cf5]/5 to-[#2f6cf5]/10 border border-[#2f6cf5]/40 rounded-[10px] p-6 relative overflow-hidden animate-fade-in">
  
  <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
  <Gem className="w-40 h-40 text-[#2f6cf5]" />
@@ -517,7 +517,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  </div>
  </div>
  
- <div className="px-4 py-1.5 border border-[#2f6cf5]/30 bg-[#2f6cf5]/10 text-[#2f6cf5] text-xs font-bold uppercase rounded-xl">
+ <div className="px-4 py-1.5 border border-[#2f6cf5]/30 bg-[#2f6cf5]/10 text-[#2f6cf5] text-xs font-bold uppercase rounded-[10px]">
  Cấp độ: {aiAnalysisResult.score >= 85 ? "Khuyến khích chạy" : "Cần tinh chỉnh gấp"}
  </div>
  </div>
@@ -543,7 +543,7 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  </div>
 
  {/* AI Ideal Parameters display table */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-5 border-t border-[#2f6cf5]/20 bg-background/40 p-4 rounded-2xl border border-border/40">
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-5 border-t border-[#2f6cf5]/20 bg-background/40 p-4 rounded-[10px] border border-border/40">
  <div className="space-y-0.5">
  <span className="text-xs text-muted-foreground uppercase font-bold">Mức Hóa Đơn Tối Thiểu (Suggested Threshold)</span>
  <p className="text-xs font-black text-foreground ">{formatVND(aiAnalysisResult.minSpendRequirement)}</p>
@@ -568,11 +568,11 @@ export function OfferAnalysis({ campaigns = [], customers = [] }: OfferAnalysisP
  <div className="flex justify-end pt-4">
    <button onClick={() => {
      const toastElement = document.createElement('div');
-     toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
+     toastElement.className = "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-[10px] border backdrop-blur-2xl shadow-xl transition-all duration-300 bg-card border-[#2f6cf5]";
      toastElement.innerHTML = `<div class="text-xs font-bold text-foreground">Lưu kết quả phân tích chiến dịch và ưu đãi thành công!</div>`;
      document.body.appendChild(toastElement);
      setTimeout(() => document.body.removeChild(toastElement), 3000);
-   }} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
+   }} className="px-6 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-[10px] shadow inline-flex items-center gap-2 hover:opacity-80 transition-all text-sm cursor-pointer border border-transparent">
      <CheckCircle2 className="w-4 h-4" />
      Lưu kết quả
    </button>
