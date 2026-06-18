@@ -1446,7 +1446,7 @@ export function LoyaltyView() {
                         </p>
                       </div>
                     </div>
-                  <TierComparisonTable tiers={tiers} />
+                  <TierComparisonTable />
                 </div>
               </div>
             )}

@@ -24,6 +24,7 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
   const [selectedTier, setSelectedTier] = useState<TierConfig | undefined>(undefined);
   const [showDialog, setShowDialog] = useState(false);
   const [localSearchTerm, setLocalSearchTerm] = useState("");
+  const [newBenefit, setNewBenefit] = useState<Record<string, {name: string, value: string}>>({});
 
   const filteredTiers = tiers.filter(tier => 
     tier.name.toLowerCase().includes(localSearchTerm.toLowerCase()) ||
@@ -127,6 +128,8 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
             setSelectedTier(undefined);
             setShowDialog(true);
         }}
+        searchTerm={localSearchTerm}
+        onSearchChange={setLocalSearchTerm}
       />
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between px-1">
@@ -177,7 +180,7 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
             </div>
             <div>
               <p className="text-base font-bold text-foreground">Không tìm thấy kết quả</p>
-              <p className="text-xs text-muted-foreground">Không tìm thấy hạng hội viên nào khớp với "{searchTerm}".</p>
+              <p className="text-xs text-muted-foreground">Không tìm thấy hạng hội viên nào khớp với "{localSearchTerm}".</p>
             </div>
           </div>
         ) : (

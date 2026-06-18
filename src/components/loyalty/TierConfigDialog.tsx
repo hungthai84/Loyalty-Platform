@@ -12,7 +12,7 @@ import {
 import { useFirebase } from "@/components/FirebaseProvider";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { toast } from "sonner";
-import { X, Plus, Trash2, Sliders, Palette, Zap, Edit2, Shield, Medal, Award, Crown, Gem, CheckCircle2, ChevronRight, Info, Star, Users } from "lucide-react";
+import { X, Plus, Trash2, Sliders, Palette, Zap, Edit2, Shield, Medal, Award, Crown, Gem, CheckCircle2, ChevronRight, Info, Star, Users, TrendingUp } from "lucide-react";
 import * as motion from "motion/react-client";
 import { TierConfig, TierCondition, AttributeDefinition } from "@/types";
 import { cn } from "@/lib/utils";

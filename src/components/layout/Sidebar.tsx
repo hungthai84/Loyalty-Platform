@@ -33,7 +33,9 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
     { name: "Khách hàng", view: "customers", icon: Users },
     { name: "Đặc quyền", view: "loyalty", icon: Award },
     { name: "Tương tác", view: "marketing", icon: Megaphone },
+    { name: "Phân tích", view: "analysis", icon: Sparkles },
     { name: "Điểm chạm", view: "portal", icon: Fingerprint },
+    { name: "Báo cáo", view: "analytics", icon: BarChart },
   ];
 
   const menuItems = allMenuItems;

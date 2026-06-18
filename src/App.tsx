@@ -47,6 +47,8 @@ function AppContent() {
             {safeActiveView === "marketing" && <MarketingView />}
             {safeActiveView === "settings" && <SettingsView />}
             {safeActiveView === "portal" && <CustomerPortalView />}
+            {safeActiveView === "analysis" && <AnalysisView />}
+            {safeActiveView === "analytics" && <AnalyticsView />}
             
             {["support", "billing"].includes(safeActiveView) && (
               <div className="flex-1 flex items-center justify-center p-8 h-[80vh]">

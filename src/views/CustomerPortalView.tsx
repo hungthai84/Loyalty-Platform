@@ -27,9 +27,13 @@ import {
   Database,
   Shield,
   Sliders,
+  Tablet,
+  Settings,
+  Save,
 } from "lucide-react";
 import { Activity } from "lucide-react";
 import * as motion from "motion/react-client";
+import { AnimatePresence } from "motion/react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -122,9 +126,10 @@ export function CustomerPortalView({ onBack }: PortalProps) {
     "system",
   );
   const [portalDeviceOption, setPortalDeviceOption] = useState<
-    "mobile" | "desktop"
+    "mobile" | "tablet" | "desktop"
   >("mobile");
   const [systemIsDark, setSystemIsDark] = useState(false);
+  const [showGeneralSettings, setShowGeneralSettings] = useState(false);
 
   useEffect(() => {
     if (!user || user.isLocal) return;
@@ -277,11 +282,11 @@ export function CustomerPortalView({ onBack }: PortalProps) {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold tracking-tight font-heading text-foreground">
-              Cổng Loyalty Thành Viên
+              Kho Quà Tặng Tích Lũy
             </h2>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Trải nghiệm giao diện tự phục vụ dành cho khách hàng: tự kiểm tra điểm số, đổi voucher và tích lũy thăng hạng.
+            Trung tâm quà tặng đặc quyền: Trải nghiệm giao diện tự phục vụ dành cho khách hàng: tự kiểm tra điểm số, đổi voucher và tích lũy thăng hạng.
           </p>
         </div>
       </div>
@@ -313,170 +318,230 @@ export function CustomerPortalView({ onBack }: PortalProps) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center space-y-6">
       {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
-      {/* Dynamic Theme Settings Control Panel for Showroom Manager */}
-      <div className="w-full max-w-[800px] grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-card border border-border/70 rounded-[10px] p-5 shadow-lg space-y-4">
-          <div className="flex items-center justify-between border-b pb-3 border-border/40">
-            <div className="flex items-center gap-2">
-              <Palette className="w-5 h-5 text-[#2f6cf5]" />
-              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
-                Định dạng hiển thị cổng VIP
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2.5">
+      {/* Compact Portal Configuration Toolbar */}
+      <div className="w-full max-w-[800px] bg-card/60 backdrop-blur-md border border-border/60 rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-6 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
+          {/* Theme Icons */}
+          <div className="flex items-center gap-1.5 p-1 bg-muted/30 rounded-xl border border-border/40">
             <button
               type="button"
               onClick={() => setPortalThemeOption("system")}
-              className={`py-3 px-4 border rounded-[10px] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                portalThemeOption === "system"
-                  ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
-                  : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
-              }`}
+              className={cn(
+                "w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer",
+                portalThemeOption === "system" 
+                  ? "bg-primary text-primary-foreground shadow-sm" 
+                  : "text-muted-foreground hover:bg-muted"
+              )}
+              title="Giao diện hệ thống"
             >
               <Monitor className="w-4 h-4" />
-              Hệ thống ({activeAppTheme === "dark" ? "Tối" : "Sáng"})
             </button>
             <button
               type="button"
               onClick={() => setPortalThemeOption("dark")}
-              className={`py-3 px-4 border rounded-[10px] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                portalThemeOption === "dark"
-                  ? "border-amber-500 bg-amber-500/5 text-amber-500 font-extrabold shadow-sm"
-                  : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
-              }`}
+              className={cn(
+                "w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer",
+                portalThemeOption === "dark" 
+                  ? "bg-amber-500 text-white shadow-sm" 
+                  : "text-muted-foreground hover:bg-muted"
+              )}
+              title="Giao diện tối"
             >
               <Moon className="w-4 h-4" />
-              Tối (Obsidian)
             </button>
+          </div>
+
+          <div className="h-6 w-px bg-border/40" />
+
+          {/* Device Icons */}
+          <div className="flex items-center gap-1.5 p-1 bg-muted/30 rounded-xl border border-border/40">
+            {[
+              { id: "mobile", icon: Smartphone, label: "Điện thoại" },
+              { id: "tablet", icon: Tablet, label: "Máy tính bảng" },
+              { id: "desktop", icon: Monitor, label: "Máy tính" }
+            ].map((device) => (
+              <button
+                key={device.id}
+                type="button"
+                onClick={() => setPortalDeviceOption(device.id as any)}
+                className={cn(
+                  "w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer",
+                  portalDeviceOption === device.id 
+                    ? "bg-primary text-primary-foreground shadow-sm" 
+                    : "text-muted-foreground hover:bg-muted"
+                )}
+                title={device.label}
+              >
+                <device.icon className="w-4 h-4" />
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="bg-card border border-border/70 rounded-[10px] p-5 shadow-lg space-y-4">
-          <div className="flex items-center justify-between border-b pb-3 border-border/40">
-            <div className="flex items-center gap-2">
-              <Monitor className="w-5 h-5 text-[#2f6cf5]" />
-              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
-                Thiết bị hiển thị
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              onClick={() => setPortalDeviceOption("mobile")}
-              className={`py-3 px-4 border rounded-[10px] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                portalDeviceOption === "mobile"
-                  ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
-                  : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
-              }`}
-            >
-              <Smartphone className="w-4 h-4" />
-              Điện thoại
-            </button>
-            <button
-              type="button"
-              onClick={() => setPortalDeviceOption("desktop")}
-              className={`py-3 px-4 border rounded-[10px] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                portalDeviceOption === "desktop"
-                  ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
-                  : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
-              }`}
-            >
-              <Monitor className="w-4 h-4" />
-              Máy tính
-            </button>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border/70 rounded-[10px] p-5 shadow-lg space-y-4 md:col-span-2 text-left">
-          <div className="flex items-center justify-between border-b pb-3 border-border/40">
-            <div className="flex items-center gap-2">
-              <Sliders className="w-5 h-5 text-[#2f6cf5]" />
-              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
-                Tuy chỉnh chung
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-            <div className="space-y-4">
-              <div className="space-y-3">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Màu sắc thương hiệu chủ đạo
-                </label>
-                <div className="flex items-center gap-3">
-                  <button className="w-8 h-8 rounded-[10px] bg-[#2f6cf5] ring-2 ring-offset-2 ring-[#2f6cf5] ring-offset-background"></button>
-                  <button className="w-8 h-8 rounded-[10px] border border-border bg-rose-500 hover:scale-110 transition-transform"></button>
-                  <button className="w-8 h-8 rounded-[10px] border border-border bg-emerald-500 hover:scale-110 transition-transform"></button>
-                  <button className="w-8 h-8 rounded-[10px] border border-border bg-amber-500 hover:scale-110 transition-transform"></button>
-                  <button className="w-8 h-8 rounded-[10px] border border-border bg-purple-500 hover:scale-110 transition-transform"></button>
-                </div>
-              </div>
-              <div className="space-y-4 pt-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Trạng thái Cổng Website
-                </label>
-                <div className="flex items-center justify-between p-3 rounded-[10px] border border-primary/20 bg-primary/5 gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span className="text-xs font-medium text-primary">Đang hoạt động (Online)</span>
-                  </div>
-                  <button className="text-[10px] font-bold px-2 py-1.5 rounded-[10px] border border-border bg-background hover:bg-muted transition-colors whitespace-nowrap">
-                    Copy Link Tích hợp
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Tính năng hiển thị
-                </label>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {[
-                  { id: "f1", label: "Mã QR", icon: Fingerprint, checked: true },
-                  { id: "f2", label: "Hạng, điểm", icon: Star, checked: true },
-                  { id: "f3", label: "Cửa hàng", icon: Gift, checked: true },
-                  { id: "f4", label: "Thông báo", icon: Activity, checked: true },
-                  { id: "f5", label: "Lịch sử mua", icon: Database, checked: true },
-                  { id: "f6", label: "Hỗ trợ (Ticket)", icon: Shield, checked: false },
-                ].map((f) => (
-                  <label key={f.id} className="flex items-center justify-between gap-2 p-2 rounded-[10px] border border-border/40 hover:bg-muted/20 cursor-pointer transition-all">
-                    <div className="flex items-center gap-2">
-                      <f.icon className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-[11px] font-medium">{f.label}</span>
-                    </div>
-                    <input type="checkbox" defaultChecked={f.checked} className="w-3.5 h-3.5 rounded border-border text-primary focus:ring-primary bg-background" />
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowGeneralSettings(true)}
+            className="w-10 h-10 flex items-center justify-center bg-muted/30 hover:bg-muted rounded-xl border border-border/40 transition-all text-muted-foreground hover:text-foreground cursor-pointer group"
+            title="Cấu hình chi tiết"
+          >
+            <Settings className="w-5 h-5 group-hover:rotate-45 transition-transform" />
+          </button>
           
-          <div className="pt-2 flex justify-end">
-            <button
-              onClick={handleSavePortal}
-              disabled={savingPortal}
-              className="px-5 py-2 rounded-[10px] bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
-            >
-              {savingPortal ? "Đang lưu..." : "Lưu Cấu Hình Cổng"}
-            </button>
-          </div>
+          <button
+            onClick={handleSavePortal}
+            disabled={savingPortal}
+            className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+          >
+            {savingPortal ? <span className="animate-spin mr-1">○</span> : <Save className="w-4 h-4" />}
+            Lưu
+          </button>
         </div>
       </div>
 
-      {/* Mobile/Desktop Frame Simulation */}
-      <div
-        className={`w-full ${portalDeviceOption === "mobile" ? "max-w-[400px] h-[800px] rounded-[3rem] border-8 border-zinc-800" : "max-w-5xl h-[800px] rounded-[10px] border border-border/50"} max-h-[85vh] ${phoneBg} shadow-2xl overflow-hidden relative transition-all duration-500 ease-in-out flex flex-col`}
-      >
+      {/* General Customization Popup */}
+      <AnimatePresence>
+        {showGeneralSettings && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowGeneralSettings(false)}
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl bg-card border border-border shadow-2xl rounded-2xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Sliders className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">Tùy chỉnh chung hiển thị</h3>
+                    <p className="text-xs text-muted-foreground">Cấu hình màu sắc và tính năng cho cổng thành viên</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowGeneralSettings(false)}
+                  className="p-2 hover:bg-muted rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Màu sắc thương hiệu chủ đạo
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <button className="w-8 h-8 rounded-[10px] bg-[#2f6cf5] ring-2 ring-offset-2 ring-[#2f6cf5] ring-offset-background"></button>
+                        <button className="w-8 h-8 rounded-[10px] border border-border bg-rose-500 hover:scale-110 transition-transform"></button>
+                        <button className="w-8 h-8 rounded-[10px] border border-border bg-emerald-500 hover:scale-110 transition-transform"></button>
+                        <button className="w-8 h-8 rounded-[10px] border border-border bg-amber-500 hover:scale-110 transition-transform"></button>
+                        <button className="w-8 h-8 rounded-[10px] border border-border bg-purple-500 hover:scale-110 transition-transform"></button>
+                      </div>
+                    </div>
+                    <div className="space-y-4 pt-1">
+                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Trạng thái Cổng Website
+                      </label>
+                      <div className="flex items-center justify-between p-3 rounded-[10px] border border-primary/20 bg-primary/5 gap-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                          <span className="text-xs font-medium text-primary">Đang hoạt động (Online)</span>
+                        </div>
+                        <button className="text-[10px] font-bold px-2 py-1.5 rounded-[10px] border border-border bg-background hover:bg-muted transition-colors whitespace-nowrap">
+                          Copy Link Tích hợp
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3 text-left">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Tính năng hiển thị
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      {[
+                        { id: "f1", label: "Mã QR", icon: Fingerprint, checked: true },
+                        { id: "f2", label: "Hạng, điểm", icon: Star, checked: true },
+                        { id: "f3", label: "Cửa hàng", icon: Gift, checked: true },
+                        { id: "f4", label: "Thông báo", icon: Activity, checked: true },
+                        { id: "f5", label: "Lịch sử mua", icon: Database, checked: true },
+                        { id: "f6", label: "Hỗ trợ (Ticket)", icon: Shield, checked: false },
+                      ].map((f) => (
+                        <label key={f.id} className="flex items-center justify-between gap-2 p-3 rounded-[10px] border border-border/40 hover:bg-muted/20 cursor-pointer transition-all">
+                          <div className="flex items-center gap-2">
+                            <f.icon className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-[11px] font-medium">{f.label}</span>
+                          </div>
+                          <input type="checkbox" defaultChecked={f.checked} className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-background" />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 bg-muted/30 border-t border-border/50 flex justify-end gap-3">
+                <button
+                  onClick={() => setShowGeneralSettings(false)}
+                  className="px-6 py-2 rounded-[10px] border border-border bg-background text-xs font-bold hover:bg-muted transition-colors"
+                >
+                  Đóng
+                </button>
+                <button
+                  onClick={() => {
+                    handleSavePortal();
+                    setShowGeneralSettings(false);
+                  }}
+                  className="px-6 py-2 rounded-[10px] bg-primary text-primary-foreground text-xs font-bold shadow-md hover:opacity-90 transition-opacity"
+                >
+                  Lưu thay đổi
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        <div 
+          className={cn(
+            "w-full transition-all duration-500 ease-in-out flex flex-col items-center",
+            portalDeviceOption === "mobile" ? "max-w-[400px]" : 
+            portalDeviceOption === "tablet" ? "max-w-[700px]" : "max-w-5xl"
+          )}
+        >
+          {/* Device Selection Wrapper */}
+          <div
+            className={cn(
+              "w-full overflow-hidden relative transition-all duration-500 ease-in-out flex flex-col shadow-2xl",
+              phoneBg,
+              portalDeviceOption === "mobile" ? "h-[800px] rounded-[3rem] border-8 border-zinc-800" : 
+              portalDeviceOption === "tablet" ? "h-[700px] rounded-[2rem] border-[12px] border-zinc-800" : 
+              "h-[800px] rounded-[10px] border border-border/50"
+            )}
+          >
         {/* Dynamic Island / Notch Simulation */}
         {portalDeviceOption === "mobile" && (
           <div className="absolute top-0 inset-x-0 h-6 flex justify-center z-50">
             <div className="w-32 h-6 bg-zinc-800 rounded-b-xl"></div>
+          </div>
+        )}
+
+        {portalDeviceOption === "tablet" && (
+          <div className="absolute top-0 inset-x-0 h-4 flex justify-center z-50">
+            <div className="w-24 h-4 bg-zinc-800 rounded-b-lg"></div>
           </div>
         )}
 
@@ -504,7 +569,10 @@ export function CustomerPortalView({ onBack }: PortalProps) {
             key={activeTab}
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
-            className={`px-6 space-y-6 w-full ${portalDeviceOption === "desktop" ? "max-w-2xl mt-8" : ""}`}
+            className={cn(
+              "px-6 space-y-6 w-full",
+              portalDeviceOption === "desktop" || portalDeviceOption === "tablet" ? "max-w-2xl mt-8" : ""
+            )}
           >
             {activeTab === "home" && (
               <>
@@ -1143,5 +1211,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
         )}
       </div>
     </div>
-  );
+  </AnimatePresence>
+</div>
+);
 }
