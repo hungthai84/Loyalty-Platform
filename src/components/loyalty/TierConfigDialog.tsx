@@ -12,7 +12,7 @@ import {
 import { useFirebase } from "@/components/FirebaseProvider";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { toast } from "sonner";
-import { X, Plus, Trash2, Sliders, Palette, Zap, Edit2, Shield, Medal, Award, Crown, Gem, CheckCircle2, ChevronRight, Info, Star, Users, TrendingUp } from "lucide-react";
+import { X, Plus, Trash2, Sliders, Palette, Zap, Edit2, Shield, Medal, Award, Crown, Gem, CheckCircle2, ChevronRight, Info, Star, Users, TrendingUp, History as HistoryIcon } from "lucide-react";
 import * as motion from "motion/react-client";
 import { TierConfig, TierCondition, AttributeDefinition } from "@/types";
 import { cn } from "@/lib/utils";
@@ -25,10 +25,12 @@ interface TierConfigDialogProps {
 
 const CONDITION_FIELDS = [
   { value: "points", label: "Tổng điểm (Điểm)" },
-  { value: "spend", label: "Tổng chi tiêu ($)" },
+  { value: "spend", label: "Tổng chi tiêu (VND)" },
   { value: "orders", label: "Số lượng đơn hàng" },
+  { value: "avg_order_value", label: "Giá trị đơn trung bình" },
   { value: "referrals", label: "Số lượt giới thiệu" },
   { value: "days_since_join", label: "Số ngày tham gia" },
+  { value: "purchase_frequency", label: "Tần suất mua (ngày/đơn)" },
   { value: "custom_attribute", label: "Thuộc tính tùy chỉnh" },
 ];
 
@@ -58,6 +60,8 @@ export function TierConfigDialog({ onClose, tier, availableRules }: TierConfigDi
   const [name, setName] = useState(tier?.name || "");
   const [threshold, setThreshold] = useState(tier?.threshold || 0);
   const [multiplier, setMultiplier] = useState(tier?.multiplier || 1);
+  const [description, setDescription] = useState(tier?.description || "");
+  const [maintenanceDays, setMaintenanceDays] = useState(tier?.maintenanceDays || 365);
   const [color, setColor] = useState(tier?.color || PRESET_COLORS[0]);
   const [conditions, setConditions] = useState<TierCondition[]>(
     tier?.conditions || [],
@@ -129,8 +133,10 @@ export function TierConfigDialog({ onClose, tier, availableRules }: TierConfigDi
       await setDoc(doc(db, path), {
         id,
         name,
+        description,
         threshold: Number(threshold),
         multiplier: Number(multiplier),
+        maintenanceDays: Number(maintenanceDays),
         color,
         conditions,
         benefits: benefits.filter(b => b.name.trim() !== ""),
@@ -225,7 +231,7 @@ export function TierConfigDialog({ onClose, tier, availableRules }: TierConfigDi
             onSubmit={handleSubmit}
             className="overflow-y-auto p-8 pt-6 space-y-8 custom-scrollbar"
           >
-            <div className="grid grid-cols-2 gap-6 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
               <div className="space-y-2">
                 <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
                   Tên hạng
@@ -249,6 +255,35 @@ export function TierConfigDialog({ onClose, tier, availableRules }: TierConfigDi
                   className="w-full px-4 py-3 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none "
                   value={multiplier}
                   onChange={(e) => setMultiplier(Number(e.target.value))}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 text-left">
+              <div className="space-y-2">
+                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                  Mô tả cấp bậc
+                </label>
+                <textarea
+                  className="w-full px-4 py-3 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none min-h-[80px]"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Nhập mô tả về đối tượng khách hàng của hạng này..."
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+              <div className="space-y-2">
+                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                  Chu kỳ duy trì hạng (Ngày)
+                </label>
+                <input
+                  type="number"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none"
+                  value={maintenanceDays}
+                  onChange={(e) => setMaintenanceDays(Number(e.target.value))}
+                  placeholder="v.d. 365"
                 />
               </div>
             </div>
@@ -488,6 +523,23 @@ export function TierConfigDialog({ onClose, tier, availableRules }: TierConfigDi
                       <span className="text-xs font-bold text-muted-foreground">multiplier</span>
                    </div>
                 </div>
+              </div>
+            </div>
+
+            {tier?.description && (
+              <div className="p-5 bg-amber-500/5 border border-amber-500/10 rounded-[10px] text-left">
+                <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-2">Mô tả cấp bậc</p>
+                <p className="text-sm font-medium text-foreground leading-relaxed">{tier.description}</p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-muted/30 rounded-[10px] border border-border flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <HistoryIcon className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-xs font-bold text-muted-foreground uppercase">Thời hạn duy trì</span>
+                </div>
+                <span className="text-sm font-black text-foreground">{tier?.maintenanceDays} Ngày</span>
               </div>
             </div>
 

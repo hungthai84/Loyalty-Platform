@@ -47,7 +47,7 @@ export interface AttributeDefinition {
 }
 
 export interface TierCondition {
- field: 'points' | 'spend' | 'orders' | 'referrals' | 'days_since_join' | 'custom_attribute';
+ field: 'points' | 'spend' | 'orders' | 'referrals' | 'days_since_join' | 'custom_attribute' | 'avg_order_value' | 'purchase_frequency';
  operator: 'gte' | 'lte' | 'gt' | 'lt' | 'eq';
  value: any;
  attributeKey?: string; // used if field is 'custom_attribute'
@@ -58,6 +58,7 @@ export interface TierConfig {
  name: string;
  threshold: number;
  multiplier?: number;
+ maintenanceDays?: number;
  conditions?: TierCondition[];
  color?: string;
  icon?: string;

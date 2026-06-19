@@ -29,7 +29,6 @@ import {
   Sliders,
   Tablet,
   Settings,
-  Save,
 } from "lucide-react";
 import { Activity } from "lucide-react";
 import * as motion from "motion/react-client";
@@ -318,83 +317,134 @@ export function CustomerPortalView({ onBack }: PortalProps) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center space-y-6">
       {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
-      {/* Compact Portal Configuration Toolbar */}
-      <div className="w-full max-w-[800px] bg-card/60 backdrop-blur-md border border-border/60 rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-6 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
-          {/* Theme Icons */}
-          <div className="flex items-center gap-1.5 p-1 bg-muted/30 rounded-xl border border-border/40">
-            <button
-              type="button"
-              onClick={() => setPortalThemeOption("system")}
-              className={cn(
-                "w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer",
-                portalThemeOption === "system" 
-                  ? "bg-primary text-primary-foreground shadow-sm" 
-                  : "text-muted-foreground hover:bg-muted"
-              )}
-              title="Giao diện hệ thống"
-            >
-              <Monitor className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setPortalThemeOption("dark")}
-              className={cn(
-                "w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer",
-                portalThemeOption === "dark" 
-                  ? "bg-amber-500 text-white shadow-sm" 
-                  : "text-muted-foreground hover:bg-muted"
-              )}
-              title="Giao diện tối"
-            >
-              <Moon className="w-4 h-4" />
-            </button>
+      {/* Unified Configuration Panel */}
+      <div className="w-full max-w-[800px] bg-card border border-border/70 rounded-[10px] p-6 shadow-lg space-y-8 text-left">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Theme Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 border-b pb-3 border-border/40">
+              <Palette className="w-5 h-5 text-[#2f6cf5]" />
+              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
+                Định dạng hiển thị cổng VIP
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setPortalThemeOption("system")}
+                className={`py-3 px-4 border rounded-[10px] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  portalThemeOption === "system"
+                    ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
+                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
+                }`}
+              >
+                <Monitor className="w-4 h-4" />
+                Hệ thống ({activeAppTheme === "dark" ? "Tối" : "Sáng"})
+              </button>
+              <button
+                type="button"
+                onClick={() => setPortalThemeOption("dark")}
+                className={`py-3 px-4 border rounded-[10px] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  portalThemeOption === "dark"
+                    ? "border-amber-500 bg-amber-500/5 text-amber-500 font-extrabold shadow-sm"
+                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
+                }`}
+              >
+                <Moon className="w-4 h-4" />
+                Tối (Obsidian)
+              </button>
+            </div>
           </div>
 
-          <div className="h-6 w-px bg-border/40" />
+          {/* Device Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 border-b pb-3 border-border/40">
+              <Monitor className="w-5 h-5 text-[#2f6cf5]" />
+              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
+                Thiết bị hiển thị
+              </span>
+            </div>
 
-          {/* Device Icons */}
-          <div className="flex items-center gap-1.5 p-1 bg-muted/30 rounded-xl border border-border/40">
-            {[
-              { id: "mobile", icon: Smartphone, label: "Điện thoại" },
-              { id: "tablet", icon: Tablet, label: "Máy tính bảng" },
-              { id: "desktop", icon: Monitor, label: "Máy tính" }
-            ].map((device) => (
+            <div className="grid grid-cols-3 gap-2">
               <button
-                key={device.id}
                 type="button"
-                onClick={() => setPortalDeviceOption(device.id as any)}
-                className={cn(
-                  "w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer",
-                  portalDeviceOption === device.id 
-                    ? "bg-primary text-primary-foreground shadow-sm" 
-                    : "text-muted-foreground hover:bg-muted"
-                )}
-                title={device.label}
+                onClick={() => setPortalDeviceOption("mobile")}
+                className={`py-3 px-2 border rounded-[10px] text-[10px] font-bold transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
+                  portalDeviceOption === "mobile"
+                    ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
+                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
+                }`}
               >
-                <device.icon className="w-4 h-4" />
+                <Smartphone className="w-4 h-4" />
+                Điện thoại
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={() => setPortalDeviceOption("tablet")}
+                className={`py-3 px-2 border rounded-[10px] text-[10px] font-bold transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
+                  portalDeviceOption === "tablet"
+                    ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
+                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
+                }`}
+              >
+                <Tablet className="w-4 h-4" />
+                Máy tính bảng
+              </button>
+              <button
+                type="button"
+                onClick={() => setPortalDeviceOption("desktop")}
+                className={`py-3 px-2 border rounded-[10px] text-[10px] font-bold transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
+                  portalDeviceOption === "desktop"
+                    ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
+                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
+                }`}
+              >
+                <Monitor className="w-4 h-4" />
+                Máy tính
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setShowGeneralSettings(true)}
-            className="w-10 h-10 flex items-center justify-center bg-muted/30 hover:bg-muted rounded-xl border border-border/40 transition-all text-muted-foreground hover:text-foreground cursor-pointer group"
-            title="Cấu hình chi tiết"
-          >
-            <Settings className="w-5 h-5 group-hover:rotate-45 transition-transform" />
-          </button>
+        {/* General Customization Section */}
+        <div className="space-y-4 pt-6 border-t border-border/40">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sliders className="w-5 h-5 text-[#2f6cf5]" />
+              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
+                Tuy chỉnh chung hiển thị
+              </span>
+            </div>
+            <button 
+              onClick={() => setShowGeneralSettings(true)}
+              className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+          </div>
           
-          <button
-            onClick={handleSavePortal}
-            disabled={savingPortal}
-            className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
-          >
-            {savingPortal ? <span className="animate-spin mr-1">○</span> : <Save className="w-4 h-4" />}
-            Lưu
-          </button>
+          <div className="flex items-center justify-between p-4 bg-muted/20 border border-dashed border-border rounded-[10px]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#2f6cf5]/10 flex items-center justify-center">
+                <Settings className="w-5 h-5 text-[#2f6cf5]" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-foreground">Cấu hình chi tiết</p>
+                <p className="text-[10px] text-muted-foreground">Nhấn vào biểu tượng cài đặt để tùy chỉnh giao diện và tính năng</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="pt-2 flex justify-end">
+            <button
+              onClick={handleSavePortal}
+              disabled={savingPortal}
+              className="px-8 py-2.5 rounded-[10px] bg-primary text-primary-foreground text-sm font-bold shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
+            >
+              {savingPortal ? "Đang lưu..." : "Lưu Cấu Hình Cổng"}
+            </button>
+          </div>
         </div>
       </div>
 

@@ -9,7 +9,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { kpiData, revenueData, recentCustomers } from "@/data/mockData";
-import { getGuestCustomers, saveGuestCustomer } from "@/data/guestData";
+import { getGuestCustomers, saveGuestCustomer, getGuestTiers } from "@/data/guestData";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { useFirebase } from "@/components/FirebaseProvider";
@@ -78,10 +78,12 @@ import {
   UserPlus,
   Megaphone,
   Printer,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import * as motion from "motion/react-client";
 import { DatabaseStatus } from "@/components/layout/DatabaseStatus";
+import { CustomerTierPieChart } from "@/components/dashboard/CustomerTierPieChart";
 import {
   Dialog,
   DialogContent,
@@ -98,6 +100,40 @@ export function DashboardView() {
   const { user } = useFirebase();
   const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
   const [activeCampaigns, setActiveCampaigns] = useState(4);
+  const [totalRedeemedPoints, setTotalRedeemedPoints] = useState(0);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([
+    {
+      id: "1",
+      title: "Nâng cấp hạng thẻ",
+      description: "Khách hàng Lê Anh đã nâng cấp lên hạng Icon",
+      time: "2 phút trước",
+      type: "upgrade",
+      unread: true,
+    },
+    {
+      id: "2",
+      title: "Đổi điểm thưởng",
+      description: "Khách hàng Nguyễn Văn B đã đổi 500 điểm lấy Voucher",
+      time: "15 phút trước",
+      type: "redeem",
+      unread: true,
+    },
+    {
+      id: "3",
+      title: "Đăng ký thành viên mới",
+      description: "Có 5 thành viên mới vừa gia nhập hệ thống",
+      time: "1 giờ trước",
+      type: "user",
+      unread: false,
+    },
+  ]);
+
+  const unreadCount = notifications.filter(n => n.unread).length;
+
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+  };
 
   useEffect(() => {
     if (!user || user.isLocal) {
@@ -105,6 +141,15 @@ export function DashboardView() {
       const list = getGuestCustomers();
       setAllCustomers(list);
       
+      const savedRedemptions = localStorage.getItem("crm_guest_redemptions_v1");
+      if (savedRedemptions) {
+        try {
+          const parsed = JSON.parse(savedRedemptions);
+          const total = (parsed as any[]).reduce((sum, r) => sum + (r.pointsSpent || 0), 0);
+          setTotalRedeemedPoints(total);
+        } catch (e) {}
+      }
+
       // Listen to event for guest changes
       const handleGuestChange = () => {
         const list2 = getGuestCustomers();
@@ -128,10 +173,65 @@ export function DashboardView() {
         console.error("Firestore campaigns KPI listener error:", err);
       });
 
+      const unsubscribeRedeem = onSnapshot(collection(db, "redemption_logs"), (snap) => {
+        const total = snap.docs.reduce((sum, doc) => sum + (doc.data().pointsSpent || 0), 0);
+        setTotalRedeemedPoints(total);
+      }, (err) => {
+        console.error("Firestore redemptions KPI listener error:", err);
+      });
+
       return () => {
         unsubscribeCust();
         unsubscribeCamp();
+        unsubscribeRedeem();
       };
+    }
+  }, [user]);
+
+  const [prevCustomers, setPrevCustomers] = useState<Customer[]>([]);
+
+  useEffect(() => {
+    if (prevCustomers.length > 0 && allCustomers.length > 0) {
+      allCustomers.forEach(currentCust => {
+        const prevCust = prevCustomers.find(p => p.id === currentCust.id);
+        if (prevCust && prevCust.tier !== currentCust.tier) {
+          toast.success(`Khách hàng ${currentCust.name} đã thăng hạng lên ${currentCust.tier}!`, {
+            description: `Hệ thống tự động ghi nhận thay đổi phân hạng.`,
+            icon: <Crown className="w-5 h-5 text-amber-500 animate-pulse" />,
+            duration: 8000,
+          });
+          
+          confetti({
+            particleCount: 80,
+            spread: 60,
+            origin: { y: 0.7 }
+          });
+        }
+      });
+    }
+    setPrevCustomers(allCustomers);
+  }, [allCustomers]);
+
+  const [tiers, setTiers] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (user.isLocal) {
+      setTiers(getGuestTiers());
+      
+      const handleTiersChange = () => {
+        setTiers(getGuestTiers());
+      };
+      window.addEventListener("crm-config-saved", handleTiersChange);
+      return () => window.removeEventListener("crm-config-saved", handleTiersChange);
+    } else {
+      const unsub = onSnapshot(collection(db, "tier_configs"), (snap) => {
+        const list = snap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        setTiers(list);
+      }, (err) => {
+        console.error("Error loading tiers:", err);
+      });
+      return unsub;
     }
   }, [user]);
 
@@ -685,70 +785,98 @@ export function DashboardView() {
     const totalPts = criteriaCustomers.reduce((acc, c) => acc + (c.points || 0), 0);
     const avgLtv = criteriaCustomers.length > 0 ? totalSpend / criteriaCustomers.length : 0;
 
+    const totalRedeemed = totalRedeemedPoints;
+
+    // Sparkline data generators
+    const generateSparkline = (base: number, variance: number) => {
+      return Array.from({ length: 7 }, (_, i) => ({
+        value: base + Math.sin(i) * variance
+      }));
+    };
+
     if (activePreset === "all") {
       return [
         {
           label: "Thành viên hoạt động",
-          value: `${activeInCriteria.length.toLocaleString("vi-VN")} / ${criteriaCustomers.length.toLocaleString("vi-VN")}`,
+          value: activeInCriteria.length.toLocaleString("vi-VN"),
+          subValue: `/ ${criteriaCustomers.length.toLocaleString("vi-VN")}`,
           change: "+12.5%",
           positive: true,
+          sparkData: generateSparkline(activeInCriteria.length, activeInCriteria.length * 0.1),
+          color: "#2f6cf5"
         },
         {
-          label: "Tổng doanh thu",
-          value: formatCurrency(totalSpend, currentCurrency),
-          change: "+8.2%",
+          label: "Điểm đã đổi",
+          value: totalRedeemed.toLocaleString("vi-VN"),
+          subValue: "pts",
+          change: "+18.2%",
           positive: true,
+          sparkData: generateSparkline(totalRedeemed, totalRedeemed * 0.15),
+          color: "#ef4444"
         },
         {
-          label: "LTV Trung bình",
+          label: "Giá trị GD trung bình",
           value: formatCurrency(avgLtv, currentCurrency),
           change: "+3.4%",
           positive: true,
+          sparkData: generateSparkline(avgLtv, avgLtv * 0.05),
+          color: "#10b981"
         },
         {
           label: "Điểm Loyalty đã cấp",
           value: totalPts >= 1000000 
-            ? `${(totalPts / 1000000).toFixed(1).replace(".", ",")}M pts`
-            : `${(totalPts / 1000).toFixed(1).replace(".", ",")}k pts`,
+            ? `${(totalPts / 1000000).toFixed(1).replace(".", ",")}M`
+            : `${(totalPts / 1000).toFixed(1).replace(".", ",")}k`,
+          subValue: "pts",
           change: "+15.7%",
           positive: true,
+          sparkData: generateSparkline(totalPts, totalPts * 0.08),
+          color: "#f59e0b"
         },
       ];
     }
 
-    // Default mock behavior but adjusted with real base values if needed
-    // Keep it simple for now, just filtering the total/active counts
-    const revenueChange = activePreset === "today" ? "+8.5%" : activePreset === "7days" ? "+4.2%" : "+12.5%";
-    
+    // Default behavior for other presets
     return [
       {
         label: "Thành viên hoạt động",
-        value: `${activeInCriteria.length.toLocaleString("vi-VN")} / ${criteriaCustomers.length.toLocaleString("vi-VN")}`,
+        value: activeInCriteria.length.toLocaleString("vi-VN"),
+        subValue: `/ ${criteriaCustomers.length.toLocaleString("vi-VN")}`,
         change: "+5.2%",
         positive: true,
+        sparkData: generateSparkline(activeInCriteria.length, activeInCriteria.length * 0.05),
+        color: "#2f6cf5"
       },
       {
-        label: "Tổng doanh thu",
-        value: formatCurrency(totalSpend, currentCurrency),
-        change: revenueChange,
+        label: "Điểm đã đổi",
+        value: totalRedeemed.toLocaleString("vi-VN"),
+        subValue: "pts",
+        change: "+2.1%",
         positive: true,
+        sparkData: generateSparkline(totalRedeemed, totalRedeemed * 0.1),
+        color: "#ef4444"
       },
       {
-        label: "LTV Trung bình",
+        label: "Giá trị GD trung bình",
         value: formatCurrency(avgLtv, currentCurrency),
         change: "+3.4%",
         positive: true,
+        sparkData: generateSparkline(avgLtv, avgLtv * 0.05),
+        color: "#10b981"
       },
       {
         label: "Điểm Loyalty đã cấp",
         value: totalPts >= 1000000 
-          ? `${(totalPts / 1000000).toFixed(1).replace(".", ",")}M pts`
-          : `${(totalPts / 1000).toFixed(1).replace(".", ",")}k pts`,
+          ? `${(totalPts / 1000000).toFixed(1).replace(".", ",")}M`
+          : `${(totalPts / 1000).toFixed(1).replace(".", ",")}k`,
+        subValue: "pts",
         change: "+15.7%",
         positive: true,
+        sparkData: generateSparkline(totalPts, totalPts * 0.08),
+        color: "#f59e0b"
       },
     ];
-  }, [daysDiff, activePreset, selectedTier, allCustomers, activeCampaigns]);
+  }, [daysDiff, activePreset, selectedTier, allCustomers, activeCampaigns, totalRedeemedPoints, currentCurrency]);
 
   // Dynamic Charting categories matching dates or weeks scaled by tier
   const filteredRevenueData = useMemo(() => {
@@ -866,7 +994,109 @@ export function DashboardView() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-3 shrink-0">
+        {/* Notification Bell */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setIsNotificationsOpen(!isNotificationsOpen);
+              if (!isNotificationsOpen) markAllAsRead();
+            }}
+            className={cn(
+              "p-2.5 rounded-[10px] border transition-all flex items-center justify-center relative shadow-xs cursor-pointer",
+              isNotificationsOpen 
+                ? "bg-primary text-white border-primary shadow-primary/20" 
+                : "bg-background border-border hover:bg-muted text-muted-foreground"
+            )}
+          >
+            <Bell className="w-4.5 h-4.5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-background animate-in zoom-in duration-300">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          {isNotificationsOpen && (
+            <>
+              <div 
+                className="fixed inset-0 z-40" 
+                onClick={() => setIsNotificationsOpen(false)} 
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="absolute right-0 mt-3 w-80 bg-card border border-border shadow-2xl rounded-[10px] z-50 overflow-hidden text-left origin-top-right backdrop-blur-xl"
+              >
+                <div className="p-4 border-b border-border/60 bg-muted/30 flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-black text-foreground uppercase tracking-tight">Thông báo</h4>
+                    <p className="text-[10px] text-muted-foreground font-medium">Hoạt động thời gian thực từ hệ thống</p>
+                  </div>
+                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold text-[10px]">
+                    {unreadCount} Mới
+                  </Badge>
+                </div>
+                
+                <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
+                  {notifications.length > 0 ? (
+                    <div className="divide-y divide-border/40">
+                      {notifications.map((notif) => (
+                        <div 
+                          key={notif.id}
+                          className={cn(
+                            "p-4 hover:bg-muted/50 transition-colors cursor-pointer group flex gap-3",
+                            notif.unread && "bg-primary/[0.02]"
+                          )}
+                        >
+                          <div className={cn(
+                            "w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0 shadow-xs",
+                            notif.type === 'upgrade' ? "bg-amber-500/10 text-amber-500" :
+                            notif.type === 'redeem' ? "bg-[#2f6cf5]/10 text-[#2f6cf5]" :
+                            "bg-emerald-500/10 text-emerald-500"
+                          )}>
+                             {notif.type === 'upgrade' ? <ArrowUpRight className="w-4 h-4" /> :
+                              notif.type === 'redeem' ? <Gift className="w-4 h-4" /> :
+                              <User className="w-4 h-4" />}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-foreground mb-0.5 group-hover:text-primary transition-colors">
+                              {notif.title}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2 font-medium">
+                              {notif.description}
+                            </p>
+                            <span className="text-[9px] text-muted-foreground/60 mt-1.5 block font-bold uppercase tracking-wider">
+                              {notif.time}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center">
+                      <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Bell className="w-6 h-6 text-muted-foreground/40" />
+                      </div>
+                      <p className="text-xs font-bold text-muted-foreground">Không có thông báo nào mới</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="p-3 bg-muted/20 border-t border-border/60">
+                   <button 
+                    onClick={() => setIsNotificationsOpen(false)}
+                    className="w-full py-2 bg-background border border-border hover:bg-muted text-foreground text-[10px] font-black uppercase tracking-widest rounded-[8px] transition-all cursor-pointer"
+                   >
+                     Xem tất cả hoạt động
+                   </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </div>
+
         <button
           onClick={() => {}}
           className="flex items-center px-4 py-2 rounded-[10px] text-xs font-bold transition-all border cursor-pointer bg-background border-border hover:bg-muted text-foreground"
@@ -1073,7 +1303,7 @@ export function DashboardView() {
       {actionControls}
 
       <div className="grid w-full gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {filteredKpis.map((kpi, i) => (
+        {filteredKpis.map((kpi: any, i) => (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1081,29 +1311,55 @@ export function DashboardView() {
             transition={{ delay: i * 0.1 }}
             key={kpi.label}
           >
-            <Card>
+            <Card className="overflow-hidden">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                   {kpi.label}
                 </CardTitle>
-                {kpi.label.includes("doanh thu") && <LucideCreditCard className="h-4 w-4 text-emerald-500/60" />}
-                {kpi.label.includes("khách hàng") && <User className="h-4 w-4 text-[#2f6cf5]" />}
-                {kpi.label.includes("Chiến dịch") && <Award className="h-4 w-4 text-amber-500/60" />}
-                {kpi.label.includes("Điểm Loyalty") && <Coins className="h-4 w-4 text-[#eb7a2e]/60" />}
+                {kpi.label.includes("giá trị") && <LucideCreditCard className="h-4 w-4 text-emerald-500/60" />}
+                {kpi.label.includes("hoạt động") && <User className="h-4 w-4 text-[#2f6cf5]" />}
+                {kpi.label.includes("đã đổi") && <Gift className="h-4 w-4 text-rose-500/60" />}
+                {kpi.label.includes("Loyalty") && <Coins className="h-4 w-4 text-amber-500/60" />}
               </CardHeader>
-              <CardContent className="text-left">
-                <div className="text-2xl font-bold">{kpi.value}</div>
-                <p
-                  className={`text-xs flex items-center mt-1 ${kpi.positive ? "text-emerald-600" : "text-rose-600"}`}
-                >
-                  {kpi.positive ? (
-                    <ArrowUpRight className="mr-1 h-3 w-3" />
-                  ) : (
-                    <ArrowDownRight className="mr-1 h-3 w-3" />
-                  )}
-                  {kpi.change} so với chu kỳ trước
-                </p>
+              <CardContent className="text-left pb-0">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-black font-heading tracking-tight text-foreground">{kpi.value}</span>
+                  {kpi.subValue && <span className="text-xs font-bold text-muted-foreground">{kpi.subValue}</span>}
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                   <p className={`text-[10px] font-bold flex items-center ${kpi.positive ? "text-emerald-600" : "text-rose-600"}`}>
+                    {kpi.positive ? (
+                      <ArrowUpRight className="mr-0.5 h-3 w-3" />
+                    ) : (
+                      <ArrowDownRight className="mr-0.5 h-3 w-3" />
+                    )}
+                    {kpi.change}
+                  </p>
+                </div>
               </CardContent>
+              
+              {/* Sparkline chart */}
+              <div className="h-10 w-full mt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={kpi.sparkData}>
+                    <defs>
+                      <linearGradient id={`gradient-${i}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={kpi.color} stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor={kpi.color} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke={kpi.color} 
+                      strokeWidth={2} 
+                      fillOpacity={1} 
+                      fill={`url(#gradient-${i})`} 
+                      isAnimationActive={true}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </Card>
           </motion.div>
         ))}
@@ -1634,8 +1890,9 @@ export function DashboardView() {
       {/* ================= END Power Service PREMIUM WORKSPACE ================= */}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-full xl:col-span-2">
+        <div className="col-span-full xl:col-span-2 space-y-4">
           <DatabaseStatus />
+          <CustomerTierPieChart customers={allCustomers} tiers={tiers} />
         </div>
 
         <motion.div

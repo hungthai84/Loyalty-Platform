@@ -33,6 +33,10 @@ import { IntegrationsManager } from "@/components/settings/IntegrationsManager";
 import { AutomationRuleBuilder } from "@/components/settings/AutomationRuleBuilder";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useFirebase } from "@/components/FirebaseProvider";
+import { db } from "@/lib/firebase";
+import { collection, doc, setDoc, onSnapshot } from "firebase/firestore";
+import { getGuestTiers } from "@/data/guestData";
 
 type SettingsTab =
   | "general"
@@ -43,8 +47,80 @@ type SettingsTab =
   | "monitor";
 
 export function SettingsView() {
+  const { user } = useFirebase();
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
   const [savedTabs, setSavedTabs] = useState<Record<string, boolean>>({});
+
+  const [tiers, setTiers] = useState<any[]>([]);
+  const [loadingTiers, setLoadingTiers] = useState(true);
+  const [savingTiers, setSavingTiers] = useState(false);
+  const [editedThresholds, setEditedThresholds] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!user) return;
+    if (user.isLocal) {
+      setTiers(getGuestTiers());
+      setLoadingTiers(false);
+    } else {
+      const unsub = onSnapshot(collection(db, "tier_configs"), (snap) => {
+        const list = snap.docs.map(doc => ({ ...doc.data(), id: doc.id } as any));
+        setTiers(list.sort((a, b) => (a.threshold || 0) - (b.threshold || 0)));
+        setLoadingTiers(false);
+      }, (err) => {
+        console.error("Error loading tiers:", err);
+        setLoadingTiers(false);
+      });
+      return unsub;
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (tiers.length > 0) {
+      const initial: Record<string, number> = {};
+      tiers.forEach(t => {
+        initial[t.id] = t.threshold || 0;
+      });
+      setEditedThresholds(initial);
+    }
+  }, [tiers]);
+
+  const handleSaveThresholds = async () => {
+    if (!user) return;
+    setSavingTiers(true);
+
+    try {
+      if (user.isLocal) {
+        const { setLocalStorageData } = await import("@/data/guestData");
+        const currentTiers = getGuestTiers();
+        const updatedTiers = currentTiers.map(t => {
+          if (editedThresholds[t.id] !== undefined) {
+            return { ...t, threshold: Number(editedThresholds[t.id]) };
+          }
+          return t;
+        });
+        setLocalStorageData("crm_guest_tiers_v6", updatedTiers);
+        setTiers(updatedTiers);
+        toast.success("Đã cấu hình lại ngưỡng hạng và tự động đồng bộ trên toàn hệ thống!");
+      } else {
+        const promises = tiers.map(async (t) => {
+          const docRef = doc(db, "tier_configs", t.id);
+          const newThreshold = Number(editedThresholds[t.id]);
+          if (!isNaN(newThreshold)) {
+            await setDoc(docRef, { threshold: newThreshold }, { merge: true });
+          }
+        });
+        await Promise.all(promises);
+        toast.success("Đã đồng bộ hóa tất cả cấu hình ngưỡng hạng lên cơ sở dữ liệu Cloud SQL/Firestore!");
+      }
+
+      window.dispatchEvent(new CustomEvent("crm-config-saved", { detail: { tab: "general" } }));
+    } catch (error: any) {
+      console.error("Error saving thresholds:", error);
+      toast.error("Không thể lưu cấu hình ngưỡng hạng: " + error.message);
+    } finally {
+      setSavingTiers(false);
+    }
+  };
 
   // States for low points balance notifications
   const [isAlertEnabled, setIsAlertEnabled] = useState<boolean>(() => {
@@ -377,6 +453,115 @@ export function SettingsView() {
                           >
                             Lưu cấu hình nhận thông báo
                           </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Loyalty Tier Thresholds Configuration Card */}
+                  <div className="bg-card rounded-[10px] border border-border overflow-hidden shadow-sm text-left">
+                    <div className="p-6 border-b border-border bg-muted/10">
+                      <h3 className="font-bold font-heading text-lg flex items-center gap-2">
+                        <Star className="w-5 h-5 text-[#f59e0b]" /> Cấu hình Ngưỡng hạng Hội viên (Loyalty Tier Thresholds)
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Thiết lập số điểm tối thiểu để quy đổi thăng hạng tự động cho khách hàng (Member → Essential → Icon → Atelier).
+                      </p>
+                    </div>
+
+                    <div className="p-6 space-y-6">
+                      {loadingTiers ? (
+                        <div className="flex items-center justify-center py-8 text-sm text-muted-foreground gap-2">
+                          <RefreshCw className="w-4 h-4 animate-spin text-primary" />
+                          Đang tải danh sách phân hạng hội viên...
+                        </div>
+                      ) : tiers.length === 0 ? (
+                        <div className="text-center py-8 text-sm text-muted-foreground">
+                          Không có thông tin phân hạng nào được tìm thấy.
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {tiers.map((tier) => {
+                              const currentVal = editedThresholds[tier.id] ?? tier.threshold ?? 0;
+                              const isBasicMember = tier.id.toLowerCase().includes("member") || tier.name.toLowerCase() === "member";
+                              return (
+                                <div 
+                                  key={tier.id} 
+                                  className="p-4 bg-muted/10 rounded-[10px] border border-border flex flex-col justify-between gap-4"
+                                >
+                                  <div className="flex items-center gap-3 text-left">
+                                    <div 
+                                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-md shrink-0"
+                                      style={{ backgroundColor: tier.color || "#3b82f6" }}
+                                    >
+                                      {tier.name.substring(0, 2).toUpperCase()}
+                                    </div>
+                                    <div>
+                                      <h4 className="text-sm font-black text-foreground">Hạng {tier.name}</h4>
+                                      <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                                        Hệ số nhân điểm: x{tier.multiplier || 1.0}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-1.5 text-left">
+                                    <label className="text-[10px] uppercase font-black text-muted-foreground tracking-wider block">
+                                      Điểm số tối thiểu để thăng hạng (Threshold)
+                                    </label>
+                                    <div className="relative">
+                                      <input
+                                        type="number"
+                                        value={currentVal}
+                                        onChange={(e) => {
+                                          const val = Math.max(0, Number(e.target.value));
+                                          setEditedThresholds(prev => ({
+                                            ...prev,
+                                            [tier.id]: val
+                                          }));
+                                        }}
+                                        className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/25 pr-12 text-foreground"
+                                        min={0}
+                                        disabled={isBasicMember} // Basic member tier is 0 points and cannot be altered
+                                      />
+                                      <div className="absolute right-3 top-2 text-[10px] font-black text-muted-foreground uppercase pointer-events-none">
+                                        pts
+                                      </div>
+                                    </div>
+                                    {isBasicMember ? (
+                                      <p className="text-[10px] text-amber-500 italic">
+                                        * Cấp độ gia nhập cơ bản mặc định là 0 điểm.
+                                      </p>
+                                    ) : (
+                                      <p className="text-[10px] text-muted-foreground">
+                                        Hội viên đạt tối thiểu {currentVal.toLocaleString("vi-VN")} điểm sẽ được nâng hạng.
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <div className="pt-4 border-t border-border/45 flex justify-end">
+                            <button
+                              onClick={handleSaveThresholds}
+                              disabled={savingTiers}
+                              className="px-6 py-2.5 bg-primary text-primary-foreground rounded-[10px] text-xs font-bold hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer disabled:opacity-55"
+                            >
+                              {savingTiers ? (
+                                <>
+                                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                  Đang lưu...
+                                </>
+                              ) : (
+                                <>
+                                  <Check className="w-3.5 h-3.5" />
+                                  Lưu cấu hình ngưỡng điểm
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>

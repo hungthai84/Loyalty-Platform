@@ -1250,6 +1250,28 @@ export function CustomersView() {
     if (sortBy === "name_desc") {
       return b.name.localeCompare(a.name);
     }
+    if (sortBy === "clv_desc") {
+      const valA = Number(a.customFields?.clv) || 0;
+      const valB = Number(b.customFields?.clv) || 0;
+      return valB - valA;
+    }
+    if (sortBy === "clv_asc") {
+      const valA = Number(a.customFields?.clv) || 0;
+      const valB = Number(b.customFields?.clv) || 0;
+      return valA - valB;
+    }
+    if (sortBy === "tier_desc") {
+      const tiers: Record<string, number> = { "Member": 0, "Essential": 1, "Icon": 2, "Atelier": 3 };
+      const weightA = tiers[a.tier || ""] ?? -1;
+      const weightB = tiers[b.tier || ""] ?? -1;
+      return weightB - weightA;
+    }
+    if (sortBy === "tier_asc") {
+      const tiers: Record<string, number> = { "Member": 0, "Essential": 1, "Icon": 2, "Atelier": 3 };
+      const weightA = tiers[a.tier || ""] ?? -1;
+      const weightB = tiers[b.tier || ""] ?? -1;
+      return weightA - weightB;
+    }
     return 0;
   });
 
@@ -2000,6 +2022,12 @@ export function CustomersView() {
                       { id: "points_asc", label: "Điểm CRM: Thấp → Cao" },
                       { id: "name_asc", label: "Họ tên (A-Z)" },
                       { id: "name_desc", label: "Họ tên (Z-A)" },
+                      { id: "clv_desc", label: "Giá trị mua hàng: Cao → Thấp" },
+                      { id: "clv_asc", label: "Giá trị mua hàng: Thấp → Cao" },
+                      { id: "tier_desc", label: "Hạng thành viên: Cao → Thấp" },
+                      { id: "tier_asc", label: "Hạng thành viên: Thấp → Cao" },
+                      { id: "createdAt_desc", label: "Ngày đăng ký: Mới nhất" },
+                      { id: "createdAt_asc", label: "Ngày đăng ký: Cũ nhất" },
                     ].map((opt) => (
                       <button
                         key={opt.id}
@@ -2856,33 +2884,52 @@ export function CustomersView() {
 
                         {/* ACTIONS */}
                         {visibleColumns.actions && (
-                          <TableCell className="pr-6 text-right">
-                            <div className="flex items-center justify-end gap-1 font-sans">
-                              <button
-                                onClick={() => setSelectedCustomer(customer)}
-                                className="p-1.5 text-[#2f6cf5] hover:bg-primary/10 rounded-[10px] text-xs font-extrabold flex items-center cursor-pointer gap-0.5"
-                                title="Chi tiết"
-                              >
-                                Chi tiết ➜
-                              </button>
-                              <button
-                                onClick={() => setSelectedQrCustomer(customer)}
-                                className="p-1.5 text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-[10px] transition-all cursor-pointer"
-                                title="Xuất mã Định danh QR"
-                              >
-                                <QrCode className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setLogCustomer(customer);
-                                  setShowActivityLog(true);
-                                }}
-                                className="p-1.5 text-muted-foreground hover:bg-muted rounded-[10px] transition-colors cursor-pointer"
-                                title="Lịch sử hoạt động"
-                              >
-                                <History className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
+                          <TableCell className="pr-6 flex items-center justify-end">
+                            <TooltipProvider>
+                              <div className="flex items-center justify-end gap-1 font-sans">
+                                <Tooltip>
+                                  <TooltipTrigger
+                                    render={<button />}
+                                    onClick={() => setSelectedCustomer(customer)}
+                                    className="p-1.5 text-[#2f6cf5] hover:bg-primary/10 rounded-[10px] text-xs font-extrabold flex items-center cursor-pointer gap-0.5"
+                                  >
+                                    Chi tiết ➜
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">Xem chi tiết khách hàng</p>
+                                  </TooltipContent>
+                                </Tooltip>
+
+                                <Tooltip>
+                                  <TooltipTrigger
+                                    render={<button />}
+                                    onClick={() => setSelectedQrCustomer(customer)}
+                                    className="p-1.5 text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-[10px] transition-all cursor-pointer"
+                                  >
+                                    <QrCode className="w-3.5 h-3.5" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">Xuất mã Định danh QR</p>
+                                  </TooltipContent>
+                                </Tooltip>
+
+                                <Tooltip>
+                                  <TooltipTrigger
+                                    render={<button />}
+                                    onClick={() => {
+                                      setLogCustomer(customer);
+                                      setShowActivityLog(true);
+                                    }}
+                                    className="p-1.5 text-muted-foreground hover:bg-muted rounded-[10px] transition-colors cursor-pointer"
+                                  >
+                                    <History className="w-3.5 h-3.5" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">Lịch sử hoạt động</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </div>
+                            </TooltipProvider>
                           </TableCell>
                         )}
                       </TableRow>
@@ -2897,45 +2944,48 @@ export function CustomersView() {
           </div>
         )}
 
-      {/* Popup chi tiết khách hàng chiếm 90% diện tích trang web */}
-      <AnimatePresence>
-        {currentCustomerData && (
-          <div 
-            className="fixed inset-0 bg-black/60 dark:bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4 md:p-8"
-            onClick={() => setSelectedCustomer(null)}
-          >
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.96, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 15 }}
-              transition={{ type: "spring", duration: 0.45, bounce: 0.1 }}
-              className="bg-background border border-border shadow-2xl rounded-[10px] w-[92vw] h-[90vh] max-w-[1700px] flex flex-col relative overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
+      {/* Popup chi tiết khách hàng chiếm 80% diện tích trang web */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {currentCustomerData && (
+            <div 
+              className="fixed inset-0 bg-black/60 dark:bg-black/85 backdrop-blur-md flex items-center justify-center z-[99999] p-4 md:p-8"
+              onClick={() => setSelectedCustomer(null)}
             >
-              {/* Nút đóng nổi bật ở góc phải trên cùng */}
-              <button
-                onClick={() => setSelectedCustomer(null)}
-                className="absolute top-4 right-4 p-2.5 rounded-[10px] bg-card border border-border hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 transition-all z-50 cursor-pointer shadow-md"
-                title="Đóng cửa sổ"
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.96, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96, y: 15 }}
+                transition={{ type: "spring", duration: 0.45, bounce: 0.1 }}
+                className="bg-background border border-border shadow-2xl rounded-[10px] w-[90vw] h-[90vh] flex flex-col relative overflow-hidden z-[99999]"
+                onClick={(e) => e.stopPropagation()}
               >
-                <X className="w-5 h-5" />
-              </button>
+                {/* Nút đóng nổi bật ở góc phải trên cùng */}
+                <button
+                  onClick={() => setSelectedCustomer(null)}
+                  className="absolute top-4 right-4 p-2.5 rounded-[10px] bg-card border border-border hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 transition-all z-50 cursor-pointer shadow-md"
+                  title="Đóng cửa sổ"
+                >
+                  <X className="w-5 h-5" />
+                </button>
 
-              {/* Phần nội dung có scroll riêng lẻ */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-10 scrollbar-thin">
-                <CustomerDashboard
-                  customer={currentCustomerData}
-                  userId={user?.uid || "guest"}
-                  companies={companies}
-                  attributes={attributes}
-                  tierConfigs={tierConfigs}
-                  onBack={() => setSelectedCustomer(null)}
-                />
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                {/* Phần nội dung có scroll riêng lẻ */}
+                <div className="flex-1 overflow-y-auto p-6 md:p-10 scrollbar-thin">
+                  <CustomerDashboard
+                    customer={currentCustomerData}
+                    userId={user?.uid || "guest"}
+                    companies={companies}
+                    attributes={attributes}
+                    tierConfigs={tierConfigs}
+                    onBack={() => setSelectedCustomer(null)}
+                  />
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {showAddDialog && (
         <AddCustomerDialog

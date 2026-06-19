@@ -12,6 +12,7 @@ import {
   CircleDollarSign,
   MousePointerClick,
   ShoppingBag,
+  Save,
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -31,6 +32,8 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { EarnRule } from "@/types";
 import { LoyaltyPointsBanner } from "./LoyaltyPointsBanner";
+import { Input } from "@/components/ui/input";
+import { serverTimestamp, addDoc } from "firebase/firestore";
 
 const EARN_ICON_MAP: Record<string, any> = {
   transaction: ShoppingBag,
@@ -91,6 +94,48 @@ export function PointsManagementView({ onEditRule, onAddRule }: PointsManagement
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
+  const [showAutoForm, setShowAutoForm] = useState(false);
+  const [autoRulePoints, setAutoRulePoints] = useState(50);
+  const [autoRuleSpend, setAutoRuleSpend] = useState(1000000);
+  const [isSubmittingAuto, setIsSubmittingAuto] = useState(false);
+
+  const handleCreateAutoRule = async () => {
+    if (autoRulePoints <= 0 || autoRuleSpend <= 0) {
+      toast.error("Vui lòng nhập giá trị hợp lệ");
+      return;
+    }
+    setIsSubmittingAuto(true);
+    const ruleName = `Tặng ${autoRulePoints} điểm khi chi tiêu trên ${autoRuleSpend.toLocaleString()} VND`;
+    
+    const ruleData: any = {
+      name: ruleName,
+      description: `Tự động cộng ${autoRulePoints} điểm cho khách hàng khi tổng giá trị đơn hàng vượt ngưỡng ${autoRuleSpend.toLocaleString()} VND.`,
+      type: "purchase_value",
+      points: Number(autoRulePoints),
+      value: Number(autoRuleSpend),
+      isActive: true,
+      userId: user?.uid || "guest",
+      createdAt: user?.isLocal ? new Date().toISOString() : serverTimestamp(),
+    };
+
+    try {
+      if (user?.isLocal) {
+        const id = "rule_" + Date.now();
+        const updated = [{ ...ruleData, id } as EarnRule, ...rules];
+        setRules(updated);
+        localStorage.setItem("crm_guest_earn_rules_v1", JSON.stringify(updated));
+      } else {
+        await addDoc(collection(db, "earn_rules"), ruleData);
+      }
+      toast.success("Đã tạo quy tắc tự động thành công!");
+      setShowAutoForm(false);
+    } catch (e) {
+      console.error(e);
+      toast.error("Lỗi khi tạo quy tắc");
+    } finally {
+      setIsSubmittingAuto(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -157,6 +202,95 @@ export function PointsManagementView({ onEditRule, onAddRule }: PointsManagement
   return (
     <div className="space-y-6">
       <LoyaltyPointsBanner onAddRule={onAddRule} />
+      
+      {/* Automated Reward Rules Form */}
+      <div className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 rounded-[10px] p-5 shadow-sm overflow-hidden relative">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-white shadow-xs rounded-[10px] text-amber-500">
+              <Zap className="w-5 h-5 fill-amber-500" />
+            </div>
+            <div className="text-left">
+              <h4 className="text-sm font-black text-foreground uppercase tracking-tight">Quy tắc tự động quản trị</h4>
+              <p className="text-[11px] text-muted-foreground font-medium">Thiết lập nhanh các mốc tặng thưởng điểm khi đạt giá trị chi tiêu.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowAutoForm(!showAutoForm)}
+            className={cn(
+              "px-4 py-2 rounded-[10px] text-xs font-bold transition-all border flex items-center gap-2 cursor-pointer shadow-xs",
+              showAutoForm 
+                ? "bg-amber-500 text-white border-amber-600 shadow-amber-500/20" 
+                : "bg-white hover:bg-muted border-border text-foreground"
+            )}
+          >
+            {showAutoForm ? "Đóng thiết lập" : "Cấu hình ngay"}
+            <Plus className={cn("w-3.5 h-3.5 transition-transform", showAutoForm && "rotate-45")} />
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {showAutoForm && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-5 pt-5 border-t border-amber-500/10 space-y-4"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5 flex flex-col items-start">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider ml-1">Tặng (Điểm)</label>
+                  <div className="relative w-full">
+                    <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500" />
+                    <Input
+                      type="number"
+                      value={autoRulePoints}
+                      onChange={(e) => setAutoRulePoints(Number(e.target.value))}
+                      className="pl-9 bg-white border-amber-500/20 focus:border-amber-500 h-10 text-sm font-bold"
+                      placeholder="v.d. 50"
+                    />
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2 space-y-1.5 flex flex-col items-start">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider ml-1">Khi chi tiêu trên (VND)</label>
+                  <div className="relative w-full">
+                    <CircleDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
+                    <Input
+                      type="number"
+                      value={autoRuleSpend}
+                      onChange={(e) => setAutoRuleSpend(Number(e.target.value))}
+                      className="pl-9 bg-white border-amber-500/20 focus:border-amber-500 h-10 text-sm font-bold"
+                      placeholder="v.d. 1.000.000"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  onClick={() => setShowAutoForm(false)}
+                  className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  onClick={handleCreateAutoRule}
+                  disabled={isSubmittingAuto}
+                  className="px-6 py-2 bg-amber-500 text-white hover:bg-amber-600 rounded-[10px] text-xs font-black transition-all shadow-md shadow-amber-500/20 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isSubmittingAuto ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Save className="w-3.5 h-3.5" />
+                  )}
+                  Lưu & Áp dụng ngay
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
       
       {/* Utilities */}
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between px-1">

@@ -62,6 +62,7 @@ import { LoyaltyCampaignDialog } from "@/components/loyalty/LoyaltyCampaignDialo
 import { SegmentationRuleDialog } from "@/components/loyalty/SegmentationRuleDialog";
 import { TierManagementView } from "@/components/loyalty/TierManagementView";
 import { TierComparisonTable } from "@/components/loyalty/TierComparisonTable";
+import { BenefitsPreview } from "@/components/loyalty/BenefitsPreview";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { PointRedemptionConfigView } from "@/components/loyalty/PointRedemptionConfigView";
 import { GiftsManagementView } from "@/components/loyalty/GiftsManagementView";
@@ -1434,6 +1435,8 @@ export function LoyaltyView() {
                   gifts={gifts} 
                   searchTerm={tierSearchTerm}
                 />
+
+                <BenefitsPreview />
                 
                 <div className="bg-card border border-border/50 rounded-[10px] p-6 space-y-6 shadow-sm">
                    <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between px-1">

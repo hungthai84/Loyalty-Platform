@@ -1,13 +1,31 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Zap } from "lucide-react";
-import { getGuestCustomers } from "@/data/guestData";
+import { getGuestCustomers, getGuestTiers } from "@/data/guestData";
 
 export function TierUpProgress() {
   const customers = getGuestCustomers();
+  const tiers = getGuestTiers();
   
-  // Find customers close to next tier
-  const TIER_THRESHOLDS = [
+  // Find custom levels dynamically
+  const dynamicThresholds = tiers
+    .filter(t => (t.threshold || 0) > 0)
+    .map(t => {
+      let colorClass = "bg-blue-500";
+      const nameL = t.name.toLowerCase();
+      if (nameL.includes("essential") || nameL.includes("silver")) {
+        colorClass = "bg-emerald-500";
+      } else if (nameL.includes("icon") || nameL.includes("gold")) {
+        colorClass = "bg-amber-500";
+      }
+      return {
+        name: t.name,
+        threshold: t.threshold,
+        color: colorClass
+      };
+    });
+
+  const TIER_THRESHOLDS = dynamicThresholds.length > 0 ? dynamicThresholds : [
     { name: "Essential", threshold: 500, color: "bg-emerald-500" },
     { name: "Icon", threshold: 2500, color: "bg-amber-500" },
     { name: "Atelier", threshold: 10000, color: "bg-blue-500" }

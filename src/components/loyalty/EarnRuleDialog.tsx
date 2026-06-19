@@ -134,7 +134,7 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
       description,
       type,
       points: Number(points),
-      value: type === "purchase" ? Number(value) : 0,
+      value: (type === "purchase" || type === "purchase_value" || type === "purchase_quantity") ? Number(value) : 0,
       isActive,
       userId: user?.uid || "guest",
       createdAt: rule?.createdAt || new Date().toISOString(),
@@ -299,6 +299,20 @@ export function EarnRuleDialog({ onClose, rule }: EarnRuleDialogProps) {
                         onChange={e => setValue(Number(e.target.value))}
                       />
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
+                    </div>
+                  </div>
+                )}
+                {type === "purchase_value" && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Khi chi tiêu đạt mốc (VND)</label>
+                    <div className="relative">
+                      <input 
+                        type="number"
+                        className="w-full pl-4 pr-12 py-2.5 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                        value={value}
+                        onChange={e => setValue(Number(e.target.value))}
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">VND</span>
                     </div>
                   </div>
                 )}
