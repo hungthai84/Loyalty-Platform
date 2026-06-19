@@ -36,7 +36,13 @@ import {
  BookOpen,
  X,
  ChevronDown,
- MoreHorizontal
+ MoreHorizontal,
+ Gift,
+ Activity,
+ ArrowUpRight,
+ ArrowDownRight,
+ Clock,
+ Calculator
 } from 'lucide-react';
 import { 
  DropdownMenu,
@@ -68,7 +74,6 @@ import {
  LineChart,
  Line
 } from 'recharts';
-import { Calculator } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, orderBy, doc, setDoc, serverTimestamp } from "firebase/firestore";
@@ -1328,49 +1333,47 @@ export function AnalysisView() {
   );
  })()}
 
- {/* Internal Navigation Tabs inside the View - NEW SELECT BOX MODULE */}
- <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-muted/40 p-4 rounded-[10px] border border-border/80 max-w-full w-full relative">
-  {(() => {
-   const tabsList = TABS_LIST_ANALYSIS;
-   return (
-    <>
-     <div className="flex items-center gap-3">
-      <div className="p-3 bg-[#2f6cf5]/10 rounded-[10px] text-[#2f6cf5] shrink-0">
-       <Layers className="w-6 h-6" />
+  {/* NEW SPLIT LAYOUT FOR THE ANALYSIS SECTION WITH GORGEOUS LOCAL LIST BOX SIDEBAR */}
+  <div className="flex flex-col lg:flex-row gap-6 items-start">
+    {/* LIST BOX SIDEBAR (Left on LG screens, full width horizontal tabs on mobile) */}
+    <div className="w-full lg:w-[305px] shrink-0 bg-card border border-border/80 rounded-[12px] p-4.5 space-y-4 lg:sticky lg:top-24">
+      <div className="hidden lg:flex items-center gap-3 pb-3.5 border-b border-border/50">
+        <div className="p-2.5 bg-[#2f6cf5]/10 rounded-[8px] text-[#2f6cf5] shrink-0">
+          <Layers className="w-5 h-5 animate-pulse" />
+        </div>
+        <div className="text-left">
+          <span className="text-xs font-black uppercase tracking-wider text-foreground">Loại phân tích</span>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Chọn góc nhìn số liệu</p>
+        </div>
       </div>
-      <div className="text-left">
-       <h4 className="text-sm font-extrabold text-foreground tracking-tight font-heading">Chỉ mục Phân tích & Báo cáo</h4>
-       <p className="text-[11px] text-muted-foreground mt-0.5">Chọn một phân hệ dữ liệu Loyalty dưới đây để xem báo cáo thống kê chi tiết</p>
-      </div>
-     </div>
 
-     <div className="relative z-40 shrink-0 w-full md:w-auto">
-      <Select value={activeTab} onValueChange={(val) => {
-       if (val) {
-        setActiveTab(val);
-        const name = tabsList.find(t => t.id === val)?.name || val;
-        toast.success(`Đã chuyển sang phân hệ: ${name}`);
-       }
-      }}>
-       <SelectTrigger className="w-full md:w-[280px] h-10 px-3 bg-background border border-input rounded-[10px] text-xs font-bold font-heading text-foreground shadow-sm hover:bg-muted/70 flex items-center justify-between cursor-pointer">
-        <SelectValue placeholder="Chọn nội dung phân tích" />
-       </SelectTrigger>
-       <SelectContent className="rounded-[10px] w-[280px] max-h-[320px] overflow-y-auto">
-        {tabsList.map((tab) => (
-         <SelectItem key={tab.id} value={tab.id} className="rounded-[10px] p-2.5 cursor-pointer">
-          <div className="flex items-center gap-2.5">
-           <tab.icon className="w-4 h-4 text-muted-foreground shrink-0" />
-           <span className="text-xs font-semibold text-foreground">{tab.name}</span>
-          </div>
-         </SelectItem>
-        ))}
-       </SelectContent>
-      </Select>
-     </div>
-    </>
-   );
-  })()}
- </div>
+      {/* Listbox Container - Vertical on LG, horizontal scrollable on mobile */}
+      <div className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-x-visible pb-2.5 lg:pb-0 scrollbar-none snap-x whitespace-nowrap lg:whitespace-normal">
+        {TABS_LIST_ANALYSIS.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id);
+                toast.success(`Đã chọn: ${tab.name}`);
+              }}
+              className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-[8px] transition-all text-xs font-semibold cursor-pointer border shrink-0 snap-start select-none ${
+                isActive
+                  ? "bg-[#2f6cf5] border-[#2f6cf5] text-white shadow-sm font-bold"
+                  : "bg-background border-border/50 hover:bg-muted/60 text-muted-foreground hover:text-foreground hover:border-border"
+              }`}
+            >
+              <tab.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-white' : 'text-muted-foreground'}`} />
+              <span className="truncate">{tab.name}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+
+    {/* DETAILED CONTENT AREA (Right/Bottom) */}
+    <div className="flex-grow w-full min-w-0 space-y-6">
 
  {/* Dynamic Toast Display */}
  {toastMessage && (
@@ -2965,6 +2968,9 @@ export function AnalysisView() {
  </div>
  </div>
  )}
+
+    </div>
+  </div>
 
   </div>
  </div>

@@ -66,6 +66,16 @@ export interface TierConfig {
  benefits?: { name: string; value: string }[];
  userId: string;
  createdAt: any;
+ // Cài đặt điều kiện giữa cấp
+ minDaysInPrevTier?: number;
+ minSpendInPrevTier?: number;
+ minOrdersInPrevTier?: number;
+ transitionUpgradeMatchType?: 'and' | 'or';
+ enablePrevTierUpgradeConditions?: boolean;
+ maxInactivityDaysBeforeDowngrade?: number;
+ minSpendToMaintain?: number;
+ minOrdersToMaintain?: number;
+ enablePrevTierMaintenanceConditions?: boolean;
 }
 
 export interface RedemptionRule {

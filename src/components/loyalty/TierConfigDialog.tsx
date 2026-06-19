@@ -8,6 +8,7 @@ import {
   collection,
   query,
   onSnapshot,
+  orderBy,
 } from "firebase/firestore";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
@@ -72,6 +73,42 @@ export function TierConfigDialog({ onClose, tier, availableRules }: TierConfigDi
   const [attributes, setAttributes] = useState<AttributeDefinition[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
+  // Cài đặt điều kiện giữa cấp (Upgrades/Maintenance)
+  const [minDaysInPrevTier, setMinDaysInPrevTier] = useState<number>(tier?.minDaysInPrevTier || 0);
+  const [minSpendInPrevTier, setMinSpendInPrevTier] = useState<number>(tier?.minSpendInPrevTier || 0);
+  const [minOrdersInPrevTier, setMinOrdersInPrevTier] = useState<number>(tier?.minOrdersInPrevTier || 0);
+  const [transitionUpgradeMatchType, setTransitionUpgradeMatchType] = useState<'and' | 'or'>(tier?.transitionUpgradeMatchType || 'and');
+  const [enablePrevTierUpgradeConditions, setEnablePrevTierUpgradeConditions] = useState<boolean>(tier?.enablePrevTierUpgradeConditions || false);
+
+  const [maxInactivityDaysBeforeDowngrade, setMaxInactivityDaysBeforeDowngrade] = useState<number>(tier?.maxInactivityDaysBeforeDowngrade || 0);
+  const [minSpendToMaintain, setMinSpendToMaintain] = useState<number>(tier?.minSpendToMaintain || 0);
+  const [minOrdersToMaintain, setMinOrdersToMaintain] = useState<number>(tier?.minOrdersToMaintain || 0);
+  const [enablePrevTierMaintenanceConditions, setEnablePrevTierMaintenanceConditions] = useState<boolean>(tier?.enablePrevTierMaintenanceConditions || false);
+
+  const [allTiers, setAllTiers] = useState<TierConfig[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (user.isLocal) {
+      import("@/data/guestData").then(({ getGuestTiers }) => {
+        setAllTiers(getGuestTiers());
+      });
+      return;
+    }
+    const q = query(collection(db, "tier_configs"), orderBy("threshold", "asc"));
+    const unsubscribe = onSnapshot(q, (snap) => {
+      setAllTiers(snap.docs.map(d => ({ ...d.data(), id: d.id } as TierConfig)));
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  // Find previous tier based on threshold
+  const prevTier = allTiers
+    .filter(t => t.id !== (tier?.id || ""))
+    .sort((a, b) => a.threshold - b.threshold)
+    .reverse()
+    .find(t => t.threshold < threshold);
+
   useEffect(() => {
     if (!user || user.isLocal) return;
 
@@ -129,27 +166,51 @@ export function TierConfigDialog({ onClose, tier, availableRules }: TierConfigDi
     const id = tier?.id || `TIER-${Date.now()}`;
     const path = `tier_configs/${id}`;
 
+    const tierData = {
+      id,
+      name,
+      description,
+      threshold: Number(threshold),
+      multiplier: Number(multiplier),
+      maintenanceDays: Number(maintenanceDays),
+      color,
+      conditions,
+      benefits: benefits.filter(b => b.name.trim() !== ""),
+      userId: user.uid,
+      // Cấu hình điều kiện giữa cấp (Upgrades/Maintenance)
+      minDaysInPrevTier: Number(minDaysInPrevTier),
+      minSpendInPrevTier: Number(minSpendInPrevTier),
+      minOrdersInPrevTier: Number(minOrdersInPrevTier),
+      transitionUpgradeMatchType,
+      enablePrevTierUpgradeConditions,
+      maxInactivityDaysBeforeDowngrade: Number(maxInactivityDaysBeforeDowngrade),
+      minSpendToMaintain: Number(minSpendToMaintain),
+      minOrdersToMaintain: Number(minOrdersToMaintain),
+      enablePrevTierMaintenanceConditions,
+    };
+
     try {
-      await setDoc(doc(db, path), {
-        id,
-        name,
-        description,
-        threshold: Number(threshold),
-        multiplier: Number(multiplier),
-        maintenanceDays: Number(maintenanceDays),
-        color,
-        conditions,
-        benefits: benefits.filter(b => b.name.trim() !== ""),
-        userId: user.uid,
-        createdAt: tier?.createdAt || serverTimestamp(),
-      });
-      toast.success(tier ? "Đã cập nhật cấu hình hạng" : "Đã tạo hạng mới");
+      if (user.isLocal) {
+        const { saveGuestTier } = await import("@/data/guestData");
+        saveGuestTier({
+          ...tierData,
+          createdAt: tier?.createdAt || new Date()
+        } as any);
+      } else {
+        await setDoc(doc(db, path), {
+          ...tierData,
+          createdAt: tier?.createdAt || serverTimestamp(),
+        });
+      }
+      toast.success(tier ? "Đã cập nhật cấu hình hạng và quy tắc chuyển cấp" : "Đã tạo hạng mới thành công");
       window.dispatchEvent(
         new CustomEvent("crm-config-saved", { detail: { tab: "tiers" } }),
       );
       onClose();
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
+      if (!user.isLocal) {
+        handleFirestoreError(error, OperationType.WRITE, path);
+      }
       toast.error("Không thể lưu cấu hình");
     } finally {
       setSubmitting(false);
@@ -160,16 +221,26 @@ export function TierConfigDialog({ onClose, tier, availableRules }: TierConfigDi
     if (!user || !tier) return;
     if (!confirm("Bạn có chắc chắn muốn xóa hạng này không?")) return;
 
-    const path = `tier_configs/${tier.id}`;
     try {
-      await deleteDoc(doc(db, path));
+      if (user.isLocal) {
+        const { getGuestTiers, setLocalStorageData } = await import("@/data/guestData");
+        const currentTiers = getGuestTiers();
+        const updated = currentTiers.filter(t => t.id !== tier.id);
+        setLocalStorageData("crm_guest_tiers_v6", updated);
+      } else {
+        const path = `tier_configs/${tier.id}`;
+        await deleteDoc(doc(db, path));
+      }
       toast.success("Đã xóa hạng");
       window.dispatchEvent(
         new CustomEvent("crm-config-saved", { detail: { tab: "tiers" } }),
       );
       onClose();
     } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, path);
+      if (!user.isLocal) {
+        handleFirestoreError(error, OperationType.DELETE, `tier_configs/${tier.id}`);
+      }
+      toast.error("Không thể xóa hạng");
     }
   };
 
@@ -427,9 +498,171 @@ export function TierConfigDialog({ onClose, tier, availableRules }: TierConfigDi
               </div>
             </div>
 
+            {/* THIẾT LẬP NÂNG CAO: QUY TẮC CHUYỂN CẤP */}
+            <div className="p-5 border border-border/80 bg-muted/10 rounded-[10px] space-y-5 text-left">
+              <div className="flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-[#2f6cf5]" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">
+                  Điều kiện chuyển cấp ({prevTier ? `${prevTier.name} ➔ ${name || "Hạng hiện tại"}` : "Hạng tiêu chuẩn"})
+                </h4>
+              </div>
+
+              {!prevTier ? (
+                <div className="p-4 bg-muted/40 rounded-[10px] border border-border text-xs text-muted-foreground">
+                  ✨ Đây là hạng hội viên thấp nhất (Cấp tiêu chuẩn). Khách hàng sẽ mặc định đạt hạng này mà không cần thoả mãn điều kiện chuyển cấp từ bất kỳ phân hạng nào thấp hơn.
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Thiết lập các điều kiện ràng buộc giữa hai phân hạng <strong>{prevTier.name}</strong> và <strong>{name || "Hạng hiện tại"}</strong> để cá nhân hoá hành trình nâng/giữ cấp độ của khách hàng.
+                  </p>
+
+                  {/* 1. LUẬT THĂNG CẤP */}
+                  <div className="border border-border rounded-[10px] bg-background p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-foreground">1. Quy tắc nâng cấp (Upgrade Rules)</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={enablePrevTierUpgradeConditions} 
+                          onChange={(e) => setEnablePrevTierUpgradeConditions(e.target.checked)}
+                          className="sr-only peer" 
+                        />
+                        <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <span className="ml-2 text-xs font-bold text-muted-foreground peer-checked:text-emerald-500">Kích hoạt</span>
+                      </label>
+                    </div>
+
+                    {enablePrevTierUpgradeConditions && (
+                      <div className="space-y-4 pt-2 border-t border-border/40 animate-in fade-in duration-300">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-1.5 text-left">
+                            <label className="text-[11px] font-bold text-muted-foreground uppercase">Số ngày giữ hạng tối thiểu ở {prevTier.name}</label>
+                            <input 
+                              type="number"
+                              className="w-full px-4 py-3 bg-muted/40 border border-border rounded-[10px] text-xs font-bold outline-none focus:bg-background transition-colors"
+                              placeholder="v.d. 30"
+                              value={minDaysInPrevTier || ""}
+                              onChange={(e) => setMinDaysInPrevTier(Number(e.target.value))}
+                            />
+                            <p className="text-[9px] text-muted-foreground">Khách hàng buộc phải ở hạng cũ tối thiểu bấy nhiêu ngày trước khi thăng cấp.</p>
+                          </div>
+
+                          <div className="space-y-1.5 text-left">
+                            <label className="text-[11px] font-bold text-muted-foreground uppercase">Doanh thu phát sinh thêm ở {prevTier.name} (VND)</label>
+                            <input 
+                              type="number"
+                              className="w-full px-4 py-3 bg-muted/40 border border-border rounded-[10px] text-xs font-bold outline-none focus:bg-background transition-colors"
+                              placeholder="v.d. 5000000"
+                              value={minSpendInPrevTier || ""}
+                              onChange={(e) => setMinSpendInPrevTier(Number(e.target.value))}
+                            />
+                            <p className="text-[9px] text-muted-foreground">Tổng chi tiêu phát sinh kể từ ngày đạt hạng {prevTier.name}.</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-1.5 text-left">
+                            <label className="text-[11px] font-bold text-muted-foreground uppercase">Số đơn mua thành công khi ở {prevTier.name}</label>
+                            <input 
+                              type="number"
+                              className="w-full px-4 py-3 bg-muted/40 border border-border rounded-[10px] text-xs font-bold outline-none focus:bg-background transition-colors"
+                              placeholder="v.d. 3"
+                              value={minOrdersInPrevTier || ""}
+                              onChange={(e) => setMinOrdersInPrevTier(Number(e.target.value))}
+                            />
+                            <p className="text-[9px] text-muted-foreground">Yêu cầu tần suất mua tối thiểu khi đang giữ hạng trước.</p>
+                          </div>
+
+                          <div className="space-y-1.5 text-left">
+                            <label className="text-[11px] font-bold text-muted-foreground uppercase">Kiểu khớp điều kiện</label>
+                            <select
+                              className="w-full px-4 py-3 bg-muted border border-border rounded-[10px] text-xs font-bold outline-none"
+                              value={transitionUpgradeMatchType}
+                              onChange={(e) => setTransitionUpgradeMatchType(e.target.value as any)}
+                            >
+                              <option value="and">Thỏa mãn TẤT CẢ tiêu chí trên (AND)</option>
+                              <option value="or">Chỉ cần thỏa mãn MỘT trong các tiêu chí (OR)</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2. LUẬT DUY TRÌ & HẠ CẤP */}
+                  <div className="border border-border rounded-[10px] bg-background p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <HistoryIcon className="w-4 h-4 text-rose-500" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-foreground">2. Quy tắc duy trì & giáng cấp (Demotion Rules)</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={enablePrevTierMaintenanceConditions} 
+                          onChange={(e) => setEnablePrevTierMaintenanceConditions(e.target.checked)}
+                          className="sr-only peer" 
+                        />
+                        <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-500"></div>
+                        <span className="ml-2 text-xs font-bold text-muted-foreground peer-checked:text-rose-500">Kích hoạt</span>
+                      </label>
+                    </div>
+
+                    {enablePrevTierMaintenanceConditions && (
+                      <div className="space-y-4 pt-2 border-t border-border/40 animate-in fade-in duration-300">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-1.5 text-left">
+                            <label className="text-[11px] font-bold text-muted-foreground uppercase">Thời gian không hoạt động tối đa (Ngày)</label>
+                            <input 
+                              type="number"
+                              className="w-full px-4 py-3 bg-muted/40 border border-border rounded-[10px] text-xs font-bold outline-none focus:bg-background transition-colors"
+                              placeholder="v.d. 180"
+                              value={maxInactivityDaysBeforeDowngrade || ""}
+                              onChange={(e) => setMaxInactivityDaysBeforeDowngrade(Number(e.target.value))}
+                            />
+                            <p className="text-[9px] text-muted-foreground">Hạ về cấp {prevTier.name} nếu không có giao dịch mới sau số ngày này.</p>
+                          </div>
+
+                          <div className="space-y-1.5 text-left">
+                            <label className="text-[11px] font-bold text-muted-foreground uppercase">Doanh thu cần duy trì tối thiểu (VND)</label>
+                            <input 
+                              type="number"
+                              className="w-full px-4 py-3 bg-muted/40 border border-border rounded-[10px] text-xs font-bold outline-none focus:bg-background transition-colors"
+                              placeholder="v.d. 2000000"
+                              value={minSpendToMaintain || ""}
+                              onChange={(e) => setMinSpendToMaintain(Number(e.target.value))}
+                            />
+                            <p className="text-[9px] text-muted-foreground">Chi tiêu tối thiểu trong chu kỳ để tránh bị hạ hạng.</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-1.5 text-left">
+                            <label className="text-[11px] font-bold text-muted-foreground uppercase">Số đơn mua tối thiểu để giữ hạng</label>
+                            <input 
+                              type="number"
+                              className="w-full px-4 py-3 bg-muted/40 border border-border rounded-[10px] text-xs font-bold outline-none focus:bg-background transition-colors"
+                              placeholder="v.d. 2"
+                              value={minOrdersToMaintain || ""}
+                              onChange={(e) => setMinOrdersToMaintain(Number(e.target.value))}
+                            />
+                            <p className="text-[9px] text-muted-foreground">Số đơn giao dịch tối thiểu cần tích luỹ trong kỳ.</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-4 text-left">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <label className="text-sm font-bold uppercase tracking-widest text-[#2f6cf5] flex items-center gap-2">
                   <Zap className="w-4 h-4" /> Tuyến đặc quyền (Benefits)
                 </label>
                 <button
@@ -601,6 +834,92 @@ export function TierConfigDialog({ onClose, tier, availableRules }: TierConfigDi
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* DISPLAY READ-ONLY TRANSITION CONDITIONS */}
+            <div className="p-5 border border-border bg-card rounded-[10px] space-y-4">
+              <div className="flex items-center gap-2 border-b border-border/60 pb-2">
+                <Sliders className="w-4 h-4 text-[#2f6cf5]" />
+                <h4 className="text-xs font-black uppercase tracking-widest text-foreground">
+                  Quy tắc chuyển cấp ({prevTier ? `${prevTier.name} ➔ ${tier?.name}` : "Hạng đầu tiên"})
+                </h4>
+              </div>
+
+              {!prevTier ? (
+                <p className="text-[11px] font-medium text-muted-foreground italic">
+                  ✨ Đây là cấp độ chào mừng đầu tiên. Mọi khách hàng tham gia chương trình đều mặc định khởi đầu ở hạng này.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                  {/* Upgrade conditions read-only */}
+                  <div className="space-y-2 md:border-r md:border-border/40 md:pr-4">
+                    <p className="font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
+                      <TrendingUp className="w-3.5 h-3.5" /> Điều kiện thăng cấp từ {prevTier.name}
+                    </p>
+                    {tier?.enablePrevTierUpgradeConditions ? (
+                      <div className="space-y-1.5">
+                        {tier.minDaysInPrevTier ? (
+                          <div className="flex justify-between py-1 border-b border-border/30">
+                            <span className="text-muted-foreground">Giữ hạng {prevTier.name} tối thiểu:</span>
+                            <span className="font-black text-foreground">{tier.minDaysInPrevTier} ngày</span>
+                          </div>
+                        ) : null}
+                        {tier.minSpendInPrevTier ? (
+                          <div className="flex justify-between py-1 border-b border-border/30">
+                            <span className="text-muted-foreground">Doanh thu phát sinh tại {prevTier.name}:</span>
+                            <span className="font-black text-foreground">{Number(tier.minSpendInPrevTier).toLocaleString()} ₫</span>
+                          </div>
+                        ) : null}
+                        {tier.minOrdersInPrevTier ? (
+                          <div className="flex justify-between py-1 border-b border-border/30">
+                            <span className="text-muted-foreground">Đơn hàng phát sinh tại {prevTier.name}:</span>
+                            <span className="font-black text-foreground">{tier.minOrdersInPrevTier} đơn</span>
+                          </div>
+                        ) : null}
+                        <div className="pt-1 text-[10px] text-muted-foreground italic">
+                          * Phương pháp ghép: <strong className="text-foreground uppercase">{tier.transitionUpgradeMatchType === 'or' ? "Thoả mãn 1 trong các điều kiện" : "Thoả mãn ĐỒNG THỜI toàn bộ"}</strong>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground italic text-[11px] pt-1">Thăng hạng tự động ngay khi đạt ngưỡng {tier?.threshold.toLocaleString()} điểm lý thuyết.</p>
+                    )}
+                  </div>
+
+                  {/* Demotion/Maintenance conditions read-only */}
+                  <div className="space-y-2">
+                    <p className="font-extrabold text-rose-600 dark:text-rose-400 flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
+                      <HistoryIcon className="w-3.5 h-3.5" /> Điều kiện duy trì & tránh hạ cấp
+                    </p>
+                    {tier?.enablePrevTierMaintenanceConditions ? (
+                      <div className="space-y-1.5">
+                        {tier.maxInactivityDaysBeforeDowngrade ? (
+                          <div className="flex justify-between py-1 border-b border-border/30">
+                            <span className="text-muted-foreground">Giới hạn không mua sắm:</span>
+                            <span className="font-black text-foreground">{tier.maxInactivityDaysBeforeDowngrade} ngày</span>
+                          </div>
+                        ) : null}
+                        {tier.minSpendToMaintain ? (
+                          <div className="flex justify-between py-1 border-b border-border/30">
+                            <span className="text-muted-foreground">Chi tiêu duy trì tối thiểu:</span>
+                            <span className="font-black text-foreground">{Number(tier.minSpendToMaintain).toLocaleString()} ₫</span>
+                          </div>
+                        ) : null}
+                        {tier.minOrdersToMaintain ? (
+                          <div className="flex justify-between py-1 border-b border-border/30">
+                            <span className="text-muted-foreground">Tổng số đơn hàng duy trì:</span>
+                            <span className="font-black text-foreground">{tier.minOrdersToMaintain} đơn</span>
+                          </div>
+                        ) : null}
+                        <div className="pt-1 text-[10px] text-rose-500/80 italic leading-snug">
+                          * Hạ cấp về hạng {prevTier.name} nếu không đạt các yêu cầu duy trì trên.
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground italic text-[11px] pt-1">Giữ hạng theo chu kỳ duy trì mặc định ({tier?.maintenanceDays} ngày).</p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="pt-2">
