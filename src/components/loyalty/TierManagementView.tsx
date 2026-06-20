@@ -11,6 +11,8 @@ import { getGuestTiers } from "@/data/guestData";
 import { toast } from "sonner";
 import { LoyaltyTiersBanner } from "./LoyaltyTiersBanner";
 
+import { TierJourneyMap } from "./TierJourneyMap";
+
 interface TierManagementViewProps {
   rules?: any[];
   gifts?: any[];
@@ -153,6 +155,10 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
           />
         </div>
       </div>
+
+      {!loading && tiers.length > 0 && (
+        <TierJourneyMap tiers={tiers} />
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {loading ? (

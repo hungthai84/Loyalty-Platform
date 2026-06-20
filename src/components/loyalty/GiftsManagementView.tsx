@@ -10,6 +10,8 @@ import {
   RefreshCw,
   X,
   Database,
+  Smartphone,
+  LayoutGrid
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -28,6 +30,7 @@ import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
+import { GiftMobilePreview } from "./GiftMobilePreview";
 
 export interface GiftItem {
   id: string;
@@ -121,6 +124,7 @@ export function GiftsManagementView() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTier, setFilterTier] = useState("all");
   const [syncing, setSyncing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"catalog" | "mobile_preview">("catalog");
 
   // Modal State
   const [showEditor, setShowEditor] = useState(false);
@@ -396,40 +400,60 @@ export function GiftsManagementView() {
 
       {/* Filter and search utilities */}
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between px-1">
-        <div className="text-left w-full sm:w-auto">
-          <h5 className="text-xs font-extrabold text-rose-500 uppercase tracking-widest">
-            Danh sách vật phẩm lưu trữ ({filteredGifts.length})
-          </h5>
-          <p className="text-xs text-muted-foreground">
-            Quản lý phần quà vật chất, số lượng tồn kho & hạn mức phân hạng
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto justify-end">
-          <div className="relative w-full sm:w-44">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <input
-              type="search"
-              placeholder="Tìm kiếm quà..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:border-rose-500/50 text-foreground"
-            />
+        <div className="flex items-center gap-2">
+          <div className="bg-muted p-1 rounded-[10px] flex gap-1">
+            <button
+              onClick={() => setActiveTab("catalog")}
+              className={cn(
+                "px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                activeTab === "catalog"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10"
+              )}
+            >
+              <LayoutGrid className="w-4 h-4" /> Kho Lưu Trữ
+            </button>
+            <button
+              onClick={() => setActiveTab("mobile_preview")}
+              className={cn(
+                "px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                activeTab === "mobile_preview"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10"
+              )}
+            >
+              <Smartphone className="w-4 h-4" /> App Khách hàng
+            </button>
           </div>
-
-          <select
-            value={filterTier}
-            onChange={(e) => setFilterTier(e.target.value)}
-            className="bg-background border border-border rounded-[10px] px-2.5 py-1.5 text-xs outline-none focus:border-rose-500/50 text-foreground font-medium"
-          >
-            <option value="all">Tất cả nhóm VIP</option>
-            {AVAILABLE_TIERS.map((tier) => (
-              <option key={tier} value={tier}>
-                Hạng {tier} trở lên
-              </option>
-            ))}
-          </select>
         </div>
+
+        {activeTab === "catalog" && (
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto justify-end">
+            <div className="relative w-full sm:w-44">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="search"
+                placeholder="Tìm kiếm quà..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:border-rose-500/50 text-foreground"
+              />
+            </div>
+
+            <select
+              value={filterTier}
+              onChange={(e) => setFilterTier(e.target.value)}
+              className="bg-background border border-border rounded-[10px] px-2.5 py-1.5 text-xs outline-none focus:border-rose-500/50 text-foreground font-medium"
+            >
+              <option value="all">Tất cả nhóm VIP</option>
+              {AVAILABLE_TIERS.map((tier) => (
+                <option key={tier} value={tier}>
+                  Hạng {tier} trở lên
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Grid listing */}
@@ -438,6 +462,8 @@ export function GiftsManagementView() {
           <RefreshCw className="w-6 h-6 animate-spin mx-auto text-rose-500 mb-2" />
           Đang tải kho quà tặng...
         </div>
+      ) : activeTab === "mobile_preview" ? (
+        <GiftMobilePreview gifts={gifts} />
       ) : filteredGifts.length === 0 ? (
         <div className="py-20 text-center border border-dashed border-border rounded-[10px] space-y-4 bg-card/10">
           <Gift className="w-12 h-12 text-muted-foreground/30 mx-auto" />

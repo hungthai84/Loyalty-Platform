@@ -32,18 +32,26 @@ export function NotificationBell({ isSidebar, collapsed }: NotificationBellProps
     },
     {
       id: "alert-2",
-      type: "warning",
-      title: "Cảnh báo hạn mức ngân sách",
-      description: "Ngân sách đổi quà của chiến dịch chăm sóc quý 2 sắp chạm ngưỡng giới hạn (đạt 92.5%).",
-      time: "2 giờ trước",
+      type: "info",
+      title: "Khách hàng thăng hạng mới!",
+      description: "Hội viên Nguyễn Văn A vừa đạt đủ điểm thăng lên hạng VIP (Icon).",
+      time: "30 phút trước",
       read: false
     },
     {
       id: "alert-3",
       type: "info",
-      title: "Chăm sóc khách hàng tự động",
-      description: "Cấu hình gửi email tự động mừng sinh nhật đã sẵn sàng.",
-      time: "1 ngày trước",
+      title: "Đăng ký sự kiện thành công",
+      description: "Có 5 khách hàng VIP vừa đăng ký tham gia sự kiện ra mắt BST Mùa Hè.",
+      time: "1 giờ trước",
+      read: false
+    },
+    {
+      id: "alert-4",
+      type: "warning",
+      title: "Cảnh báo hạn mức ngân sách",
+      description: "Ngân sách đổi quà của chiến dịch chăm sóc quý 2 sắp chạm ngưỡng giới hạn (đạt 92.5%).",
+      time: "2 giờ trước",
       read: true
     }
   ]);

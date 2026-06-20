@@ -51,7 +51,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
   const { user } = useFirebase();
   const { theme } = useTheme();
 
-  const [activeTab, setActiveTab] = useState<"home" | "rewards" | "history">(
+  const [activeTab, setActiveTab] = useState<"home" | "rewards" | "history" | "gamification">(
     "home",
   );
   const [rules, setRules] = useState<RedemptionRule[]>([]);
@@ -407,6 +407,168 @@ export function CustomerPortalView({ onBack }: PortalProps) {
           </div>
         </div>
 
+        {/* Omnichannel / Touchpoints Integrations */}
+        <div className="space-y-4 pt-6 border-t border-border/40">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-[#2f6cf5]" />
+              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
+                Tích hợp Đa Điểm chạm (Omnichannel)
+              </span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 rounded-[10px] border border-emerald-500/30 bg-emerald-500/5 relative overflow-hidden group">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <Smartphone className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-foreground">Zalo Mini App</h5>
+                    <p className="text-[10px] text-muted-foreground">Đã kết nối</p>
+                  </div>
+                </div>
+                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+              </div>
+              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-background border border-border hover:bg-muted rounded text-foreground transition-colors">
+                Cấu hình API Key
+              </button>
+            </div>
+
+            <div className="p-4 rounded-[10px] border border-[#2f6cf5]/30 bg-[#2f6cf5]/5 relative overflow-hidden group">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-[#2f6cf5]/20 flex items-center justify-center">
+                    <Monitor className="w-4 h-4 text-[#2f6cf5]" />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-foreground">Website Portal</h5>
+                    <p className="text-[10px] text-muted-foreground">Web SDK & iFrame</p>
+                  </div>
+                </div>
+                <div className="w-2 h-2 rounded-full bg-[#2f6cf5] shadow-[0_0_8px_rgba(47,108,245,0.8)]"></div>
+              </div>
+              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-background border border-border hover:bg-muted rounded text-foreground transition-colors">
+                Lấy mã nhúng
+              </button>
+            </div>
+
+            <div className="p-4 rounded-[10px] border border-border/50 bg-muted/10 relative overflow-hidden group opacity-70 hover:opacity-100 transition-opacity">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <ShoppingBag className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-foreground">WooCommerce / Shopify</h5>
+                    <p className="text-[10px] text-muted-foreground">E-commerce Plugin</p>
+                  </div>
+                </div>
+                <div className="w-2 h-2 rounded-full bg-muted-foreground/30"></div>
+              </div>
+              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-primary text-primary-foreground hover:opacity-90 rounded transition-colors">
+                Kết nối ngay
+              </button>
+            </div>
+
+            <div className="p-4 rounded-[10px] border border-border/50 bg-muted/10 relative overflow-hidden group opacity-70 hover:opacity-100 transition-opacity">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <QrCode className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-foreground">Máy POS Offline (KiotViet)</h5>
+                    <p className="text-[10px] text-muted-foreground">Tích điểm tự động</p>
+                  </div>
+                </div>
+                <div className="w-2 h-2 rounded-full bg-muted-foreground/30"></div>
+              </div>
+              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-primary text-primary-foreground hover:opacity-90 rounded transition-colors">
+                Thiết lập Webhook
+              </button>
+            </div>
+            <div className="p-4 rounded-[10px] border border-border/50 bg-muted/10 relative overflow-hidden group opacity-70 hover:opacity-100 transition-opacity">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <Tablet className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-foreground">Self-Service Kiosk</h5>
+                    <p className="text-[10px] text-muted-foreground">App cài đặt tại thiết bị Kiosk</p>
+                  </div>
+                </div>
+                <div className="w-2 h-2 rounded-full bg-muted-foreground/30"></div>
+              </div>
+              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-primary text-primary-foreground hover:opacity-90 rounded transition-colors">
+                Xem API cấu hình
+              </button>
+            </div>
+
+            <div className="p-4 rounded-[10px] border border-border/50 bg-muted/10 relative overflow-hidden group opacity-70 hover:opacity-100 transition-opacity">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <Activity className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-foreground">Wifi Marketing</h5>
+                    <p className="text-[10px] text-muted-foreground">Tích điểm khi khách truy cập Wifi</p>
+                  </div>
+                </div>
+                <div className="w-2 h-2 rounded-full bg-muted-foreground/30"></div>
+              </div>
+              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-primary text-primary-foreground hover:opacity-90 rounded transition-colors">
+                Thiết lập Captive Portal
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Gamification & Extensibility Section */}
+        <div className="space-y-4 pt-6 border-t border-border/40">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-amber-500" />
+              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
+                Tích hợp Gamification (Tiện ích)
+              </span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 flex items-start gap-4 rounded-[10px] border border-amber-500/30 bg-amber-500/5 relative">
+              <div className="p-2.5 bg-amber-500/20 rounded-full shrink-0">
+                <Gift className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground">Vòng Quay May Mắn</h4>
+                <p className="text-[11px] text-muted-foreground mt-1 mb-3 leading-snug">Tính năng giúp khách hàng dùng điểm tích lũy để quay thưởng, tăng tương tác ứng dụng Điểm Chạm của bạn.</p>
+                <button className="text-xs font-bold text-amber-600 hover:text-amber-700 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 rounded transition-colors w-full sm:w-auto text-center">Tùy chỉnh Vòng quay</button>
+              </div>
+            </div>
+
+            <div className="p-4 flex items-start gap-4 rounded-[10px] border border-border bg-card relative">
+              <div className="p-2.5 bg-muted rounded-full shrink-0">
+                <UserIcon className="w-5 h-5 text-muted-foreground" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground">Giới thiệu (Affiliate)</h4>
+                <p className="text-[11px] text-muted-foreground mt-1 mb-3 leading-snug">Cho phép thành viên lấy mã giới thiệu tại App Điểm Chạm để mời bạn bè, hưởng hoa hồng hoa điểm thưởng.</p>
+                <div className="flex items-center justify-between px-3 py-1.5 bg-muted rounded">
+                  <span className="text-xs font-medium text-muted-foreground">Đang bật (Tự động)</span>
+                  <div className="w-8 h-4 bg-emerald-500 rounded-full relative">
+                     <div className="w-3 h-3 bg-white rounded-full absolute right-0.5 top-0.5"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* General Customization Section */}
         <div className="space-y-4 pt-6 border-t border-border/40">
           <div className="flex items-center justify-between">
@@ -608,7 +770,9 @@ export function CustomerPortalView({ onBack }: PortalProps) {
               ? "SEVA"
               : activeTab === "rewards"
                 ? "ƯU ĐÃI"
-                : "LỊCH SỬ"}
+                : activeTab === "gamification"
+                  ? "TIỆN ÍCH"
+                  : "LỊCH SỬ"}
           </span>
           <div className="w-5"></div>
         </div>
@@ -676,35 +840,46 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-4 gap-3">
                   <button
                     onClick={() => setActiveTab("rewards")}
-                    className={`flex flex-col items-center justify-center p-4 rounded-[10px] ${buttonBg} cursor-pointer`}
+                    className={`flex flex-col items-center justify-center py-4 px-2 rounded-[10px] ${buttonBg} cursor-pointer`}
                   >
-                    <Gift className="w-6 h-6 text-[#2f6cf5] mb-2" />
+                    <Gift className="w-5 h-5 text-[#2f6cf5] mb-2" />
                     <span
-                      className={`text-xs ${textPrimary} font-bold tracking-wide uppercase`}
+                      className={`text-[10px] sm:text-xs ${textPrimary} font-bold tracking-wide uppercase text-center w-full truncate`}
                     >
                       Đổi quà
                     </span>
                   </button>
                   <button
-                    className={`flex flex-col items-center justify-center p-4 rounded-[10px] ${buttonBg} cursor-pointer`}
+                    className={`flex flex-col items-center justify-center py-4 px-2 rounded-[10px] ${buttonBg} cursor-pointer`}
                     onClick={() => setActiveTab("history")}
                   >
-                    <History className="w-6 h-6 text-[#2f6cf5] mb-2" />
+                    <History className="w-5 h-5 text-[#2f6cf5] mb-2" />
                     <span
-                      className={`text-xs ${textPrimary} font-bold tracking-wide uppercase`}
+                      className={`text-[10px] sm:text-xs ${textPrimary} font-bold tracking-wide uppercase text-center w-full truncate`}
                     >
                       Lịch sử
                     </span>
                   </button>
                   <button
-                    className={`flex flex-col items-center justify-center p-4 rounded-[10px] ${buttonBg} cursor-pointer`}
+                    className={`flex flex-col items-center justify-center py-4 px-2 rounded-[10px] ${buttonBg} cursor-pointer`}
+                    onClick={() => setActiveTab("gamification")}
                   >
-                    <UserIcon className="w-6 h-6 text-[#2f6cf5] mb-2" />
+                    <Star className="w-5 h-5 text-amber-500 mb-2" />
                     <span
-                      className={`text-xs ${textPrimary} font-bold tracking-wide uppercase`}
+                      className={`text-[10px] sm:text-xs ${textPrimary} font-bold tracking-wide uppercase text-center w-full truncate`}
+                    >
+                      Giải trí
+                    </span>
+                  </button>
+                  <button
+                    className={`flex flex-col items-center justify-center py-4 px-2 rounded-[10px] ${buttonBg} cursor-pointer`}
+                  >
+                    <UserIcon className="w-5 h-5 text-[#2f6cf5] mb-2" />
+                    <span
+                      className={`text-[10px] sm:text-xs ${textPrimary} font-bold tracking-wide uppercase text-center w-full truncate`}
                     >
                       Hồ sơ
                     </span>
@@ -1212,6 +1387,62 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === "gamification" && (
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center justify-between px-1 border-b pb-3 border-border/10">
+                  <div className="text-left">
+                    <h3 className={`${textPrimary} font-bold text-lg`}>
+                      Tiện ích & Giải trí
+                    </h3>
+                    <p className={`${textSecondary} text-xs`}>
+                      Tham gia mini game để nhận quà cực sốc
+                    </p>
+                  </div>
+                </div>
+
+                <div className={`${cardBg} overflow-hidden rounded-[10px] border border-amber-500/30 p-6 flex flex-col items-center justify-center space-y-4`} style={{ background: isPortalDark ? 'linear-gradient(to bottom right, rgba(245, 158, 11, 0.1), transparent)' : 'linear-gradient(to bottom right, rgba(245, 158, 11, 0.05), white)' }}>
+                   <div className="w-32 h-32 rounded-full border-4 border-amber-500/20 flex items-center justify-center relative bg-gradient-to-br from-amber-200 to-amber-500 shadow-xl overflow-hidden shadow-amber-500/20">
+                     <Star className="w-12 h-12 text-white animate-pulse" />
+                     <div className="absolute inset-0 border-8 border-white/20 border-dashed rounded-full animate-[spin_20s_linear_infinite]"></div>
+                   </div>
+                   <div className="text-center">
+                     <h4 className={`font-black uppercase tracking-wider ${textPrimary}`}>VÒNG QUAY MAY MẮN</h4>
+                     <p className={`text-xs mt-1 ${textSecondary}`}>10 điểm / lượt quay</p>
+                   </div>
+                   <button 
+                     onClick={() => {
+                        toast.success("Hệ thống Gamification đang được kết nối!", { description: "Thử nghiệm tích hợp Vòng quay may mắn thành công." });
+                        confetti({
+                          particleCount: 150,
+                          spread: 100,
+                          colors: ["#f59e0b", "#fbbf24", "#d97706"]
+                        });
+                     }}
+                     className="w-full bg-gradient-to-r from-amber-400 to-amber-600 text-white font-black py-3 rounded-[10px] shadow-lg shadow-amber-500/20 uppercase tracking-widest text-xs hover:scale-[1.02] active:scale-95 transition-all">
+                     Thử Vận May!
+                   </button>
+                </div>
+
+                <div className={`${cardBg} rounded-[10px] p-5 flex flex-col space-y-3`}>
+                   <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-full bg-[#2f6cf5]/10 flex items-center justify-center">
+                       <UserIcon className="w-5 h-5 text-[#2f6cf5]" />
+                     </div>
+                     <div className="flex-1 text-left">
+                       <h4 className={`font-bold text-sm ${textPrimary}`}>Mời Bạn Bè (Affiliate)</h4>
+                       <p className={`text-[10px] ${textMuted} leading-tight mt-0.5`}>Nhận 500 điểm cho mỗi người bạn. Link của bạn: <span className="font-mono bg-muted px-1 py-0.5 rounded text-foreground">{referralLink}</span></p>
+                     </div>
+                   </div>
+                   <button 
+                     onClick={() => {
+                       navigator.clipboard.writeText(referralLink);
+                       toast.success("Đã copy mã mời!", { description: "Bạn có thể gửi mã này cho bạn bè." });
+                     }}
+                     className="w-full mt-2 bg-muted text-foreground py-2 rounded-[10px] text-xs font-bold transition-all hover:bg-muted/80">Copy Mã Mời</button>
                 </div>
               </div>
             )}

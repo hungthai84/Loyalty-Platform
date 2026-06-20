@@ -299,14 +299,14 @@ export const GUEST_CUSTOMERS: Customer[] = generateGuestCustomers();
 
 export const GUEST_TIERS: TierConfig[] = [
   { 
-    id: "tier-member", 
-    name: "Member", 
+    id: "tier-bronze", 
+    name: "Bronze", 
     threshold: 0, 
     multiplier: 1.0, 
-    color: "#94a3b8", 
+    color: "#b08d57", 
     userId: "guest", 
     createdAt: daysAgo(100), 
-    description: "Cấp bậc tiêu chuẩn dành cho khách hàng mới gia nhập Seva Retail. Tích điểm cơ bản trên mỗi hóa đơn và nhận bản tin đặc quyền sớm định kỳ.",
+    description: "Cấp bậc hạng Đồng tiêu chuẩn dành cho khách hàng mới gia nhập Seva Retail. Tích điểm cơ bản trên mỗi hóa đơn và nhận bản tin đặc quyền sớm định kỳ.",
     benefits: [
       { name: "Hệ số tích điểm", value: "1.0x (Cơ bản)" },
       { name: "Quà tặng chào mừng", value: "Thiệp tay Seva Heritage" },
@@ -316,14 +316,14 @@ export const GUEST_TIERS: TierConfig[] = [
     ]
   },
   { 
-    id: "tier-essential", 
-    name: "Essential", 
+    id: "tier-silver", 
+    name: "Silver", 
     threshold: 500, 
     multiplier: 1.25, 
-    color: "#10b981", 
+    color: "#94a3b8", 
     userId: "guest", 
     createdAt: daysAgo(100), 
-    description: "Hành trình trải nghiệm xa xỉ bền vững. Thưởng thức x1.25 điểm tích lũy, miễn phí mọi dịch vụ spa trang sức trọn đời tại các chi nhánh.",
+    description: "Hành trình trải nghiệm xa xỉ bền vững với hạng Bạc. Thưởng thức x1.25 điểm tích lũy, miễn phí mọi dịch vụ spa trang sức trọn đời tại các chi nhánh.",
     benefits: [
       { name: "Hệ số tích điểm", value: "1.25x (Ưu đãi)" },
       { name: "Quà tặng chào mừng", value: "Voucher 500k" },
@@ -333,14 +333,14 @@ export const GUEST_TIERS: TierConfig[] = [
     ]
   },
   { 
-    id: "tier-icon", 
-    name: "Icon", 
+    id: "tier-gold", 
+    name: "Gold", 
     threshold: 2500, 
     multiplier: 1.5, 
     color: "#f59e0b", 
     userId: "guest", 
     createdAt: daysAgo(100), 
-    description: "Hạng Khách hàng VIP thể hiện vị thế biểu tượng. Trải nghiệm phòng chờ thượng hạng Private Lounge và mức chiết khấu mua sắm trực tiếp đặc quyền.",
+    description: "Hạng Khách hàng Vàng VIP mang đến vị thế biểu tượng. Trải nghiệm phòng chờ thượng hạng Private Lounge và mức chiết khấu mua sắm trực tiếp đặc quyền.",
     benefits: [
       { name: "Hệ số tích điểm", value: "1.5x" },
       { name: "Quà tặng chào mừng", value: "Voucher 1.5M + Nến thơm" },
@@ -351,21 +351,21 @@ export const GUEST_TIERS: TierConfig[] = [
     ]
   },
   { 
-    id: "tier-atelier", 
-    name: "Atelier", 
+    id: "tier-platinum", 
+    name: "Platinum", 
     threshold: 10000, 
     multiplier: 2.0, 
-    color: "#2f6cf5", 
+    color: "#8b5cf6", 
     userId: "guest", 
     createdAt: daysAgo(100), 
-    description: "Hạng VVIP tinh hoa trọn vẹn đặc quyền cao quý nhất. Đồng sáng tạo thiết kế Bespoke độc bản và trải nghiệm những đặc khu xa hoa vô tận.",
+    description: "Cấp độ vinh dự nhất của đế chế trang sức hạng Bạch Kim. Hệ số tích lũy x2, đặc quyền gặp trực tiếp Giám Đốc Sáng Tạo và thiết kế trang sức độc bản riêng.",
     benefits: [
-      { name: "Hệ số tích điểm", value: "2.0x (Đặc quyền tối đa)" },
-      { name: "Quà tặng chào mừng", value: "Tráp quà lụa thượng hạng VIP" },
-      { name: "Sinh nhật hoàng gia", value: "Set trang sức độc bản đính đá quý" },
-      { name: "Spa & Vệ sinh trang sức", value: "Đặc trị khuyết tật & Xi mạ cao cấp" },
-      { name: "Sử dụng Private Lounge", value: "Miễn phí 100% kèm trà bánh" },
-      { name: "Chuyên viên tư vấn riêng", value: "Quản lý Showroom phụ trách 24/7" }
+      { name: "Hệ số tích điểm", value: "2.0x (Tối thượng)" },
+      { name: "Quà tặng chào mừng", value: "Trang sức thiết kế Limited" },
+      { name: "Sinh nhật hoàng gia", value: "Bữa tối VIP tại nhà hàng Michelin" },
+      { name: "Spa & Vệ sinh trang sức", value: "Phủ Rhodium định kỳ miễn phí" },
+      { name: "Sử dụng Private Lounge", value: "Miễn phí 100% kèm 2 khách" },
+      { name: "Thiết kế trang sức", value: "Gặp gỡ Giám đốc Sáng tạo 1:1" }
     ]
   }
 ];

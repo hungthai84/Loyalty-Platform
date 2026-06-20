@@ -882,23 +882,20 @@ export function DashboardView() {
 
   const [chartView, setChartView] = useState<"distribution" | "trend">("distribution");
 
-  const pointIssuanceTrendData = useMemo(() => {
-    const totalPoints = allCustomers.reduce((acc, c) => acc + (c.points || 0), 0);
-    const baseValue = totalPoints > 0 ? totalPoints : 285400; // Realistic seed base
-    
+  const monthlyGrowthData = useMemo(() => {
     const data = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const label = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-      
-      const factor = 0.7 + 0.3 * (1 - i / 30); // smooth growth from 70% to 100%
-      const seed = Math.sin(d.getDate()) * (baseValue * 0.02); // 2% micro variation
-      const points = Math.max(0, Math.round(baseValue * factor + seed));
-      
+    const months = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"];
+    
+    // Simulate some monthly growth data
+    let baseSignups = 150;
+    let basePoints = 45000;
+    for (let i = 0; i < 6; i++) {
+      baseSignups += Math.floor(Math.random() * 50) + 20;
+      basePoints += Math.floor(Math.random() * 15000) + 5000;
       data.push({
-        date: label,
-        points: points
+        month: months[i],
+        signups: baseSignups,
+        points: basePoints
       });
     }
     return data;
@@ -1354,9 +1351,15 @@ export function DashboardView() {
                       </div>
                     </>
                   ) : (
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full" />
-                      <span>Tổng tích lũy</span>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                        <span>Tổng tích lũy</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 bg-amber-500 rounded-full" />
+                        <span>Đăng ký mới</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1392,17 +1395,22 @@ export function DashboardView() {
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
-                    data={pointIssuanceTrendData}
+                    data={monthlyGrowthData}
                     margin={{ top: 10, right: 15, left: -20, bottom: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.2)" />
-                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                     <Tooltip
                       contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "12px", border: "1px solid hsl(var(--border))", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
-                      formatter={(value: number) => [`${value.toLocaleString()} pts`, "Tổng điểm cấp phát"]}
+                      formatter={(value: number, name: string) => {
+                        if (name === "Tổng cấp phát") return [`${value.toLocaleString()} pts`, name];
+                        return [`${value.toLocaleString()}`, name];
+                      }}
                     />
                     <Line 
+                      yAxisId="left"
                       type="monotone" 
                       dataKey="points" 
                       name="Tổng cấp phát" 
@@ -1410,6 +1418,16 @@ export function DashboardView() {
                       strokeWidth={3.5} 
                       dot={{ r: 3, stroke: "#2f6cf5", strokeWidth: 1.5, fill: "#fff" }}
                       activeDot={{ r: 6, stroke: "#2f6cf5", strokeWidth: 2, fill: "#fff" }}
+                    />
+                    <Line 
+                      yAxisId="right"
+                      type="monotone" 
+                      dataKey="signups" 
+                      name="Đăng ký mới" 
+                      stroke="#f59e0b" 
+                      strokeWidth={3.5} 
+                      dot={{ r: 3, stroke: "#f59e0b", strokeWidth: 1.5, fill: "#fff" }}
+                      activeDot={{ r: 6, stroke: "#f59e0b", strokeWidth: 2, fill: "#fff" }}
                     />
                   </LineChart>
                 </ResponsiveContainer>

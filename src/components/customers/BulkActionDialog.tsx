@@ -48,7 +48,7 @@ export function BulkActionDialog({
       } else if (actionType === "tag") {
         await onConfirm({ "tags": tag }); 
       } else if (actionType === "points") {
-        await onConfirm({ points: points });
+        await onConfirm({ pointsIncrement: points });
       } else if (actionType === "tier") {
         // Map common tier names to point values
         const tierPoints: Record<string, number> = {
@@ -57,7 +57,7 @@ export function BulkActionDialog({
           "Icon": 2500,
           "Atelier": 10000
         };
-        await onConfirm({ points: tierPoints[tag] || 0 });
+        await onConfirm({ tier: tag, points: tierPoints[tag] || 0 });
       }
       onClose();
     } catch (error) {
@@ -139,7 +139,7 @@ export function BulkActionDialog({
               />
               <p className="text-[10px] text-muted-foreground italic flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3 text-amber-500" />
-                Lưu ý: Thao tác này sẽ thiết lập lại điểm thưởng (Simulated).
+                Lưu ý: Điểm sẽ được cộng hoặc trừ vào điểm hiện tại của người dùng.
               </p>
             </div>
           )}

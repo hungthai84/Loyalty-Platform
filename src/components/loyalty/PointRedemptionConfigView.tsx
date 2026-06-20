@@ -15,7 +15,9 @@ import {
   RefreshCw,
   Power,
   X,
-  Shield
+  Shield,
+  Smartphone,
+  LayoutGrid
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -38,6 +40,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { LoyaltyRedemptionBanner } from "./LoyaltyRedemptionBanner";
+import { OfferMobilePreview } from "./OfferMobilePreview";
 
 const REWARD_TYPE_OPTIONS = [
   {
@@ -156,6 +159,8 @@ export function PointRedemptionConfigView({ onAddRule }: PointRedemptionConfigVi
   const [activeSubTab, setActiveSubTab] = useState<
     "create_offers" | "redeem_terminal"
   >("create_offers");
+  
+  const [activeTab, setActiveTab] = useState<"catalog" | "mobile_preview">("catalog");
 
   // Rules State
   const [rules, setRules] = useState<RedemptionRule[]>([]);
@@ -614,40 +619,60 @@ export function PointRedemptionConfigView({ onAddRule }: PointRedemptionConfigVi
 
       {/* Utilities */}
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between px-1">
-        <div className="text-left">
-          <h5 className="text-xs font-extrabold text-[#2f6cf5] uppercase tracking-widest">
-            Thư viện ưu đãi ({filteredRules.length})
-          </h5>
-          <p className="text-xs text-muted-foreground">
-            Tạo các gói kích cầu mua sắm bằng điểm của khách hàng
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <div className="relative w-full sm:w-48">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <input
-              type="search"
-              placeholder="Tìm ưu đãi..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:border-primary/50"
-            />
+        <div className="flex items-center gap-2">
+          <div className="bg-muted p-1 rounded-[10px] flex gap-1">
+            <button
+              onClick={() => setActiveTab("catalog")}
+              className={cn(
+                "px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                activeTab === "catalog"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10"
+              )}
+            >
+              <LayoutGrid className="w-4 h-4" /> Thư viện ưu đãi
+            </button>
+            <button
+              onClick={() => setActiveTab("mobile_preview")}
+              className={cn(
+                "px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                activeTab === "mobile_preview"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10"
+              )}
+            >
+              <Smartphone className="w-4 h-4" /> App Khách hàng
+            </button>
           </div>
-
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="bg-background border border-border rounded-[10px] px-2.5 py-1.5 text-xs outline-none focus:border-primary/50 text-foreground font-medium"
-          >
-            <option value="all">Mọi nhóm ưu đãi</option>
-            {REWARD_TYPE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
         </div>
+
+        {activeTab === "catalog" && (
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <div className="relative w-full sm:w-48">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="search"
+                placeholder="Tìm ưu đãi..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-[10px] text-xs outline-none focus:border-primary/50"
+              />
+            </div>
+
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="bg-background border border-border rounded-[10px] px-2.5 py-1.5 text-xs outline-none focus:border-primary/50 text-foreground font-medium"
+            >
+              <option value="all">Mọi nhóm ưu đãi</option>
+              {REWARD_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {loadingRules ? (
@@ -655,6 +680,8 @@ export function PointRedemptionConfigView({ onAddRule }: PointRedemptionConfigVi
           <RefreshCw className="w-6 h-6 animate-spin mx-auto text-primary mb-2" />
           Đang tải thư viện ưu đãi...
         </div>
+      ) : activeTab === "mobile_preview" ? (
+        <OfferMobilePreview rules={rules} />
       ) : filteredRules.length === 0 ? (
         <div className="py-20 text-center border border-dashed border-border rounded-[10px] space-y-4 bg-muted/5">
           <Gift className="w-12 h-12 text-muted-foreground/30 mx-auto" />
@@ -808,256 +835,369 @@ export function PointRedemptionConfigView({ onAddRule }: PointRedemptionConfigVi
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="relative w-full max-w-lg bg-background border border-border/80 rounded-[10px] shadow-2xl overflow-hidden flex flex-col text-left"
+              className="relative w-full max-w-4xl bg-background border border-border/80 rounded-[12px] shadow-2xl overflow-hidden flex flex-col text-left"
             >
-              <form onSubmit={handleSaveRule} className="flex flex-col h-full">
-                {/* Header */}
-                <div className="p-6 border-b border-border bg-muted/10 flex items-center justify-between animate-in fade-in">
-                  <div className="flex items-center gap-2">
-                    <Gift className="w-5 h-5 text-primary animate-pulse" />
-                    <div>
-                      <h4 className="font-bold text-base text-foreground">
-                        Thiết lập Tham số Ưu Đãi
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        Khai báo gói trả thưởng trong thư viện trước khi khách tiến
-                        hành đổi.
-                      </p>
+              <div className="grid grid-cols-1 md:grid-cols-12 md:divide-x divide-border">
+                {/* Form column */}
+                <form onSubmit={handleSaveRule} className="md:col-span-7 flex flex-col h-full bg-background">
+                  {/* Header */}
+                  <div className="p-6 border-b border-border bg-muted/10 flex items-center justify-between animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <Gift className="w-5 h-5 text-primary animate-pulse" />
+                      <div>
+                        <h4 className="font-bold text-base text-foreground">
+                          Thiết lập Tham số Ưu Đãi
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          Khai báo gói trả thưởng trong thư viện trước khi khách tiến
+                          hành đổi.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowEditor(false)}
-                    className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-[10px] transition-colors cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Fields */}
-                <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                      Tên ưu đãi / Voucher
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={editingRule.name}
-                      onChange={(e) =>
-                        setEditingRule({ ...editingRule, name: e.target.value })
-                      }
-                      placeholder="Ví dụ: Voucher chiết khấu 50K..."
-                      className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 text-foreground font-medium"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowEditor(false)}
+                      className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-[10px] transition-colors cursor-pointer md:hidden"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                      Mô tả / Hướng dẫn sử dụng ưu đãi
-                    </label>
-                    <textarea
-                      value={editingRule.description}
-                      onChange={(e) =>
-                        setEditingRule({
-                          ...editingRule,
-                          description: e.target.value,
-                        })
-                      }
-                      placeholder="Chi tiết sử dụng (ví dụ: Áp dụng tất cả chi nhánh, trừ đại lý ngoại tỉnh...)"
-                      className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs min-h-[60px] outline-none focus:border-primary/50 text-foreground"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                      Đường dẫn hình ảnh minh họa (URL)
-                    </label>
-                    <div className="flex gap-2">
+                  {/* Fields */}
+                  <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
+                        Tên ưu đãi / Voucher
+                      </label>
                       <input
-                        type="url"
-                        value={editingRule.imageUrl || ""}
+                        type="text"
+                        required
+                        value={editingRule.name}
+                        onChange={(e) =>
+                          setEditingRule({ ...editingRule, name: e.target.value })
+                        }
+                        placeholder="Ví dụ: Voucher chiết khấu 50K..."
+                        className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 text-foreground font-medium"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
+                        Mô tả / Hướng dẫn sử dụng ưu đãi
+                      </label>
+                      <textarea
+                        value={editingRule.description}
                         onChange={(e) =>
                           setEditingRule({
                             ...editingRule,
-                            imageUrl: e.target.value,
+                            description: e.target.value,
                           })
                         }
-                        placeholder="Dán URL hình ảnh..."
-                        className="flex-1 bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                        placeholder="Chi tiết sử dụng (ví dụ: Áp dụng tất cả chi nhánh, trừ đại lý ngoại tỉnh...)"
+                        className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs min-h-[60px] outline-none focus:border-primary/50 text-foreground"
                       />
-                      <button
-                        type="button"
-                        onClick={() => {
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
+                        Đường dẫn hình ảnh minh họa (URL)
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={editingRule.imageUrl || ""}
+                          onChange={(e) =>
+                            setEditingRule({
+                              ...editingRule,
+                              imageUrl: e.target.value,
+                            })
+                          }
+                          placeholder="Dán URL hình ảnh..."
+                          className="flex-1 bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingRule({
+                              ...editingRule,
+                              imageUrl: `https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&auto=format&fit=crop&q=60`,
+                            });
+                          }}
+                          className="px-3 bg-muted hover:bg-muted/80 text-foreground text-xs font-medium rounded-[10px] border border-border cursor-pointer transition-all shrink-0"
+                        >
+                          Nẫu nhiên
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
+                          Nhóm Ưu Đãi
+                        </label>
+                        <select
+                          value={editingRule.rewardType}
+                          onChange={(e) =>
+                            setEditingRule({
+                              ...editingRule,
+                              rewardType: e.target.value as any,
+                            })
+                          }
+                          className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                        >
+                          {REWARD_TYPE_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
+                          Giá trị (VNĐ hoặc %)
+                        </label>
+                        <input
+                          type="number"
+                          disabled={
+                            editingRule.rewardType === "buy_one_get_one" ||
+                            editingRule.rewardType === "free_gift" ||
+                            editingRule.rewardType === "limited_item" ||
+                            editingRule.rewardType === "ticket"
+                          }
+                          value={editingRule.rewardValue}
+                          onChange={(e) =>
+                            setEditingRule({
+                              ...editingRule,
+                              rewardValue: Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 disabled:bg-muted/50 disabled:cursor-not-allowed text-foreground"
+                          placeholder="Ví dụ: 50000 hoặc 10"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-1">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight flex items-center gap-1 text-primary">
+                          <Coins className="w-3.5 h-3.5" />
+                          Số Điểm Yêu Cầu Đổi
+                        </label>
+                        <input
+                          type="number"
+                          required
+                          value={editingRule.pointsRequired}
+                          onChange={(e) =>
+                            setEditingRule({
+                              ...editingRule,
+                              pointsRequired: Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 text-foreground font-bold"
+                          placeholder="Số điểm đổi (v.d. 150)"
+                          min="1"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
+                          Hạn dùng sau khi nhận (Ngày)
+                        </label>
+                        <input
+                          type="number"
+                          required
+                          value={editingRule.expiryDays || 30}
+                          onChange={(e) =>
+                            setEditingRule({
+                              ...editingRule,
+                              expiryDays: Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                          placeholder="Thời hạn (v.d. 30)"
+                          min="1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1 pt-1">
+                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
+                        Giá trị đơn hàng tối thiểu áp dụng (VNĐ)
+                      </label>
+                      <input
+                        type="number"
+                        value={editingRule.minBillValue || 0}
+                        onChange={(e) =>
                           setEditingRule({
                             ...editingRule,
-                            imageUrl: `https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&auto=format&fit=crop&q=60`,
-                          });
-                        }}
-                        className="px-3 bg-muted hover:bg-muted/80 text-foreground text-xs font-medium rounded-[10px] border border-border cursor-pointer transition-all shrink-0"
+                            minBillValue: Number(e.target.value),
+                          })
+                        }
+                        placeholder="Để 0 nếu không hạn chế"
+                        className="w-full bg-background border border-border rounded-[10px] px-3.5 py-2 text-xs outline-none focus:border-primary/50 text-foreground"
+                      />
+                      <p className="text-xs text-muted-foreground italic">
+                        Giúp kiểm soát tối ưu ngân sách chiết khấu.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-muted/40 rounded-[10px] border border-border/20 flex items-center justify-between">
+                      <div>
+                        <p className="font-bold text-xs text-foreground">
+                          Trạng thái phát hành
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Kích hoạt để cho phép đổi điểm lấy ưu đãi này
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditingRule({
+                            ...editingRule,
+                            isEnabled:
+                              editingRule.isEnabled !== false ? false : true,
+                          })
+                        }
+                        className={`w-12 h-6 rounded-full transition-all relative shadow-inner ${editingRule.isEnabled !== false ? "bg-primary" : "bg-muted-foreground/30"}`}
                       >
-                        Nẫu nhiên
+                        <div
+                          className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform shadow-sm ${editingRule.isEnabled !== false ? "left-6" : "left-1"}`}
+                        />
                       </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                        Nhóm Ưu Đãi
-                      </label>
-                      <select
-                        value={editingRule.rewardType}
-                        onChange={(e) =>
-                          setEditingRule({
-                            ...editingRule,
-                            rewardType: e.target.value as any,
-                          })
-                        }
-                        className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 text-foreground"
-                      >
-                        {REWARD_TYPE_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                        Giá trị (VNĐ hoặc %)
-                      </label>
-                      <input
-                        type="number"
-                        disabled={
-                          editingRule.rewardType === "buy_one_get_one" ||
-                          editingRule.rewardType === "free_gift" ||
-                          editingRule.rewardType === "limited_item" ||
-                          editingRule.rewardType === "ticket"
-                        }
-                        value={editingRule.rewardValue}
-                        onChange={(e) =>
-                          setEditingRule({
-                            ...editingRule,
-                            rewardValue: Number(e.target.value),
-                          })
-                        }
-                        className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 disabled:bg-muted/50 disabled:cursor-not-allowed text-foreground"
-                        placeholder="Ví dụ: 50000 hoặc 10"
-                      />
-                    </div>
+                  {/* Footer buttons */}
+                  <div className="p-6 border-t border-border bg-muted/10 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowEditor(false)}
+                      className="flex-1 px-4 py-2.5 border border-border hover:bg-muted text-xs font-bold rounded-[10px] transition-all cursor-pointer text-center text-foreground"
+                    >
+                      Hủy bỏ
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground text-xs font-bold rounded-[10px] hover:bg-primary/95 transition-all shadow-md shadow-primary/10 cursor-pointer text-center flex items-center justify-center gap-1.5"
+                    >
+                      <Save className="w-4 h-4" />
+                      Lưu ưu đãi
+                    </button>
                   </div>
+                </form>
 
-                  <div className="grid grid-cols-2 gap-4 pt-1">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight flex items-center gap-1 text-primary">
-                        <Coins className="w-3.5 h-3.5" />
-                        Số Điểm Yêu Cầu Đổi
-                      </label>
-                      <input
-                        type="number"
-                        required
-                        value={editingRule.pointsRequired}
-                        onChange={(e) =>
-                          setEditingRule({
-                            ...editingRule,
-                            pointsRequired: Number(e.target.value),
-                          })
-                        }
-                        className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 text-foreground font-bold"
-                        placeholder="Số điểm đổi (v.d. 150)"
-                        min="1"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                        Hạn dùng sau khi nhận (Ngày)
-                      </label>
-                      <input
-                        type="number"
-                        required
-                        value={editingRule.expiryDays || 30}
-                        onChange={(e) =>
-                          setEditingRule({
-                            ...editingRule,
-                            expiryDays: Number(e.target.value),
-                          })
-                        }
-                        className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50 text-foreground"
-                        placeholder="Thời hạn (v.d. 30)"
-                        min="1"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1 pt-1">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
-                      Giá trị đơn hàng tối thiểu áp dụng (VNĐ)
-                    </label>
-                    <input
-                      type="number"
-                      value={editingRule.minBillValue || 0}
-                      onChange={(e) =>
-                        setEditingRule({
-                          ...editingRule,
-                          minBillValue: Number(e.target.value),
-                        })
-                      }
-                      placeholder="Để 0 nếu không hạn chế"
-                      className="w-full bg-background border border-border rounded-[10px] px-3.5 py-2 text-xs outline-none focus:border-primary/50 text-foreground"
-                    />
-                    <p className="text-xs text-muted-foreground italic">
-                      Giúp kiểm soát tối ưu ngân sách chiết khấu.
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-muted/40 rounded-[10px] border border-border/20 flex items-center justify-between">
+                {/* Live Reward Preview Column */}
+                <div className="md:col-span-5 bg-muted/20 p-6 flex flex-col justify-start space-y-6">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-bold text-xs text-foreground">
-                        Trạng thái phát hành
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Kích hoạt để cho phép đổi điểm lấy ưu đãi này
+                      <h5 className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                        <Smartphone className="w-4 h-4 text-primary" />
+                        Xem trước Ưu đãi (Portal)
+                      </h5>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Diện mạo hiển thị thực tế tại cổng App của Khách hàng.
                       </p>
                     </div>
                     <button
                       type="button"
-                      onClick={() =>
-                        setEditingRule({
-                          ...editingRule,
-                          isEnabled:
-                            editingRule.isEnabled !== false ? false : true,
-                        })
-                      }
-                      className={`w-12 h-6 rounded-full transition-all relative shadow-inner ${editingRule.isEnabled !== false ? "bg-primary" : "bg-muted-foreground/30"}`}
+                      onClick={() => setShowEditor(false)}
+                      className="hidden md:flex p-1 text-muted-foreground hover:text-foreground hover:bg-background rounded-full transition-colors cursor-pointer border border-border shadow-xs"
                     >
-                      <div
-                        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform shadow-sm ${editingRule.isEnabled !== false ? "left-6" : "left-1"}`}
-                      />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                </div>
 
-                {/* Footer buttons */}
-                <div className="p-6 border-t border-border bg-muted/10 flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowEditor(false)}
-                    className="flex-1 px-4 py-2.5 border border-border hover:bg-muted text-xs font-bold rounded-[10px] transition-all cursor-pointer text-center text-foreground"
-                  >
-                    Hủy bỏ
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground text-xs font-bold rounded-[10px] hover:bg-primary/95 transition-all shadow-md shadow-primary/10 cursor-pointer text-center flex items-center justify-center gap-1.5"
-                  >
-                    <Save className="w-4 h-4" />
-                    Lưu ưu đãi
-                  </button>
+                  {/* Beautiful Customer Card Live Preview */}
+                  <div className="w-full bg-card rounded-[16px] overflow-hidden shadow-lg border border-border/80 hover:scale-[1.01] transition-all flex flex-col">
+                    <div className="h-44 w-full relative bg-muted/30 overflow-hidden">
+                      {editingRule.imageUrl ? (
+                        <img 
+                          src={editingRule.imageUrl} 
+                          alt="Live Preview" 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground bg-gradient-to-br from-primary/10 to-transparent">
+                          <Gift className="w-10 h-10 mb-2 opacity-30 text-primary animate-bounce duration-[2000ms]" />
+                          <span className="text-xs font-medium">Chưa chọn hình ảnh</span>
+                        </div>
+                      )}
+                      
+                      <div className="absolute top-2.5 left-2.5 bg-black/75 backdrop-blur-xs text-white text-[9px] font-extrabold px-2.5 py-1 rounded-full border border-white/10 uppercase tracking-tight">
+                        Hạn: {editingRule.expiryDays || 30} ngày
+                      </div>
+                      
+                      {editingRule.pointsRequired && (
+                        <div className="absolute bottom-2.5 right-2.5 bg-primary text-primary-foreground text-xs font-black px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                          <Coins className="w-4 h-4 text-amber-300" />
+                          {Number(editingRule.pointsRequired).toLocaleString()} pts
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="p-4 space-y-3.5 text-left bg-card">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="px-2 py-0.5 text-[9px] font-black tracking-wider uppercase bg-primary/10 text-primary rounded-full">
+                          {REWARD_TYPE_OPTIONS.find((t) => t.value === editingRule.rewardType)?.label || editingRule.rewardType || "Ưu đãi"}
+                        </span>
+                        {Number(editingRule.minBillValue) > 0 && (
+                          <span className="px-2 py-0.5 text-[9px] font-black bg-amber-500/10 text-amber-600 rounded-full border border-amber-500/15">
+                            Đơn &ge; {Number(editingRule.minBillValue).toLocaleString()}₫
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-extrabold text-sm text-foreground mb-1 line-clamp-1">
+                          {editingRule.name || "Tên ưu đãi mẫu độc quyền"}
+                        </h4>
+                        
+                        <p className="text-[11px] text-muted-foreground line-clamp-2 h-8 leading-snug">
+                          {editingRule.description || "Nhập mô tả cho ưu đãi của bạn để thu hút khách hàng đổi điểm thưởng!"}
+                        </p>
+                      </div>
+                      
+                      <div className="pt-3 border-t border-border/60 flex items-center justify-between">
+                        <div className="text-[11px] text-muted-foreground font-semibold flex items-center gap-1">
+                          {editingRule.rewardType === "discount_percent" && (
+                            <span className="font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded leading-none">Giảm {editingRule.rewardValue}%</span>
+                          )}
+                          {editingRule.rewardType === "discount_fixed" && (
+                            <span className="font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded leading-none">Giảm {Number(editingRule.rewardValue).toLocaleString()}₫</span>
+                          )}
+                          {editingRule.rewardType === "buy_one_get_one" && (
+                            <span className="font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded leading-none">Mua 1 Tặng 1</span>
+                          )}
+                          {(!editingRule.rewardType || (editingRule.rewardType !== "discount_percent" && editingRule.rewardType !== "discount_fixed" && editingRule.rewardType !== "buy_one_get_one")) && (
+                            <span className="font-semibold text-primary bg-primary/5 px-1.5 py-0.5 rounded leading-none">Ưu đãi Đặc Quyền</span>
+                          )}
+                        </div>
+                        
+                        <button 
+                          disabled
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-black px-4 py-2 rounded-full shadow-xs cursor-default opacity-90"
+                        >
+                          Đổi ưu đãi
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Device Note helper */}
+                  <div className="bg-primary/5 p-4 rounded-[10px] border border-primary/10 text-xs text-muted-foreground flex items-start gap-2.5">
+                    <Gift className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-foreground block mb-0.5">Mẹo thiết kế tối ưu</span>
+                      <span>Hãy chọn hình ảnh độ phân giải rộng (crop 16:9), mô tả cụ thể về quà tặng để tối ưu hóa tỷ lệ chuyển đổi đổi điểm.</span>
+                    </div>
+                  </div>
                 </div>
-              </form>
+              </div>
             </motion.div>
           </div>
         )}

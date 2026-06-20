@@ -147,6 +147,16 @@ export function SettingsView() {
       );
     }, 1000);
   };
+
+  // States for Milestone Email notifications
+  const [milestoneEmailsEnabled, setMilestoneEmailsEnabled] = useState<boolean>(() => {
+    return localStorage.getItem("crm_milestone_emails") === "true";
+  });
+  const [milestoneEmailDelay, setMilestoneEmailDelay] = useState<number>(() => {
+    const saved = localStorage.getItem("crm_milestone_email_delay");
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
   const [showRuleBuilder, setShowRuleBuilder] = useState(false);
   const [automationRules, setAutomationRules] = useState([
     { id: "r1", name: "Thưởng sinh nhật", trigger: "Bithday is Today", action: "Award 500 Points", active: true },
@@ -700,6 +710,80 @@ export function SettingsView() {
                        toast.success(`Đã kích hoạt quy tắc tự động mới: ${newRule.name}`);
                     }}
                   />
+
+                  <div className="bg-card rounded-[10px] border border-border overflow-hidden shadow-sm text-left">
+                    <div className="p-6 border-b border-border bg-muted/10">
+                      <h3 className="font-bold font-heading text-lg flex items-center gap-2">
+                        <Mail className="w-5 h-5 text-emerald-500" /> Kích hoạt Email Thăng hạng (Milestone Emails)
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Tự động gửi email thông báo và chúc mừng đến khách hàng khi họ đạt đủ điểm thăng lên một hạng thành viên mới.
+                      </p>
+                    </div>
+                    <div className="p-6 space-y-6">
+                      <div className="flex items-center justify-between p-4 bg-muted/30 border border-border/60 rounded-[10px]">
+                        <div className="space-y-0.5 text-left flex-1 pr-4">
+                          <label className="text-sm font-bold text-foreground">Gửi email chúc mừng tự động</label>
+                          <p className="text-xs text-muted-foreground">Khách hàng sẽ nhận được một email (kèm template) ngay khi họ thăng hạng.</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const val = !milestoneEmailsEnabled;
+                            setMilestoneEmailsEnabled(val);
+                            localStorage.setItem("crm_milestone_emails", String(val));
+                            toast.success(val ? "Đã bật tự động gửi email thăng hạng" : "Đã tắt tự động gửi email thăng hạng");
+                            window.dispatchEvent(new CustomEvent("crm-config-saved", { detail: { tab: "automation" } }));
+                          }}
+                          className={cn(
+                            "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary/20",
+                            milestoneEmailsEnabled ? "bg-emerald-500" : "bg-muted-foreground/30"
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out",
+                              milestoneEmailsEnabled ? "translate-x-5" : "translate-x-0"
+                            )}
+                          />
+                        </button>
+                      </div>
+
+                      {milestoneEmailsEnabled && (
+                        <div className="space-y-4 pt-2">
+                          <div className="space-y-1.5 text-left">
+                            <label className="text-xs uppercase font-black text-muted-foreground tracking-wider flex items-center gap-1.5">
+                              Độ trễ gửi email (Tính bằng giờ)
+                            </label>
+                            <input
+                              type="number"
+                              value={milestoneEmailDelay}
+                              onChange={(e) => {
+                                const val = Math.max(0, Number(e.target.value));
+                                setMilestoneEmailDelay(val);
+                                localStorage.setItem("crm_milestone_email_delay", String(val));
+                              }}
+                              className="w-full max-w-[200px] bg-muted/40 border border-border rounded-[10px] px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25"
+                              min={0}
+                              placeholder="Ví dụ: 0"
+                            />
+                            <p className="text-[11px] text-muted-foreground">Nhập 0 để gửi ngay lập tức. Tính bằng giờ (ví dụ: 24 = sau 1 ngày mới gửi).</p>
+                          </div>
+                          
+                          <div className="pt-4 border-t border-border/40 flex justify-end">
+                            <button
+                              onClick={() => {
+                                toast.success("Cấu hình Email Thăng hạng đã được lưu thành công!");
+                                window.dispatchEvent(new CustomEvent("crm-config-saved", { detail: { tab: "automation" } }));
+                              }}
+                              className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[10px] text-xs font-bold transition-all shadow-md active:scale-95"
+                            >
+                              Lưu cấu hình Email
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
               {activeTab === "inventory" && (

@@ -16,7 +16,9 @@ import {
   Clock,
   ArrowUpRight,
   TrendingUp,
-  CircleDot
+  CircleDot,
+  Headphones,
+  MessageSquare
 } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -61,11 +63,23 @@ export function CustomerActivityLog({ customer, isOpen, onClose }: CustomerActiv
       icon: Gift,
       color: 'text-purple-500',
       bg: 'bg-purple-500/10'
+    })),
+    ...(customer.tickets || [
+      { id: 'sup1', subject: 'Hỗ trợ thay đổi địa chỉ nhận hàng', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5) }
+    ]).map(ticket => ({
+      id: ticket.id || Math.random().toString(),
+      type: 'support' as const,
+      title: 'Yêu cầu hỗ trợ',
+      description: `Đã liên hệ CSKH với nội dung: ${ticket.subject}`,
+      date: ticket.date || new Date(),
+      icon: Headphones,
+      color: 'text-indigo-500',
+      bg: 'bg-indigo-500/10'
     }))
   ];
 
   // If no data, add some demo items
-  if (activities.length === 0) {
+  if (activities.length === 0 || activities.length === 1) { // checking length === 1 because we just injected 1 mock support ticket
     const joinDate = customer.createdAt ? 
       (typeof customer.createdAt.toDate === 'function' ? customer.createdAt.toDate() : new Date(customer.createdAt)) 
       : new Date();

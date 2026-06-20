@@ -24,12 +24,16 @@ import {
   Trash2,
   Gift,
   AlertTriangle,
-  BookOpen
+  BookOpen,
+  GitBranch
 } from "lucide-react";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
+import { WorkflowBuilder } from "@/components/marketing/WorkflowBuilder";
+import { EmailTemplatesBuilder } from "@/components/marketing/EmailTemplatesBuilder";
+import { EventCalendarView } from "@/components/marketing/EventCalendarView";
 
 interface PointCampaign {
   id: string;
@@ -43,7 +47,7 @@ interface PointCampaign {
 }
 
 export function MarketingView() {
-  const [activeTab2, setActiveTab2] = useState<"messages" | "campaigns">("messages");
+  const [activeTab2, setActiveTab2] = useState<"messages" | "campaigns" | "workflows" | "templates" | "calendar">("messages");
   const [campaigns, setCampaigns] = useState<PointCampaign[]>([]);
 
   // Form inputs for new campaign
@@ -480,6 +484,42 @@ export function MarketingView() {
             <Sliders className="w-4 h-4" />
             Sự kiện
           </button>
+          <button
+            onClick={() => setActiveTab2("workflows")}
+            className={cn(
+              "flex items-center px-4 py-2 rounded-[10px] text-sm font-bold transition-all gap-2 cursor-pointer",
+              activeTab2 === "workflows"
+                ? "bg-background text-primary shadow-sm font-extrabold"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+            )}
+          >
+            <GitBranch className="w-4 h-4" />
+            Automations
+          </button>
+          <button
+            onClick={() => setActiveTab2("templates")}
+            className={cn(
+              "flex items-center px-4 py-2 rounded-[10px] text-sm font-bold transition-all gap-2 cursor-pointer",
+              activeTab2 === "templates"
+                ? "bg-background text-primary shadow-sm font-extrabold"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+            )}
+          >
+            <BookOpen className="w-4 h-4" />
+            Email Templates
+          </button>
+          <button
+            onClick={() => setActiveTab2("calendar")}
+            className={cn(
+              "flex items-center px-4 py-2 rounded-[10px] text-sm font-bold transition-all gap-2 cursor-pointer",
+              activeTab2 === "calendar"
+                ? "bg-background text-primary shadow-sm font-extrabold"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+            )}
+          >
+            <Calendar className="w-4 h-4" />
+            Lịch sự kiện
+          </button>
         </div>
       </div>
 
@@ -867,7 +907,7 @@ export function MarketingView() {
                 </div>
               </div>
             </motion.div>
-          ) : (
+          ) : activeTab2 === "campaigns" ? (
             <motion.div
               key="campaigns-tab"
               initial={{ opacity: 0, y: 15 }}
@@ -1120,6 +1160,62 @@ export function MarketingView() {
                 </div>
               </div>
               </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="workflows-tab"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              <div className="relative overflow-hidden rounded-[10px] border border-emerald-500/10 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-6 md:p-8 backdrop-blur-md text-left">
+                <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500 via-background to-background pointer-events-none" />
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-emerald-500 font-bold text-sm uppercase tracking-wider mb-2">
+                      <GitBranch className="w-5 h-5 animate-pulse" /> Tự động hóa
+                    </div>
+                    <h3 className="text-2xl font-bold font-heading text-foreground">
+                      Visual Workflow Builder
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+                      Thiết lập các kịch bản tự động kích hoạt thông điệp (Email, SMS, Push Notification) khi khách hàng đạt mốc Loyalty nhất định.
+                    </p>
+                  </div>
+                  <button className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-[10px] text-sm flex items-center justify-center transition-all shadow-md active:scale-[0.98] cursor-pointer shrink-0">
+                    <Plus className="w-4 h-4 mr-2" /> Tạo Workflow Mới
+                  </button>
+                </div>
+              </div>
+
+              {/* Workflow interactive UI */}
+              <WorkflowBuilder />
+            </motion.div>
+          )}
+
+          {activeTab2 === "templates" && (
+            <motion.div
+              key="templates-tab"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2 }}
+            >
+              <EmailTemplatesBuilder />
+            </motion.div>
+          )}
+
+          {activeTab2 === "calendar" && (
+            <motion.div
+              key="calendar-tab"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2 }}
+            >
+              <EventCalendarView />
             </motion.div>
           )}
         </AnimatePresence>

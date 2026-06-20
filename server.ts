@@ -223,6 +223,42 @@ async function startServer() {
     }
   });
 
+  // API Route for Gemini Chat Widget
+  app.post("/api/gemini/chat", async (req, res) => {
+    try {
+      const { message } = req.body;
+      const gemini = getGeminiClient();
+
+      const prompt = `
+      Bạn là trợ lý AI (CLP Assistant) của nền tảng Customer Loyalty Platform. 
+      Bạn giúp đỡ người quản trị (admin) trả lời các câu hỏi về khách hàng, hoặc luật hạng thẻ.
+      Người dùng hỏi: "${message}"
+
+      Hãy trả lời bằng tiếng Việt, ngắn gọn, súc tích và thân thiện.
+      `;
+
+      const response = await gemini.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: prompt,
+        config: {
+          temperature: 0.7,
+        }
+      });
+
+      return res.json({
+        success: true,
+        reply: response.text,
+      });
+
+    } catch (err: any) {
+      console.error("Gemini API Error in chat:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi kết nối Gemini AI"
+      });
+    }
+  });
+
   // Serve static UI assets or run Vite Dev Server
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

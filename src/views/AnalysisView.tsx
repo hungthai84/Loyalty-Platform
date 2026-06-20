@@ -1333,47 +1333,66 @@ export function AnalysisView() {
   );
  })()}
 
-  {/* NEW SPLIT LAYOUT FOR THE ANALYSIS SECTION WITH GORGEOUS LOCAL LIST BOX SIDEBAR */}
-  <div className="flex flex-col lg:flex-row gap-6 items-start">
-    {/* LIST BOX SIDEBAR (Left on LG screens, full width horizontal tabs on mobile) */}
-    <div className="w-full lg:w-[305px] shrink-0 bg-card border border-border/80 rounded-[12px] p-4.5 space-y-4 lg:sticky lg:top-24">
-      <div className="hidden lg:flex items-center gap-3 pb-3.5 border-b border-border/50">
+  {/* NEW HORIZONTAL DROPDOWN LAYOUT FOR THE ANALYSIS SECTION */}
+  <div className="space-y-6">
+    {/* HORIZONTAL DROPBOX (SELECT/DROPDOWN) CHỌN LOẠI PHÂN TÍCH */}
+    <div className="w-full bg-card border border-border/80 rounded-[12px] p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-xs">
+      <div className="flex items-center gap-3 text-left">
         <div className="p-2.5 bg-[#2f6cf5]/10 rounded-[8px] text-[#2f6cf5] shrink-0">
           <Layers className="w-5 h-5 animate-pulse" />
         </div>
-        <div className="text-left">
-          <span className="text-xs font-black uppercase tracking-wider text-foreground">Loại phân tích</span>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Chọn góc nhìn số liệu</p>
+        <div>
+          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest block">Góc nhìn phân tích chính</span>
+          <h3 className="text-base font-extrabold text-foreground">
+            {TABS_LIST_ANALYSIS.find(t => t.id === activeTab)?.name || "Chọn mục cần phân tích"}
+          </h3>
         </div>
       </div>
 
-      {/* Listbox Container - Vertical on LG, horizontal scrollable on mobile */}
-      <div className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-x-visible pb-2.5 lg:pb-0 scrollbar-none snap-x whitespace-nowrap lg:whitespace-normal">
-        {TABS_LIST_ANALYSIS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                toast.success(`Đã chọn: ${tab.name}`);
-              }}
-              className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-[8px] transition-all text-xs font-semibold cursor-pointer border shrink-0 snap-start select-none ${
-                isActive
-                  ? "bg-[#2f6cf5] border-[#2f6cf5] text-white shadow-sm font-bold"
-                  : "bg-background border-border/50 hover:bg-muted/60 text-muted-foreground hover:text-foreground hover:border-border"
-              }`}
-            >
-              <tab.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-white' : 'text-muted-foreground'}`} />
-              <span className="truncate">{tab.name}</span>
-            </button>
-          );
-        })}
+      {/* Dropbox (Select) ngang */}
+      <div className="flex items-center gap-3 w-full md:w-auto min-w-[280px]">
+        <span className="text-xs font-bold text-muted-foreground whitespace-nowrap">Phân tích:</span>
+        <Select
+          value={activeTab}
+          onValueChange={(val) => {
+            setActiveTab(val);
+            const found = TABS_LIST_ANALYSIS.find(t => t.id === val);
+            if (found) {
+              toast.success(`Đã chuyển sang: ${found.name}`);
+            }
+          }}
+        >
+          <SelectTrigger className="w-full md:w-[280px] bg-background border border-border rounded-[10px] px-3.5 py-4 text-xs font-semibold focus:ring-2 focus:ring-primary/20 text-foreground">
+            {(() => {
+              const currentTab = TABS_LIST_ANALYSIS.find((t) => t.id === activeTab);
+              if (currentTab) {
+                const TabIcon = currentTab.icon;
+                return (
+                  <div className="flex items-center gap-2 text-left">
+                    <TabIcon className="w-3.5 h-3.5 text-primary" />
+                    <span className="truncate">{currentTab.name}</span>
+                  </div>
+                );
+              }
+              return "Chọn loại phân tích";
+            })()}
+          </SelectTrigger>
+          <SelectContent className="bg-card border border-border max-h-[350px] overflow-y-auto">
+            {TABS_LIST_ANALYSIS.map((tab) => (
+              <SelectItem key={tab.id} value={tab.id} className="text-xs font-medium cursor-pointer py-2 focus:bg-muted focus:text-foreground">
+                <div className="flex items-center gap-2">
+                  <tab.icon className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>{tab.name}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
 
-    {/* DETAILED CONTENT AREA (Right/Bottom) */}
-    <div className="flex-grow w-full min-w-0 space-y-6">
+    {/* DETAILED CONTENT AREA */}
+    <div className="w-full space-y-6">
 
  {/* Dynamic Toast Display */}
  {toastMessage && (

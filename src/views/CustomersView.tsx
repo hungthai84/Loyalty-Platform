@@ -44,6 +44,7 @@ import {
   doc,
   writeBatch,
   serverTimestamp,
+  increment,
 } from "firebase/firestore";
 import { Customer, AttributeDefinition, Company, TierConfig } from "@/types";
 import { CUSTOMER_STATUSES } from "@/data/customerStatuses";
@@ -55,6 +56,7 @@ import { CustomerSearch } from "@/components/customers/CustomerSearch";
 import { CustomerQrDialog } from "@/components/customers/CustomerQrDialog";
 import { BulkActionDialog } from "@/components/customers/BulkActionDialog";
 import { CustomerActivityLog } from "@/components/customers/CustomerActivityLog";
+import { RfmSegmentationEngine } from "@/components/customers/RfmSegmentationEngine";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import {
   Building2,
@@ -67,7 +69,8 @@ import {
   History,
   Crown,
   Mail,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from "lucide-react";
 import {
   Tooltip,
@@ -222,7 +225,7 @@ export function CustomersView() {
   const [showBulkEmailDialog, setShowBulkEmailDialog] = useState(false);
   const [logCustomer, setLogCustomer] = useState<Customer | null>(null);
 
-  const handleBulkUpdate = async (updateData: Partial<Customer>) => {
+  const handleBulkUpdate = async (updateData: any) => {
     if (!user || selectedCustomerIds.length === 0) return;
 
     setIsBulkUpdating(true);
@@ -237,6 +240,13 @@ export function CustomersView() {
           let list: Customer[] = JSON.parse(localCustomersStr);
           list = list.map((c) => {
             if (selectedCustomerIds.includes(c.id)) {
+              if (updateData.pointsIncrement !== undefined) {
+                return {
+                  ...c,
+                  points: Math.max(0, (c.points || 0) + updateData.pointsIncrement),
+                  updatedAt: new Date().toISOString() as any,
+                };
+              }
               return {
                 ...c,
                 ...updateData,
@@ -254,10 +264,17 @@ export function CustomersView() {
 
         selectedCustomerIds.forEach((id) => {
           const docRef = doc(customersCol, id);
-          batch.update(docRef, {
-            ...updateData,
-            updatedAt: serverTimestamp(),
-          });
+          if (updateData.pointsIncrement !== undefined) {
+            batch.update(docRef, {
+              points: increment(updateData.pointsIncrement),
+              updatedAt: serverTimestamp(),
+            });
+          } else {
+            batch.update(docRef, {
+              ...updateData,
+              updatedAt: serverTimestamp(),
+            });
+          }
         });
 
         await batch.commit();
@@ -272,6 +289,105 @@ export function CustomersView() {
     } catch (err: any) {
       console.error("Bulk update error:", err);
       toast.error(`Cập nhật thất bại: ${err.message}`, { id: toastId });
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
+  const handleAutoCategorize = async () => {
+    if (!user || customers.length === 0) return;
+    
+    const confirmAuto = window.confirm("Hệ thống sẽ chạy logic phân tích chuyên sâu cho toàn bộ dữ liệu, tự động phân loại các trạng thái: ACTIVE, VIP, DORMANT, INACTIVE, CHURN_RISK... Bạn có muốn tiếp tục?");
+    if (!confirmAuto) return;
+
+    setIsBulkUpdating(true);
+    const toastId = toast.loading(`Đang tự động phân tích và chuẩn hoá trạng thái cho ${customers.length} khách hàng...`);
+
+    try {
+      const evaluateCustomerStatus = (c: Customer): string => {
+        // Skip explicitly locked/banned statuses
+        if (c.status === "TEMP_LOCK" || c.status === "SUSPENDED" || c.status === "BLACKLISTED" || c.status === "DELETED" || c.status === "PENDING_VERIFICATION" || c.status === "MERGED") {
+          return c.status;
+        }
+
+        const orderCount = Array.isArray(c.orders) ? c.orders.length : 0;
+        const lastOrderTime = c.lastOrderDate || c.last_purchase || c.lastTransactionAt;
+        const now = new Date();
+        const lastOrderDate = lastOrderTime ? new Date(lastOrderTime) : null;
+        const daysSinceLastOrder = lastOrderDate ? Math.floor((now.getTime() - lastOrderDate.getTime()) / (1000 * 3600 * 24)) : Infinity;
+
+        if (orderCount === 0 || !lastOrderDate) {
+          return "NEW_MEMBER"; // New Member
+        }
+
+        if (daysSinceLastOrder > 365) {
+          return "INACTIVE"; // Inactive
+        }
+
+        if (daysSinceLastOrder > 180) {
+          return "DORMANT"; // Dormant
+        }
+
+        if (c.tier === "Atelier" || c.tier === "Icon") {
+          return "VIP"; // VIP
+        }
+
+        if (daysSinceLastOrder > 90 || c.activityStatus === "churn_risk") {
+          return "CHURN_RISK"; // Churn Risk
+        }
+
+        if ((c.points && c.points > 0) || c.tier === "Essential") {
+          return "ACTIVE_LOYALTY"; // Active Loyalty
+        }
+
+        return "ACTIVE"; // Active
+      };
+
+      if (user.isLocal || forceOffline) {
+        const localCustomersStr = localStorage.getItem("crm_guest_customers");
+        if (localCustomersStr) {
+          let list: Customer[] = JSON.parse(localCustomersStr);
+          list = list.map((c) => {
+            const newStatus = evaluateCustomerStatus(c);
+            if (newStatus !== c.status) {
+              return {
+                ...c,
+                status: newStatus,
+                updatedAt: new Date().toISOString() as any,
+              };
+            }
+            return c;
+          });
+          localStorage.setItem("crm_guest_customers", JSON.stringify(list));
+          window.dispatchEvent(new Event("crm_guest_data_changed"));
+        }
+      } else {
+        const batch = writeBatch(db);
+        const customersCol = collection(db, "customers");
+        
+        // Firestore batches support up to 500 operations
+        let count = 0;
+        for (const c of customers) {
+          const newStatus = evaluateCustomerStatus(c);
+          if (newStatus !== c.status) {
+            const docRef = doc(customersCol, c.id);
+            batch.update(docRef, {
+              status: newStatus,
+              updatedAt: serverTimestamp(),
+            });
+            count++;
+          }
+        }
+        
+        if (count > 0) {
+          await batch.commit();
+        }
+      }
+
+      toast.success("Phân loại tự động hoàn tất! Đã cập nhật trạng thái mới nhất dựa trên hành vi mua hàng thực tế.", { id: toastId });
+    } catch (err: any) {
+      console.error("Auto categorize error:", err);
+      toast.error(`Phân loại thất bại: ${err.message}`, { id: toastId });
     } finally {
       setIsBulkUpdating(false);
     }
@@ -1660,6 +1776,7 @@ export function CustomersView() {
 
         {activeViewTab === "list" && (
           <div className="space-y-6">
+            <RfmSegmentationEngine customers={customers} />
             <div className="bg-card/45 border border-border/60 rounded-[10px] overflow-hidden shadow-xs backdrop-blur-md">
               {/* Header Banner - Merged */}
               <div className="relative overflow-hidden border-b border-border/40 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-6 md:p-8 text-left">
@@ -1700,6 +1817,15 @@ export function CustomersView() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
+                      {/* Chuẩn hóa trạng thái */}
+                      <button
+                        onClick={handleAutoCategorize}
+                        disabled={isBulkUpdating}
+                        className="px-4 py-2 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-[10px] text-sm font-bold transition-colors flex items-center shadow-lg shadow-emerald-500/5 cursor-pointer select-none"
+                      >
+                        <RefreshCw className={cn("w-4 h-4 mr-2", isBulkUpdating && "animate-spin")} /> Phân loại trạng thái KH
+                      </button>
+
                       {/* Thêm khách hàng */}
                       <div className="relative">
                         <button

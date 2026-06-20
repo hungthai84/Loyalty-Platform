@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { DashboardView } from "@/views/DashboardView";
 import { CustomersView } from "@/views/CustomersView";
@@ -11,6 +12,10 @@ import { AnalyticsView } from "./views/AnalyticsView";
 import { AnalysisView } from "./views/AnalysisView";
 import { FirebaseProvider, useFirebase } from "@/components/FirebaseProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+
+import { FloatingChatWidget } from "@/components/layout/FloatingChatWidget";
+import { NotificationBell } from "@/components/layout/NotificationBell";
+import { Sparkles } from "lucide-react";
 
 function AppContent() {
   const [activeView, setActiveView] = useState("dashboard");
@@ -36,31 +41,42 @@ function AppContent() {
       
       <div className="flex-1 flex flex-col w-full min-w-0 transition-all duration-300">
         <main className="flex-1 overflow-auto bg-sidebar">
-          <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6">
+          <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6 mt-4">
             <div id="dashboard-upper-portal" />
           </div>
           
           <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6 py-6">
-            {safeActiveView === "dashboard" && <DashboardView />}
-            {safeActiveView === "customers" && <CustomersView />}
-            {safeActiveView === "loyalty" && <LoyaltyView />}
-            {safeActiveView === "marketing" && <MarketingView />}
-            {safeActiveView === "settings" && <SettingsView />}
-            {safeActiveView === "portal" && <CustomerPortalView />}
-            {safeActiveView === "analysis" && <AnalysisView />}
-            {safeActiveView === "analytics" && <AnalyticsView />}
-            
-            {["support", "billing"].includes(safeActiveView) && (
-              <div className="flex-1 flex items-center justify-center p-8 h-[80vh]">
-                <div className="text-center space-y-4">
-                  <h3 className="text-2xl font-bold text-muted-foreground font-heading capitalize">Phân hệ {safeActiveView}</h3>
-                  <p className="text-muted-foreground/60 max-w-sm mx-auto">Phân hệ doanh nghiệp này đang được phát triển.</p>
-                </div>
-              </div>
-            )}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={safeActiveView}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                {safeActiveView === "dashboard" && <DashboardView />}
+                {safeActiveView === "customers" && <CustomersView />}
+                {safeActiveView === "loyalty" && <LoyaltyView />}
+                {safeActiveView === "marketing" && <MarketingView />}
+                {safeActiveView === "settings" && <SettingsView />}
+                {safeActiveView === "portal" && <CustomerPortalView />}
+                {safeActiveView === "analysis" && <AnalysisView />}
+                {safeActiveView === "analytics" && <AnalyticsView />}
+                
+                {["support", "billing"].includes(safeActiveView) && (
+                  <div className="flex-1 flex items-center justify-center p-8 h-[80vh]">
+                    <div className="text-center space-y-4">
+                      <h3 className="text-2xl font-bold text-muted-foreground font-heading capitalize">Phân hệ {safeActiveView}</h3>
+                      <p className="text-muted-foreground/60 max-w-sm mx-auto">Phân hệ doanh nghiệp này đang được phát triển.</p>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </main>
       </div>
+      <FloatingChatWidget />
     </div>
   );
 }

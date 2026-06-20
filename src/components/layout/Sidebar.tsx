@@ -26,7 +26,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className, activeView, setActiveView }: SidebarProps) {
-  const [isExpanded, setIsExpanded] = React.useState(true);
+  const [isExpanded, setIsExpanded] = React.useState(false);
 
   const allMenuItems: { name: string; view: string; icon: any; isSecondary?: boolean }[] = [
     { name: "Tổng quan", view: "dashboard", icon: LayoutDashboard },
