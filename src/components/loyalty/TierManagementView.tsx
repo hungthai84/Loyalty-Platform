@@ -206,17 +206,19 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
                 className="relative cursor-pointer h-full"
                 onClick={() => { setSelectedTier(tier); setShowDialog(true); }}
               >
-                <Card className="h-full border border-border/80 bg-card overflow-hidden flex flex-col hover:shadow-lg hover:border-primary/20 transition-all rounded-[10px] p-6 relative">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white via-transparent to-transparent opacity-10 pointer-events-none rounded-bl-full" style={{ backgroundImage: `linear-gradient(to bottom left, ${tier.color}, transparent)` }} />
+                <Card className="h-full border border-border/80 bg-card overflow-hidden flex flex-col hover:shadow-lg hover:border-primary/20 transition-all rounded-[12px] p-6 relative">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white via-transparent to-transparent opacity-10 pointer-events-none rounded-bl-[12px]" style={{ backgroundImage: `linear-gradient(to bottom left, ${tier.color}, transparent)` }} />
                   
                   <div className="flex items-start justify-between relative z-10">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: tier.color }}>
                         <TierIcon className="w-6 h-6 fill-current" />
                       </div>
-                      <div>
+                      <div className="text-left">
                         <h4 className="text-xl font-bold font-heading text-foreground">{tier.name}</h4>
-                        <p className="text-sm font-medium text-muted-foreground mt-0.5">{tier.threshold.toLocaleString()} pts</p>
+                        <p className="text-sm font-semibold text-muted-foreground mt-0.5">
+                          {tier.threshold === 0 ? "Hạng tiêu chuẩn" : `${tier.threshold.toLocaleString()} PTS`}
+                        </p>
                       </div>
                     </div>
                     
@@ -227,40 +229,43 @@ export function TierManagementView({ rules = [], gifts = [] }: TierManagementVie
                     </div>
                   </div>
                   
-                  <div className="mt-6 pt-4 border-t border-border/50 grid grid-cols-2 gap-6 relative z-10">
+                  <div className="mt-5 pt-4 border-t border-border/50 space-y-4 flex-1 flex flex-col justify-between relative z-10">
                     <div className="space-y-3">
-                      <h5 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5 opacity-80">
-                        <Zap className="w-3.5 h-3.5 text-primary" /> Ưu đãi gần nhất
+                      <h5 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/85 flex items-center gap-1.5">
+                        <Zap className="w-3.5 h-3.5 shrink-0" style={{ color: tier.color }} /> Danh sách đặc quyền ({tier.benefits?.length || 0})
                       </h5>
                       <div className="space-y-2">
-                        {rules.length > 0 ? rules.slice(0, 2).map((r, i) => (
-                          <div key={i} className="text-xs font-semibold px-3 py-2 bg-muted/40 text-foreground border border-border/40 rounded-[10px] truncate transition-all hover:bg-muted/60">
-                            ✨ {r.name}
-                          </div>
-                        )) : (
-                          <div className="text-xs text-muted-foreground/60 italic px-3 py-2">Chưa có ưu đãi</div>
+                        {tier.benefits && tier.benefits.length > 0 ? (
+                          tier.benefits.slice(0, 3).map((b, i) => (
+                            <div key={i} className="flex items-center justify-between text-xs font-semibold px-3 py-2 bg-muted/40 hover:bg-muted/70 text-foreground border border-border/30 rounded-[8px] transition-all">
+                              <span className="truncate max-w-[150px] text-muted-foreground font-bold">{b.name}</span>
+                              <span className="text-[11px] truncate font-black ml-2" style={{ color: tier.color }}>{b.value}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-xs text-muted-foreground/60 italic pl-1 text-left">Chưa cấu hình đặc quyền đặc trưng</p>
+                        )}
+                        {tier.benefits && tier.benefits.length > 3 && (
+                          <p className="text-[10px] text-muted-foreground/75 font-bold uppercase tracking-wider text-right pr-1">
+                            + {tier.benefits.length - 3} đặc quyền khác...
+                          </p>
                         )}
                       </div>
                     </div>
-                    
-                    <div className="space-y-3">
-                      <h5 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5 opacity-80">
-                        <Gem className="w-3.5 h-3.5 text-amber-500" /> Quà tặng gần nhất
-                      </h5>
-                      <div className="space-y-2">
-                        {gifts.length > 0 ? gifts.slice(0, 2).map((g, i) => (
-                          <div key={i} className="text-xs font-semibold px-3 py-2 bg-amber-500/5 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-[10px] truncate transition-all hover:bg-amber-500/10">
-                            🎁 {g.name}
-                          </div>
-                        )) : (
-                          <div className="text-xs text-muted-foreground/60 italic px-3 py-2">Chưa có quà tặng</div>
-                        )}
-                      </div>
+
+                    {/* Transition details / indicators directly on card */}
+                    <div className="pt-3.5 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground font-mono">
+                      <span className="font-semibold">Chu kỳ giữ: {tier.maintenanceDays || 365} ngày</span>
+                      {tier.enablePrevTierUpgradeConditions ? (
+                        <span className="text-emerald-500 font-extrabold uppercase tracking-tighter text-[10px]">● Upgrade ràng buộc</span>
+                      ) : (
+                        <span className="text-muted-foreground/50 text-[10px]">Tự động thăng cấp</span>
+                      )}
                     </div>
                   </div>
                   
-                  <div className="mt-4 text-[10px] text-center text-muted-foreground italic opacity-50 z-10 flex-1 flex items-end justify-center">
-                    Bấm để xem & cấu hình chi tiết phân hạng
+                  <div className="mt-4 text-[10px] text-center text-muted-foreground font-semibold italic opacity-50 z-10 flex items-end justify-center">
+                    Bấm để xem chi tiết & tinh chỉnh quy chế thăng cấp
                   </div>
                 </Card>
               </motion.div>

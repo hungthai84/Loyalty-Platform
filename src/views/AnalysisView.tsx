@@ -82,79 +82,10 @@ import { OfferAnalysis } from "@/components/loyalty/OfferAnalysis";
 import { CrossBranchAnalysis } from "@/components/customers/CrossBranchAnalysis";
 import { ShoppingBehaviorAnalysis } from "@/components/customers/ShoppingBehaviorAnalysis";
 import { TierPointAnalysis } from "@/components/customers/TierPointAnalysis";
+import { AestheticSegmentationAnalysis } from "@/components/customers/AestheticSegmentationAnalysis";
 import { handleFirestoreError, OperationType } from "@/lib/firestore-errors";
 import { toast } from "sonner";
 import { getGuestTiers } from "@/data/guestData";
-
-const SUGGESTIONS_MAP: Record<string, {
-  vibe: string;
-  items: string[];
-  conversion: string;
-  projectedValue: string;
-  insight: string;
-  color: string;
-}> = {
-  classic: {
-    vibe: "Classic Elegant (Cổ điển & Thanh lịch)",
-    items: [
-      "Kiềng vàng di sản khắc vân mây (Heritage Gold Choker)",
-      "Nhẫn vàng phượng hoàng đính Ruby (Phoenix Ruby Gold Ring)",
-      "Khuyên tai ngọc trai hạt tròn quý phái (Classic Round Pearl Drop)"
-    ],
-    conversion: "85%",
-    projectedValue: "120.000.000 ₫",
-    insight: "Khách hàng đặc biệt ưu chuộng thiết kế đối xứng, mang âm hưởng di sản văn hóa Việt cổ kết hợp chất vàng tinh khiết 18K/24K vững bền.",
-    color: "from-amber-500/10 to-amber-600/5 text-amber-500 border-amber-500/20"
-  },
-  minimalist: {
-    vibe: "Minimalist Sophistication (Tối giản & Tinh tế)",
-    items: [
-      "Vòng tay Platinum mảnh thanh lịch (Minimalist Platinum Bangle)",
-      "Nhẫn kim cương Solitaire giác cắt tròn (Brilliant Cut Solitaire Diamond Ring)",
-      "Dây chuyền hạt cườm bạc ý tinh giản (Simple Elegant Italian Beads Chain)"
-    ],
-    conversion: "72%",
-    projectedValue: "45.000.000 ₫",
-    insight: "Phong cách tối giản chú trọng đường nét hình học sắc sảo, chất liệu Bạch kim hoặc Vàng trắng thanh khiết, không rườm rà hoa mỹ.",
-    color: "from-slate-400/15 to-slate-500/5 text-slate-400 border-slate-400/20"
-  },
-  glamorous: {
-    vibe: "Luxury Glamour (Sang trọng & Quý phái)",
-    items: [
-      "Vòng cổ kim cương đại công nương (Grand Duchess Multi-Tier Diamond Necklace)",
-      "Nhẫn kim cương Emerald xanh ngọc lục bảo hoàng gia (Royal Emerald-Cut Ring)",
-      "Lắc tay kim cương đính đá Sapphire đại dương (Blue Ocean Sapphire & Diamond Bracelet)"
-    ],
-    conversion: "90%",
-    projectedValue: "350.000.000 ₫",
-    insight: "Tệp quý cô thượng lưu đặc biệt yêu thích các điểm nhấn hào quang lộng lẫy từ Kim cương nước D giác cắt lớn kết hợp Ngọc lục bảo, Lam ngọc.",
-    color: "from-purple-500/10 to-purple-600/5 text-purple-400 border-purple-500/20"
-  },
-  "avant-garde": {
-    vibe: "Avant-Garde/Experimental (Phá cách & Cá tính)",
-    items: [
-      "Khuyên tai Gothic chạm khắc đầu rồng vàng trắng (Gothic Dragon Head White Gold Drop)",
-      "Nhẫn Signet bạc dập lửa gai góc (Alternative Thorns Signet Sterling Silver)",
-      "Vòng cổ luồn dây xích thô phá cách (Brutalist Industrial Metal Bold Chain)"
-    ],
-    conversion: "65%",
-    projectedValue: "85.000.000 ₫",
-    insight: "Phong cách độc bản đề cao cấu trực bất đối xứng, chạm khắc phong sương, các họa tiết trừu tượng thô mộc đầy gai góc, nghệ thuật.",
-    color: "from-emerald-500/10 to-emerald-600/5 text-emerald-400 border-emerald-500/20"
-  },
-  romantic: {
-    vibe: "Romantic & Gentle (Lãng mạn & Dịu dàng)",
-    items: [
-      "Mặt dây chuyền hoa anh đào vàng hồng đính thạch anh (Cherry Blossom Rose Gold Pendant)",
-      "Nhẫn đính hôn kết vòng dây leo hoa cỏ mộng mơ (Whimsical Botanical Vine Ring)",
-      "Khuyên tai giọt nước ngọc trai hồng biển cả (Pink Akoya Pearl Drop Earring)"
-    ],
-    conversion: "78%",
-    projectedValue: "60.000.000 ₫",
-    insight: "Ưa chuộng cấu hình uốn lượn thướt tha mềm mại của Vàng hồng ấm áp, đính ngọc trai hồng Akoya hoặc thạch anh tóc đỏ đầy thơ mộng.",
-    color: "from-pink-500/10 to-pink-600/5 text-pink-400 border-pink-500/20"
-  }
-};
 
 const CustomCLVTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -550,10 +481,10 @@ const ANALYSIS_DOCS: Record<string, {
     }
   },
   ai_advisor: {
-    title: "AI Analytics Advisor",
-    subtitle: "Khai thác tối đa trí tuệ nhân tạo Gemini để chẩn đoán lỗ hổng chính sách và tự soạn thảo chiến dịch.",
-    badge: "AI Cố Vấn",
-    description: "AI Advisor giám sát liên tục luồng dữ liệu mua sắm và thăng hạng chéo, tự động đưa ra các dự báo sắc bén và dự phòng rủi ro ngân sách tiếp thị.",
+    title: "Analytics Advisor",
+    subtitle: "Chẩn đoán lỗ hổng chính sách và tự soạn thảo chiến dịch.",
+    badge: "Cố Vấn",
+    description: "Giám sát liên tục luồng dữ liệu mua sắm và thăng hạng chéo, tự động đưa ra các dự báo sắc bén và dự phòng rủi ro ngân sách tiếp thị.",
     metrics: [
       { label: "Gợi ý AI được áp dụng", value: "72.4%", desc: "Tỷ lệ các đề xuất hữu ích được ban quản trị đưa vào thực thi" },
       { label: "Giảm hao hụt ngân sách", value: "-14%", desc: "Hao phí tiếp thị giảm thiểu tối đa nhờ AI tối ưu đúng đối tượng" },
@@ -643,7 +574,6 @@ export function AnalysisView() {
  const [companies, setCompanies] = useState<Company[]>([]);
  const [attributes, setAttributes] = useState<AttributeDefinition[]>([]);
  const [tiers, setTiers] = useState<TierConfig[]>([]);
- const [selectedSegment, setSelectedSegment] = useState<string>("classic");
  const [progressionCustomerId, setProgressionCustomerId] = useState<string>("");
 
  
@@ -751,18 +681,6 @@ export function AnalysisView() {
    setProgressionCustomerId(customers[0].id);
   }
  }, [customers, progressionCustomerId]);
-
- const matchingCustomersCount = useMemo(() => {
-  const liveMatch = customers.filter((c) => c.customFields?.fashionStyle === selectedSegment);
-  const baseOffsets: Record<string, number> = {
-   classic: 142,
-   minimalist: 98,
-   glamorous: 64,
-   "avant-garde": 33,
-   romantic: 78
-  };
-  return (baseOffsets[selectedSegment] || 25) + liveMatch.length;
- }, [customers, selectedSegment]);
 
  // Financial inputs for Loyalty Cost Module
  const [revenue, setRevenue] = useState(10000000000); // 10 Billions VND
@@ -1183,7 +1101,6 @@ export function AnalysisView() {
     { id: 'loyalty_cost', name: 'Chi phí Loyalty & Hiệu suất', icon: DollarSign },
     { id: 'clv_repeat', name: 'Giá trị vòng đời & Tái mua', icon: RefreshCw },
     { id: 'vip_crm', name: 'Chăm sóc khách VIP & Đặt lịch', icon: Briefcase },
-    { id: 'ai_advisor', name: 'Cố vấn phân tích AI', icon: Zap },
     { id: 'offer_analysis', name: 'Phân tích & Tối ưu Ưu đãi', icon: Trophy },
     { id: 'rules', name: 'Quy tắc hệ thống', icon: Settings },
   ];
@@ -1430,111 +1347,7 @@ export function AnalysisView() {
  {/* 1. NEW TAB: AESTHETIC SEGMENTATION */}
  {activeTab === 'aesthetic_segmentation' && (
   <div className="space-y-6">
-   <motion.div
-    initial={{ opacity: 0, scale: 0.98 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 0.4 }}
-   >
-    <Card className="border border-border/50 bg-[#1e2330]/40 backdrop-blur-md shadow-lg overflow-hidden relative">
-     <div className="absolute right-0 top-0 w-80 h-80 bg-gradient-to-bl from-[#2f6cf5]/10 to-indigo-500/0 rounded-full blur-3xl pointer-events-none" />
-     
-     <CardHeader className="border-b border-border/40 pb-5">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
-       <div className="text-left">
-        <span className="text-[10px] font-bold text-[#2f6cf5] border border-[#2f6cf5]/30 bg-[#2f6cf5]/10 py-1 px-2.5 rounded-full uppercase tracking-widest inline-block mb-2">
-         Dự đoán Hành Vi & Thẩm mỹ VIP (Aesthetic Intelligence)
-        </span>
-        <CardTitle className="font-heading text-lg text-foreground flex items-center gap-2">
-         <Sparkles className="w-5 h-5 text-[#2f6cf5] animate-pulse" /> Đề Xuất Sản Phẩm Trang Sức Theo Phân Khúc Thẩm Mỹ
-        </CardTitle>
-        <CardDescription className="text-xs text-muted-foreground mt-0.5 text-left">
-         Tính toán tự động dựa trên các chỉ số hành vi, gu thời trang cá nhân và dữ liệu lưu vết sở thích chất liệu của khách hàng.
-        </CardDescription>
-       </div>
-       
-       <div className="flex items-center gap-2 self-start md:self-center">
-        <span className="text-xs text-muted-foreground font-bold whitespace-nowrap">Phân khúc:</span>
-        <select
-         value={selectedSegment}
-         onChange={(e) => setSelectedSegment(e.target.value)}
-         className="bg-background border border-border/80 text-xs font-semibold rounded-[10px] px-3 py-1.5 focus:outline-none focus:border-[#2f6cf5] text-foreground transition-all shrink-0 cursor-pointer shadow-sm hover:border-primary/50"
-        >
-         <option value="classic">Cổ điển & Thanh lịch</option>
-         <option value="minimalist">Tối giản & Tinh tế</option>
-         <option value="glamorous">Sang trọng & Quý phái</option>
-         <option value="avant-garde">Phá cách & Độc bản</option>
-         <option value="romantic">Lãng mạn & Dịu dàng</option>
-        </select>
-       </div>
-      </div>
-     </CardHeader>
-
-     <CardContent className="pt-6 text-left">
-      {(() => {
-       const prediction = SUGGESTIONS_MAP[selectedSegment];
-       return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-         
-         <div className="space-y-4">
-          <div className={`p-4 rounded-[10px] border bg-gradient-to-br ${prediction.color}`}>
-           <span className="text-[10px] uppercase font-bold tracking-widest opacity-80 block mb-1">Cảm Hứng Thần Thái (Vibe Theme)</span>
-           <p className="text-sm font-extrabold tracking-wide">{prediction.vibe}</p>
-          </div>
-          
-          <div className="space-y-1">
-           <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Hồ Sơ Quy Mô Khách Hàng</span>
-           <div className="bg-background/40 border border-border/40 p-4 rounded-[10px] flex items-center justify-between">
-            <div>
-             <span className="text-2xl font-black text-foreground">{matchingCustomersCount}</span>
-             <span className="text-xs text-muted-foreground ml-1.5">thành viên</span>
-            </div>
-            <span className="text-[10px] bg-[#2f6cf5]/10 text-[#2f6cf5] border border-[#2f6cf5]/20 font-bold px-2 py-0.5 rounded-full">
-             Tỉ lệ: {((matchingCustomersCount / (customers.length || 1284)) * 100).toFixed(1)}%
-            </span>
-           </div>
-          </div>
-         </div>
-
-         <div className="lg:col-span-2 space-y-5">
-          <div className="space-y-3">
-           <h4 className="text-xs font-bold uppercase tracking-widest text-[#2f6cf5] flex items-center gap-2">
-            <Gem className="w-4 h-4" /> Tuyển Tập Sản Phẩm Trọng Tâm Dự Báo (Predictive Curated List)
-           </h4>
-           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {prediction.items.map((item, idx) => (
-             <div key={idx} className="bg-background/30 border border-border/30 p-4 rounded-[10px] flex items-center justify-between group hover:bg-background/50 hover:border-[#2f6cf5]/30 transition-all cursor-default">
-              <span className="text-xs font-bold text-foreground pr-4">{item}</span>
-              <div className="p-1.5 bg-muted rounded-[10px] group-hover:bg-[#2f6cf5]/10 group-hover:text-[#2f6cf5] transition-colors">
-               <TrendingUp className="w-3.5 h-3.5" />
-              </div>
-             </div>
-            ))}
-           </div>
-          </div>
-
-          <div className="p-5 rounded-[10px] bg-[#0f172a]/30 border border-border/30 flex flex-col md:flex-row gap-6">
-           <div className="flex-1 space-y-2 text-left">
-            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Phân Tích Thẩm Mỹ Cơ Bản (Aesthetic Insight)</span>
-            <p className="text-xs text-foreground/90 leading-relaxed font-medium italic">"{prediction.insight}"</p>
-           </div>
-           <div className="md:w-48 shrink-0 flex flex-col gap-3">
-            <div className="bg-background/40 p-3 rounded-[10px] border border-border/30">
-             <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight block">Kỳ vọng Chuyển đổi</span>
-             <span className="text-xl font-black text-emerald-500">{prediction.conversion}</span>
-            </div>
-            <div className="bg-background/40 p-3 rounded-[10px] border border-border/30">
-             <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight block">Giá trị Doanh số Dự phỏng</span>
-             <span className="text-lg font-black text-[#2f6cf5]">{prediction.projectedValue}</span>
-            </div>
-           </div>
-          </div>
-         </div>
-        </div>
-       );
-      })()}
-     </CardContent>
-    </Card>
-   </motion.div>
+   <AestheticSegmentationAnalysis customers={customers} />
   </div>
  )}
 

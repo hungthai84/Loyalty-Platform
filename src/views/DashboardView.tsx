@@ -19,6 +19,14 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import confetti from "canvas-confetti";
 import {
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   Tooltip,
@@ -84,6 +92,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import * as motion from "motion/react-client";
+import { AnimatePresence } from "motion/react";
 import { DatabaseStatus } from "@/components/layout/DatabaseStatus";
 import { CustomerTierPieChart } from "@/components/dashboard/CustomerTierPieChart";
 import {
@@ -95,12 +104,22 @@ import {
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { UpcomingBirthdays } from "@/components/dashboard/UpcomingBirthdays";
 import { TierUpProgress } from "@/components/dashboard/TierUpProgress";
+import { TierPointAnalysis } from "@/components/customers/TierPointAnalysis";
+import { ShoppingBehaviorAnalysis } from "@/components/customers/ShoppingBehaviorAnalysis";
 
 export function DashboardView() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   
   const { user } = useFirebase();
   const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
+  const [activeReportTab, setActiveReportTab] = useState<"customers" | "tiers" | "behavior">("customers");
+  const [forecastCustomerId, setForecastCustomerId] = useState<string>("");
+
+  useEffect(() => {
+    if (allCustomers.length > 0 && !forecastCustomerId) {
+      setForecastCustomerId(allCustomers[0].id || "");
+    }
+  }, [allCustomers, forecastCustomerId]);
   const [activeCampaigns, setActiveCampaigns] = useState(4);
   const [totalRedeemedPoints, setTotalRedeemedPoints] = useState(0);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -882,6 +901,28 @@ export function DashboardView() {
 
   const [chartView, setChartView] = useState<"distribution" | "trend">("distribution");
 
+  const interactionRealTimeData = useMemo(() => {
+    const data = [];
+    const times = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00"];
+    for (let i = 0; i < times.length; i++) {
+      data.push({
+        time: times[i],
+        interactions: Math.floor(Math.random() * 200) + 50,
+      });
+    }
+    return data;
+  }, [allCustomers]);
+
+  const offerRedemptionFreq = useMemo(() => {
+    return [
+      { name: 'Voucher 50k', value: 400, color: '#2f6cf5' },
+      { name: 'Free Drink', value: 300, color: '#10b981' },
+      { name: 'Birthday Gift', value: 300, color: '#f59e0b' },
+      { name: 'Parking Pass', value: 200, color: '#f43f5e' },
+      { name: 'Lounge Access', value: 150, color: '#6366f1' },
+    ];
+  }, []);
+
   const monthlyGrowthData = useMemo(() => {
     const data = [];
     const months = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"];
@@ -1510,6 +1551,105 @@ export function DashboardView() {
            </Card>
         </div>
 
+        {/* Real-time Interaction & Redemption Charts (Recharts) */}
+        <div className="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <Card className="border border-border/60 shadow-sm glass-card overflow-hidden">
+            <CardHeader className="pb-2 border-b border-border/50 bg-muted/5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-extrabold flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-[#2f6cf5]" /> Tương tác thời gian thực
+                  </CardTitle>
+                  <CardDescription className="text-xs">Dữ liệu lượt click và truy cập hệ thống theo từng giờ.</CardDescription>
+                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> LIVE
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={interactionRealTimeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="interactionGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#2f6cf5" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#2f6cf5" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.1)" />
+                    <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", fontWeight: 'bold' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", fontWeight: 'bold' }} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "12px", border: "1px solid hsl(var(--border))", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+                    />
+                    <Area type="monotone" dataKey="interactions" stroke="#2f6cf5" strokeWidth={3} fillOpacity={1} fill="url(#interactionGradient)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border border-border/60 shadow-sm glass-card overflow-hidden">
+            <CardHeader className="pb-2 border-b border-border/50 bg-muted/5">
+              <CardTitle className="text-lg font-extrabold flex items-center gap-2">
+                <Gift className="w-5 h-5 text-purple-500" /> Tần suất đổi ưu đãi
+              </CardTitle>
+              <CardDescription className="text-xs">Phân tích các loại voucher và quà tặng phổ biến nhất.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="h-[220px] w-full md:w-1/2 relative flex items-center justify-center">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={offerRedemptionFreq}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={65}
+                        outerRadius={85}
+                        paddingAngle={5}
+                        dataKey="value"
+                        animationBegin={0}
+                        animationDuration={1500}
+                        stroke="none"
+                      >
+                        {offerRedemptionFreq.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "12px", border: "1px solid hsl(var(--border))", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-2">
+                    <span className="text-3xl font-black text-foreground">1.3k</span>
+                    <span className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">Tổng lượt đổi</span>
+                  </div>
+                </div>
+                
+                <div className="w-full md:w-1/2 space-y-3">
+                  {offerRedemptionFreq.map((item) => (
+                    <div key={item.name} className="flex items-center justify-between group p-2 hover:bg-muted/50 rounded-[10px] transition-all">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: item.color }} />
+                        <span className="text-xs font-bold text-foreground truncate">{item.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black tabular-nums">{item.value}</span>
+                        <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
+                           <div className="h-full bg-current opacity-60" style={{ width: `${(item.value / 400) * 100}%`, color: item.color }} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* COLUMN 1: BALANCE, INFORMATION & SECURITY (LIME MOCKUP STYLE) */}
         <div className="col-span-1 lg:col-span-4 flex flex-col gap-5">
           
@@ -2051,7 +2191,218 @@ export function DashboardView() {
                <UpcomingBirthdays />
                <TierUpProgress />
             </div>
-         </div>
+          </div>
+       </div>
+
+      {/* COMPREHENSIVE DYNAMIC REPORTS SUITE (KÉO XUỐNG ĐỂ XEM) */}
+      <div id="extended-reports-suite" className="mt-12 pt-8 border-t border-border/85 space-y-8 animate-in fade-in duration-1000">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="text-left">
+            <span className="text-[10px] bg-[#2f6cf5]/10 text-[#2f6cf5] font-black tracking-widest uppercase px-3 py-1 rounded-full border border-[#2f6cf5]/20">
+              Hệ thống Báo cáo Kéo dài & Phân tích Đột phá
+            </span>
+            <h2 className="text-xl font-black text-foreground tracking-tight mt-2 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-[#2f6cf5] animate-pulse" />
+              Báo Cáo Mở Rộng & Dự Báo Thời Gian Thực
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Kéo xuống từ trang tổng quan để truy cập các phân hệ chiều sâu: Quản lý khách hàng, Tính toán hạng & điểm, Phân tích hành vi.
+            </p>
+          </div>
+
+          {/* Quick Tab Selectors */}
+          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-muted/60 border border-border/50 rounded-full shrink-0">
+            <button
+              onClick={() => {
+                setActiveReportTab("customers");
+                toast.success("Bản đồ khách hàng sẵn sàng");
+              }}
+              className={cn(
+                "px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                activeReportTab === "customers"
+                  ? "bg-white dark:bg-card text-foreground shadow-xs border border-border/40"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              )}
+            >
+              <UserPlus className="w-3.5 h-3.5 text-blue-500" />
+              1. Khách hàng
+            </button>
+            <button
+              onClick={() => {
+                setActiveReportTab("tiers");
+                toast.success("Mô hình hạng & điểm sẵn sàng");
+              }}
+              className={cn(
+                "px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                activeReportTab === "tiers"
+                  ? "bg-white dark:bg-card text-foreground shadow-xs border border-border/40"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              )}
+            >
+              <Trophy className="w-3.5 h-3.5 text-emerald-500" />
+              2. Hạng & điểm
+            </button>
+            <button
+              onClick={() => {
+                setActiveReportTab("behavior");
+                toast.success("Luồng phân tích hành vi sẵn sàng");
+              }}
+              className={cn(
+                "px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                activeReportTab === "behavior"
+                  ? "bg-white dark:bg-card text-foreground shadow-xs border border-border/40"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              )}
+            >
+              <TrendingUp className="w-3.5 h-3.5 text-purple-500" />
+              3. Hành vi
+            </button>
+          </div>
+        </div>
+
+        {/* Tab Contents */}
+        <div className="w-full transition-all duration-300">
+          <AnimatePresence mode="wait">
+            {activeReportTab === "customers" && (
+              <motion.div
+                key="customers"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6 text-left"
+              >
+                <Card className="border border-border/60 shadow-md">
+                  <CardHeader className="border-b bg-muted/5 pb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <CardTitle className="text-lg font-black text-foreground flex items-center gap-2">
+                          <Users className="w-5 h-5 text-blue-500" /> Bản đồ Khách hàng Toàn diện
+                        </CardTitle>
+                        <CardDescription className="text-xs">
+                          Xem danh sách đầy đủ các hội viên thương hiệu kết hợp tổng số tiền chi tiêu, cấp bậc, và trạng thái đồng bộ thực tế.
+                        </CardDescription>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold bg-muted px-2.5 py-1 rounded-full text-muted-foreground">
+                          {allCustomers.length} Khách hàng hệ thống
+                        </span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="hover:bg-transparent">
+                            <TableHead className="font-bold text-xs text-muted-foreground uppercase py-3.5 pl-6">Khách hàng</TableHead>
+                            <TableHead className="font-bold text-xs text-muted-foreground uppercase py-3.5">Hạng thẻ</TableHead>
+                            <TableHead className="font-bold text-xs text-muted-foreground uppercase py-3.5 text-right">Chi tiêu tích lũy</TableHead>
+                            <TableHead className="font-bold text-xs text-muted-foreground uppercase py-3.5 text-right pr-6">Điểm tích lũy</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {allCustomers.length > 0 ? (
+                            allCustomers.map((c) => {
+                              const rawSpend = Number(c.customFields?.spend) || 0;
+                              return (
+                                <TableRow key={c.id} className="hover:bg-muted/30 transition-colors border-b">
+                                  <TableCell className="py-4 pl-6">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-xs">
+                                        {c.name.charAt(0).toUpperCase()}
+                                      </div>
+                                      <div>
+                                        <p className="font-bold text-foreground text-xs leading-none">{c.name}</p>
+                                        <p className="text-[10px] text-muted-foreground mt-1 font-mono">{c.phone || c.email || "Chưa có thông tin"}</p>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="py-4">
+                                    <Badge
+                                      className={cn(
+                                        "px-2.5 py-0.5 rounded-full text-[10px] font-black border uppercase",
+                                        c.tier === "Atelier"
+                                          ? "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-300"
+                                          : c.tier === "Icon"
+                                          ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-300"
+                                          : "bg-slate-100 dark:bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-300"
+                                      )}
+                                    >
+                                      {c.tier || "Member"}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="py-4 text-right font-bold text-xs tabular-nums text-foreground">
+                                    {formatCurrency(rawSpend, currentCurrency)}
+                                  </TableCell>
+                                  <TableCell className="py-4 text-right pr-6 font-mono font-black text-xs text-emerald-600">
+                                    {c.points || 0} pts
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center text-xs text-muted-foreground py-12">
+                                Đang tải danh sách khách hàng...
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {activeReportTab === "tiers" && (
+              <motion.div
+                key="tiers"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="bg-card rounded-[12px] border border-border/80 overflow-hidden shadow-md">
+                  <div className="p-5 border-b bg-muted/5 text-left">
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-600 font-bold tracking-widest uppercase px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                      Bậc hạng & Hệ số tích điểm
+                    </span>
+                    <h3 className="text-base font-black text-foreground mt-1">Cấu trúc quy đổi điểm & Phân cấp thành viên</h3>
+                    <p className="text-xs text-muted-foreground">Mô phỏng khả năng tích lũy điểm thưởng theo từng cấp bậc hóa đơn.</p>
+                  </div>
+                  <div className="p-6">
+                    <TierPointAnalysis />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeReportTab === "behavior" && (
+              <motion.div
+                key="behavior"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="bg-card rounded-[12px] border border-border/80 overflow-hidden shadow-md">
+                  <div className="p-5 border-b bg-muted/5 text-left">
+                    <span className="text-[10px] bg-purple-500/10 text-purple-600 font-bold tracking-widest uppercase px-2.5 py-0.5 rounded-full border border-purple-500/20">
+                      Thói quen & Sở thích mua sắm
+                    </span>
+                    <h3 className="text-base font-black text-foreground mt-1">Phân tích sâu Hành vi Khách hàng theo Bộ sưu tập</h3>
+                    <p className="text-xs text-muted-foreground">Xem lịch sử đơn đặt hàng và nhu cầu hỗ trợ chăm sóc VIP.</p>
+                  </div>
+                  <div className="p-6">
+                    <ShoppingBehaviorAnalysis />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Quick Action Overlay Modals */}
@@ -2237,29 +2588,7 @@ export function DashboardView() {
         </DialogContent>
       </Dialog>
 
-      {/* Floating Quick Actions Menu */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3 group">
-        <div className="flex flex-col gap-2 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 origin-bottom-right mb-2">
-           <button 
-             onClick={() => setShowAddCustomerModal(true)}
-             className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border shadow-md rounded-full hover:bg-muted font-bold text-xs transition-colors text-foreground whitespace-nowrap cursor-pointer">
-             <UserPlus className="w-4 h-4 text-emerald-500" /> Thêm khách hàng mới
-           </button>
-           <button 
-             onClick={() => setShowLaunchCampaignModal(true)}
-             className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border shadow-md rounded-full hover:bg-muted font-bold text-xs transition-colors text-foreground whitespace-nowrap cursor-pointer">
-             <Megaphone className="w-4 h-4 text-amber-500" /> Khởi chạy Campaign
-           </button>
-           <button 
-             onClick={handlePrintLoyaltyReport}
-             className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border shadow-md rounded-full hover:bg-muted font-bold text-xs transition-colors text-foreground whitespace-nowrap cursor-pointer">
-             <Printer className="w-4 h-4 text-[#2f6cf5]" /> In báo cáo Loyalty
-           </button>
-        </div>
-        <button className="h-14 w-14 rounded-full bg-[#2f6cf5] text-white shadow-lg flex items-center justify-center hover:bg-[#2f6cf5]/90 hover:scale-105 transition-all shadow-[#2f6cf5]/30 cursor-pointer">
-          <Plus className="w-6 h-6 transition-transform group-hover:rotate-45 duration-300" />
-        </button>
-      </div>
+
     </div>
   );
 }

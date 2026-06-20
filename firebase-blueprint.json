@@ -45,19 +45,35 @@
     },
     "Company": {
       "title": "Company",
-      "description": "A company or branch office.",
+      "description": "A company for the catalog.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "logoUrl": { "type": "string" },
         "address": { "type": "string" },
-        "type": { "type": "string", "enum": ["company", "branch"] },
-        "parentId": { "type": "string", "description": "Reference to parent company if this is a branch" },
+        "phone": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "websiteUrl": { "type": "string" },
         "userId": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["name", "userId"]
+      "required": ["name", "address", "phone", "userId"]
+    },
+    "CatalogProduct": {
+      "title": "Catalog Product",
+      "description": "A product belonging to a company.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "website": { "type": "string" },
+        "companyId": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "description", "companyId", "userId"]
     },
     "AttributeDefinition": {
       "title": "Attribute Definition",
@@ -180,7 +196,11 @@
     },
     "/companies/{companyId}": {
       "schema": "Company",
-      "description": "Branches and companies."
+      "description": "Catalog companies."
+    },
+    "/catalog_products/{productId}": {
+      "schema": "CatalogProduct",
+      "description": "Catalog products."
     },
     "/customers/{customerId}": {
       "schema": "Customer",

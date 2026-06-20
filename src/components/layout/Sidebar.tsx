@@ -5,17 +5,18 @@ import { motion, AnimatePresence } from "motion/react";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import {
-  LayoutDashboard,
-  Users,
-  Award,
-  BarChart,
+  Compass,
+  UserCheck,
+  Crown,
+  TrendingUp,
   Settings,
-  Megaphone,
+  Send,
   Fingerprint,
-  Sparkles,
+  Brain,
   Search,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  BookOpen
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -29,13 +30,13 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
   const [isExpanded, setIsExpanded] = React.useState(false);
 
   const allMenuItems: { name: string; view: string; icon: any; isSecondary?: boolean }[] = [
-    { name: "Tổng quan", view: "dashboard", icon: LayoutDashboard },
-    { name: "Khách hàng", view: "customers", icon: Users },
-    { name: "Đặc quyền", view: "loyalty", icon: Award },
-    { name: "Tương tác", view: "marketing", icon: Megaphone },
-    { name: "Phân tích", view: "analysis", icon: Sparkles },
+    { name: "Tổng quan", view: "dashboard", icon: Compass },
+    { name: "Khách hàng", view: "customers", icon: UserCheck },
+    { name: "Đặc quyền", view: "loyalty", icon: Crown },
+    { name: "Tương tác", view: "marketing", icon: Send },
+    { name: "Phân tích", view: "analysis", icon: Brain },
     { name: "Điểm chạm", view: "portal", icon: Fingerprint },
-    { name: "Báo cáo", view: "analytics", icon: BarChart },
+    { name: "Báo cáo", view: "analytics", icon: TrendingUp },
   ];
 
   const menuItems = allMenuItems;
@@ -115,26 +116,30 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
       </AnimatePresence>
 
       {/* Middle: Centered Menu Items */}
-      <div className="flex-1 flex flex-col justify-center px-3 py-4 min-h-0 overflow-y-auto overflow-x-hidden">
-        <div className="space-y-1.5 py-4">
+      <div className="flex-1 flex flex-col justify-center px-2 py-4 min-h-0 overflow-y-auto overflow-x-hidden">
+        <div className="space-y-2 py-4">
           {menuItems.map((item) => (
             <button
               key={item.name}
               onClick={() => setActiveView(item.view)}
               className={cn(
-                "flex items-center rounded-[10px] text-sm font-semibold transition-all group relative",
+                "flex items-center rounded-[12px] text-sm font-semibold transition-all group relative",
                 activeView === item.view
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/15"
-                  : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                !isExpanded ? "w-11 h-11 mx-auto justify-center px-0" : "w-full py-2.5 px-4 space-x-3 justify-start",
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/20 border border-white/10"
+                  : "text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                !isExpanded ? "w-11 h-11 mx-auto justify-center px-0" : "w-full py-2 px-3 space-x-3 justify-start",
                 item.isSecondary && "mt-8"
               )}
               title={!isExpanded ? item.name : undefined}
             >
-              <item.icon className={cn(
-                "h-5 w-5 shrink-0 transition-transform duration-300",
-                activeView === item.view ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/45 group-hover:text-sidebar-accent-foreground group-hover:scale-105"
-              )} />
+              <div className={cn(
+                "p-1.5 rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-300",
+                activeView === item.view
+                  ? "bg-white/20 dark:bg-white/15 border border-white/35 dark:border-white/20 shadow-[0_4px_12px_rgba(255,255,255,0.15)] text-sidebar-primary-foreground scale-105 backdrop-blur-md"
+                  : "bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 text-sidebar-foreground/60 backdrop-blur-sm group-hover:bg-white/15 dark:group-hover:bg-white/10 group-hover:border-black/10 dark:group-hover:border-white/10 group-hover:text-primary group-hover:scale-110"
+              )}>
+                <item.icon className="h-4.5 w-4.5 shrink-0" />
+              </div>
               
               {isExpanded && (
                 <AnimatePresence>
@@ -162,7 +167,7 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
 
       {/* Bottom: Settings */}
       <div className={cn(
-        "px-3 py-6 border-t border-border/50 transition-all shrink-0 flex flex-col items-center gap-3",
+        "px-2 py-6 border-t border-border/50 transition-all shrink-0 flex flex-col items-center gap-3",
         isExpanded && "items-stretch"
       )}>
         <NotificationBell isSidebar collapsed={!isExpanded} />
@@ -170,18 +175,22 @@ export function Sidebar({ className, activeView, setActiveView }: SidebarProps) 
         <button
           onClick={() => setActiveView("settings")}
           className={cn(
-            "flex items-center rounded-[10px] text-sm font-semibold transition-all group relative",
+            "flex items-center rounded-[12px] text-sm font-semibold transition-all group relative",
             activeView === "settings"
-              ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/15"
-              : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            !isExpanded ? "w-11 h-11 mx-auto justify-center px-0" : "w-full py-3 px-4 space-x-3 justify-start"
+              ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/20 border border-white/10"
+              : "text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+            !isExpanded ? "w-11 h-11 mx-auto justify-center px-0" : "w-full py-2 px-3 space-x-3 justify-start"
           )}
           title={!isExpanded ? "Cài đặt" : undefined}
         >
-          <Settings className={cn(
-            "h-5 w-5 shrink-0 transition-transform duration-300",
-            activeView === "settings" ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/45 group-hover:text-sidebar-accent-foreground group-hover:scale-105"
-          )} />
+          <div className={cn(
+            "p-1.5 rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-300",
+            activeView === "settings"
+              ? "bg-white/20 dark:bg-white/15 border border-white/35 dark:border-white/20 shadow-[0_4px_12px_rgba(255,255,255,0.15)] text-sidebar-primary-foreground scale-105 backdrop-blur-md"
+              : "bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 text-sidebar-foreground/60 backdrop-blur-sm group-hover:bg-white/15 dark:group-hover:bg-white/10 group-hover:border-black/10 dark:group-hover:border-white/10 group-hover:text-primary group-hover:scale-110"
+          )}>
+            <Settings className="h-4.5 w-4.5 shrink-0" />
+          </div>
           
           {isExpanded && (
             <AnimatePresence>

@@ -11,7 +11,10 @@ import {
   X,
   Database,
   Smartphone,
-  LayoutGrid
+  LayoutGrid,
+  Boxes,
+  Layers,
+  Award
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -483,106 +486,140 @@ export function GiftsManagementView() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {filteredGifts.map((gift) => (
-            <motion.div
-              layout
-              key={gift.id}
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="group h-full flex"
-            >
-              <Card className="p-0 border border-border/80 bg-card overflow-hidden rounded-[10px] flex flex-col justify-between w-full shadow-sm hover:shadow-xl hover:border-rose-500/25 transition-all duration-300">
-                <div className="relative h-44 w-full bg-muted overflow-hidden">
-                  <img
-                    src={gift.imageUrl || `https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(gift.id || gift.name)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`}
-                    alt={gift.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredGifts.map((gift) => {
+            const isOutOfStock = gift.stockQuantity <= 0;
+            const isLowStock = gift.stockQuantity > 0 && gift.stockQuantity <= 5;
 
-                  {/* Absolute stock badges, etc */}
-                  <div className="absolute top-3 left-3 flex gap-1">
-                    <span
-                      className={cn(
-                        "text-[10px] font-extrabold px-2.5 py-0.5 rounded-full select-none text-white",
-                        gift.stockQuantity > 5 ? "bg-emerald-500" : "bg-rose-500 shrink-0"
-                      )}
-                    >
-                      {gift.stockQuantity > 0 ? `Còn lại: ${gift.stockQuantity}` : "Hết kho"}
-                    </span>
-                  </div>
+            return (
+              <motion.div
+                layout
+                key={gift.id}
+                whileHover={{ y: -6 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="group h-full flex"
+              >
+                <Card className="p-0 border border-border/60 bg-card overflow-hidden rounded-[16px] flex flex-col justify-between w-full shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_14px_32px_rgba(0,0,0,0.08)] hover:border-rose-500/20 transition-all duration-300">
+                  <div className="relative h-48 w-full bg-muted overflow-hidden shrink-0">
+                    <img
+                      src={gift.imageUrl || `https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(gift.id || gift.name)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`}
+                      alt={gift.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-106"
+                      referrerPolicy="no-referrer"
+                    />
+                    
+                    {/* Dark gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
 
-                  <div className="absolute top-3 right-3 flex gap-1 select-none">
-                    <span
-                      className={cn(
-                        "text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider text-white",
-                        gift.source === "pos_api"
-                          ? "bg-rose-550 border border-rose-450"
-                          : "bg-slate-700/80 border border-slate-650"
-                      )}
-                    >
-                      {gift.source === "pos_api" ? "POS API" : "Thủ công"}
-                    </span>
-                  </div>
-
-                  {/* Points display prominently overlay */}
-                  <div className="absolute bottom-3 left-3 right-3 text-left">
-                    <div className="flex justify-between items-center bg-black/40 backdrop-blur-md py-1 border border-white/10 px-2.5 rounded-[10px] w-fit">
-                      <span className="text-[10px] font-bold text-amber-400 flex items-center gap-1">
-                        <Coins className="w-3.5 h-3.5 fill-amber-400/10" />
-                        Trừ {gift.pointsRequired.toLocaleString()} pts
+                    {/* Left Stock Status Badge with modern style */}
+                    <div className="absolute top-3 left-3 flex gap-1">
+                      <span
+                        className={cn(
+                          "text-[9px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full select-none text-white flex items-center gap-1 shadow-sm backdrop-blur-md",
+                          isOutOfStock 
+                            ? "bg-zinc-650/90" 
+                            : isLowStock 
+                              ? "bg-amber-500/90 animate-pulse" 
+                              : "bg-emerald-500/90"
+                        )}
+                      >
+                        <span className={cn("w-1.5 h-1.5 rounded-full bg-white", !isOutOfStock && "animate-pulse")} />
+                        {isOutOfStock 
+                          ? "Hết kho" 
+                          : isLowStock 
+                            ? `Còn ít: ${gift.stockQuantity}` 
+                            : `Sẵn kho: ${gift.stockQuantity}`}
                       </span>
                     </div>
-                  </div>
-                </div>
 
-                <CardContent className="flex-1 flex flex-col p-5 text-left justify-between gap-3">
-                  <div className="space-y-1.5 flex-1">
-                    <h4 className="font-extrabold text-sm text-foreground line-clamp-1 group-hover:text-rose-500 transition-colors">
-                      {gift.name}
-                    </h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 h-[52px]">
-                      {gift.description || "Món quà tri ân cao cấp không kèm hướng dẫn chi tiết."}
-                    </p>
-                  </div>
+                    {/* Source Tag Badge */}
+                    <div className="absolute top-3 right-3 flex gap-1 select-none">
+                      <span
+                        className={cn(
+                          "text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-md text-white shadow-sm backdrop-blur-md",
+                          gift.source === "pos_api"
+                            ? "bg-rose-500/90 border border-rose-450/20"
+                            : "bg-zinc-800/90 border border-zinc-700/20"
+                        )}
+                      >
+                        {gift.source === "pos_api" ? "POS API" : "Thủ công"}
+                      </span>
+                    </div>
 
-                  {/* Eligible Tiers section list */}
-                  <div className="space-y-2 pt-3 border-t border-border/10.">
-                    <div className="flex flex-wrap gap-1 leading-none">
-                      {gift.eligibleTiers.map((tier) => (
-                        <span
-                          key={tier}
-                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
-                        >
-                          {tier}
+                    {/* Points display prominently overlay */}
+                    <div className="absolute bottom-3 left-3 right-3 text-left">
+                      <div className="flex justify-between items-center bg-black/45 backdrop-blur-md py-1 border border-white/10 px-3 rounded-[8px] w-fit shadow-md">
+                        <span className="text-[11px] font-black text-amber-300 flex items-center gap-1.5 font-mono">
+                          <Coins className="w-4 h-4 text-amber-400 fill-amber-400/20 animate-pulse" />
+                          {gift.pointsRequired.toLocaleString()} PTS
                         </span>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center justify-end gap-1.5 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => handleEditGift(gift)}
-                        className="p-1.5 bg-background border border-border hover:bg-muted text-muted-foreground hover:text-foreground rounded-[10px] transition-colors cursor-pointer"
-                        title="Chỉnh sửa quà tặng"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteGift(gift.id, gift.name)}
-                        className="p-1.5 bg-background border border-border text-muted-foreground hover:text-red-500 hover:bg-red-50/10 rounded-[10px] transition-colors cursor-pointer"
-                        title="Xóa quà tặng"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+
+                  {/* Card Content body */}
+                  <CardContent className="flex-1 flex flex-col p-5 text-left justify-between gap-4.5">
+                    <div className="space-y-2.5 flex-1">
+                      <h4 className="font-extrabold text-[15px] text-foreground line-clamp-1 group-hover:text-rose-500 transition-colors leading-tight">
+                        {gift.name}
+                      </h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 h-[34px] font-medium">
+                        {gift.description || "Món quà đặc quyền và ấn phẩm tri ân Seva dành tặng đối tác VIP thân thiết."}
+                      </p>
+                    </div>
+
+                    {/* Minimum tiers & accessibility section */}
+                    <div className="space-y-3 pt-3.5 border-t border-border/40">
+                      <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground/80">
+                        <Award className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                        <span>Hạng nhận quà ({gift.eligibleTiers?.length || 0})</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 leading-none">
+                        {gift.eligibleTiers && gift.eligibleTiers.length > 0 ? (
+                          gift.eligibleTiers.map((tier) => (
+                            <span
+                              key={tier}
+                              className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-rose-50/10 text-rose-600 dark:text-rose-400 border border-rose-500/15 font-sans"
+                            >
+                              {tier}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground/50 italic">Tất cả thành viên</span>
+                        )}
+                      </div>
+
+                      {/* Card Footer Actions row */}
+                      <div className="flex items-center justify-between pt-2">
+                        <span className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-tight">
+                          #{gift.id.substring(0, 10).toUpperCase()}
+                        </span>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleEditGift(gift)}
+                            className="p-1.5 bg-background border border-border/60 hover:bg-muted text-muted-foreground hover:text-rose-500 rounded-[8px] transition-all cursor-pointer hover:border-rose-500/15"
+                            title="Chỉnh sửa quà tặng"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteGift(gift.id, gift.name)}
+                            className="p-1.5 bg-background border border-border/60 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-[8px] transition-all cursor-pointer hover:border-red-500/15"
+                            title="Xóa quà tặng"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
       )}
 

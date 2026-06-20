@@ -54,6 +54,19 @@ export function CustomerPortalView({ onBack }: PortalProps) {
   const [activeTab, setActiveTab] = useState<"home" | "rewards" | "history" | "gamification">(
     "home",
   );
+  
+  // Custom interactive workspace states
+  const [configActiveTab, setConfigActiveTab] = useState<"interface" | "omnichannel" | "gamification" | "settings">("interface");
+  const [brandColor, setBrandColor] = useState<string>("#2f6cf5");
+  const [enabledFeatures, setEnabledFeatures] = useState<Record<string, boolean>>({
+    f1: true,
+    f2: true,
+    f3: true,
+    f4: true,
+    f5: true,
+    f6: false,
+  });
+
   const [rules, setRules] = useState<RedemptionRule[]>([]);
   const [customerPoints, setCustomerPoints] = useState(480); // Set slightly below Essential (500) for demo
   const [lastTier, setLastTier] = useState<string | null>(null);
@@ -231,6 +244,37 @@ export function CustomerPortalView({ onBack }: PortalProps) {
   const textSecondary = isPortalDark ? "text-zinc-400" : "text-zinc-600";
   const textMuted = isPortalDark ? "text-zinc-500" : "text-zinc-400";
 
+  // Dynamic brand color mappings to dynamically style the simulated phone
+  const brandTextColor = 
+    brandColor === "#f43f5e" ? "text-rose-500" :
+    brandColor === "#10b981" ? "text-emerald-500" :
+    brandColor === "#f59e0b" ? "text-amber-500" :
+    brandColor === "#8b5cf6" ? "text-purple-500" : "text-[#2f6cf5]";
+
+  const brandBgColor = 
+    brandColor === "#f43f5e" ? "bg-rose-500" :
+    brandColor === "#10b981" ? "bg-emerald-500" :
+    brandColor === "#f59e0b" ? "bg-amber-500" :
+    brandColor === "#8b5cf6" ? "bg-purple-500" : "bg-[#2f6cf5]";
+
+  const brandBorderColor = 
+    brandColor === "#f43f5e" ? "border-rose-500" :
+    brandColor === "#10b981" ? "border-emerald-500" :
+    brandColor === "#f59e0b" ? "border-amber-500" :
+    brandColor === "#8b5cf6" ? "border-purple-500" : "border-[#2f6cf5]";
+
+  const brandLightBgColor = 
+    brandColor === "#f43f5e" ? "bg-rose-500/10" :
+    brandColor === "#10b981" ? "bg-emerald-500/10" :
+    brandColor === "#f59e0b" ? "bg-amber-500/10" :
+    brandColor === "#8b5cf6" ? "bg-purple-500/10" : "bg-[#2f6cf5]/10";
+
+  const brandLightBorderColor = 
+    brandColor === "#f43f5e" ? "border-rose-500/20" :
+    brandColor === "#10b981" ? "border-emerald-500/20" :
+    brandColor === "#f59e0b" ? "border-amber-500/20" :
+    brandColor === "#8b5cf6" ? "border-purple-500/20" : "border-[#2f6cf5]/20";
+
   const cardBg = isPortalDark
     ? "bg-[#161619] border border-white/5 shadow-inner"
     : "bg-white border border-zinc-200/80 shadow-sm";
@@ -243,7 +287,11 @@ export function CustomerPortalView({ onBack }: PortalProps) {
 
   const cardGradient = isPortalDark
     ? "bg-gradient-to-br from-[#1b1b1f] to-[#111113] border border-white/10"
-    : "bg-gradient-to-br from-[#1e3a8a] to-[#0f172a] text-white border border-slate-700/50 shadow-md";
+    : brandColor === "#f43f5e" ? "bg-gradient-to-br from-rose-600 to-rose-950 text-white border border-rose-500/30 shadow-md shadow-rose-500/10" :
+      brandColor === "#10b981" ? "bg-gradient-to-br from-emerald-600 to-emerald-950 text-white border border-emerald-500/30 shadow-md shadow-emerald-500/10" :
+      brandColor === "#f59e0b" ? "bg-gradient-to-br from-amber-500 to-amber-950 text-white border border-amber-500/30 shadow-md shadow-amber-500/10" :
+      brandColor === "#8b5cf6" ? "bg-gradient-to-br from-purple-600 to-purple-950 text-white border border-purple-500/30 shadow-md shadow-purple-500/10" :
+      "bg-gradient-to-br from-blue-600 to-blue-950 text-white border border-blue-500/30 shadow-md shadow-blue-500/10";
 
   const currentTierName =
     customerPoints >= 10000
@@ -315,447 +363,436 @@ export function CustomerPortalView({ onBack }: PortalProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center space-y-6">
+    <div className="flex-1 flex flex-col items-center justify-start space-y-6 w-full max-w-7xl mx-auto px-4 md:px-6">
       {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
-      {/* Unified Configuration Panel */}
-      <div className="w-full max-w-[800px] bg-card border border-border/70 rounded-[10px] p-6 shadow-lg space-y-8 text-left">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Theme Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b pb-3 border-border/40">
-              <Palette className="w-5 h-5 text-[#2f6cf5]" />
-              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
-                Định dạng hiển thị cổng VIP
-              </span>
-            </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
-              <button
-                type="button"
-                onClick={() => setPortalThemeOption("system")}
-                className={`py-3 px-4 border rounded-[10px] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  portalThemeOption === "system"
-                    ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
-                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
-                }`}
-              >
-                <Monitor className="w-4 h-4" />
-                Hệ thống ({activeAppTheme === "dark" ? "Tối" : "Sáng"})
-              </button>
-              <button
-                type="button"
-                onClick={() => setPortalThemeOption("dark")}
-                className={`py-3 px-4 border rounded-[10px] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  portalThemeOption === "dark"
-                    ? "border-amber-500 bg-amber-500/5 text-amber-500 font-extrabold shadow-sm"
-                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
-                }`}
-              >
-                <Moon className="w-4 h-4" />
-                Tối (Obsidian)
-              </button>
-            </div>
-          </div>
-
-          {/* Device Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b pb-3 border-border/40">
-              <Monitor className="w-5 h-5 text-[#2f6cf5]" />
-              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
-                Thiết bị hiển thị
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setPortalDeviceOption("mobile")}
-                className={`py-3 px-2 border rounded-[10px] text-[10px] font-bold transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  portalDeviceOption === "mobile"
-                    ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
-                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
-                }`}
-              >
-                <Smartphone className="w-4 h-4" />
-                Điện thoại
-              </button>
-              <button
-                type="button"
-                onClick={() => setPortalDeviceOption("tablet")}
-                className={`py-3 px-2 border rounded-[10px] text-[10px] font-bold transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  portalDeviceOption === "tablet"
-                    ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
-                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
-                }`}
-              >
-                <Tablet className="w-4 h-4" />
-                Máy tính bảng
-              </button>
-              <button
-                type="button"
-                onClick={() => setPortalDeviceOption("desktop")}
-                className={`py-3 px-2 border rounded-[10px] text-[10px] font-bold transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  portalDeviceOption === "desktop"
-                    ? "border-[#2f6cf5] bg-[#2f6cf5]/5 text-[#2f6cf5] font-extrabold shadow-sm"
-                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30"
-                }`}
-              >
-                <Monitor className="w-4 h-4" />
-                Máy tính
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Omnichannel / Touchpoints Integrations */}
-        <div className="space-y-4 pt-6 border-t border-border/40">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Share2 className="w-5 h-5 text-[#2f6cf5]" />
-              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
-                Tích hợp Đa Điểm chạm (Omnichannel)
-              </span>
-            </div>
-          </div>
+      {/* Main Workspace Layout: Bento Split-Screen Grid on lg+ screens */}
+      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
+        
+        {/* Left Column: Premium Workspace Config Hub */}
+        <div className="lg:col-span-6 xl:col-span-5 space-y-6 text-left">
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 rounded-[10px] border border-emerald-500/30 bg-emerald-500/5 relative overflow-hidden group">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <Smartphone className="w-4 h-4 text-emerald-600" />
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-foreground">Zalo Mini App</h5>
-                    <p className="text-[10px] text-muted-foreground">Đã kết nối</p>
-                  </div>
-                </div>
-                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
-              </div>
-              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-background border border-border hover:bg-muted rounded text-foreground transition-colors">
-                Cấu hình API Key
-              </button>
-            </div>
-
-            <div className="p-4 rounded-[10px] border border-[#2f6cf5]/30 bg-[#2f6cf5]/5 relative overflow-hidden group">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-[#2f6cf5]/20 flex items-center justify-center">
-                    <Monitor className="w-4 h-4 text-[#2f6cf5]" />
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-foreground">Website Portal</h5>
-                    <p className="text-[10px] text-muted-foreground">Web SDK & iFrame</p>
-                  </div>
-                </div>
-                <div className="w-2 h-2 rounded-full bg-[#2f6cf5] shadow-[0_0_8px_rgba(47,108,245,0.8)]"></div>
-              </div>
-              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-background border border-border hover:bg-muted rounded text-foreground transition-colors">
-                Lấy mã nhúng
-              </button>
-            </div>
-
-            <div className="p-4 rounded-[10px] border border-border/50 bg-muted/10 relative overflow-hidden group opacity-70 hover:opacity-100 transition-opacity">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <ShoppingBag className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-foreground">WooCommerce / Shopify</h5>
-                    <p className="text-[10px] text-muted-foreground">E-commerce Plugin</p>
-                  </div>
-                </div>
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/30"></div>
-              </div>
-              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-primary text-primary-foreground hover:opacity-90 rounded transition-colors">
-                Kết nối ngay
-              </button>
-            </div>
-
-            <div className="p-4 rounded-[10px] border border-border/50 bg-muted/10 relative overflow-hidden group opacity-70 hover:opacity-100 transition-opacity">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <QrCode className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-foreground">Máy POS Offline (KiotViet)</h5>
-                    <p className="text-[10px] text-muted-foreground">Tích điểm tự động</p>
-                  </div>
-                </div>
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/30"></div>
-              </div>
-              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-primary text-primary-foreground hover:opacity-90 rounded transition-colors">
-                Thiết lập Webhook
-              </button>
-            </div>
-            <div className="p-4 rounded-[10px] border border-border/50 bg-muted/10 relative overflow-hidden group opacity-70 hover:opacity-100 transition-opacity">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <Tablet className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-foreground">Self-Service Kiosk</h5>
-                    <p className="text-[10px] text-muted-foreground">App cài đặt tại thiết bị Kiosk</p>
-                  </div>
-                </div>
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/30"></div>
-              </div>
-              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-primary text-primary-foreground hover:opacity-90 rounded transition-colors">
-                Xem API cấu hình
-              </button>
-            </div>
-
-            <div className="p-4 rounded-[10px] border border-border/50 bg-muted/10 relative overflow-hidden group opacity-70 hover:opacity-100 transition-opacity">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <Activity className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-foreground">Wifi Marketing</h5>
-                    <p className="text-[10px] text-muted-foreground">Tích điểm khi khách truy cập Wifi</p>
-                  </div>
-                </div>
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/30"></div>
-              </div>
-              <button className="w-full mt-3 py-1.5 text-[10px] font-bold bg-primary text-primary-foreground hover:opacity-90 rounded transition-colors">
-                Thiết lập Captive Portal
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Gamification & Extensibility Section */}
-        <div className="space-y-4 pt-6 border-t border-border/40">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-amber-500" />
-              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
-                Tích hợp Gamification (Tiện ích)
-              </span>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 flex items-start gap-4 rounded-[10px] border border-amber-500/30 bg-amber-500/5 relative">
-              <div className="p-2.5 bg-amber-500/20 rounded-full shrink-0">
-                <Gift className="w-5 h-5 text-amber-500" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-foreground">Vòng Quay May Mắn</h4>
-                <p className="text-[11px] text-muted-foreground mt-1 mb-3 leading-snug">Tính năng giúp khách hàng dùng điểm tích lũy để quay thưởng, tăng tương tác ứng dụng Điểm Chạm của bạn.</p>
-                <button className="text-xs font-bold text-amber-600 hover:text-amber-700 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 rounded transition-colors w-full sm:w-auto text-center">Tùy chỉnh Vòng quay</button>
-              </div>
-            </div>
-
-            <div className="p-4 flex items-start gap-4 rounded-[10px] border border-border bg-card relative">
-              <div className="p-2.5 bg-muted rounded-full shrink-0">
-                <UserIcon className="w-5 h-5 text-muted-foreground" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-foreground">Giới thiệu (Affiliate)</h4>
-                <p className="text-[11px] text-muted-foreground mt-1 mb-3 leading-snug">Cho phép thành viên lấy mã giới thiệu tại App Điểm Chạm để mời bạn bè, hưởng hoa hồng hoa điểm thưởng.</p>
-                <div className="flex items-center justify-between px-3 py-1.5 bg-muted rounded">
-                  <span className="text-xs font-medium text-muted-foreground">Đang bật (Tự động)</span>
-                  <div className="w-8 h-4 bg-emerald-500 rounded-full relative">
-                     <div className="w-3 h-3 bg-white rounded-full absolute right-0.5 top-0.5"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* General Customization Section */}
-        <div className="space-y-4 pt-6 border-t border-border/40">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sliders className="w-5 h-5 text-[#2f6cf5]" />
-              <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
-                Tuy chỉnh chung hiển thị
-              </span>
-            </div>
-            <button 
-              onClick={() => setShowGeneralSettings(true)}
-              className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
-          </div>
-          
-          <div className="flex items-center justify-between p-4 bg-muted/20 border border-dashed border-border rounded-[10px]">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#2f6cf5]/10 flex items-center justify-center">
-                <Settings className="w-5 h-5 text-[#2f6cf5]" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-foreground">Cấu hình chi tiết</p>
-                <p className="text-[10px] text-muted-foreground">Nhấn vào biểu tượng cài đặt để tùy chỉnh giao diện và tính năng</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="pt-2 flex justify-end">
-            <button
-              onClick={handleSavePortal}
-              disabled={savingPortal}
-              className="px-8 py-2.5 rounded-[10px] bg-primary text-primary-foreground text-sm font-bold shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
-            >
-              {savingPortal ? "Đang lưu..." : "Lưu Cấu Hình Cổng"}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* General Customization Popup */}
-      <AnimatePresence>
-        {showGeneralSettings && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowGeneralSettings(false)}
-              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-card border border-border shadow-2xl rounded-2xl overflow-hidden"
-            >
-              <div className="flex items-center justify-between p-6 border-b border-border/50">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Sliders className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground">Tùy chỉnh chung hiển thị</h3>
-                    <p className="text-xs text-muted-foreground">Cấu hình màu sắc và tính năng cho cổng thành viên</p>
-                  </div>
-                </div>
+          {/* Glass Navigation Tabs for Config Hub */}
+          <div className="bg-card/60 backdrop-blur-md border border-border/60 rounded-xl p-1.5 flex gap-1 overflow-x-auto no-scrollbar shadow-sm">
+            {[
+              { id: "interface", label: "Giao diện", icon: Palette },
+              { id: "omnichannel", label: "Điểm chạm", icon: Share2 },
+              { id: "gamification", label: "Mini Game", icon: Star },
+              { id: "settings", label: "Cấu hình", icon: Sliders },
+            ].map((tab) => {
+              const TabIcon = tab.icon;
+              const isActive = configActiveTab === tab.id;
+              return (
                 <button
-                  onClick={() => setShowGeneralSettings(false)}
-                  className="p-2 hover:bg-muted rounded-full transition-colors"
+                  key={tab.id}
+                  onClick={() => setConfigActiveTab(tab.id as any)}
+                  className={cn(
+                    "flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex-1",
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-sm font-extrabold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
                 >
-                  <X className="w-5 h-5" />
+                  <TabIcon className={cn("w-4 h-4", isActive ? "text-primary-foreground" : "text-muted-foreground")} />
+                  {tab.label}
                 </button>
-              </div>
+              );
+            })}
+          </div>
 
-              <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-6">
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        Màu sắc thương hiệu chủ đạo
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <button className="w-8 h-8 rounded-[10px] bg-[#2f6cf5] ring-2 ring-offset-2 ring-[#2f6cf5] ring-offset-background"></button>
-                        <button className="w-8 h-8 rounded-[10px] border border-border bg-rose-500 hover:scale-110 transition-transform"></button>
-                        <button className="w-8 h-8 rounded-[10px] border border-border bg-emerald-500 hover:scale-110 transition-transform"></button>
-                        <button className="w-8 h-8 rounded-[10px] border border-border bg-amber-500 hover:scale-110 transition-transform"></button>
-                        <button className="w-8 h-8 rounded-[10px] border border-border bg-purple-500 hover:scale-110 transition-transform"></button>
-                      </div>
+          {/* Config Hub Content Canvas */}
+          <div className="bg-card border border-border/70 rounded-xl p-6 shadow-md transition-all">
+            <AnimatePresence mode="wait">
+              {configActiveTab === "interface" && (
+                <motion.div
+                  key="interface"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
+                  {/* Brand Color Settings */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 border-b pb-2 border-border/40">
+                      <Palette className="w-4.5 h-4.5 text-primary" />
+                      <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
+                        Màu sắc thương hiệu (Brand Theme)
+                      </span>
                     </div>
-                    <div className="space-y-4 pt-1">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        Trạng thái Cổng Website
-                      </label>
-                      <div className="flex items-center justify-between p-3 rounded-[10px] border border-primary/20 bg-primary/5 gap-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                          <span className="text-xs font-medium text-primary">Đang hoạt động (Online)</span>
-                        </div>
-                        <button className="text-[10px] font-bold px-2 py-1.5 rounded-[10px] border border-border bg-background hover:bg-muted transition-colors whitespace-nowrap">
-                          Copy Link Tích hợp
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3 text-left">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        Tính năng hiển thị
-                      </label>
-                    </div>
-                    <div className="grid grid-cols-1 gap-2">
+                    <p className="text-xs text-muted-foreground">
+                      Lựa chọn màu sắc nhận diện chính của thương hiệu. Các nút bấm, dải điểm và icon trên Cổng khách hàng sẽ tự động cập nhật đồng bộ.
+                    </p>
+                    <div className="flex items-center gap-3 pt-1">
                       {[
-                        { id: "f1", label: "Mã QR", icon: Fingerprint, checked: true },
-                        { id: "f2", label: "Hạng, điểm", icon: Star, checked: true },
-                        { id: "f3", label: "Cửa hàng", icon: Gift, checked: true },
-                        { id: "f4", label: "Thông báo", icon: Activity, checked: true },
-                        { id: "f5", label: "Lịch sử mua", icon: Database, checked: true },
-                        { id: "f6", label: "Hỗ trợ (Ticket)", icon: Shield, checked: false },
-                      ].map((f) => (
-                        <label key={f.id} className="flex items-center justify-between gap-2 p-3 rounded-[10px] border border-border/40 hover:bg-muted/20 cursor-pointer transition-all">
-                          <div className="flex items-center gap-2">
-                            <f.icon className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-[11px] font-medium">{f.label}</span>
-                          </div>
-                          <input type="checkbox" defaultChecked={f.checked} className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-background" />
-                        </label>
+                        { hex: "#2f6cf5", name: "Royal Blue", bgClass: "bg-[#2f6cf5]" },
+                        { hex: "#f43f5e", name: "Rose Pink", bgClass: "bg-rose-500" },
+                        { hex: "#10b981", name: "Emerald Green", bgClass: "bg-emerald-500" },
+                        { hex: "#f59e0b", name: "Amber Yellow", bgClass: "bg-amber-500" },
+                        { hex: "#8b5cf6", name: "Purple Dream", bgClass: "bg-purple-500" },
+                      ].map((item) => (
+                        <button
+                          key={item.hex}
+                          onClick={() => setBrandColor(item.hex)}
+                          className={cn(
+                            "w-8 h-8 rounded-[10px] transition-transform hover:scale-110 relative flex items-center justify-center cursor-pointer",
+                            item.bgClass,
+                            brandColor === item.hex && "ring-2 ring-offset-2 ring-primary ring-offset-background"
+                          )}
+                          title={item.name}
+                        >
+                          {brandColor === item.hex && (
+                            <CheckCircle2 className="w-4 h-4 text-white drop-shadow-sm" />
+                          )}
+                        </button>
                       ))}
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="p-6 bg-muted/30 border-t border-border/50 flex justify-end gap-3">
-                <button
-                  onClick={() => setShowGeneralSettings(false)}
-                  className="px-6 py-2 rounded-[10px] border border-border bg-background text-xs font-bold hover:bg-muted transition-colors"
+                  {/* Theme Mode Selection */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center gap-2 border-b pb-2 border-border/40">
+                      <Moon className="w-4.5 h-4.5 text-primary" />
+                      <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
+                        Chế độ Sáng / Tối (Theme Mode)
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Quyết định giao diện nền màu sáng hay tối cho Cổng VIP nhằm phù hợp với dải màu nhận diện.
+                    </p>
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setPortalThemeOption("system")}
+                        className={cn(
+                          "py-3 px-4 border rounded-[10px] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                          portalThemeOption === "system"
+                            ? "border-primary bg-primary/5 text-primary font-extrabold shadow-sm"
+                            : "border-border bg-transparent text-muted-foreground hover:border-foreground/35"
+                        )}
+                      >
+                        <Monitor className="w-4 h-4" />
+                        Đồng bộ ({activeAppTheme === "dark" ? "Tối" : "Sáng"})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPortalThemeOption("dark")}
+                        className={cn(
+                          "py-3 px-4 border rounded-[10px] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                          portalThemeOption === "dark"
+                            ? "border-amber-500 bg-amber-500/5 text-amber-500 font-extrabold shadow-sm"
+                            : "border-border bg-transparent text-muted-foreground hover:border-foreground/35"
+                        )}
+                      >
+                        <Moon className="w-4 h-4" />
+                        Cố định Tối
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Device Simulation Toggle */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center gap-2 border-b pb-2 border-border/40">
+                      <Smartphone className="w-4.5 h-4.5 text-primary" />
+                      <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
+                        Kích thước bộ giả lập (Simulator Frame)
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Thay đổi hiển thị bên phải để kiểm tra độ phản hồi linh hoạt trên mọi kích cỡ màn hình thiết bị khách hàng.
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 pt-1">
+                      {[
+                        { id: "mobile", label: "Điện thoại", icon: Smartphone },
+                        { id: "tablet", label: "Tablet", icon: Tablet },
+                        { id: "desktop", label: "Máy tính", icon: Monitor },
+                      ].map((dev) => {
+                        const DevIcon = dev.icon;
+                        const isSel = portalDeviceOption === dev.id;
+                        return (
+                          <button
+                            key={dev.id}
+                            type="button"
+                            onClick={() => setPortalDeviceOption(dev.id as any)}
+                            className={cn(
+                              "py-3 px-2 border rounded-[10px] text-[10px] font-bold transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer",
+                              isSel
+                                ? "border-primary bg-primary/5 text-primary font-extrabold shadow-sm"
+                                : "border-border bg-transparent text-muted-foreground hover:border-foreground/35"
+                            )}
+                          >
+                            <DevIcon className="w-4 h-4" />
+                            {dev.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {configActiveTab === "omnichannel" && (
+                <motion.div
+                  key="omnichannel"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-4"
                 >
-                  Đóng
-                </button>
-                <button
-                  onClick={() => {
-                    handleSavePortal();
-                    setShowGeneralSettings(false);
-                  }}
-                  className="px-6 py-2 rounded-[10px] bg-primary text-primary-foreground text-xs font-bold shadow-md hover:opacity-90 transition-opacity"
+                  <div className="flex items-center gap-2 border-b pb-2 border-border/40">
+                    <Share2 className="w-4.5 h-4.5 text-primary" />
+                    <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
+                      Điểm chạm thành viên (Omnichannel Touchpoints)
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Nhúng hoặc tích hợp cổng tích điểm tự phục vụ của SEVA với mọi kênh tiếp cận khác nhau của bạn để tối đa hóa tương tác.
+                  </p>
+
+                  <div className="grid grid-cols-1 gap-3.5">
+                    {/* Zalo Mini App */}
+                    <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.02] hover:bg-emerald-500/[0.04] transition-all relative overflow-hidden group">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                            <Smartphone className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <div>
+                            <h5 className="text-xs font-bold text-foreground">Zalo Mini App Client</h5>
+                            <p className="text-[10px] text-muted-foreground">Đã đồng bộ dải điểm & API</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-emerald-500 font-bold bg-emerald-500/15 px-2 py-0.5 rounded-full">Đang bật</span>
+                          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+                        </div>
+                      </div>
+                      <button className="w-full mt-2 py-2 text-[10px] font-bold bg-background border border-border hover:bg-muted rounded-lg text-foreground transition-all">
+                        Xem tài liệu hướng dẫn tích hợp Zalo
+                      </button>
+                    </div>
+
+                    {/* Website Embed Portal */}
+                    <div className="p-4 rounded-xl border border-primary/20 bg-primary/[0.02] hover:bg-primary/[0.04] transition-all relative overflow-hidden group">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Monitor className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <h5 className="text-xs font-bold text-foreground">Website Embedded iFrame</h5>
+                            <p className="text-[10px] text-muted-foreground">Nhúng trực tiếp vào trang bán hàng</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-primary font-bold bg-primary/15 px-2 py-0.5 rounded-full">Sẵn sàng</span>
+                          <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(47,108,245,0.8)]"></div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(`<iframe src="https://seva.app/portal" width="100%" height="700px" style="border:none;border-radius:12px;"></iframe>`);
+                          toast.success("Đã sao chép mã nhúng iFrame!");
+                        }}
+                        className="w-full mt-2 py-2 text-[10px] font-bold bg-background border border-border hover:bg-muted rounded-lg text-foreground transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        Lấy mã nhúng HTML iFrame (Website)
+                      </button>
+                    </div>
+
+                    {/* Shopify & WooCommerce */}
+                    <div className="p-4 rounded-xl border border-border bg-muted/5 opacity-80 hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                            <ShoppingBag className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <h5 className="text-xs font-bold text-foreground">Shopify / WooCommerce</h5>
+                            <p className="text-[10px] text-muted-foreground">Tự động khẩu trừ và tích điểm</p>
+                          </div>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground font-semibold bg-muted px-2 py-0.5 rounded-full">Chưa kết nối</span>
+                      </div>
+                      <button
+                        onClick={() => toast.success("Hệ thống đồng bộ e-commerce đã kết nối thử nghiệm!")}
+                        className="w-full mt-2 py-2 text-[10px] font-bold bg-primary text-primary-foreground hover:opacity-90 rounded-lg transition-all"
+                      >
+                        Kết nối ngay lập tức (Shopify)
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {configActiveTab === "gamification" && (
+                <motion.div
+                  key="gamification"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-4"
                 >
-                  Lưu thay đổi
-                </button>
-              </div>
-            </motion.div>
+                  <div className="flex items-center gap-2 border-b pb-2 border-border/40">
+                    <Star className="w-4.5 h-4.5 text-amber-500" />
+                    <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
+                      Tương tác tăng cường (Gamification)
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Giữ chân và thôi thúc khách hàng đổi điểm với các mini game tương tác lôi cuốn, tăng tính gắn kết.
+                  </p>
+
+                  <div className="grid grid-cols-1 gap-4 pt-1">
+                    {/* Lucky Wheel */}
+                    <div className="p-4 flex flex-col sm:flex-row gap-4 items-start rounded-xl border border-amber-500/20 bg-amber-500/[0.02] hover:bg-amber-500/[0.04] transition-all">
+                      <div className="p-2 bg-amber-500/10 rounded-full shrink-0 text-amber-500">
+                        <Gift className="w-5 h-5" />
+                      </div>
+                      <div className="space-y-2 flex-1">
+                        <h4 className="text-sm font-bold text-foreground">Vòng Quay May Mắn (Lucky Wheel)</h4>
+                        <p className="text-[11px] text-muted-foreground leading-snug">
+                          Khách hàng có thể tiêu điểm số tích luỹ để tham gia quay trúng thưởng voucher hoặc quà tặng đặc biệt trực tiếp tại cổng Điểm chạm.
+                        </p>
+                        <button
+                          onClick={() => toast.success("Mở trình chỉnh sửa danh sách phần thưởng Vòng quay.")}
+                          className="text-[10px] font-bold text-amber-600 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 rounded-lg transition-all"
+                        >
+                          Thiết lập quà vòng quay
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Affiliate Invite */}
+                    <div className="p-4 flex flex-col sm:flex-row gap-4 items-start rounded-xl border border-border bg-card">
+                      <div className="p-2 bg-primary/10 rounded-full shrink-0 text-primary">
+                        <UserIcon className="w-5 h-5" />
+                      </div>
+                      <div className="space-y-2 flex-1">
+                        <h4 className="text-sm font-bold text-foreground">Giới thiệu bạn bè & Affiliate</h4>
+                        <p className="text-[11px] text-muted-foreground leading-snug">
+                          Thành viên thuộc cổng tự phục vụ VIP có thể tự copy link mời để chia sẻ nhanh cho người thân nhằm hưởng thêm ưu đãi thăng hạng.
+                        </p>
+                        <div className="flex items-center justify-between bg-muted/40 p-2 rounded-lg border border-border text-[10px]">
+                          <span className="font-bold text-muted-foreground">Tự động mời Affiliate</span>
+                          <span className="text-emerald-500 font-extrabold">Đang bật</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {configActiveTab === "settings" && (
+                <motion.div
+                  key="settings"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center gap-2 border-b pb-2 border-border/40">
+                    <Sliders className="w-4.5 h-4.5 text-primary" />
+                    <span className="font-heading font-black text-xs uppercase tracking-wider text-muted-foreground">
+                      Bật tắt cấu phần hiển thị (Features)
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Tùy chỉnh bật tắt linh hoạt các khối nội dung trực tiếp trên cổng giải lập. Cập nhật tức thì không cần biên dịch lại code.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {[
+                      { id: "f1", label: "Quét mã POS tích điểm", icon: Fingerprint },
+                      { id: "f2", label: "Lộ trình thăng hạng VIP", icon: Star },
+                      { id: "f3", label: "Kho quà tặng & đổi điểm", icon: Gift },
+                      { id: "f4", label: "Gợi ý / Trải nghiệm VIP", icon: Activity },
+                      { id: "f5", label: "Hoạt động gần đây", icon: Database },
+                      { id: "f6", label: "Hỗ trợ (Ticket online)", icon: Shield },
+                    ].map((feat) => {
+                      const FeatIcon = feat.icon;
+                      const isChecked = enabledFeatures[feat.id];
+                      return (
+                        <label
+                          key={feat.id}
+                          className="flex items-center justify-between p-3 rounded-xl border border-border/70 hover:bg-muted/10 cursor-pointer transition-all select-none"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className={cn("p-1.5 rounded-lg", isChecked ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>
+                              <FeatIcon className="w-3.5 h-3.5" />
+                            </div>
+                            <span className="text-xs font-bold text-foreground leading-none">{feat.label}</span>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => setEnabledFeatures(prev => ({ ...prev, [feat.id]: !prev[feat.id] }))}
+                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary bg-background cursor-pointer"
+                          />
+                        </label>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        )}
-      </AnimatePresence>
 
-      <AnimatePresence>
-        <div 
-          className={cn(
-            "w-full transition-all duration-500 ease-in-out flex flex-col items-center",
-            portalDeviceOption === "mobile" ? "max-w-[400px]" : 
-            portalDeviceOption === "tablet" ? "max-w-[700px]" : "max-w-5xl"
-          )}
-        >
-          {/* Device Selection Wrapper */}
+          {/* Action Trigger cards */}
+          <div className="flex justify-between items-center bg-card border border-border/70 rounded-xl p-4 shadow-sm w-full">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+              <span className="text-[10px] text-muted-foreground font-semibold">Tự động lưu và cập nhật ngoại tiếp</span>
+            </div>
+            <button
+              onClick={handleSavePortal}
+              disabled={savingPortal}
+              className="px-6 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-95 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+            >
+              {savingPortal ? "Đang lưu..." : "Lưu thay đổi Cổng"}
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column: Simulated Live Interactive Device Canvas Studio (Col-span 7 sticky) */}
+        <div className="lg:col-span-6 xl:col-span-7 lg:sticky lg:top-6 flex flex-col items-center w-full bg-muted/10 border border-border/50 rounded-2xl p-4 md:p-8 backdrop-blur-xs relative overflow-hidden">
+          
+          {/* Subtle live background grid patterns */}
+          <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none opacity-40"></div>
+
           <div
             className={cn(
-              "w-full overflow-hidden relative transition-all duration-500 ease-in-out flex flex-col shadow-2xl",
-              phoneBg,
-              portalDeviceOption === "mobile" ? "h-[800px] rounded-[3rem] border-8 border-zinc-800" : 
-              portalDeviceOption === "tablet" ? "h-[700px] rounded-[2rem] border-[12px] border-zinc-800" : 
-              "h-[800px] rounded-[10px] border border-border/50"
+              "w-full transition-all duration-500 ease-in-out flex flex-col items-center",
+              portalDeviceOption === "mobile" ? "max-w-[390px]" : 
+              portalDeviceOption === "tablet" ? "max-w-[620px]" : "max-w-full"
             )}
           >
-        {/* Dynamic Island / Notch Simulation */}
-        {portalDeviceOption === "mobile" && (
-          <div className="absolute top-0 inset-x-0 h-6 flex justify-center z-50">
-            <div className="w-32 h-6 bg-zinc-800 rounded-b-xl"></div>
-          </div>
-        )}
+            {/* Device Frame layout simulation */}
+            <div
+              className={cn(
+                "w-full overflow-hidden relative transition-all duration-500 ease-in-out flex flex-col shadow-2xl bg-background",
+                portalDeviceOption === "mobile" ? "h-[760px] rounded-[3.2rem] border-[10px] border-zinc-800 dark:border-zinc-950 ring-4 ring-zinc-700/10" : 
+                portalDeviceOption === "tablet" ? "h-[640px] rounded-[2rem] border-[14px] border-zinc-800 dark:border-zinc-950 ring-4 ring-zinc-700/10" : 
+                "h-[680px] rounded-xl border border-border shadow-md"
+              )}
+            >
+              
+              {/* Phone Dynamic Island */}
+              {portalDeviceOption === "mobile" && (
+                <div className="absolute top-0 inset-x-0 h-6 flex justify-center z-50 animate-pulse">
+                  <div className="w-28 h-5 bg-zinc-800 rounded-b-2xl mt-0.5 flex items-center justify-between px-3 select-none pointer-events-none">
+                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-900"></div>
+                    <div className="w-8 h-1 bg-zinc-900 rounded-full"></div>
+                  </div>
+                </div>
+              )}
 
-        {portalDeviceOption === "tablet" && (
-          <div className="absolute top-0 inset-x-0 h-4 flex justify-center z-50">
-            <div className="w-24 h-4 bg-zinc-800 rounded-b-lg"></div>
-          </div>
-        )}
+              {/* Tablet center camera */}
+              {portalDeviceOption === "tablet" && (
+                <div className="absolute top-0 inset-x-0 h-4 flex justify-center z-50">
+                  <div className="w-1.5 h-1.5 bg-zinc-800 rounded-full mt-1"></div>
+                </div>
+              )}
 
         {/* Portal Header */}
         <div className="pt-12 pb-4 px-6 relative z-10 flex items-center justify-between">
@@ -796,7 +833,7 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                     className={`text-3xl font-heading ${textPrimary} leading-tight`}
                   >
                     Chào bạn, <br />
-                    <span className="text-[#2f6cf5] italic text-4xl">
+                    <span className={cn("italic text-4xl font-extrabold", brandTextColor)}>
                       Eleanor.
                     </span>
                   </h2>
@@ -806,7 +843,17 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                 </div>
                 <button
                   onClick={() => setCustomerPoints((prev) => prev + 50)}
-                  className="px-3 py-1.5 bg-[#2f6cf5]/10 text-[#2f6cf5] border border-[#2f6cf5]/20 rounded-[10px] text-[10px] font-bold uppercase transition-all hover:bg-[#2f6cf5] hover:text-white cursor-pointer"
+                  className={cn(
+                    "px-3 py-1.5 rounded-[10px] text-[10px] font-bold uppercase transition-all cursor-pointer border", 
+                    brandLightBgColor, 
+                    brandTextColor, 
+                    brandLightBorderColor,
+                    brandColor === "#f43f5e" ? "hover:bg-rose-500 hover:text-white" :
+                    brandColor === "#10b981" ? "hover:bg-emerald-500 hover:text-white" :
+                    brandColor === "#f59e0b" ? "hover:bg-amber-500 hover:text-white" :
+                    brandColor === "#8b5cf6" ? "hover:bg-purple-500 hover:text-white" :
+                    "hover:bg-[#2f6cf5] hover:text-white"
+                  )}
                 >
                   +50 pts (Demo)
                 </button>
@@ -815,18 +862,20 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                 <div
                   className={`mt-6 aspect-[1.586/1] ${cardGradient} rounded-[10px] relative overflow-hidden shadow-xl flex flex-col justify-between p-6 transition-all duration-300`}
                 >
-                  <div className="absolute -right-12 -top-12 w-48 h-48 bg-[#2f6cf5] opacity-20 rounded-full blur-3xl"></div>
+                  <div className={cn("absolute -right-12 -top-12 w-48 h-48 opacity-20 rounded-full blur-3xl", brandBgColor)}></div>
 
                   <div className="flex justify-between items-start relative z-10">
-                    <span className="font-heading font-extrabold text-[#2f6cf5] tracking-widest text-lg">
+                    <span className={cn("font-heading font-extrabold tracking-widest text-lg", brandTextColor)}>
                       SEVA
                     </span>
-                    <button 
-                      onClick={() => setShowScanner(true)}
-                      className="p-2 bg-white/20 hover:bg-white/30 rounded-[10px] transition-all cursor-pointer"
-                    >
-                      <ScanLine className="text-white w-6 h-6" />
-                    </button>
+                    {enabledFeatures.f1 && (
+                      <button 
+                        onClick={() => setShowScanner(true)}
+                        className="p-2 bg-white/20 hover:bg-white/30 rounded-[10px] transition-all cursor-pointer"
+                      >
+                        <ScanLine className="text-white w-6 h-6" />
+                      </button>
+                    )}
                   </div>
 
                   <div className="relative z-10 text-left">
@@ -917,239 +966,250 @@ export function CustomerPortalView({ onBack }: PortalProps) {
                 </div>
 
                 {/* Tier Progression Progress Card */}
-                <div
-                  className={`${cardBg} rounded-[10px] p-6 transition-colors duration-300 space-y-5 overflow-hidden relative`}
-                >
-                  <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                    <Award className="w-24 h-24" />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <h3 className={`${textPrimary} font-bold text-sm`}>
-                      Lộ trình thăng hạng
-                    </h3>
-                    <span className="text-[10px] font-black text-[#2f6cf5] uppercase tracking-widest">
-                      Hạng hiện tại: {currentTierName}
-                    </span>
-                  </div>
+                {enabledFeatures.f2 && (
+                  <div
+                    className={`${cardBg} rounded-[10px] p-6 transition-colors duration-300 space-y-5 overflow-hidden relative`}
+                  >
+                    <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                      <Award className="w-24 h-24" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <h3 className={`${textPrimary} font-bold text-sm`}>
+                        Lộ trình thăng hạng
+                      </h3>
+                      <span className={cn("text-[10px] font-black uppercase tracking-widest", brandTextColor)}>
+                        Hạng hiện tại: {currentTierName}
+                      </span>
+                    </div>
 
-                  <div className="space-y-6">
-                    {[
-                      {
-                        name: "Essential",
-                        points: 500,
-                        color: "bg-emerald-500",
-                        icon: CheckCircle2,
-                      },
-                      {
-                        name: "Icon",
-                        points: 2500,
-                        color: "bg-amber-500",
-                        icon: Award,
-                      },
-                      {
-                        name: "Atelier",
-                        points: 10000,
-                        color: "bg-[#2f6cf5]",
-                        icon: Gem,
-                      },
-                    ].map((tier, idx) => {
-                      const isReached = customerPoints >= tier.points;
-                      const progress = Math.min(
-                        100,
-                        (customerPoints / tier.points) * 100,
-                      );
-                      const pointsNeeded = Math.max(
-                        0,
-                        tier.points - customerPoints,
-                      );
+                    <div className="space-y-6">
+                      {[
+                        {
+                          name: "Essential",
+                          points: 500,
+                          color: "bg-emerald-500",
+                          icon: CheckCircle2,
+                        },
+                        {
+                          name: "Icon",
+                          points: 2500,
+                          color: "bg-amber-500",
+                          icon: Award,
+                        },
+                        {
+                          name: "Atelier",
+                          points: 10000,
+                          color: brandColor === "#f43f5e" ? "bg-rose-500" :
+                                 brandColor === "#10b981" ? "bg-emerald-500" :
+                                 brandColor === "#f59e0b" ? "bg-amber-500" :
+                                 brandColor === "#8b5cf6" ? "bg-purple-500" : "bg-[#2f6cf5]",
+                          icon: Gem,
+                        },
+                      ].map((tier, idx) => {
+                        const isReached = customerPoints >= tier.points;
+                        const progress = Math.min(
+                          100,
+                          (customerPoints / tier.points) * 100,
+                        );
+                        const pointsNeeded = Math.max(
+                          0,
+                          tier.points - customerPoints,
+                        );
 
-                      return (
-                        <div key={idx} className="relative">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={`p-1.5 rounded-[10px] ${isReached ? tier.color + " text-white" : "bg-muted"}`}
-                              >
-                                <tier.icon className="w-3.5 h-3.5" />
+                        return (
+                          <div key={idx} className="relative">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`p-1.5 rounded-[10px] ${isReached ? tier.color + " text-white" : "bg-muted"}`}
+                                >
+                                  <tier.icon className="w-3.5 h-3.5" />
+                                </div>
+                                <span
+                                  className={`text-xs font-bold ${isPortalDark ? "text-white" : "text-zinc-800"}`}
+                                >
+                                  {tier.name}
+                                </span>
                               </div>
                               <span
-                                className={`text-xs font-bold ${isPortalDark ? "text-white" : "text-zinc-800"}`}
+                                className={`text-[10px] font-bold ${textSecondary}`}
                               >
-                                {tier.name}
+                                {isReached
+                                  ? "ĐÃ ĐẠT"
+                                  : `CẦN ${pointsNeeded.toLocaleString()} Điểm`}
                               </span>
                             </div>
-                            <span
-                              className={`text-[10px] font-bold ${textSecondary}`}
+                            <div
+                              className={`h-2 w-full ${isPortalDark ? "bg-zinc-800" : "bg-zinc-100"} rounded-full overflow-hidden`}
                             >
-                              {isReached
-                                ? "ĐÃ ĐẠT"
-                                : `CẦN ${pointsNeeded.toLocaleString()} Điểm`}
-                            </span>
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progress}%` }}
+                                className={`h-full ${tier.color}`}
+                              />
+                            </div>
                           </div>
-                          <div
-                            className={`h-2 w-full ${isPortalDark ? "bg-zinc-800" : "bg-zinc-100"} rounded-full overflow-hidden`}
-                          >
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${progress}%` }}
-                              className={`h-full ${tier.color}`}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Recommended Actions Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className={`${textPrimary} font-bold text-sm`}>
-                      Gợi ý cho bạn
-                    </h3>
-                  </div>
-                  <div className="space-y-3">
-                    {recommendations.map((action, i) => (
-                      <div
-                        key={i}
-                        className={`${cardBg} flex items-start gap-4 rounded-[10px] p-4 shadow-sm transition-all duration-300 hover:scale-[1.02]`}
-                      >
-                        <div
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] ${action.bg}`}
-                        >
-                          <action.icon className={`h-5 w-5 ${action.color}`} />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <h4 className={`${textPrimary} text-xs font-bold`}>
-                            {action.title}
-                          </h4>
-                          <p
-                            className={`${textSecondary} mt-1 text-[11px] leading-relaxed`}
+                 {/* Recommended Actions Section & VIP Experiences */}
+                {enabledFeatures.f4 && (
+                  <>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className={`${textPrimary} font-bold text-sm`}>
+                          Gợi ý cho bạn
+                        </h3>
+                      </div>
+                      <div className="space-y-3">
+                        {recommendations.map((action, i) => (
+                          <div
+                            key={i}
+                            className={`${cardBg} flex items-start gap-4 rounded-[10px] p-4 shadow-sm transition-all duration-300 hover:scale-[1.02]`}
                           >
-                            {action.description}
+                            <div
+                              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] ${action.bg}`}
+                            >
+                              <action.icon className={`h-5 w-5 ${action.color}`} />
+                            </div>
+                            <div className="flex-1 text-left">
+                              <h4 className={`${textPrimary} text-xs font-bold`}>
+                                {action.title}
+                              </h4>
+                              <p
+                                className={`${textSecondary} mt-1 text-[11px] leading-relaxed`}
+                              >
+                                {action.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className={`${textPrimary} font-bold text-sm`}>
+                          Trải nghiệm VIP
+                        </h3>
+                        <button className={cn("text-xs font-black uppercase hover:underline", brandTextColor)}>
+                          Khám phá
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div
+                          className={
+                            isPortalDark
+                              ? "bg-gradient-to-br from-indigo-500/20 to-purple-500/10 p-4 rounded-[10px] border border-indigo-500/20 text-left"
+                              : "bg-indigo-50/50 p-4 rounded-[10px] border border-indigo-100/80 text-left"
+                          }
+                        >
+                          <Scissors className="w-5 h-5 text-indigo-500 mb-2" />
+                          <p
+                            className={`${isPortalDark ? "text-white" : "text-indigo-950"} text-xs font-bold leading-tight`}
+                          >
+                            AI Stylist
+                          </p>
+                          <p
+                            className={`${isPortalDark ? "text-indigo-300" : "text-indigo-600"} text-xs mt-1 uppercase font-extrabold tracking-tighter`}
+                          >
+                            +500 Điểm / LẦN
+                          </p>
+                        </div>
+                        <div
+                          className={
+                            isPortalDark
+                              ? "bg-gradient-to-br from-emerald-500/20 to-teal-500/10 p-4 rounded-[10px] border border-emerald-500/20 text-left"
+                              : "bg-emerald-50/50 p-4 rounded-[10px] border border-emerald-100/80 text-left"
+                          }
+                        >
+                          <Ticket className="w-5 h-5 text-emerald-500 mb-2" />
+                          <p
+                            className={`${isPortalDark ? "text-white" : "text-emerald-950"} text-xs font-bold leading-tight`}
+                          >
+                            Trade-in
+                          </p>
+                          <p
+                            className={`${isPortalDark ? "text-emerald-300" : "text-emerald-600"} text-xs mt-1 uppercase font-extrabold tracking-tighter`}
+                          >
+                            ƯU TIÊN DIAMOND
                           </p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className={`${textPrimary} font-bold text-sm`}>
-                      Trải nghiệm VIP
-                    </h3>
-                    <button className="text-xs text-[#2f6cf5] font-black uppercase hover:underline">
-                      Khám phá
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div
-                      className={
-                        isPortalDark
-                          ? "bg-gradient-to-br from-indigo-500/20 to-purple-500/10 p-4 rounded-[10px] border border-indigo-500/20 text-left"
-                          : "bg-indigo-50/50 p-4 rounded-[10px] border border-indigo-100/80 text-left"
-                      }
-                    >
-                      <Scissors className="w-5 h-5 text-indigo-500 mb-2" />
-                      <p
-                        className={`${isPortalDark ? "text-white" : "text-indigo-950"} text-xs font-bold leading-tight`}
-                      >
-                        AI Stylist
-                      </p>
-                      <p
-                        className={`${isPortalDark ? "text-indigo-300" : "text-indigo-600"} text-xs mt-1 uppercase font-extrabold tracking-tighter`}
-                      >
-                        +500 Điểm / LẦN
-                      </p>
                     </div>
-                    <div
-                      className={
-                        isPortalDark
-                          ? "bg-gradient-to-br from-emerald-500/20 to-teal-500/10 p-4 rounded-[10px] border border-emerald-500/20 text-left"
-                          : "bg-emerald-50/50 p-4 rounded-[10px] border border-emerald-100/80 text-left"
-                      }
-                    >
-                      <Ticket className="w-5 h-5 text-emerald-500 mb-2" />
-                      <p
-                        className={`${isPortalDark ? "text-white" : "text-emerald-950"} text-xs font-bold leading-tight`}
-                      >
-                        Trade-in
-                      </p>
-                      <p
-                        className={`${isPortalDark ? "text-emerald-300" : "text-emerald-600"} text-xs mt-1 uppercase font-extrabold tracking-tighter`}
-                      >
-                        ƯU TIÊN DIAMOND
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                  </>
+                )}
 
-                {/* Recent Activity */}
-                <div
-                  className={`${cardBg} rounded-[10px] p-6 transition-colors duration-300`}
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className={`${textPrimary} font-bold text-sm`}>
-                      Hoạt động gần đây
-                    </h3>
-                    <button className="text-xs text-[#2f6cf5] font-black uppercase tracking-wider hover:underline">
-                      Xem tất cả
-                    </button>
-                  </div>
-                  <div className="space-y-6">
-                    {[
-                      {
-                        title: "Mua sắm tại cửa hàng",
-                        date: "Hôm nay, 14:45",
-                        points: "+2,400",
-                        type: "earn",
-                      },
-                      {
-                        title: "Thưởng sinh nhật",
-                        date: "12 thg 10, 2023",
-                        points: "+1,000",
-                        type: "earn",
-                      },
-                      {
-                        title: "Đã đổi phần thưởng",
-                        date: "10 thg 10, 2023",
-                        points: "-5,000",
-                        type: "redeem",
-                      },
-                    ].map((act, i) => (
-                      <React.Fragment key={i}>
-                        <div className="flex justify-between items-center">
-                          <div className="flex flex-col text-left">
+                 {/* Recent Activity */}
+                {enabledFeatures.f5 && (
+                  <div
+                    className={`${cardBg} rounded-[10px] p-6 transition-colors duration-300`}
+                  >
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className={`${textPrimary} font-bold text-sm`}>
+                        Hoạt động gần đây
+                      </h3>
+                      <button className={cn("text-xs font-black uppercase tracking-wider hover:underline", brandTextColor)}>
+                        Xem tất cả
+                      </button>
+                    </div>
+                    <div className="space-y-6">
+                      {[
+                        {
+                          title: "Mua sắm tại cửa hàng",
+                          date: "Hôm nay, 14:45",
+                          points: "+2,400",
+                          type: "earn",
+                        },
+                        {
+                          title: "Thưởng sinh nhật",
+                          date: "12 thg 10, 2023",
+                          points: "+1,000",
+                          type: "earn",
+                        },
+                        {
+                          title: "Đã đổi phần thưởng",
+                          date: "10 thg 10, 2023",
+                          points: "-5,000",
+                          type: "redeem",
+                        },
+                      ].map((act, i) => (
+                        <React.Fragment key={i}>
+                          <div className="flex justify-between items-center">
+                            <div className="flex flex-col text-left">
+                              <span
+                                className={`text-sm ${isPortalDark ? "text-zinc-300" : "text-zinc-800"} font-medium`}
+                              >
+                                {act.title}
+                              </span>
+                              <span
+                                className={`text-xs ${textMuted} mt-1 uppercase tracking-tight`}
+                              >
+                                {act.date}
+                              </span>
+                            </div>
                             <span
-                              className={`text-sm ${isPortalDark ? "text-zinc-300" : "text-zinc-800"} font-medium`}
+                              className={
+                                act.type === "earn"
+                                  ? cn("text-sm font-bold", brandTextColor)
+                                  : `${isPortalDark ? "text-zinc-500" : "text-zinc-400"} text-sm `
+                              }
                             >
-                              {act.title}
-                            </span>
-                            <span
-                              className={`text-xs ${textMuted} mt-1 uppercase tracking-tight`}
-                            >
-                              {act.date}
+                              {act.points} pts
                             </span>
                           </div>
-                          <span
-                            className={
-                              act.type === "earn"
-                                ? "text-[#2f6cf5] text-sm font-bold"
-                                : `${isPortalDark ? "text-zinc-500" : "text-zinc-400"} text-sm `
-                            }
-                          >
-                            {act.points} pts
-                          </span>
-                        </div>
-                        {i < 2 && (
-                          <div
-                            className={`w-full h-px ${cardHeaderDivider}`}
-                          ></div>
-                        )}
-                      </React.Fragment>
-                    ))}
+                          {i < 2 && (
+                            <div
+                              className={`w-full h-px ${cardHeaderDivider}`}
+                            ></div>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Simulated Customer Settings Inside the Portal (Option selector inside) */}
                 <div
@@ -1492,7 +1552,8 @@ export function CustomerPortalView({ onBack }: PortalProps) {
         )}
       </div>
     </div>
-  </AnimatePresence>
+  </div>
+</div>
 </div>
 );
 }

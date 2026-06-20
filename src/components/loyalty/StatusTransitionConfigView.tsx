@@ -813,9 +813,9 @@ export function StatusTransitionConfigView() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-card/45 border border-border/60 rounded-[10px] overflow-hidden shadow-xs backdrop-blur-md">
+      <div className="bg-card border border-border/80 rounded-[16px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.15)] backdrop-blur-md">
         {/* Banner / Header - Merged */}
-        <div className="relative overflow-hidden border-b border-border/40 bg-gradient-to-r from-[#2f6cf5]/10 via-[#2f6cf5]/5 to-transparent p-6 md:p-8 text-left">
+        <div className="relative overflow-hidden border-b border-border/40 bg-gradient-to-r from-[#2f6cf5]/8 via-[#2f6cf5]/3 to-transparent p-6 md:p-8 text-left">
           <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#2f6cf5] via-background to-background pointer-events-none" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
@@ -831,8 +831,9 @@ export function StatusTransitionConfigView() {
             </div>
             <div className="flex gap-2.5 flex-wrap shrink-0 self-start md:self-auto">
               <button
-                 onClick={handleNewRule}
-                 className="px-5 py-2.5 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-[10px] text-xs font-bold transition-all shadow-lg shadow-[#2f6cf5]/20 flex items-center justify-center gap-1.5 cursor-pointer relative z-20"
+                type="button"
+                onClick={handleNewRule}
+                className="px-5 py-2.5 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-[10px] text-xs font-bold transition-all shadow-lg shadow-[#2f6cf5]/20 flex items-center justify-center gap-1.5 cursor-pointer relative z-20"
               >
                 <Plus className="w-4 h-4" /> Thêm quy tắc mới
               </button>
@@ -841,557 +842,555 @@ export function StatusTransitionConfigView() {
         </div>
 
         <div className="p-6">
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
 
-        {/* Rules List (Left side - Col 7) */}
-        <div className="xl:col-span-7 space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h5 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-              Danh sách quy tắc kích hoạt ({rules.length})
-            </h5>
-            <span className="text-xs bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-[10px] font-bold">
-              Thời gian thực (Firestore)
-            </span>
-          </div>
-
-          {loading ? (
-            <div className="py-12 text-center text-muted-foreground italic bg-card border border-border rounded-[10px]">
-              Đang tải cấu hình quy tắc...
-            </div>
-          ) : rules.length === 0 ? (
-            <div className="py-16 text-center border-2 border-dashed border-border rounded-[10px] space-y-3">
-              <Zap className="w-10 h-10 text-muted-foreground/30 mx-auto" />
-              <p className="text-sm text-muted-foreground font-medium">
-                Chưa có quy tắc chuyển đổi tùy biến nào
-              </p>
-              <button
-                onClick={handleNewRule}
-                className="text-primary text-xs font-bold hover:underline"
-              >
-                Tạo quy tắc đầu tiên của bạn
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {rules.map((rule) => {
-                const sourceStatusObj = CUSTOMER_STATUSES.find(
-                  (s) => s.code === rule.fromStatus,
-                );
-                const destStatusObj = CUSTOMER_STATUSES.find(
-                  (s) => s.code === rule.toStatus,
-                );
-
-                return (
-                  <Card
-                    key={rule.id}
-                    className={`border-none ${rule.enabled ? "bg-card" : "bg-muted/10 opacity-70"} hover:shadow-lg transition-all duration-300 rounded-[10px] overflow-hidden border border-border/40`}
-                  >
-                    <CardContent className="p-6 space-y-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-extrabold text-foreground">
-                              {rule.name}
-                            </span>
-                            {!rule.enabled && (
-                              <span className="text-xs bg-red-500/10 text-red-600 px-1.5 py-0.2 rounded font-black tracking-wider uppercase">
-                                TẮT
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground leading-relaxed text-left max-w-xl">
-                            {rule.description || "Không có mô tả chi tiết."}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleRule(rule)}
-                            className="p-1.5 hover:bg-muted rounded-[10px] transition-colors"
-                            title={
-                              rule.enabled
-                                ? "Tạm ngưng quy tắc"
-                                : "Kích hoạt quy tắc"
-                            }
-                          >
-                            {rule.enabled ? (
-                              <ToggleRight className="w-6 h-6 text-emerald-500" />
-                            ) : (
-                              <ToggleLeft className="w-6 h-6 text-muted-foreground" />
-                            )}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleEditRule(rule)}
-                            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-muted rounded-[10px] transition-colors"
-                            title="Sửa điều kiện"
-                          >
-                            <Settings2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteRule(rule.id)}
-                            className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-[10px] transition-colors"
-                            title="Xóa quy tắc"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Transition visual indicator */}
-                      <div className="p-3 bg-muted/30 rounded-[10px] flex items-center justify-between border border-border/20 text-xs">
-                        <div className="flex items-center gap-2 ">
-                          <span className="text-muted-foreground">Từ:</span>
-                          {rule.fromStatus === "ALL" ? (
-                            <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded font-bold">
-                              Mọi trạng thái
-                            </span>
-                          ) : (
-                            <span
-                              className={`text-xs font-bold px-2 py-0.5 rounded border ${sourceStatusObj?.color.bg || ""} ${sourceStatusObj?.color.text || ""} ${sourceStatusObj?.color.border || ""}`}
-                            >
-                              {rule.fromStatus}
-                            </span>
-                          )}
-                        </div>
-
-                        <ArrowRight className="w-4 h-4 text-muted-foreground" />
-
-                        <div className="flex items-center gap-2 ">
-                          <span className="text-muted-foreground">
-                            Chuyển sang:
-                          </span>
-                          <span
-                            className={`text-xs font-bold px-2 py-0.5 rounded border ${destStatusObj?.color.bg || ""} ${destStatusObj?.color.text || ""} ${destStatusObj?.color.border || ""}`}
-                          >
-                            {rule.toStatus}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Conditions list snippet */}
-                      <div className="space-y-1.5 text-left">
-                        <p className="text-xs text-muted-foreground font-bold tracking-wider uppercase mb-1">
-                          Điều kiện xác định (
-                          {rule.matchType === "and"
-                            ? "Thỏa tất cả - AND"
-                            : "Thỏa bất kỳ - OR"}
-                          )
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {rule.conditions.map((cond, index) => {
-                            const opt = METRIC_OPTIONS.find(
-                              (m) => m.value === cond.metric,
-                            );
-                            const operatorText =
-                              cond.operator === "gt"
-                                ? ">"
-                                : cond.operator === "gte"
-                                  ? ">="
-                                  : cond.operator === "lt"
-                                    ? "<"
-                                    : cond.operator === "lte"
-                                      ? "<="
-                                      : cond.operator === "neq"
-                                        ? "!="
-                                        : "=";
-
-                            const niceValue =
-                              cond.metric === "total_spend"
-                                ? `${parseFloat(cond.value).toLocaleString()}₫`
-                                : cond.metric === "current_points"
-                                  ? `${parseFloat(cond.value).toLocaleString()} pts`
-                                  : `${cond.value} ${opt?.unit || ""}`;
-
-                            return (
-                              <span
-                                key={index}
-                                className="inline-flex items-center gap-1.5 text-xs bg-muted px-3 py-1.5 rounded-[10px] border border-border/40 font-semibold"
-                              >
-                                <span className="text-muted-foreground">
-                                  {opt?.label}
-                                </span>
-                                <span className="text-primary ">
-                                  {operatorText}
-                                </span>
-                                <span className="text-foreground font-bold">
-                                  {niceValue}
-                                </span>
-                              </span>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Automations status */}
-                      <div className="flex flex-wrap items-center gap-3 pt-2 text-xs">
-                        <span className="font-bold text-muted-foreground uppercase tracking-widest">
-                          Hành vi tự động:
-                        </span>
-                        {rule.automations.sendZalo && (
-                          <span className="bg-[#2f6cf5]/5 text-[#2f6cf5] font-bold py-0.5 px-2 rounded-[10px] border border-[#2f6cf5]/15">
-                            Gửi Zalo ZNS
-                          </span>
-                        )}
-                        {rule.automations.grantVoucher && (
-                          <span className="bg-amber-500/5 text-amber-600 font-bold py-0.5 px-2 rounded-[10px] border border-amber-500/15">
-                            Tặng quà/Voucher
-                          </span>
-                        )}
-                        {rule.automations.notifySupport && (
-                          <span className="bg-indigo-500/5 text-indigo-600 font-bold py-0.5 px-2 rounded-[10px] border border-indigo-500/15">
-                            Thông báo CSKH
-                          </span>
-                        )}
-                        {rule.automations.enableDoublePoints && (
-                          <span className="bg-purple-500/5 text-purple-600 font-bold py-0.5 px-2 rounded-[10px] border border-purple-500/15">
-                            Nhân đôi x2 điểm
-                          </span>
-                        )}
-                        {rule.automations.lockAccount && (
-                          <span className="bg-rose-500/5 text-rose-600 font-bold py-0.5 px-2 rounded-[10px] border border-rose-500/15">
-                            Khóa quyền hội viên
-                          </span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Sandbox Simulation Panel (Right side - Col 5) */}
-        <div className="xl:col-span-5 space-y-6">
-          <Card className="border-none bg-card rounded-[10px] shadow-xl overflow-hidden border border-border/40">
-            <div className="p-6 border-b border-border bg-muted/10">
-              <h5 className="font-bold font-heading text-base flex items-center gap-2">
-                <Play className="w-5 h-5 text-primary fill-current" />
-                Chạy thử nghiệm Sandbox (Simulator)
-              </h5>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Nhập thông số mô phỏng của khách hàng để kiểm tra tính năng tự
-                động chuyển đổi trạng thái nào sẽ được kích kích hoạt.
-              </p>
-            </div>
-            <CardContent className="p-6 space-y-5 text-left">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs text-muted-foreground font-bold tracking-tight uppercase">
-                    Trạng thái hiện tại
-                  </label>
-                  <select
-                    value={simCurrentStatus}
-                    onChange={(e) => setSimCurrentStatus(e.target.value)}
-                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
-                  >
-                    {CUSTOMER_STATUSES.map((s) => (
-                      <option key={s.code} value={s.code}>
-                        {s.code} ({s.classification})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs text-muted-foreground font-bold tracking-tight uppercase">
-                    Hạng hội viên hiện có
-                  </label>
-                  <select
-                    value={simCurrentTier}
-                    onChange={(e) => setSimCurrentTier(e.target.value)}
-                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
-                  >
-                    {TIER_VALUES.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs text-muted-foreground font-bold tracking-tight uppercase">
-                    Tổng chi tiêu (₫)
-                  </label>
-                  <input
-                    type="number"
-                    value={simSpend}
-                    onChange={(e) => setSimSpend(e.target.value)}
-                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
-                    placeholder="₫"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs text-muted-foreground font-bold tracking-tight uppercase">
-                    Điểm tích lũy (pts)
-                  </label>
-                  <input
-                    type="number"
-                    value={simPoints}
-                    onChange={(e) => setSimPoints(e.target.value)}
-                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
-                    placeholder="pts"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs text-muted-foreground font-bold tracking-tight uppercase">
-                    Số ngày không hoạt động
-                  </label>
-                  <input
-                    type="number"
-                    value={simInactive}
-                    onChange={(e) => setSimInactive(e.target.value)}
-                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs text-muted-foreground font-bold tracking-tight uppercase">
-                    Tắt giảm giao dịch %
-                  </label>
-                  <input
-                    type="number"
-                    value={simDropRate}
-                    onChange={(e) => setSimDropRate(e.target.value)}
-                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs text-muted-foreground font-bold tracking-tight uppercase">
-                    Số khiếu nại/xấu
-                  </label>
-                  <input
-                    type="number"
-                    value={simBadReviews}
-                    onChange={(e) => setSimBadReviews(e.target.value)}
-                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs text-muted-foreground font-bold tracking-tight uppercase">
-                    Cảnh báo nghi ngờ bảo mật
-                  </label>
-                  <input
-                    type="number"
-                    value={simFraudAlerts}
-                    onChange={(e) => setSimFraudAlerts(e.target.value)}
-                    className="w-full bg-background border border-border rounded-[10px] px-3 py-2 text-xs outline-none focus:border-primary/50"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={runSimulation}
-                className="w-full py-3 bg-indigo-600 text-white rounded-[10px] text-xs font-bold shadow-lg hover:bg-indigo-700 transition-all cursor-pointer flex items-center justify-center gap-2 mt-4"
-              >
-                <RefreshCw className="w-4 h-4 animate-spin-hover" />
-                Kiểm thử và Phân tích Quy tắc
-              </button>
-
-              {/* Simulation Output results */}
-              {simResults.length > 0 && (
-                <div className="mt-5 space-y-4 pt-4 border-t border-border">
-                  <h6 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                    Kế quả đối chiếu điều kiện
-                  </h6>
-
-                  <div className="space-y-3.5">
-                    {simResults.map((res) => (
-                      <div
-                        key={res.ruleId}
-                        className={`p-4 rounded-[10px] border ${res.isMatched ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-950 dark:text-emerald-100" : "bg-muted/40 border-border/40 opacity-75"} text-xs`}
-                      >
-                        <div className="flex items-start justify-between gap-2.5">
-                          <div className="space-y-0.5">
-                            <span className="font-bold block text-sm">
-                              {res.ruleName}
-                            </span>
-                            <span className="text-xs text-muted-foreground block ">
-                              ID: {res.ruleId}
-                            </span>
-                          </div>
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-black uppercase shrink-0 ${res.isMatched ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"}`}
-                          >
-                            {res.isMatched ? "KHỚP ĐIỀU KIỆN" : "KHÔNG KHỚP"}
-                          </span>
-                        </div>
-
-                        {/* Breakdown conditions detail */}
-                        <div className="mt-3.5 pl-2.5 border-l-2 border-border space-y-1.5 text-muted-foreground text-xs text-left">
-                          {res.details.map((d, index) => (
-                            <p key={index}>{d}</p>
-                          ))}
-                        </div>
-
-                        {res.isMatched && (
-                          <div className="mt-4 pt-3 border-t border-emerald-500/20 space-y-2">
-                            <p className="font-semibold text-emerald-700 dark:text-emerald-400">
-                              Trạng thái đích quy đổi:{" "}
-                              <span className="underline font-bold font-sans text-xs">
-                                {res.targetStatus}
-                              </span>
-                            </p>
-
-                            {res.appliedAutomations.length > 0 && (
-                              <div className="space-y-1">
-                                <p className="text-xs text-muted-foreground uppercase font-semibold">
-                                  Tự động hóa hành vi kích hoạt:
-                                </p>
-                                <div className="flex flex-wrap gap-1">
-                                  {res.appliedAutomations.map((auto, i) => (
-                                    <span
-                                      key={i}
-                                      className="bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded text-xs font-semibold"
-                                    >
-                                      {auto}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Vận hành Thực tế CRM Transition Engine */}
-          <Card className="border-none bg-card rounded-[10px] shadow-xl overflow-hidden border border-border/40 mt-6">
-            <div className="p-6 border-b border-border bg-primary/5">
-              <h5 className="font-bold font-heading text-base flex items-center gap-2 text-primary">
-                <Zap className="w-5 h-5 fill-current" />
-                Vận hành Hệ thống Thực tế (Live Engine)
-              </h5>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Chạy các quy tắc chuyển đổi trạng thái đã kích hoạt lên toàn bộ
-                cơ sở dữ liệu khách hàng thực trên hệ thống.
-              </p>
-            </div>
-            <CardContent className="p-6 space-y-4 text-left">
-              <div className="bg-amber-500/10 dark:bg-amber-500/5 p-4 rounded-[10px] border border-amber-500/20 text-xs text-amber-800 dark:text-amber-400 leading-relaxed font-sans flex items-start gap-2.5">
-                <AlertCircle className="w-5 h-5 shrink-0" />
-                <span>
-                  <strong>Lưu ý:</strong> Hành động này sẽ thay đổi nhãn trạng
-                  thái trực tiếp của các khách hàng trên Firestore dựa trên các
-                  mốc điều kiện và quy tắc đang BẬT. Các hành động tự động đi
-                  kèm (Zalo, Voucher...) cũng sẽ được lập trình kích hoạt.
+            {/* Rules List (Left side - Col 7) */}
+            <div className="xl:col-span-7 space-y-4">
+              <div className="flex items-center justify-between px-1">
+                <h5 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">
+                  Danh sách quy tắc kích hoạt ({rules.length})
+                </h5>
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-600 px-2.5 py-1 rounded-[10px] font-black uppercase tracking-wider">
+                  Thời gian thực (Firestore)
                 </span>
               </div>
 
-              <button
-                type="button"
-                disabled={
-                  executing || rules.filter((r) => r.enabled).length === 0
-                }
-                onClick={handleExecuteLiveTransitions}
-                className="w-full py-3 bg-primary text-primary-foreground rounded-[10px] text-xs font-bold shadow-lg hover:bg-primary/95 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {executing ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Đang xử lý quy tắc chuyển đổi...
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4 fill-current" />
-                    Bắt đầu chuyển trạng thái thành viên
-                  </>
-                )}
-              </button>
+              {loading ? (
+                <div className="py-12 text-center text-muted-foreground italic bg-card border border-border rounded-[12px]">
+                  Đang tải cấu hình quy tắc...
+                </div>
+              ) : rules.length === 0 ? (
+                <div className="py-16 text-center border-2 border-dashed border-border/80 rounded-[16px] space-y-3">
+                  <Zap className="w-10 h-10 text-muted-foreground/30 mx-auto" />
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Chưa có quy tắc chuyển đổi tùy biến nào
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleNewRule}
+                    className="text-primary text-xs font-bold hover:underline"
+                  >
+                    Tạo quy tắc đầu tiên của bạn
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  {rules.map((rule) => {
+                    const sourceStatusObj = CUSTOMER_STATUSES.find(
+                      (s) => s.code === rule.fromStatus,
+                    );
+                    const destStatusObj = CUSTOMER_STATUSES.find(
+                      (s) => s.code === rule.toStatus,
+                    );
 
-              {executionReport && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="space-y-3.5 pt-4 border-t border-border"
-                >
-                  <div className="flex items-center justify-between">
-                    <h6 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                      Báo cáo cập nhật trực tiếp
-                    </h6>
-                    <span className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-0.5 px-2 rounded-full">
-                      Hoàn tất
+                    return (
+                      <Card
+                        key={rule.id}
+                        className={`transition-all duration-300 rounded-[14px] overflow-hidden border border-border/60 ${rule.enabled ? "bg-card shadow-sm border-l-4 border-l-emerald-500" : "bg-muted/10 opacity-60 border-l-4 border-l-zinc-300 dark:border-l-zinc-700"}`}
+                      >
+                        <CardContent className="p-5 space-y-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-1 text-left">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-bold text-foreground">
+                                  {rule.name}
+                                </span>
+                                {!rule.enabled && (
+                                  <span className="text-[9px] bg-red-500/10 text-red-600 px-1.5 py-0.5 rounded font-black tracking-widest uppercase">
+                                    TẮT
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground leading-relaxed">
+                                {rule.description || "Không có mô tả chi tiết."}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-1 border border-border/40 bg-muted/40 p-1 rounded-lg shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleRule(rule)}
+                                className="p-1 hover:bg-card rounded-[6px] transition-colors cursor-pointer"
+                                title={
+                                  rule.enabled
+                                    ? "Tạm ngưng quy tắc"
+                                    : "Kích hoạt quy tắc"
+                                }
+                              >
+                                {rule.enabled ? (
+                                  <ToggleRight className="w-5 h-5 text-emerald-500" />
+                                ) : (
+                                  <ToggleLeft className="w-5 h-5 text-muted-foreground" />
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleEditRule(rule)}
+                                className="p-1 text-muted-foreground hover:text-primary hover:bg-card rounded-[6px] transition-colors cursor-pointer"
+                                title="Sửa điều kiện"
+                              >
+                                <Settings2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteRule(rule.id)}
+                                className="p-1 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-[6px] transition-colors cursor-pointer"
+                                title="Xóa quy tắc"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Transition routing visualizer */}
+                          <div className="p-3 bg-muted/40 rounded-[10px] flex items-center justify-between border border-border/40 text-[11px] font-sans">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground font-medium">Từ:</span>
+                              {rule.fromStatus === "ALL" ? (
+                                <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded font-bold">
+                                  Mọi trạng thái (ALL)
+                                </span>
+                              ) : (
+                                <span
+                                  className={`text-[10px] font-bold px-2 py-0.5 rounded border ${sourceStatusObj?.color.bg || ""} ${sourceStatusObj?.color.text || ""} ${sourceStatusObj?.color.border || ""}`}
+                                >
+                                  {rule.fromStatus}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex-1 max-w-[80px] mx-2 flex items-center justify-center relative">
+                              <div className="w-full h-px border-t border-dashed border-border/70" />
+                              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground absolute bg-background/95 rounded-full p-0.5 border border-border/40" />
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground font-medium">Chuyển sang:</span>
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded border ${destStatusObj?.color.bg || ""} ${destStatusObj?.color.text || ""} ${destStatusObj?.color.border || ""}`}
+                              >
+                                {rule.toStatus}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Conditions nested metrics snippet */}
+                          <div className="space-y-1.5 text-left pt-1">
+                            <p className="text-[10px] text-muted-foreground font-black tracking-widest uppercase">
+                              Điều kiện xác định (
+                              {rule.matchType === "and"
+                                ? "Khớp tất cả - AND"
+                                : "Khớp một trong - OR"}
+                              )
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {rule.conditions.map((cond, index) => {
+                                const opt = METRIC_OPTIONS.find(
+                                  (m) => m.value === cond.metric,
+                                );
+                                const operatorText =
+                                  cond.operator === "gt"
+                                    ? ">"
+                                    : cond.operator === "gte"
+                                      ? "≥"
+                                      : cond.operator === "lt"
+                                        ? "<"
+                                        : cond.operator === "lte"
+                                          ? "≤"
+                                          : cond.operator === "neq"
+                                            ? "≠"
+                                            : "=";
+
+                                const niceValue =
+                                  cond.metric === "total_spend"
+                                    ? `${parseFloat(cond.value).toLocaleString()}₫`
+                                    : cond.metric === "current_points"
+                                      ? `${parseFloat(cond.value).toLocaleString()} pts`
+                                      : `${cond.value} ${opt?.unit || ""}`;
+
+                                return (
+                                  <span
+                                    key={index}
+                                    className="inline-flex items-center gap-1.5 text-[11px] bg-muted/65 px-2.5 py-1 rounded-md border border-border/50 font-semibold"
+                                  >
+                                    <span className="text-muted-foreground">
+                                      {opt?.label}
+                                    </span>
+                                    <span className="text-primary font-bold">
+                                      {operatorText}
+                                    </span>
+                                    <span className="text-foreground font-black">
+                                      {niceValue}
+                                    </span>
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Automations statuses triggers */}
+                          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/30 text-[10px]">
+                            <span className="font-extrabold text-muted-foreground uppercase tracking-wider shrink-0">
+                              Hành vi tự động:
+                            </span>
+                            <div className="flex flex-wrap gap-1">
+                              {rule.automations.sendZalo && (
+                                <span className="bg-sky-500/10 text-sky-600 font-bold py-0.5 px-2 rounded-md border border-sky-500/15">
+                                  Gửi Zalo ZNS
+                                </span>
+                              )}
+                              {rule.automations.grantVoucher && (
+                                <span className="bg-amber-500/10 text-amber-600 font-bold py-0.5 px-2 rounded-md border border-amber-500/15">
+                                  Tặng quà/Voucher
+                                </span>
+                              )}
+                              {rule.automations.notifySupport && (
+                                <span className="bg-indigo-500/10 text-indigo-600 font-bold py-0.5 px-2 rounded-md border border-indigo-500/15">
+                                  Thông báo CSKH
+                                </span>
+                              )}
+                              {rule.automations.enableDoublePoints && (
+                                <span className="bg-purple-500/10 text-purple-600 font-bold py-0.5 px-2 rounded-md border border-purple-500/15">
+                                  Nhân đôi x2 điểm
+                                </span>
+                              )}
+                              {rule.automations.lockAccount && (
+                                <span className="bg-rose-500/10 text-rose-600 font-bold py-0.5 px-2 rounded-md border border-rose-500/15">
+                                  Khóa quyền hội viên
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Sandbox Simulation Panel (Right side - Col 5) */}
+            <div className="xl:col-span-5 space-y-6">
+              <Card className="border border-border/60 bg-card shadow-sm rounded-[16px] overflow-hidden">
+                <div className="p-5 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent text-left">
+                  <h5 className="font-bold text-base flex items-center gap-2 text-primary">
+                    <Play className="w-5 h-5 fill-current" />
+                    Chạy thử nghiệm Sandbox (Simulator)
+                  </h5>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-lg leading-relaxed">
+                    Nhập thông số mô phỏng của khách hàng để kiểm tra tính năng tự động chuyển đổi trạng thái nào sẽ được kích hoạt.
+                  </p>
+                </div>
+                <CardContent className="p-5 space-y-5 text-left">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-muted-foreground font-black tracking-wider uppercase">
+                        Trạng thái hiện tại
+                      </label>
+                      <select
+                        value={simCurrentStatus}
+                        onChange={(e) => setSimCurrentStatus(e.target.value)}
+                        className="w-full bg-background border border-border rounded-[8px] px-3 py-2 text-xs outline-none focus:border-primary/50 cursor-pointer font-medium"
+                      >
+                        {CUSTOMER_STATUSES.map((s) => (
+                          <option key={s.code} value={s.code}>
+                            {s.code} ({s.classification})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-muted-foreground font-black tracking-wider uppercase">
+                        Hạng hội viên hiện có
+                      </label>
+                      <select
+                        value={simCurrentTier}
+                        onChange={(e) => setSimCurrentTier(e.target.value)}
+                        className="w-full bg-background border border-border rounded-[8px] px-3 py-2 text-xs outline-none focus:border-primary/50 cursor-pointer font-medium"
+                      >
+                        {TIER_VALUES.map((t) => (
+                          <option key={t.value} value={t.value}>
+                            {t.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-muted-foreground font-black tracking-wider uppercase">
+                        Tổng chi tiêu (₫)
+                      </label>
+                      <input
+                        type="number"
+                        value={simSpend}
+                        onChange={(e) => setSimSpend(e.target.value)}
+                        className="w-full bg-background border border-border rounded-[8px] px-3 py-2 text-xs outline-none focus:border-primary/50 font-bold"
+                        placeholder="₫"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-muted-foreground font-black tracking-wider uppercase">
+                        Điểm tích lũy (pts)
+                      </label>
+                      <input
+                        type="number"
+                        value={simPoints}
+                        onChange={(e) => setSimPoints(e.target.value)}
+                        className="w-full bg-background border border-border rounded-[8px] px-3 py-2 text-xs outline-none focus:border-primary/50 font-bold"
+                        placeholder="pts"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-muted-foreground font-black tracking-wider uppercase">
+                        Số ngày không hoạt động
+                      </label>
+                      <input
+                        type="number"
+                        value={simInactive}
+                        onChange={(e) => setSimInactive(e.target.value)}
+                        className="w-full bg-background border border-border rounded-[8px] px-3 py-2 text-xs outline-none focus:border-primary/50 font-bold"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-muted-foreground font-black tracking-wider uppercase">
+                        Tắt giảm giao dịch %
+                      </label>
+                      <input
+                        type="number"
+                        value={simDropRate}
+                        onChange={(e) => setSimDropRate(e.target.value)}
+                        className="w-full bg-background border border-border rounded-[8px] px-3 py-2 text-xs outline-none focus:border-primary/50 font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-muted-foreground font-black tracking-wider uppercase">
+                        Số khiếu nại/xấu
+                      </label>
+                      <input
+                        type="number"
+                        value={simBadReviews}
+                        onChange={(e) => setSimBadReviews(e.target.value)}
+                        className="w-full bg-background border border-border rounded-[8px] px-3 py-2 text-xs outline-none focus:border-primary/50 font-bold"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-muted-foreground font-black tracking-wider uppercase">
+                        Cảnh báo nghi ngờ bảo mật
+                      </label>
+                      <input
+                        type="number"
+                        value={simFraudAlerts}
+                        onChange={(e) => setSimFraudAlerts(e.target.value)}
+                        className="w-full bg-background border border-border rounded-[8px] px-3 py-2 text-xs outline-none focus:border-primary/50 font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={runSimulation}
+                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[10px] text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 mt-2"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin-hover" />
+                    Chạy kiểm thử quy tắc
+                  </button>
+
+                  {/* Simulation Output results */}
+                  {simResults.length > 0 && (
+                    <div className="mt-5 space-y-4 pt-4 border-t border-border/60">
+                      <h6 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                        Kết quả đối chiếu điều kiện
+                      </h6>
+
+                      <div className="space-y-3">
+                        {simResults.map((res) => (
+                          <div
+                            key={res.ruleId}
+                            className={`p-3.5 rounded-[12px] border ${res.isMatched ? "bg-emerald-500/8 border-emerald-500/20 text-emerald-950 dark:text-emerald-100" : "bg-muted/30 border-border/55 opacity-70"} text-xs`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="space-y-0.5">
+                                <span className="font-bold block text-sm">
+                                  {res.ruleName}
+                                </span>
+                                <span className="text-[10px] font-mono text-muted-foreground block">
+                                  ID: {res.ruleId}
+                                </span>
+                              </div>
+                              <span
+                                className={`px-2 py-0.5 rounded text-[9px] font-heavy tracking-wider uppercase shrink-0 ${res.isMatched ? "bg-emerald-500 text-white" : "bg-transparent text-muted-foreground/80 border border-border/80"}`}
+                              >
+                                {res.isMatched ? "KHỚP" : "K.KHỚP"}
+                              </span>
+                            </div>
+
+                            {/* Breakdown conditions detail */}
+                            <div className="mt-3 pl-2.5 border-l-2 border-border/60 space-y-1 text-muted-foreground text-[11px] text-left">
+                              {res.details.map((d, index) => (
+                                <p key={index}>{d}</p>
+                              ))}
+                            </div>
+
+                            {res.isMatched && (
+                              <div className="mt-3 pt-2.5 border-t border-emerald-500/15 space-y-2">
+                                <p className="font-bold text-xs text-emerald-700 dark:text-emerald-400">
+                                  Trạng thái chuyển đổi:{" "}
+                                  <span className="underline font-sans text-xs">
+                                    {res.targetStatus}
+                                  </span>
+                                </p>
+
+                                {res.appliedAutomations.length > 0 && (
+                                  <div className="space-y-1">
+                                    <p className="text-[9px] text-muted-foreground uppercase font-black tracking-wider">
+                                      Tự động hóa kích hoạt:
+                                    </p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {res.appliedAutomations.map((auto, i) => (
+                                        <span
+                                          key={i}
+                                          className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                                        >
+                                          {auto}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* CRM Live Transition Engine */}
+              <Card className="border border-border/60 bg-card shadow-sm rounded-[16px] overflow-hidden">
+                <div className="p-5 border-b border-border/50 bg-gradient-to-r from-emerald-500/10 to-transparent text-left">
+                  <h5 className="font-bold text-base flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                    <Zap className="w-5 h-5 fill-current" />
+                    Vận hành Hệ thống Thực tế (Live Engine)
+                  </h5>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-lg leading-relaxed">
+                    Chạy các quy tắc chuyển đổi trạng thái đã kích hoạt lên toàn bộ cơ sở dữ liệu khách hàng thực trên hệ thống.
+                  </p>
+                </div>
+                <CardContent className="p-5 space-y-4 text-left">
+                  <div className="bg-amber-500/8 dark:bg-amber-500/5 p-4 rounded-[12px] border border-amber-500/20 text-xs text-amber-800 dark:text-amber-400 leading-relaxed font-sans flex items-start gap-2.5">
+                    <AlertCircle className="w-5 h-5 shrink-0" />
+                    <span>
+                      <strong>Lưu ý quan trọng:</strong> Hành động này sẽ thay đổi nhãn trạng thái trực tiếp của các khách hàng trên Firestore dựa trên các mốc điều kiện và quy tắc đang BẬT. Các hành động tự động đi kèm (Zalo, Voucher...) cũng sẽ được kích hoạt tức thì.
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3.5 text-center">
-                    <div className="bg-muted/40 p-3 rounded-[10px] border border-border/10">
-                      <span className="text-xs text-muted-foreground uppercase block font-medium">
-                        Tổng số khách hàng quét
-                      </span>
-                      <span className="text-lg font-bold text-foreground">
-                        {executionReport.totalCustomers}
-                      </span>
-                    </div>
-                    <div className="bg-emerald-500/10 p-3 rounded-[10px] border border-emerald-500/15 text-emerald-800 dark:text-emerald-400">
-                      <span className="text-xs text-muted-foreground uppercase block font-medium">
-                        Khách hàng được cập nhật
-                      </span>
-                      <span className="text-lg font-bold">
-                        {executionReport.changedCount}
-                      </span>
-                    </div>
-                  </div>
+                  <button
+                    type="button"
+                    disabled={
+                      executing || rules.filter((r) => r.enabled).length === 0
+                    }
+                    onClick={handleExecuteLiveTransitions}
+                    className="w-full py-2.5 bg-primary text-primary-foreground hover:bg-primary/95 rounded-[10px] text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {executing ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Đang xử lý quy tắc chuyển đổi...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4 fill-current" />
+                        Bắt đầu chuyển trạng thái thành viên
+                      </>
+                    )}
+                  </button>
 
-                  {executionReport.details.length > 0 ? (
-                    <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
-                      {executionReport.details.map((log, i) => (
-                        <div
-                          key={i}
-                          className="p-3 bg-muted/30 rounded-[10px] border border-border/30 text-xs space-y-1"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-foreground">
-                              {log.customerName}
-                            </span>
-                            <span className="text-xs text-[#2f6cf5] font-semibold">
-                              {log.ruleName}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground ">
-                            <span className="bg-amber-500/10 text-amber-700 dark:text-amber-400 px-1.5 py-0.2 rounded text-xs font-bold">
-                              {log.fromStatus}
-                            </span>
-                            <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                            <span className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.2 rounded text-xs font-bold">
-                              {log.toStatus}
-                            </span>
-                          </div>
+                  {executionReport && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="space-y-3.5 pt-4 border-t border-border"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h6 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                          Báo cáo cập nhật trực tiếp
+                        </h6>
+                        <span className="text-[10px] bg-emerald-500 hover:bg-emerald-600 text-white font-black py-0.5 px-2 rounded-full uppercase tracking-wider">
+                          Hoàn tất
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3.5 text-center">
+                        <div className="bg-muted/40 p-3 rounded-[10px] border border-border/40">
+                          <span className="text-[10px] text-muted-foreground uppercase block font-bold tracking-tight">
+                            Tổng số khách quét
+                          </span>
+                          <span className="text-lg font-black text-foreground">
+                            {executionReport.totalCustomers}
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-muted/20 p-4 text-center rounded-[10px] border border-dashed border-border/80 text-xs text-muted-foreground">
-                      Không có khách hàng nào thay đổi trạng thái trong lượt
-                      quét này.
-                    </div>
+                        <div className="bg-emerald-500/10 p-3 rounded-[10px] border border-emerald-500/15 text-emerald-800 dark:text-emerald-400">
+                          <span className="text-[10px] text-muted-foreground uppercase block font-bold tracking-tight">
+                            Khách được cập nhật
+                          </span>
+                          <span className="text-lg font-black">
+                            {executionReport.changedCount}
+                          </span>
+                        </div>
+                      </div>
+
+                      {executionReport.details.length > 0 ? (
+                        <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                          {executionReport.details.map((log, i) => (
+                            <div
+                              key={i}
+                              className="p-3 bg-muted/40 rounded-[10px] border border-border/30 text-xs space-y-1 text-left"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-foreground text-xs">
+                                  {log.customerName}
+                                </span>
+                                <span className="text-[10px] text-[#2f6cf5] font-black uppercase tracking-wide">
+                                  {log.ruleName}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <span className="bg-amber-500/10 text-amber-700 dark:text-amber-400 px-1.5 py-0.2 rounded text-[10px] font-bold">
+                                  {log.fromStatus}
+                                </span>
+                                <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                                <span className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.2 rounded text-[10px] font-bold">
+                                  {log.toStatus}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="bg-muted/20 p-4 text-center rounded-[10px] border border-dashed border-border text-xs text-muted-foreground">
+                          Không có khách hàng nào thay đổi trạng thái trong lượt quét này.
+                        </div>
+                      )}
+                    </motion.div>
                   )}
-                </motion.div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
     </div>
   </div>
 

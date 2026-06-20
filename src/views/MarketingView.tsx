@@ -32,7 +32,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { WorkflowBuilder } from "@/components/marketing/WorkflowBuilder";
-import { EmailTemplatesBuilder } from "@/components/marketing/EmailTemplatesBuilder";
 import { EventCalendarView } from "@/components/marketing/EventCalendarView";
 
 interface PointCampaign {
@@ -44,10 +43,11 @@ interface PointCampaign {
   targetAudience: string;
   isActive: boolean;
   notes?: string;
+  imageUrl?: string;
 }
 
 export function MarketingView() {
-  const [activeTab2, setActiveTab2] = useState<"messages" | "campaigns" | "workflows" | "templates" | "calendar">("messages");
+  const [activeTab2, setActiveTab2] = useState<"messages" | "campaigns" | "workflows" | "calendar">("messages");
   const [campaigns, setCampaigns] = useState<PointCampaign[]>([]);
 
   // Form inputs for new campaign
@@ -58,6 +58,8 @@ export function MarketingView() {
   const [newCampAudience, setNewCampAudience] = useState("Tất cả hội viên");
   const [newCampNotes, setNewCampNotes] = useState("");
   const [campDraftStatus, setCampDraftStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [draftImageUrl, setDraftImageUrl] = useState<string | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   // Load Campaign Builder draft from Local Storage on mount
   useEffect(() => {
@@ -115,7 +117,8 @@ export function MarketingView() {
           endDate: "2026-06-22",
           targetAudience: "Tất cả hội viên",
           isActive: true,
-          notes: "Áp dụng cho mọi chi nhánh HeartLock & Memorient trên toàn quốc."
+          notes: "Áp dụng cho mọi chi nhánh HeartLock & Memorient trên toàn quốc.",
+          imageUrl: "https://images.unsplash.com/photo-1599643478514-4a52023028c8?auto=format&fit=crop&q=80&w=600&h=400"
         },
         {
           id: "camp-2",
@@ -125,13 +128,41 @@ export function MarketingView() {
           endDate: "2026-07-03",
           targetAudience: "Chỉ từ hạng Vàng trở lên",
           isActive: true,
-          notes: "Độc quyền nâng bậc tích lũy cho Diamond Membership."
+          notes: "Độc quyền nâng bậc tích lũy cho Diamond Membership.",
+          imageUrl: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600&h=400"
         }
       ];
       setCampaigns(defaultCampaigns);
       localStorage.setItem("marketing_point_campaigns", JSON.stringify(defaultCampaigns));
     }
   }, []);
+
+  const generateCampaignImage = async () => {
+    setIsGeneratingImage(true);
+    try {
+      const response = await fetch("/api/gemini/generate-campaign-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          campaignName: newCampName,
+          audience: newCampAudience,
+          multiplier: newCampMultiplier
+        })
+      });
+      
+      const result = await response.json();
+      if (result.success && result.data.imageUrl) {
+        setDraftImageUrl(result.data.imageUrl);
+        toast.success("Đã tạo ảnh quảng cáo AI thành công!");
+      } else {
+        toast.error(result.message || "Không thể tạo ảnh.");
+      }
+    } catch (err: any) {
+      toast.error("Lỗi kết nối khi tạo ảnh AI.");
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
 
   const handleCreateCampaign = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,6 +185,7 @@ export function MarketingView() {
       targetAudience: newCampAudience,
       isActive: true,
       notes: newCampNotes,
+      imageUrl: draftImageUrl || undefined,
     };
 
     const updated = [newCamp, ...campaigns];
@@ -168,6 +200,7 @@ export function MarketingView() {
     setNewCampEnd("");
     setNewCampAudience("Tất cả hội viên");
     setNewCampNotes("");
+    setDraftImageUrl(null);
     localStorage.removeItem("marketing_camp_builder_name");
     localStorage.removeItem("marketing_camp_builder_multiplier");
     localStorage.removeItem("marketing_camp_builder_start");
@@ -469,7 +502,7 @@ export function MarketingView() {
                 : "text-muted-foreground hover:text-foreground hover:bg-background/50"
             )}
           >
-            <Mail className="w-4 h-4" />
+            <MessageCircle className="w-4 h-4 text-emerald-500" />
             Trình tương tác
           </button>
           <button
@@ -481,7 +514,7 @@ export function MarketingView() {
                 : "text-muted-foreground hover:text-foreground hover:bg-background/50"
             )}
           >
-            <Sliders className="w-4 h-4" />
+            <Megaphone className="w-4 h-4 text-[#2f6cf5]" />
             Sự kiện
           </button>
           <button
@@ -493,20 +526,8 @@ export function MarketingView() {
                 : "text-muted-foreground hover:text-foreground hover:bg-background/50"
             )}
           >
-            <GitBranch className="w-4 h-4" />
-            Automations
-          </button>
-          <button
-            onClick={() => setActiveTab2("templates")}
-            className={cn(
-              "flex items-center px-4 py-2 rounded-[10px] text-sm font-bold transition-all gap-2 cursor-pointer",
-              activeTab2 === "templates"
-                ? "bg-background text-primary shadow-sm font-extrabold"
-                : "text-muted-foreground hover:text-foreground hover:bg-background/50"
-            )}
-          >
-            <BookOpen className="w-4 h-4" />
-            Email Templates
+            <GitBranch className="w-4 h-4 text-indigo-500" />
+            Visual Workflow Builder
           </button>
           <button
             onClick={() => setActiveTab2("calendar")}
@@ -517,8 +538,8 @@ export function MarketingView() {
                 : "text-muted-foreground hover:text-foreground hover:bg-background/50"
             )}
           >
-            <Calendar className="w-4 h-4" />
-            Lịch sự kiện
+            <Clock className="w-4 h-4 text-amber-500" />
+            Lịch trình & Tiến trình tự động
           </button>
         </div>
       </div>
@@ -1024,7 +1045,22 @@ export function MarketingView() {
                     </div>
 
                     <div className="space-y-1.5 text-left">
-                      <label className="text-xs font-bold text-muted-foreground uppercase">Ghi chú chiến dịch (Tùy chọn)</label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-muted-foreground uppercase">Ghi chú chiến dịch (Tùy chọn)</label>
+                        <button
+                          type="button"
+                          onClick={generateCampaignImage}
+                          disabled={isGeneratingImage || !newCampName}
+                          className="flex items-center gap-1 border border-amber-500/20 px-2 py-1 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 text-[10px] font-bold rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isGeneratingImage ? (
+                            <Activity className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Sparkles className="w-3 h-3" />
+                          )}
+                          Tạo ảnh AI
+                        </button>
+                      </div>
                       <textarea
                         value={newCampNotes}
                         onChange={(e) => setNewCampNotes(e.target.value)}
@@ -1032,6 +1068,26 @@ export function MarketingView() {
                         rows={3}
                         className="w-full text-xs font-semibold p-3 bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground/50 resize-none text-foreground"
                       />
+                      {draftImageUrl && (
+                        <div className="mt-3 relative rounded-[10px] overflow-hidden border border-border group animate-in fade-in zoom-in-95 duration-300">
+                          <img 
+                            src={draftImageUrl} 
+                            alt="Campaign AI Preview" 
+                            className="w-full h-32 object-cover" 
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                             <button
+                               type="button"
+                               onClick={() => setDraftImageUrl(null)}
+                               className="text-white bg-rose-500 hover:bg-rose-600 px-3 py-1.5 rounded-full text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                             >
+                               <Trash2 className="w-3 h-3" /> 
+                               Xóa ảnh
+                             </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <button
@@ -1123,6 +1179,16 @@ export function MarketingView() {
                               {camp.notes && (
                                 <p className="text-[11px] text-muted-foreground italic bg-muted/40 p-2 rounded-[10px] border border-border/40 mt-1">{camp.notes}</p>
                               )}
+                              {camp.imageUrl && (
+                                <div className="mt-2 rounded-[10px] overflow-hidden border border-border">
+                                   <img 
+                                      src={camp.imageUrl} 
+                                      alt="Campaign Visual" 
+                                      className="w-full h-32 object-cover" 
+                                      referrerPolicy="no-referrer"
+                                   />
+                                </div>
+                              )}
                             </div>
 
                             <div className="flex items-center gap-4 self-end md:self-auto shrink-0">
@@ -1161,7 +1227,7 @@ export function MarketingView() {
               </div>
               </div>
             </motion.div>
-          ) : (
+          ) : activeTab2 === "workflows" ? (
             <motion.div
               key="workflows-tab"
               initial={{ opacity: 0, y: 15 }}
@@ -1193,21 +1259,7 @@ export function MarketingView() {
               {/* Workflow interactive UI */}
               <WorkflowBuilder />
             </motion.div>
-          )}
-
-          {activeTab2 === "templates" && (
-            <motion.div
-              key="templates-tab"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.2 }}
-            >
-              <EmailTemplatesBuilder />
-            </motion.div>
-          )}
-
-          {activeTab2 === "calendar" && (
+          ) : activeTab2 === "calendar" ? (
             <motion.div
               key="calendar-tab"
               initial={{ opacity: 0, y: 15 }}
@@ -1217,7 +1269,7 @@ export function MarketingView() {
             >
               <EventCalendarView />
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
       </div>
     </div>

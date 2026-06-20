@@ -8,6 +8,7 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import {
   ArrowLeft,
+  ArrowRight,
   Phone,
   Mail,
   Facebook,
@@ -35,6 +36,7 @@ import {
   Smile,
   MessageSquare,
   Crown,
+  Gift,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -259,6 +261,7 @@ export function CustomerDashboard({
   onBack,
 }: CustomerDashboardProps) {
   const [points, setPoints] = useState(customer.points || 0);
+  const [activeTab, setActiveTab] = useState<string>("overview");
   const [isEditingSocial, setIsEditingSocial] = useState(false);
   const [isUpdatingField, setIsUpdatingField] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -1571,13 +1574,13 @@ export function CustomerDashboard({
             })()}
 
             {/* List of Privileges */}
-            <div className="space-y-4 pt-2 border-t border-border/40">
+            <div className="space-y-4 pt-2 border-t border-border/40 text-left">
               {/* 1. Standard Tier Privileges */}
-              <div className="space-y-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#2f6cf5] block">
-                  ✓ Đặc quyền theo Cấp bậc:
+              <div className="space-y-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#2f6cf5] flex items-center gap-1.5 bg-[#2f6cf5]/10 dark:bg-[#2f6cf5]/20 px-2.5 py-1 rounded-[10px] w-fit border border-[#2f6cf5]/20">
+                  <Crown className="w-3.5 h-3.5 text-[#2f6cf5]" /> Đặc quyền theo Cấp bậc
                 </span>
-                <div className="space-y-1.5 plan-checklist">
+                <div className="space-y-2 plan-checklist">
                   {(() => {
                     // Try to get from configs or fallback statically
                     let activeBenefits: { name: string; value: string }[] = [];
@@ -1625,32 +1628,43 @@ export function CustomerDashboard({
                       }
                     }
 
-                    return activeBenefits.map((benefit: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-start text-xs bg-muted/30 px-3 py-2 rounded-[10px] border border-border/40 gap-2">
-                        <span className="font-bold text-foreground shrink-0">{benefit.name}:</span>
-                        <span className="text-muted-foreground font-medium text-right break-words leading-tight">{benefit.value}</span>
+                    return (
+                      <div className="overflow-hidden rounded-[10px] border border-border/40 bg-muted/20 divide-y divide-border/40">
+                        {activeBenefits.map((benefit: any, idx: number) => (
+                          <div key={idx} className="grid grid-cols-[135px_1fr] items-start text-xs hover:bg-[#2f6cf5]/5 dark:hover:bg-[#2f6cf5]/10 px-3.5 py-2.5 gap-3 transition-colors">
+                            <span className="font-bold text-foreground text-[11px] leading-tight flex items-center gap-1.5 pt-0.5 shrink-0">
+                              <span className="text-[#2f6cf5] font-black text-[10px]">✦</span>
+                              {benefit.name}
+                            </span>
+                            <span className="text-muted-foreground font-semibold text-left break-words leading-tight pl-3 border-l border-border/40">
+                              {benefit.value}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    ));
+                    );
                   })()}
                 </div>
               </div>
 
               {/* 2. Personal Privileges */}
-              <div className="space-y-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 block">
-                  ★ Đặc quyền riêng biệt của quý hội viên:
+              <div className="space-y-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-1 rounded-[10px] w-fit border border-emerald-500/20">
+                  ★ Đặc quyền riêng biệt của hội viên
                 </span>
                 {personalPrivileges.length === 0 ? (
                   <p className="text-[11px] text-muted-foreground italic pl-1 leading-normal">Chưa thiết lập đặc quyền cá nhân hóa riêng. Sử dụng form bên dưới để thêm đặc quyền.</p>
                 ) : (
-                  <div className="grid grid-cols-1 gap-1.5">
+                  <div className="overflow-hidden rounded-[10px] border border-emerald-500/20 bg-emerald-500/5 divide-y divide-emerald-500/20">
                     {personalPrivileges.map((p, idx) => (
-                      <div key={idx} className="flex items-center justify-between bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-3 py-2 rounded-[10px] text-xs font-bold transition-all">
-                        <span className="leading-tight flex-1 break-words">{p}</span>
+                      <div key={idx} className="flex items-center justify-between hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 px-3.5 py-2.5 text-xs font-bold transition-all gap-2">
+                        <span className="leading-tight flex-1 break-words text-left">
+                          <span className="text-emerald-500 font-extrabold mr-1.5">✦</span>{p}
+                        </span>
                         <button
                           onClick={() => handleRemovePrivilege(idx)}
                           type="button"
-                          className="text-xs text-rose-500 hover:text-rose-700 hover:scale-110 transition-transform font-bold px-1 py-0.5 ml-2 cursor-pointer rounded-[10px] hover:bg-rose-500/10 shrink-0"
+                          className="text-xs text-rose-500 hover:text-rose-700 hover:scale-110 transition-transform font-bold px-1.5 py-0.5 ml-2 cursor-pointer rounded-[5px] hover:bg-rose-500/10 shrink-0"
                           title="Xóa đặc quyền riêng này"
                         >
                           ✕
@@ -2181,82 +2195,183 @@ export function CustomerDashboard({
 
         {/* CỘT GIỮA & CỘT PHẢI - TOÀN CẢNH ENGAGEMENT ENGINE */}
         <div className="lg:col-span-2">
-          <Tabs defaultValue="overview" className="space-y-6 w-full">
-            <TabsList className="bg-muted/50 border p-1 rounded-[10px]">
-              <TabsTrigger value="overview" className="rounded-[10px] text-xs font-bold px-4 py-1.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">Tổng quan</TabsTrigger>
-              <TabsTrigger value="timeline" className="rounded-[10px] text-xs font-bold px-4 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">Timeline Sự kiện</TabsTrigger>
-            </TabsList>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 w-full">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/20 pb-3">
+              <TabsList className="bg-muted/40 dark:bg-muted/10 border border-border/60 p-1 rounded-[10px] grid grid-cols-2 md:inline-flex md:flex-wrap gap-1 w-full md:w-auto">
+                <TabsTrigger 
+                  value="overview" 
+                  className="rounded-[8px] text-xs font-bold px-4 py-2 transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm cursor-pointer"
+                >
+                  📊 Điểm chạm Tổng quan
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="timeline" 
+                  className="rounded-[8px] text-xs font-bold px-4 py-2 transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm cursor-pointer"
+                >
+                  🕒 Điểm chạm Sự kiện
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="emails" 
+                  className="rounded-[8px] text-xs font-bold px-4 py-2 transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm cursor-pointer"
+                >
+                  ✉️ Điểm chạm Email
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="gallery" 
+                  className="rounded-[8px] text-xs font-bold px-4 py-2 transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm cursor-pointer"
+                >
+                  🎁 Điểm chạm Quà tặng
+                </TabsTrigger>
+              </TabsList>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const order = ["overview", "timeline", "emails", "gallery"];
+                  const currentIndex = order.indexOf(activeTab);
+                  const nextIndex = (currentIndex + 1) % order.length;
+                  setActiveTab(order[nextIndex]);
+                }}
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#2f6cf5]/15 hover:bg-[#2f6cf5] hover:text-white dark:hover:text-black text-[#2f6cf5] font-extrabold text-xs transition-all border border-[#2f6cf5]/20 cursor-pointer shadow-xs select-none hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <span>Điểm chạm tiếp theo</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
 
             <TabsContent value="overview" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
-              {/* LOYALTY ENGINE DYNAMIC VISUALIZER CONTAINER */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Interactive Points Control Box */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="relative flex flex-col justify-between overflow-hidden shadow-lg transition-colors border border-[#2f6cf5]/30 bg-gradient-to-br from-sidebar/90 to-sidebar/40 p-6 rounded-[10px] hover:shadow-xl hover:border-[#2f6cf5]/50 group"
-            >
-              {/* Decorative glows */}
-              <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-[#2f6cf5] to-indigo-600 rounded-l-3xl" />
-              <div className="absolute -right-8 -top-8 w-32 h-32 bg-[#2f6cf5]/20 rounded-full blur-3xl group-hover:bg-[#2f6cf5]/30 transition-colors" />
-              <div className="absolute right-10 bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Crown className="w-24 h-24 text-[#2f6cf5]" />
-              </div>
+              {(() => {
+                const localPred = getLocalStylePrediction(fashionStyle, colorPalette, materials, occasions, brandReference);
+                const stylistContent = {
+                  isAi: !!aiReport,
+                  vibe: aiReport?.vibe || localPred.vibe,
+                  analysis: aiReport?.analysis || localPred.analysis,
+                  prediction: aiReport?.prediction || localPred.prediction,
+                  tags: aiReport?.autoTags || localPred.autoTags,
+                  recommendedItems: aiReport?.recommendedItems || localPred.recommendedItems
+                };
 
-              <div className="relative z-10 pl-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest block bg-[#2f6cf5]/10 px-2.5 py-1 rounded-[10px] border border-[#2f6cf5]/20 w-fit">
-                    QUỸ LOYALTY
-                  </span>
-                  <Sparkles className="w-4 h-4 text-[#2f6cf5]" />
-                </div>
-                
-                <div className="flex items-baseline gap-2 mt-4 relative">
-                  <span className="text-5xl font-black text-foreground tracking-tighter drop-shadow-sm font-heading">
-                    {points.toLocaleString()}
-                  </span>
-                  <span className="text-sm font-extrabold text-[#2f6cf5] uppercase tracking-wider bg-background px-1.5 py-0.5 rounded shadow-sm border border-border/50">điểm</span>
-                </div>
-                
-                <div className="mt-5 space-y-2">
-                  <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">
-                    Sử dụng điểm để đổi quà, nâng hạng thành viên và tận hưởng các đặc quyền thượng lưu.
-                  </p>
-                  <div className="flex gap-2 text-[10px] font-bold">
-                    <span className="bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
-                      <TrendingUp className="w-3 h-3" /> +150 tháng này
-                    </span>
-                    <span className="bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded border border-amber-500/20">
-                      Sắp hết hạn: 0
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+                return (
+                  <>
+                    {/* LOYALTY ENGINE DYNAMIC VISUALIZER CONTAINER */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Interactive Points Control Box */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                        className="relative flex flex-col justify-between overflow-hidden shadow-lg transition-colors border border-[#2f6cf5]/30 bg-gradient-to-br from-sidebar/90 to-sidebar/40 p-6 rounded-[10px] hover:shadow-xl hover:border-[#2f6cf5]/50 group"
+                      >
+                        {/* Decorative glows */}
+                        <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-[#2f6cf5] to-indigo-600 rounded-l-3xl" />
+                        <div className="absolute -right-8 -top-8 w-32 h-32 bg-[#2f6cf5]/20 rounded-full blur-3xl group-hover:bg-[#2f6cf5]/30 transition-colors" />
+                        <div className="absolute right-10 bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                          <Crown className="w-24 h-24 text-[#2f6cf5]" />
+                        </div>
 
-            {/* Loyalty tier roadmap & meter */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              transition={{ delay: 0.1 }}
-              className="flex flex-col justify-between shadow-md transition-colors border border-border/50 bg-sidebar/75 p-6 rounded-[10px] hover:shadow-lg hover:border-primary/30 relative overflow-hidden group"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative z-10">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest block flex items-center gap-1.5">
-                  <Crown className="w-3.5 h-3.5 text-amber-500" />
-                  LỘ TRÌNH ĐẶC QUYỀN VIP
-                </span>
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-sm font-bold text-foreground capitalize">
-                    {tier.name.split(" ")[0]}
-                  </span>
-                  <span className="text-xs font-bold text-muted-foreground bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-[10px] border border-amber-500/20">
-                    {tier.nextTarget.replace(/pts?/g, 'điểm')}
-                  </span>
-                </div>
+                        <div className="relative z-10 pl-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-[#2f6cf5] uppercase tracking-widest block bg-[#2f6cf5]/10 px-2.5 py-1 rounded-[10px] border border-[#2f6cf5]/20 w-fit">
+                              QUỸ LOYALTY
+                            </span>
+                            <Sparkles className="w-4 h-4 text-[#2f6cf5]" />
+                          </div>
+                          
+                          <div className="flex items-baseline gap-2 mt-4 relative">
+                            <span className="text-5xl font-black text-foreground tracking-tighter drop-shadow-sm font-heading">
+                              {points.toLocaleString()}
+                            </span>
+                            <span className="text-sm font-extrabold text-[#2f6cf5] uppercase tracking-wider bg-background px-1.5 py-0.5 rounded shadow-sm border border-border/50">điểm</span>
+                          </div>
+                          
+                          <div className="mt-5 space-y-2 text-left">
+                            <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">
+                              Sử dụng điểm để đổi quà, nâng hạng thành viên và tận hưởng các đặc quyền thượng lưu.
+                            </p>
+
+                            <div className="flex gap-2 text-[10px] font-bold">
+                              <span className="bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
+                                <TrendingUp className="w-3 h-3" /> +150 tháng này
+                              </span>
+                              <span className="bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded border border-amber-500/20 font-bold">
+                                Sắp hết hạn: 0
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-2 relative z-25">
+                              {isAdjustingPoints ? (
+                                <div className="flex flex-col gap-2 w-full bg-background/90 p-3 rounded-[10px] border border-border">
+                                  <div className="flex gap-2">
+                                    <input
+                                      type="number"
+                                      value={adjustAmount === 0 ? "" : adjustAmount}
+                                      onChange={(e) => setAdjustAmount(Number(e.target.value))}
+                                      placeholder="VD: 500 hoặc -200"
+                                      className="flex-1 min-w-0 bg-transparent border border-border rounded-[8px] px-2.5 py-1 text-xs font-bold text-foreground focus:outline-none"
+                                    />
+                                    <button
+                                      onClick={async () => {
+                                        await handleAdjustPoints(adjustAmount);
+                                        setIsAdjustingPoints(false);
+                                      }}
+                                      className="bg-[#2f6cf5] hover:bg-blue-600 text-white font-extrabold px-3 py-1 rounded-[8px] text-xs shadow-sm transition-all"
+                                    >
+                                      Xác nhận
+                                    </button>
+                                    <button
+                                      onClick={() => setIsAdjustingPoints(false)}
+                                      className="bg-muted hover:bg-muted/80 text-muted-foreground font-bold px-2.5 py-1 rounded-[8px] text-xs transition-all"
+                                    >
+                                      Hủy
+                                    </button>
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={adjustReason}
+                                    onChange={(e) => setAdjustReason(e.target.value)}
+                                    placeholder="Lý do điều chỉnh điểm..."
+                                    className="w-full bg-transparent border border-border/60 rounded-[8px] px-2.5 py-1 text-[10px] text-foreground focus:outline-none"
+                                  />
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    setAdjustAmount(0);
+                                    setAdjustReason("");
+                                    setIsAdjustingPoints(true);
+                                  }}
+                                  className="w-full py-1.5 cursor-pointer rounded-[8px] border border-[#2f6cf5]/40 text-[#2f6cf5] hover:bg-[#2f6cf5] hover:text-white dark:hover:text-black font-bold text-[11px] transition-all flex items-center justify-center gap-1.5"
+                                >
+                                  <Plus className="w-3.5 h-3.5" /> Điều chỉnh điểm số
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+
+                      {/* Loyalty tier roadmap & meter */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                        transition={{ delay: 0.1 }}
+                        className="flex flex-col justify-between shadow-md transition-colors border border-border/50 bg-sidebar/75 p-6 rounded-[10px] hover:shadow-lg hover:border-primary/30 relative overflow-hidden group"
+                      >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative z-10 text-left">
+                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest block flex items-center gap-1.5">
+                            <Crown className="w-3.5 h-3.5 text-amber-500" />
+                            LỘ TRÌNH ĐẶC QUYỀN VIP
+                          </span>
+                          <div className="mt-4 flex items-center justify-between">
+                            <span className="text-sm font-bold text-foreground capitalize">
+                              {tier.name.split(" ")[0]}
+                            </span>
+                            <span className="text-xs font-bold text-muted-foreground bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-[10px] border border-amber-500/20">
+                              {tier.nextTarget.replace(/pts?/g, 'điểm')}
+                            </span>
+                          </div>
 
                 {/* Meter road bar */}
                 <div className="w-full bg-muted/60 rounded-full h-3 mt-3 overflow-hidden relative border border-border/40">
@@ -3000,7 +3115,10 @@ export function CustomerDashboard({
               )}
             </div>
           </motion.div>
-          </TabsContent>
+                  </>
+                );
+              })()}
+            </TabsContent>
 
           <TabsContent value="emails" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
             <Card className="border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden">
@@ -3062,17 +3180,106 @@ export function CustomerDashboard({
           </TabsContent>
 
           <TabsContent value="gallery" className="space-y-6 mt-0 animate-in fade-in-50 duration-500">
-            {/* Survey Widget (New Feature) */}
+            {/* INTRODUCTORY BANNER */}
+            <div className="rounded-[10px] border border-amber-500/30 bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-amber-500/5 p-5 text-left relative overflow-hidden shadow-sm">
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none">
+                <Gift className="w-24 h-24 text-amber-500" />
+              </div>
+              <div className="max-w-2xl relative z-10 space-y-1">
+                <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full">
+                  ✨ TRUNG TÂM QUÀ TẶNG ĐẶC QUYỀN
+                </Badge>
+                <h3 className="text-base font-black text-foreground mt-1">
+                  Trải nghiệm Giao diện Tự phục vụ dành cho Quý Hội viên
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Cổng điểm chạm tự phục vụ cao quý: dễ dàng tự kiểm tra điểm số tích lũy, quy đổi hàng loạt các Voucher đặc quyền cao cấp, và theo dõi lộ trình tích lũy thăng hạng trong thời gian thực.
+                </p>
+              </div>
+            </div>
+
+            {/* SECTIONS A & B: SELF-CHECK POINTS & TIER CLIMB ROADMAP */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+              {/* MEMBER LITE-CARD WITH DYNAMIC BALANCES */}
+              <div className="relative overflow-hidden rounded-[10px] border border-border/60 bg-gradient-to-tr from-sidebar via-sidebar to-muted/20 p-5 shadow-sm group">
+                {/* Simulated Glass luxury texture */}
+                <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
+                
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block">THẺ HỘI VIÊN SỐ</span>
+                    <span className="text-[11px] font-mono font-medium text-[#2f6cf5]">SEVA#-{customer.id?.substring(0,8).toUpperCase() || "MEMBER"}</span>
+                  </div>
+                  <Badge className={cn("text-xs font-black shadow-xs", tier.color, tier.bg)}>
+                    {tier.name}
+                  </Badge>
+                </div>
+
+                <div className="mt-4 space-y-1">
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block">QUỸ ĐIỂM HỘI VIÊN KHẢ DỤNG</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-black tracking-tight text-foreground font-heading drop-shadow-xs">
+                      {points.toLocaleString()}
+                    </span>
+                    <span className="text-xs font-bold text-amber-500 uppercase">Điểm chạm tích luỹ</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-border/45 flex justify-between items-center text-[11px] text-muted-foreground">
+                  <span className="font-semibold">Chủ thẻ: <span className="text-foreground font-black">{customer.name}</span></span>
+                  <span className="font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20">
+                    Hạn dùng: Không giới hạn
+                  </span>
+                </div>
+              </div>
+
+              {/* TIER UPGRADE PATH */}
+              <div className="rounded-[10px] border border-border/60 bg-sidebar/70 p-5 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <TrendingUp className="w-4 h-4 text-emerald-500" />
+                    <span className="text-xs font-bold text-foreground">TIẾN TRÌNH TÍCH LŨY THĂNG HẠNG</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
+                    Tần suất giao dịch và tích lũy điểm chạm sẽ trực tiếp nâng tầm quý hội viên lên các thứ bậc tối cao, mở khóa những đặc quyền chăm sóc cá nhân hóa thượng lưu nhất.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-bold">
+                    <span className="text-muted-foreground">Cấp bậc hiện tại: <span className="text-primary font-black">{tier.name.split(" ")[0]}</span></span>
+                    <span className="text-[#2f6cf5]">{tier.nextTarget.replace(/pts?/g, 'điểm')}</span>
+                  </div>
+                  
+                  {/* Progress bar */}
+                  <div className="w-full bg-muted/60 dark:bg-muted/15 rounded-full h-2.5 overflow-hidden border border-border/30 relative">
+                    <div 
+                      className="bg-gradient-to-r from-indigo-500 via-[#2f6cf5] to-emerald-500 h-full rounded-full transition-all duration-700 shadow-sm"
+                      style={{ width: `${Math.min(100, Math.max(8, tier.progress))}%` }}
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center text-[10px] text-muted-foreground font-medium pt-1">
+                    <span>Hạng Bạc</span>
+                    <span>Hạng Vàng</span>
+                    <span>Thượng Lưu Kim Cương</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SURVEY SATISFACTION PORTLET */}
             {redemptionEvents.length > 0 && !surveySubmitted && (
-              <Card className="border-2 border-dashed border-primary/20 bg-primary/5 rounded-[10px] overflow-hidden shadow-sm">
+              <Card className="border border-dashed border-[#2f6cf5]/30 bg-[#2f6cf5]/5 rounded-[10px] overflow-hidden shadow-sm text-left">
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-primary/10 rounded-[10px]">
-                      <Smile className="w-5 h-5 text-primary" />
+                    <div className="p-2 bg-[#2f6cf5]/10 rounded-[10px]">
+                      <Smile className="w-5 h-5 text-[#2f6cf5]" />
                     </div>
                     <div>
-                      <CardTitle className="text-base font-black">Khảo sát hài lòng sau đổi thưởng</CardTitle>
-                      <CardDescription className="text-[10px]">Đánh giá nhanh trải nghiệm quà tặng của hội viên.</CardDescription>
+                      <CardTitle className="text-sm font-black">Khảo sát ý kiến hội viên</CardTitle>
+                      <CardDescription className="text-[10px]">Hãy giúp chúng tôi tinh chỉnh dịch vụ quà tặng ngày càng độc bản.</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -3081,11 +3288,12 @@ export function CustomerDashboard({
                     {[1, 2, 3, 4, 5].map((num) => (
                       <button
                         key={num}
+                        type="button"
                         onClick={() => setSurveyRating(num)}
                         className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-all",
+                          "w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-all cursor-pointer",
                           surveyRating === num 
-                            ? "bg-primary text-white scale-110 shadow-lg shadow-primary/30" 
+                            ? "bg-[#2f6cf5] text-white scale-110 shadow-lg shadow-[#2f6cf5]/30" 
                             : "bg-background border border-border hover:border-primary/50 text-muted-foreground"
                         )}
                       >
@@ -3094,81 +3302,212 @@ export function CustomerDashboard({
                     ))}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">Phản hồi định tính (Qualitative Feedback)</Label>
+                    <Label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">Cảm nhận của quý khách khi trải nghiệm tự phục vụ</Label>
                     <textarea 
-                      className="w-full min-h-[80px] p-3 text-xs bg-background border border-border rounded-[10px] focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                      placeholder="Ghi chú lại đánh giá của khách hàng về món quà hoặc quy trình đổi..."
+                      className="w-full min-h-[70px] p-2.5 text-xs bg-background border border-border rounded-[8px] focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                      placeholder="Nhập vào ý kiến phản hồi về món quà hoặc quy trình thăng hạng tự động..."
                       value={surveyComment}
                       onChange={(e) => setSurveyComment(e.target.value)}
                     />
                   </div>
                   <Button 
-                    disabled={!surveyRating || !surveyComment}
+                    disabled={!surveyRating}
                     onClick={() => {
                       setSurveySubmitted(true);
-                      toast.success("Cảm ơn! Phản hồi khảo sát đã được lưu vào hệ thống.");
+                      toast.success("Cảm ơn! Ghi nhận ý kiến tự phục vụ của quý khách lên hệ thống.");
                     }}
-                    className="w-full h-10 rounded-[10px] font-bold bg-[#2f6cf5] hover:bg-blue-600 shadow-lg shadow-blue-500/20"
+                    className="w-full h-9 rounded-[8px] text-xs font-bold bg-[#2f6cf5] hover:bg-blue-600 shadow-md shadow-blue-500/10 cursor-pointer"
                   >
-                    Lưu phản hồi khảo sát
+                    Gửi phản hồi chất lượng Điểm chạm
                   </Button>
                 </CardContent>
               </Card>
             )}
 
             {surveySubmitted && (
-               <Card className="border border-emerald-500/30 bg-emerald-500/5 rounded-[10px] p-4 flex items-center gap-3">
+               <Card className="border border-emerald-500/30 bg-emerald-500/5 rounded-[10px] p-4 flex items-center gap-3 text-left">
                   <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-600 flex items-center justify-center">
                     <Check className="w-5 h-5" />
                   </div>
                   <div>
-                    <h5 className="text-xs font-black text-emerald-700">Khảo sát đã hoàn tất</h5>
-                    <p className="text-[10px] text-emerald-600/70">Xếp hạng: {surveyRating}/5 - Phản hồi: "{surveyComment}"</p>
+                    <h5 className="text-xs font-black text-emerald-700">Khảo sát điểm chạm hoàn tất</h5>
+                    <p className="text-[10px] text-emerald-600/70 font-medium">Xếp hạng: {surveyRating}/5 - Phản hồi: "{surveyComment || "Trải nghiệm rực rỡ"}"</p>
                   </div>
                </Card>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {MOCK_REWARDS.map((reward) => (
-                <Card key={reward.id} className="group overflow-hidden border-border/40 hover:border-amber-500/30 transition-all bg-card/60 backdrop-blur-sm">
-                  <div className="aspect-video w-full overflow-hidden relative">
-                    <img 
-                      src={reward.image} 
-                      alt={reward.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                      <Badge className="bg-amber-500 text-white border-none shadow-lg">
-                        {reward.points} điểm
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardHeader className="p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-sm font-bold truncate">{reward.name}</CardTitle>
-                      <span className="text-[10px] font-black uppercase text-amber-500 tracking-wider shrink-0">{reward.category}</span>
-                    </div>
-                    <CardDescription className="text-[11px] flex items-center gap-1 mt-1">
-                      <Calendar className="w-3 h-3" /> Ngày nhận: {reward.date}
-                    </CardDescription>
-                  </CardHeader>
-                  <div className="px-4 pb-4 flex items-center justify-between">
-                    <button className="text-[10px] font-bold text-[#2f6cf5] flex items-center gap-1 hover:underline">
-                      <Compass className="w-3 h-3" /> Xem chứng từ <ExternalLink className="w-2.5 h-2.5" />
-                    </button>
-                    <Badge variant="outline" className="text-[10px] bg-emerald-500/5 text-emerald-500 border-emerald-500/20">
-                      Đã sử dụng
-                    </Badge>
-                  </div>
-                </Card>
-              ))}
-              <button className="border-2 border-dashed border-border/40 rounded-[10px] p-6 flex flex-col items-center justify-center gap-3 text-muted-foreground hover:bg-muted/30 hover:border-primary/30 transition-all min-h-[200px]">
-                <div className="w-12 h-12 rounded-[10px] bg-muted flex items-center justify-center">
-                  <Plus className="w-6 h-6" />
+            {/* HIGH-FIDELITY REDEEMABLE VOUCHERS GRID */}
+            <div className="space-y-4 text-left">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-1.5 h-3 rounded-full bg-amber-500" />
+                    KHO VOUCHER UƯ ĐÃI: TỰ PHỤC VỤ QUY ĐỔI
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground">Quý khách chọn phần quà ưng ý, bấm đổi trực tuyến để tạo chứng từ mã số lập tức.</p>
                 </div>
-                <p className="text-xs font-bold">Thêm quà đã đổi thủ công</p>
-              </button>
+                <Badge variant="outline" className="bg-amber-500/5 text-amber-500 border-amber-500/20 text-[10px] font-bold">
+                  {points > 0 ? "Còn lượt đổi" : "Tích thêm điểm"}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  {
+                    id: "ssv1",
+                    name: "Voucher Trà Chiều Hoàng Gia SEVA Lounge",
+                    points: 400,
+                    category: "Ẩm Thực VIP",
+                    image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=400",
+                    desc: "Thưởng thức set trà bánh thượng phẩm cho 2 người tại phòng chờ tổng thống cao quý."
+                  },
+                  {
+                    id: "ssv2",
+                    name: "Nến Thơm Organic Signature Sáp Đậu Nành",
+                    points: 800,
+                    category: "Quà Tặng Thượng Lưu",
+                    image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=400",
+                    desc: "Hương gỗ tuyết tùng phảng phất hương hoa thanh quý tao nhã."
+                  },
+                  {
+                    id: "ssv3",
+                    name: "Khăn Lụa Tơ Tằm Bảo Lộc Hand-Painted",
+                    points: 1500,
+                    category: "Cá Nhân Hóa",
+                    image: "https://images.unsplash.com/photo-1601050638917-3606f548f246?auto=format&fit=crop&q=80&w=400",
+                    desc: "Vải lụa Bảo Lộc thượng hạng thêu họa tiết cá chép hoa sen vẽ tay sắc sảo."
+                  },
+                  {
+                    id: "ssv4",
+                    name: "Vé Mời Private Fashion Showcase SEVA",
+                    points: 600,
+                    category: "Sự Kiện Đặc Quyền",
+                    image: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?auto=format&fit=crop&q=80&w=400",
+                    desc: "Tọa đàm thưởng lãm trước các tuyệt tác trang sức kim cương tự nhiên sắp ra mắt."
+                  },
+                  {
+                    id: "ssv5",
+                    name: "Hộp Bọc Nhung Đựng Bảo Vật Gỗ Tuyết Tùng",
+                    points: 2000,
+                    category: "Cá Nhân Hóa",
+                    image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=400",
+                    desc: "Hộp đựng trang sức nhiều ngăn lót nhung tơ, bộc bạch sự sang trọng tột bực."
+                  },
+                ].map((reward) => {
+                  const canRedeem = points >= reward.points;
+                  return (
+                    <Card key={reward.id} className="group overflow-hidden border-border/40 hover:border-amber-500/30 transition-all bg-card/60 backdrop-blur-xs flex flex-col justify-between">
+                      <div className="aspect-video w-full overflow-hidden relative">
+                        <img 
+                          src={reward.image} 
+                          alt={reward.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent flex items-end p-3">
+                          <Badge className="bg-amber-500 text-white border-none shadow-md font-bold text-[10px]">
+                            {reward.points} điểm
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 space-y-2 flex-grow">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-black uppercase text-amber-500 tracking-wider shrink-0 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/20">{reward.category}</span>
+                        </div>
+                        <h5 className="text-xs font-black truncate text-foreground">{reward.name}</h5>
+                        <p className="text-[11px] text-muted-foreground leading-normal line-clamp-2">
+                          {reward.desc}
+                        </p>
+                      </div>
+
+                      <div className="px-4 pb-4 pt-1">
+                        <button
+                          type="button"
+                          disabled={!canRedeem}
+                          onClick={async () => {
+                            if (!canRedeem) return;
+                            
+                            const newRedObj = {
+                              id: "self-red-" + Date.now().toString(),
+                              name: reward.name,
+                              rewardName: reward.name,
+                              description: `Đổi thành công qua Cổng tự phục vụ VIP.`,
+                              pointsUsed: reward.points,
+                              pointsRequired: reward.points,
+                              points: reward.points,
+                              status: "Đã kích hoạt",
+                              date: new Date().toLocaleDateString("vi-VN"),
+                              createdAt: new Date().toISOString(),
+                            };
+
+                            const updatedAll = [newRedObj, ...(customer.redemptions || [])];
+                            const dedPoints = Math.max(0, points - reward.points);
+                            setPoints(dedPoints);
+
+                            await updateFirestore({
+                              points: dedPoints,
+                              redemptions: updatedAll,
+                            }, `Đổi thành công "${reward.name}"! Quỹ điểm thặng dư: ${dedPoints.toLocaleString()} điểm.`);
+                          }}
+                          className={cn(
+                            "w-full py-2 rounded-[8px] font-black text-xs transition-all shadow-xs cursor-pointer text-center block",
+                            canRedeem 
+                              ? "bg-amber-500 text-white hover:bg-amber-600 hover:scale-[1.02] active:scale-[0.98]" 
+                              : "bg-muted text-muted-foreground/60 border border-border/80 cursor-not-allowed"
+                          )}
+                        >
+                          {canRedeem ? "Đổi ưu đãi trực tuyến" : `Cần thêm ${reward.points - points} điểm`}
+                        </button>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* SAVED VOUCHERS LIST / HISTORY */}
+            <div className="space-y-4 text-left pt-3">
+              <div>
+                <h4 className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-1.5 h-3 rounded-full bg-indigo-500" />
+                  SỔ TAY VOUCHER & QUÀ TẶNG ĐÃ SỞ HỮU ({redemptionEvents.length})
+                </h4>
+                <p className="text-[11px] text-muted-foreground">Lịch sử tích lũy các ưu đãi mà quý khách hàng đã thực hiện quy đổi trên hệ thống.</p>
+              </div>
+
+              {redemptionEvents.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-8 bg-muted/10 border border-dashed rounded-[10px] text-center">
+                  <span className="text-2xl mb-2">🎟️</span>
+                  <p className="text-xs font-bold text-foreground">Hộp voucher rỗng</p>
+                  <p className="text-[10px] text-muted-foreground max-w-xs mt-1">Quý khách chưa quy đổi voucher nào. Hãy tích lũy điểm chạm và đổi các phần quà cao cấp ở trên.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {redemptionEvents.map((event: any, index: number) => (
+                    <div 
+                      key={event.id || index} 
+                      className="p-3.5 rounded-[10px] border border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/30 transition-all flex items-center justify-between gap-3 relative overflow-hidden group"
+                    >
+                      <div className="absolute right-0 top-0 translate-x-3 -translate-y-3 w-12 h-12 bg-emerald-500/10 rounded-full blur-xl pointer-events-none" />
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          <h6 className="text-xs font-bold truncate text-foreground">{event.title.replace("Đổi quà ưu đãi: ", "")}</h6>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground font-medium truncate">{event.description}</p>
+                        <span className="text-[10px] font-semibold text-muted-foreground uppercase">{event.dateStr}</span>
+                      </div>
+                      <div className="shrink-0 flex flex-col items-end gap-1 text-right">
+                        <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">{event.valueStr || event.pointsStr}</span>
+                        <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20 text-[9px] font-extrabold rounded-[5px] px-1.5 py-0">
+                          {event.badgeText || "Sẵn sàng"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
 

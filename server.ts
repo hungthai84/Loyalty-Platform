@@ -223,38 +223,50 @@ async function startServer() {
     }
   });
 
-  // API Route for Gemini Chat Widget
-  app.post("/api/gemini/chat", async (req, res) => {
+  // API Route for Campaign Image Generation
+  app.post("/api/gemini/generate-campaign-image", async (req, res) => {
     try {
-      const { message } = req.body;
+      const { campaignName, audience, multiplier } = req.body;
       const gemini = getGeminiClient();
 
-      const prompt = `
-      Bạn là trợ lý AI (CLP Assistant) của nền tảng Customer Loyalty Platform. 
-      Bạn giúp đỡ người quản trị (admin) trả lời các câu hỏi về khách hàng, hoặc luật hạng thẻ.
-      Người dùng hỏi: "${message}"
-
-      Hãy trả lời bằng tiếng Việt, ngắn gọn, súc tích và thân thiện.
-      `;
-
-      const response = await gemini.models.generateContent({
-        model: "gemini-3.5-flash",
-        contents: prompt,
-        config: {
-          temperature: 0.7,
-        }
+      const interaction = await gemini.interactions.create({
+        model: 'gemini-3.1-flash-image',
+        input: `A professional, luxurious, and minimalistic promotional banner image for a jewelry campaign named "${campaignName || 'Special Event'}". The campaign offers a multiplier of x${multiplier || 1} points for the audience: ${audience || 'everyone'}. Visuals should include elegant diamonds or gold jewelry, subtle light flares, very high quality, no text in the image.`,
+        response_modalities: ['image'],
+        generation_config: {
+          image_config: {
+            aspect_ratio: "16:9",
+            image_size: "1K"
+          },
+        },
       });
+
+      let imageUrl = null;
+      for (const step of interaction.steps) {
+        if (step.type === 'model_output') {
+          const imageContent = step.content?.find((c: any) => c.type === 'image');
+          if (imageContent && imageContent.data) {
+            const base64EncodeString: string = imageContent.data;
+            const mimeType = imageContent.mime_type || 'image/jpeg';
+            imageUrl = `data:${mimeType};base64,${base64EncodeString}`;
+          }
+        }
+      }
+
+      if (!imageUrl) {
+        throw new Error("Không thể tạo ảnh từ model.");
+      }
 
       return res.json({
         success: true,
-        reply: response.text,
+        data: { imageUrl },
       });
-
     } catch (err: any) {
-      console.error("Gemini API Error in chat:", err);
+      console.error("Gemini API Error in generate-campaign-image:", err);
       return res.status(500).json({
         success: false,
-        message: "Lỗi kết nối Gemini AI"
+        message: err.message || "Lỗi xử lý AI tạo ảnh.",
+        isMissingKey: err.message?.includes("GEMINI_API_KEY") || err.message?.includes("API_KEY")
       });
     }
   });

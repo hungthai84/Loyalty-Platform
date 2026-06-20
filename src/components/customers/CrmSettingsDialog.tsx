@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { X, Star, Building2, SlidersHorizontal, GitCompare } from "lucide-react";
+import { X, SlidersHorizontal } from "lucide-react";
 import * as motion from "motion/react-client";
-import { CompanyManager } from "@/components/settings/CompanyManager";
 import { AttributeManager } from "@/components/customers/AttributeManager";
 import { AttributeDefinition } from "@/types";
 
@@ -10,10 +9,10 @@ interface CrmSettingsDialogProps {
   attributes: AttributeDefinition[];
 }
 
-type TabType = "tiers" | "companies" | "custom_fields";
+type TabType = "custom_fields";
 
 export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("companies");
+  const [activeTab, setActiveTab] = useState<TabType>("custom_fields");
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
@@ -32,7 +31,7 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
               Cài đặt Hệ thống CRM & VIP
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Cấu hình cấp bậc hội viên, quản lý hệ thống đại lý/chi nhánh trực thuộc, bộ quy luật chuyển trạng thái và tùy chỉnh các trường bổ sung.
+              Cấu hình cấp bậc hội viên, bộ quy luật chuyển trạng thái và tùy chỉnh các trường bổ sung.
             </p>
           </div>
           <button
@@ -46,7 +45,6 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
         {/* Tab Navigation bar */}
         <div className="flex border-b border-border bg-muted/10 px-6 py-2 gap-1 overflow-x-auto">
           {[
-            { id: "companies", label: "Công ty & Chi nhánh", icon: Building2, color: "text-blue-500" },
             { id: "custom_fields", label: "Trường dữ liệu tùy chỉnh", icon: SlidersHorizontal, color: "text-emerald-500" },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -70,22 +68,6 @@ export function CrmSettingsDialog({ onClose, attributes }: CrmSettingsDialogProp
 
         {/* Tab Body Contents */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-background/50">
-          {activeTab === "companies" && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              <div className="bg-white/50 backdrop-blur-sm p-6 rounded-[10px] border border-border/50 mb-6 flex items-center justify-between text-left">
-                <div>
-                  <h3 className="text-lg font-bold font-heading flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-blue-500" /> Quản lý Công ty & Chi nhánh
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Hệ thống phân cấp chi nhánh bán lẻ trang sức Seva, gán khách hàng & đối soát doanh thu đa vùng.
-                  </p>
-                </div>
-              </div>
-              <CompanyManager />
-            </div>
-          )}
-
           {activeTab === "custom_fields" && (
             <div className="max-w-4xl mx-auto space-y-6">
               <div className="bg-white/50 backdrop-blur-sm p-6 rounded-[10px] border border-border/50 mb-4 flex items-center justify-between text-left">

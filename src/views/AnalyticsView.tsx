@@ -640,606 +640,599 @@ const heatmapData = [
   );
 
   return (
-    <div className="flex-1 space-y-6 font-sans">
+    <div className="flex-1 space-y-12 font-sans pb-20">
       {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
 
-      <div className="flex flex-col gap-8">
-        {/* Reports Navigation - Horizontal Tabs */}
-        <nav className="flex flex-wrap items-center gap-2 p-2 bg-muted/20 border border-border/40 rounded-xl">
-          {reportSections.map((section) => (
-            <button
-              key={section.id}
-              onClick={() => setActiveTab(section.id)}
-              className={cn(
-                "flex items-center gap-2.5 px-5 py-2.5 rounded-[10px] text-sm font-bold transition-all cursor-pointer group relative",
-                activeTab === section.id
-                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <section.icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", activeTab === section.id ? "text-primary-foreground" : "text-muted-foreground")} />
-              {section.label}
-              {activeTab === section.id && (
-                <motion.div 
-                  layoutId="activeTabIndicator" 
-                  className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary-foreground" 
-                />
-              )}
-            </button>
-          ))}
-        </nav>
+      <div className="flex flex-col gap-12">
+        {/* Table of Contents / Sidebar (Optional, keeping it subtle) */}
+        <div className="flex flex-col gap-16">
+          {/* 1. TỔNG QUAN (OVERVIEW) */}
+          <section id="overview" className="space-y-8 scroll-mt-24">
+            <div className="flex items-center gap-3 border-b border-border/40 pb-4">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Activity className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black font-heading tracking-tight">Báo cáo Tổng quan</h3>
+                <p className="text-xs text-muted-foreground font-medium">Các chỉ số KPI quan trọng nhất của hệ thống.</p>
+              </div>
+            </div>
 
-        {/* Main Content Area */}
-        <main className="flex-1 space-y-8 min-w-0">
-          <AnimatePresence mode="wait">
-            {activeTab === "overview" && (
-              <motion.div
-                key="overview"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
-              >
-                {/* KPI Stats */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  {statCards.map((stat, i) => (
-                    <motion.div
-                      key={stat.title}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                    >
-                      <Card className="border border-border/50 bg-card/50 backdrop-blur-sm relative overflow-hidden shadow-sm hover:shadow transition-shadow">
-                        <CardHeader className="flex flex-row items-center justify-between pb-3">
-                          <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
-                            {stat.title}
-                          </CardTitle>
-                          <div className="p-2 bg-primary/10 rounded-[10px] text-primary">
-                            <stat.icon className="h-4 w-4" />
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-3xl font-black font-heading tracking-tight drop-shadow-sm">{stat.value}</div>
-                          <p className="text-xs flex items-center mt-2 font-medium">
-                            {stat.positive ? (
-                              <span className="text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded flex items-center mr-2">
-                                <ArrowUpRight className="w-3 h-3 mr-0.5" /> {stat.trend}
-                              </span>
-                            ) : (
-                              <span className="text-rose-500 bg-rose-500/10 px-1.5 py-0.5 rounded flex items-center mr-2">
-                                <ArrowDownRight className="w-3 h-3 mr-0.5" /> {stat.trend}
-                              </span>
-                            )}
-                            <span className="text-muted-foreground">so với kỳ trước</span>
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
-
-                <div className="grid gap-6 md:grid-cols-7">
-                  <Card className="md:col-span-4 border-border/50 bg-card/50 backdrop-blur-sm">
-                    <CardHeader>
-                      <CardTitle className="font-heading">Xu hướng Tích lũy vs Đổi điểm</CardTitle>
-                      <CardDescription>
-                        So sánh lượng điểm khách hàng tích lũy được và lượng điểm đã sử dụng.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[350px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={trendData}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
-                          <XAxis 
-                            dataKey="month" 
-                            axisLine={false} 
-                            tickLine={false} 
-                            tick={{ fontSize: 12, fill: "#64748b", fontWeight: 500 }}
-                            dy={10}
-                          />
-                          <YAxis 
-                            axisLine={false} 
-                            tickLine={false} 
-                            tick={{ fontSize: 11, fill: "#64748b" }}
-                            dx={-10}
-                          />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: "var(--card)", 
-                              borderColor: "var(--border)",
-                              borderRadius: "12px",
-                              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-                              border: "1px solid rgba(226, 232, 240, 0.5)",
-                              fontWeight: 500
-                            }}
-                            itemStyle={{ fontSize: "13px" }}
-                            labelStyle={{ fontSize: "11px", fontWeight: "bold", color: "#64748b", marginBottom: "4px" }}
-                          />
-                          <Legend iconType="circle" wrapperStyle={{ paddingTop: "20px", fontSize: "12px", fontWeight: "bold" }} />
-                          <Line 
-                            type="monotone" 
-                            dataKey="tích" 
-                            name="Điểm tích lũy"
-                            stroke="#2f6cf5" 
-                            strokeWidth={3} 
-                            dot={{ r: 4, fill: "#2f6cf5", strokeWidth: 0 }}
-                            activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="đổi" 
-                            name="Điểm đổi quà"
-                            stroke="#94a3b8" 
-                            strokeWidth={3} 
-                            strokeDasharray="5 5"
-                            dot={{ r: 4, fill: "#94a3b8", strokeWidth: 0 }}
-                            activeDot={{ r: 5, strokeWidth: 0 }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="md:col-span-3 border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
-                    <CardHeader className="border-b border-border/40 pb-5">
-                      <CardTitle className="font-heading text-lg">Phân bổ Cấp bậc</CardTitle>
-                      <CardDescription>
-                        Tỷ lệ khách hàng theo từng cấp độ thành viên.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[350px] flex flex-col items-center justify-center pt-6">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={tierData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={80}
-                            outerRadius={105}
-                            paddingAngle={3}
-                            dataKey="value"
-                            stroke="var(--card)"
-                            strokeWidth={3}
-                          >
-                            {tierData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: "var(--card)", 
-                              borderColor: "var(--border)",
-                              borderRadius: "12px",
-                              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-                              border: "1px solid rgba(226, 232, 240, 0.5)",
-                              fontWeight: 500
-                            }}
-                            itemStyle={{ fontSize: "13px", fontWeight: "bold" }}
-                          />
-                          <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: "12px", fontWeight: "bold" }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-[45%] text-center pointer-events-none mt-4">
-                        <p className="text-3xl font-black font-heading tracking-tight drop-shadow-sm">915</p>
-                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">TV Hoạt động</p>
+            {/* KPI Stats */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {statCards.map((stat, i) => (
+                <motion.div
+                  key={stat.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <Card className="border border-border/50 bg-card/50 backdrop-blur-sm relative overflow-hidden shadow-sm hover:shadow transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between pb-3">
+                      <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
+                        {stat.title}
+                      </CardTitle>
+                      <div className="p-2 bg-primary/10 rounded-[10px] text-primary">
+                        <stat.icon className="h-4 w-4" />
                       </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-black font-heading tracking-tight drop-shadow-sm">{stat.value}</div>
+                      <p className="text-xs flex items-center mt-2 font-medium">
+                        {stat.positive ? (
+                          <span className="text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded flex items-center mr-2">
+                            <ArrowUpRight className="w-3 h-3 mr-0.5" /> {stat.trend}
+                          </span>
+                        ) : (
+                          <span className="text-rose-500 bg-rose-500/10 px-1.5 py-0.5 rounded flex items-center mr-2">
+                            <ArrowDownRight className="w-3 h-3 mr-0.5" /> {stat.trend}
+                          </span>
+                        )}
+                        <span className="text-muted-foreground">so với kỳ trước</span>
+                      </p>
                     </CardContent>
                   </Card>
-                </div>
-              </motion.div>
-            )}
+                </motion.div>
+              ))}
+            </div>
 
-            {activeTab === "customers" && (
-              <motion.div
-                key="customers"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
-              >
-                <div className="grid gap-6">
-                  <div className="bg-card border border-border/50 rounded-[10px] p-1 shadow-sm">
-                    <ChurnRiskList customers={dbCustomers} />
+            <div className="grid gap-6 md:grid-cols-7">
+              <Card className="md:col-span-4 border-border/50 bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="font-heading">Xu hướng Tích lũy vs Đổi điểm</CardTitle>
+                  <CardDescription>
+                    So sánh lượng điểm khách hàng tích lũy được và lượng điểm đã sử dụng.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="h-[350px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trendData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
+                      <XAxis 
+                        dataKey="month" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fontSize: 12, fill: "#64748b", fontWeight: 500 }}
+                        dy={10}
+                      />
+                      <YAxis 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fontSize: 11, fill: "#64748b" }}
+                        dx={-10}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: "var(--card)", 
+                          borderColor: "var(--border)",
+                          borderRadius: "12px",
+                          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+                          border: "1px solid rgba(226, 232, 240, 0.5)",
+                          fontWeight: 500
+                        }}
+                        itemStyle={{ fontSize: "13px" }}
+                        labelStyle={{ fontSize: "11px", fontWeight: "bold", color: "#64748b", marginBottom: "4px" }}
+                      />
+                      <Legend iconType="circle" wrapperStyle={{ paddingTop: "20px", fontSize: "12px", fontWeight: "bold" }} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="tích" 
+                        name="Điểm tích lũy"
+                        stroke="#2f6cf5" 
+                        strokeWidth={3} 
+                        dot={{ r: 4, fill: "#2f6cf5", strokeWidth: 0 }}
+                        activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="đổi" 
+                        name="Điểm đổi quà"
+                        stroke="#94a3b8" 
+                        strokeWidth={3} 
+                        strokeDasharray="5 5"
+                        dot={{ r: 4, fill: "#94a3b8", strokeWidth: 0 }}
+                        activeDot={{ r: 5, strokeWidth: 0 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card className="md:col-span-3 border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
+                <CardHeader className="border-b border-border/40 pb-5">
+                  <CardTitle className="font-heading text-lg">Phân bổ Cấp bậc</CardTitle>
+                  <CardDescription>
+                    Tỷ lệ khách hàng theo từng cấp độ thành viên.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="h-[350px] flex flex-col items-center justify-center pt-6">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={tierData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={80}
+                        outerRadius={105}
+                        paddingAngle={3}
+                        dataKey="value"
+                        stroke="var(--card)"
+                        strokeWidth={3}
+                      >
+                        {tierData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: "var(--card)", 
+                          borderColor: "var(--border)",
+                          borderRadius: "12px",
+                          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+                          border: "1px solid rgba(226, 232, 240, 0.5)",
+                          fontWeight: 500
+                        }}
+                        itemStyle={{ fontSize: "13px", fontWeight: "bold" }}
+                      />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: "12px", fontWeight: "bold" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-[45%] text-center pointer-events-none mt-4">
+                    <p className="text-3xl font-black font-heading tracking-tight drop-shadow-sm">915</p>
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">TV Hoạt động</p>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
 
-                  <Card className="border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
-                    <CardHeader className="border-b border-border/40 pb-5">
-                      <CardTitle className="font-heading text-lg">Khung giờ vàng mua sắm (Khách VIP)</CardTitle>
-                      <CardDescription>
-                        Mật độ giao dịch thành công theo các khung giờ trong tuần thông qua hệ thống POS.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                      <div className="w-full overflow-x-auto pb-4">
-                        <div className="min-w-[600px]">
-                          <div className="flex mb-2">
-                            <div className="w-10 shrink-0"></div>
-                            {heatmapHours.map(hour => (
-                              <div key={hour} className="flex-1 text-center text-[10px] text-muted-foreground font-semibold">
-                                {hour}
-                              </div>
-                            ))}
+          {/* 2. KHÁCH HÀNG (CUSTOMERS) */}
+          <section id="customers" className="space-y-8 scroll-mt-24">
+            <div className="flex items-center gap-3 border-b border-border/40 pb-4">
+              <div className="p-2 bg-emerald-500/10 rounded-lg">
+                <Users className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black font-heading tracking-tight">Phân tích Khách hàng</h3>
+                <p className="text-xs text-muted-foreground font-medium">Nhận diện rủi ro rời bỏ và hành vi VIP.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-6">
+              <div className="bg-card border border-border/50 rounded-[10px] p-1 shadow-sm">
+                <ChurnRiskList customers={dbCustomers} />
+              </div>
+
+              <Card className="border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
+                <CardHeader className="border-b border-border/40 pb-5">
+                  <CardTitle className="font-heading text-lg">Khung giờ vàng mua sắm (Khách VIP)</CardTitle>
+                  <CardDescription>
+                    Mật độ giao dịch thành công theo các khung giờ trong tuần thông qua hệ thống POS.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="w-full overflow-x-auto pb-4">
+                    <div className="min-w-[600px]">
+                      <div className="flex mb-2">
+                        <div className="w-10 shrink-0"></div>
+                        {heatmapHours.map(hour => (
+                          <div key={hour} className="flex-1 text-center text-[10px] text-muted-foreground font-semibold">
+                            {hour}
                           </div>
-                          <div className="space-y-1">
-                            {heatmapData.map((row, i) => (
-                              <div key={row.day} className="flex items-center gap-1.5">
-                                <div className="w-10 shrink-0 text-xs font-bold text-muted-foreground">{row.day}</div>
-                                {row.values.map((val, j) => {
-                                  const opacity = val === 0 ? 0.05 : Math.min(1, Math.max(0.1, val / 25));
-                                  return (
-                                    <div 
-                                      key={j} 
-                                      className="flex-1 aspect-square rounded-sm transition-all hover:scale-125 hover:z-10 cursor-pointer group relative" 
-                                      style={{ backgroundColor: `rgba(47, 108, 245, ${opacity})` }}
-                                    >
-                                      <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none shadow-md border border-border/10 whitespace-nowrap font-bold">
-                                        {val > 0 ? `${val} giao dịch` : 'Không có GD'}
-                                      </span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-2 flex items-center justify-end gap-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                        <span>Thấp</span>
-                        <div className="flex gap-1 h-2.5">
-                          {[0.05, 0.2, 0.4, 0.6, 0.8, 1].map((op, i) => (
-                            <div key={i} className="w-4 h-full rounded-[2px]" style={{ backgroundColor: `rgba(47, 108, 245, ${op})` }} />
-                          ))}
-                        </div>
-                        <span>Cao</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="font-heading">Khách hàng tích cực</CardTitle>
-                        <CardDescription>Thành viên có lượng điểm giao dịch cao nhất.</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {[
-                            { name: "Eleanor Pena", tier: "Atelier", points: "45,200", avatar: "EP" },
-                            { name: "Albert Flores", tier: "Icon", points: "32,850", avatar: "AF" },
-                            { name: "Arlene McCoy", tier: "Icon", points: "28,400", avatar: "AM" },
-                            { name: "Jane Cooper", tier: "Essential", points: "21,150", avatar: "JC" },
-                          ].map((customer) => (
-                            <div key={customer.name} className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-muted border border-border/50 flex items-center justify-center text-xs font-bold">
-                                  {customer.avatar}
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium leading-none">{customer.name}</p>
-                                  <p className="text-xs text-muted-foreground mt-1">{customer.tier}</p>
-                                </div>
-                              </div>
-                              <span className="text-sm font-bold text-primary">{customer.points} pts</span>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
-                      <CardHeader className="border-b border-border/40 pb-5">
-                        <CardTitle className="font-heading text-lg">Quy mô tệp theo Cấp bậc</CardTitle>
-                        <CardDescription>
-                          Số lượng thành viên đang hoạt động trong hệ thống.
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="h-[280px] pt-6">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart
-                            data={[
-                              { tier: "Member", count: 520 },
-                              { tier: "Essential", count: 340 },
-                              { tier: "Icon", count: 180 },
-                              { tier: "Atelier", count: 65 },
-                            ]}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
-                            <XAxis dataKey="tier" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} />
-                            <Tooltip cursor={{ fill: "rgba(47, 108, 245, 0.05)" }} />
-                            <Bar dataKey="count" radius={[8, 8, 0, 0]} fill="#2f6cf5">
-                              {[
-                                { fill: "#94a3b8" },
-                                { fill: "#38bdf8" },
-                                { fill: "#facc15" },
-                                { fill: "#2f6cf5" },
-                              ].map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                              ))}
-                            </Bar>
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === "loyalty" && (
-              <motion.div
-                key="loyalty"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
-              >
-                <div className="grid gap-6">
-                  <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
-                    <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
-                      <div>
-                        <CardTitle className="font-heading">Biểu đồ tăng trưởng CLV</CardTitle>
-                        <CardDescription>
-                          Phân tích giá trị vòng đời khách hàng và xu hướng mua sắm.
-                        </CardDescription>
-                      </div>
-                      <div className="flex items-center gap-1 bg-background/60 border border-border/60 p-1 rounded-[10px] shadow-xs">
-                        {["week", "month", "quarter"].map((p) => (
-                          <button 
-                            key={p}
-                            onClick={() => setClvPeriod(p as any)}
-                            className={cn(
-                              "px-3 py-1.5 text-[10px] font-bold rounded-[10px] transition-all uppercase tracking-wider",
-                              clvPeriod === p ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                            )}
-                          >
-                            {p === "week" ? "Tuần" : p === "month" ? "Tháng" : "Quý"}
-                          </button>
                         ))}
                       </div>
-                    </CardHeader>
-                    <CardContent className="h-[380px] pt-6">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={clvData}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
-                          <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} tickFormatter={(val) => `${val/1000000}tr`} />
-                          <Tooltip 
-                             contentStyle={{ backgroundColor: "var(--card)", borderRadius: "12px", border: "1px solid var(--border)" }}
-                             formatter={(value: number) => [formatCurrency(value, currentCurrency), ""]}
-                          />
-                          <Line type="monotone" dataKey="current" stroke="#2f6cf5" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                          {clvCompare && <Line type="monotone" dataKey="prev" stroke="#94a3b8" strokeWidth={3} strokeDasharray="5 5" dot={{ r: 4 }} />}
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="font-heading">Ưu đãi được đổi nhiều nhất</CardTitle>
-                        <CardDescription>Các phần thưởng khách hàng quan tâm nhất tháng này.</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {[
-                            { name: "Voucher giảm giá 1.250.000 ₫", count: 245, growth: "+12%" },
-                            { name: "Miễn phí đánh bóng trang sức", count: 184, growth: "+5%" },
-                            { name: "Bộ quà tặng nến thơm VIP", count: 92, growth: "+24%" },
-                            { name: "Giảm 10% đơn hàng kế tiếp", count: 76, growth: "-3%" },
-                          ].map((item, i) => (
-                            <div key={item.name} className="flex items-center justify-between">
-                              <span className="text-sm font-medium">{item.name}</span>
-                              <div className="flex items-center gap-3">
-                                <span className="text-sm font-bold">{item.count} lượt</span>
-                                <span className={cn("text-xs font-bold", item.growth.startsWith("+") ? "text-emerald-500" : "text-rose-500")}>
-                                  {item.growth}
-                                </span>
-                              </div>
+                      <div className="space-y-1">
+                        {heatmapData.map((row, i) => (
+                          <div key={row.day} className="flex items-center gap-1.5">
+                            <div className="w-10 shrink-0 text-xs font-bold text-muted-foreground">{row.day}</div>
+                            {row.values.map((val, j) => {
+                              const opacity = val === 0 ? 0.05 : Math.min(1, Math.max(0.1, val / 25));
+                              return (
+                                <div 
+                                  key={j} 
+                                  className="flex-1 aspect-square rounded-sm transition-all hover:scale-125 hover:z-10 cursor-pointer group relative" 
+                                  style={{ backgroundColor: `rgba(47, 108, 245, ${opacity})` }}
+                                >
+                                  <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none shadow-md border border-border/10 whitespace-nowrap font-bold">
+                                    {val > 0 ? `${val} giao dịch` : 'Không có GD'}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center justify-end gap-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                    <span>Thấp</span>
+                    <div className="flex gap-1 h-2.5">
+                      {[0.05, 0.2, 0.4, 0.6, 0.8, 1].map((op, i) => (
+                        <div key={i} className="w-4 h-full rounded-[2px]" style={{ backgroundColor: `rgba(47, 108, 245, ${op})` }} />
+                      ))}
+                    </div>
+                    <span>Cao</span>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="font-heading">Khách hàng tích cực</CardTitle>
+                    <CardDescription>Thành viên có lượng điểm giao dịch cao nhất.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {[
+                        { name: "Eleanor Pena", tier: "Atelier", points: "45,200", avatar: "EP" },
+                        { name: "Albert Flores", tier: "Icon", points: "32,850", avatar: "AF" },
+                        { name: "Arlene McCoy", tier: "Icon", points: "28,400", avatar: "AM" },
+                        { name: "Jane Cooper", tier: "Essential", points: "21,150", avatar: "JC" },
+                      ].map((customer) => (
+                        <div key={customer.name} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-muted border border-border/50 flex items-center justify-center text-xs font-bold">
+                              {customer.avatar}
                             </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
-                      <CardHeader>
-                        <CardTitle className="font-heading text-lg">Phân bổ quà tặng đổi thưởng</CardTitle>
-                        <CardDescription>Top 5 phần quà phổ biến nhất.</CardDescription>
-                      </CardHeader>
-                      <CardContent className="h-[250px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={popularRewardsData} layout="vertical">
-                            <XAxis type="number" hide />
-                            <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} width={100} />
-                            <Tooltip />
-                            <Bar dataKey="count" fill="#2f6cf5" radius={[0, 8, 8, 0]} barSize={20} />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === "behavior" && (
-              <motion.div
-                key="behavior"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
-              >
-                <div className="grid gap-6">
-                  <div className="border border-[#2f6cf5]/20 rounded-[10px] bg-[#2f6cf5]/5 p-6 border-dashed">
-                    <BespokeSimulator />
-                  </div>
-
-                  <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
-                    <CardHeader className="border-b border-border/40 pb-5">
-                      <CardTitle className="font-heading">Tăng trưởng thành viên mới</CardTitle>
-                      <CardDescription>Đăng ký Loyalty hàng ngày trong kỳ ({daysDiff} ngày).</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[380px] pt-6">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={filteredSignupsData}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
-                          <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} minTickGap={30} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} />
-                          <Tooltip />
-                          <Line type="monotone" dataKey="signups" stroke="#10b981" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === "ai" && (
-              <motion.div
-                key="ai"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
-              >
-                <div className="grid gap-6">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    <Card className="border-border/50 bg-gradient-to-br from-[#2f6cf5]/5 to-purple-500/5 backdrop-blur-sm shadow-md overflow-hidden relative border-primary/20">
-                      <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-                         <Sparkles className="w-32 h-32" />
-                      </div>
-                      <CardHeader>
-                        <CardTitle className="font-heading flex items-center gap-2">
-                          <Gem className="w-5 h-5 text-[#2f6cf5]" /> Loyalty ROI Calculator
-                        </CardTitle>
-                        <CardDescription>
-                          Ước tính hiệu quả kinh tế khi chuyển đổi các nhóm rủi ro thành trung thành.
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Khách hàng At-Risk</p>
-                            <p className="text-2xl font-black">84 <span className="text-sm font-medium text-muted-foreground">thành viên</span></p>
+                            <div>
+                              <p className="text-sm font-medium leading-none">{customer.name}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{customer.tier}</p>
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Mục tiêu chuyển đổi</p>
-                            <p className="text-2xl font-black text-emerald-500">10% <span className="text-sm font-medium text-muted-foreground">ROI+</span></p>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Doanh thu dự phóng</p>
-                            <p className="text-2xl font-black text-[#2f6cf5]">~ 405.000.000 <span className="text-sm font-medium text-muted-foreground">₫</span></p>
-                          </div>
-                        </div>
-                        <div className="mt-6 p-4 bg-primary/10 rounded-[10px] border border-primary/20 flex items-center justify-between">
-                           <p className="text-xs font-bold">Kích hoạt chiến dịch "Win-back" tự động?</p>
-                           <Button size="sm" className="rounded-[10px] font-bold">Khởi tạo ngay</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-
-                  <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden border-primary/20">
-                    <CardHeader className="border-b border-border/40 pb-5">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="font-heading">Dự báo chi tiêu tương lai (6 tháng)</CardTitle>
-                        <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">AI Smart Prediction</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="h-[350px] pt-6">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={predictedSpendData}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
-                          <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} dy={10} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} tickFormatter={(val) => `${val/1000000}tr`} />
-                          <Tooltip />
-                          <Line type="monotone" dataKey="spend" stroke="#2f6cf5" strokeWidth={4} dot={{ r: 6, fill: "#2f6cf5" }} activeDot={{ r: 8 }} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                    <div className="px-6 pb-6 pt-2 flex flex-wrap gap-4 border-t border-border/40 mt-4">
-                      {predictedSpendData.slice(0, 3).map((d, i) => (
-                        <div key={i} className="flex-1 min-w-[120px] bg-muted/40 p-3 rounded-[10px] border border-border/50">
-                          <p className="text-[10px] uppercase font-black text-muted-foreground tracking-wider">{d.month}</p>
-                          <p className="text-sm font-bold text-foreground mt-0.5">~{formatCurrency(d.spend, currentCurrency)}</p>
-                          <p className="text-[10px] text-emerald-500 font-bold mt-1">Tin cậy: {d.confidence}%</p>
+                          <span className="text-sm font-bold text-primary">{customer.points} pts</span>
                         </div>
                       ))}
                     </div>
-                  </Card>
-                </div>
-              </motion.div>
-            )}
+                  </CardContent>
+                </Card>
 
-            {activeTab === "settings" && (
+                <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
+                  <CardHeader className="border-b border-border/40 pb-5">
+                    <CardTitle className="font-heading text-lg">Quy mô tệp theo Cấp bậc</CardTitle>
+                    <CardDescription>
+                      Số lượng thành viên đang hoạt động trong hệ thống.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="h-[280px] pt-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={[
+                          { tier: "Member", count: 520 },
+                          { tier: "Essential", count: 340 },
+                          { tier: "Icon", count: 180 },
+                          { tier: "Atelier", count: 65 },
+                        ]}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
+                        <XAxis dataKey="tier" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} />
+                        <Tooltip cursor={{ fill: "rgba(47, 108, 245, 0.05)" }} />
+                        <Bar dataKey="count" radius={[8, 8, 0, 0]} fill="#2f6cf5">
+                          {[
+                            { fill: "#94a3b8" },
+                            { fill: "#10b981" },
+                            { fill: "#facc15" },
+                            { fill: "#2f6cf5" },
+                          ].map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </section>
+
+          {/* 3. HẠNG & ĐIỂM (LOYALTY) */}
+          <section id="loyalty" className="space-y-8 scroll-mt-24">
+            <div className="flex items-center gap-3 border-b border-border/40 pb-4">
+              <div className="p-2 bg-amber-500/10 rounded-lg">
+                <Award className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black font-heading tracking-tight">Cấp bậc & Trung thành</h3>
+                <p className="text-xs text-muted-foreground font-medium">Theo dõi tăng trưởng và hiệu suất đổi thưởng.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-6">
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
+                  <div>
+                    <CardTitle className="font-heading">Biểu đồ tăng trưởng CLV</CardTitle>
+                    <CardDescription>
+                      Phân tích giá trị vòng đời khách hàng và xu hướng mua sắm.
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-1 bg-background/60 border border-border/60 p-1 rounded-[10px] shadow-xs">
+                    {["week", "month", "quarter"].map((p) => (
+                      <button 
+                        key={p}
+                        onClick={() => setClvPeriod(p as any)}
+                        className={cn(
+                          "px-3 py-1.5 text-[10px] font-bold rounded-[10px] transition-all uppercase tracking-wider",
+                          clvPeriod === p ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {p === "week" ? "Tuần" : p === "month" ? "Tháng" : "Quý"}
+                      </button>
+                    ))}
+                  </div>
+                </CardHeader>
+                <CardContent className="h-[380px] pt-6">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={clvData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
+                      <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} tickFormatter={(val) => `${val/1000000}tr`} />
+                      <Tooltip 
+                         contentStyle={{ backgroundColor: "var(--card)", borderRadius: "12px", border: "1px solid var(--border)" }}
+                         formatter={(value: number) => [formatCurrency(value, currentCurrency), ""]}
+                      />
+                      <Line type="monotone" dataKey="current" stroke="#2f6cf5" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                      {clvCompare && <Line type="monotone" dataKey="prev" stroke="#94a3b8" strokeWidth={3} strokeDasharray="5 5" dot={{ r: 4 }} />}
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="font-heading">Ưu đãi được đổi nhiều nhất</CardTitle>
+                    <CardDescription>Các phần thưởng khách hàng quan tâm nhất tháng này.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {[
+                        { name: "Voucher giảm giá 1.250.000 ₫", count: 245, growth: "+12%" },
+                        { name: "Miễn phí đánh bóng trang sức", count: 184, growth: "+5%" },
+                        { name: "Bộ quà tặng nến thơm VIP", count: 92, growth: "+24%" },
+                        { name: "Giảm 10% đơn hàng kế tiếp", count: 76, growth: "-3%" },
+                      ].map((item, i) => (
+                        <div key={item.name} className="flex items-center justify-between">
+                          <span className="text-sm font-medium">{item.name}</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-bold">{item.count} lượt</span>
+                            <span className={cn("text-xs font-bold", item.growth.startsWith("+") ? "text-emerald-500" : "text-rose-500")}>
+                              {item.growth}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden border-primary/10">
+                  <CardHeader>
+                    <CardTitle className="font-heading text-lg">Phân bổ quà tặng đổi thưởng</CardTitle>
+                    <CardDescription>Top 5 phần quà phổ biến nhất.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="h-[250px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={popularRewardsData} layout="vertical">
+                        <XAxis type="number" hide />
+                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} width={100} />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="#2f6cf5" radius={[0, 8, 8, 0]} barSize={20} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </section>
+
+          {/* 4. HÀNH VI (BEHAVIOR) */}
+          <section id="behavior" className="space-y-8 scroll-mt-24">
+            <div className="flex items-center gap-3 border-b border-border/40 pb-4">
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <Zap className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black font-heading tracking-tight">Giả lập & Hành vi</h3>
+                <p className="text-xs text-muted-foreground font-medium">Thử nghiệm chính sách và theo dõi tăng trưởng.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-6">
+              <div className="border border-[#2f6cf5]/20 rounded-[20px] bg-[#2f6cf5]/5 p-2 lg:p-8 border-dashed shadow-inner">
+                <BespokeSimulator />
+              </div>
+
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden">
+                <CardHeader className="border-b border-border/40 pb-5">
+                  <CardTitle className="font-heading text-lg">Tăng trưởng thành viên mới</CardTitle>
+                  <CardDescription>Đăng ký Loyalty hàng ngày trong kỳ ({daysDiff} ngày).</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[380px] pt-6">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={filteredSignupsData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
+                      <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} minTickGap={30} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="signups" stroke="#10b981" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          {/* 5. DỰ BÁO AI (AI) */}
+          <section id="ai" className="space-y-8 scroll-mt-24">
+            <div className="flex items-center gap-3 border-b border-border/40 pb-4">
+              <div className="p-2 bg-purple-500/10 rounded-lg">
+                <Sparkles className="w-5 h-5 text-purple-500" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black font-heading tracking-tight">Dự báo Thông minh (AI)</h3>
+                <p className="text-xs text-muted-foreground font-medium">Sử dụng máy học để tối ưu hóa chiến dịch Marketing.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-6">
               <motion.div
-                key="settings"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
               >
-                <div className="grid gap-6 md:grid-cols-2">
-                  <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm h-full">
-                    <CardHeader>
-                      <CardTitle className="font-heading flex items-center gap-2">
-                        <Clock className="w-5 h-5 text-primary" /> Báo cáo định kỳ
-                      </CardTitle>
-                      <CardDescription>Tự động gửi bản tóm tắt hàng tuần tới email quản trị.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-[10px] border border-border/60">
-                        <div className="space-y-1">
-                          <Label className="text-sm font-bold">Kích hoạt chuyển phát</Label>
-                          <p className="text-[10px] text-muted-foreground">Thứ Hai hàng tuần, 08:00 AM</p>
-                        </div>
-                        <Switch checked={scheduledEnabled} onCheckedChange={setScheduledEnabled} />
+                <Card className="border-border/50 bg-gradient-to-br from-[#2f6cf5]/5 to-purple-500/5 backdrop-blur-sm shadow-md overflow-hidden relative border-primary/20">
+                  <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                     <Sparkles className="w-32 h-32" />
+                  </div>
+                  <CardHeader>
+                    <CardTitle className="font-heading flex items-center gap-2 text-lg">
+                      <Gem className="w-5 h-5 text-[#2f6cf5]" /> Loyalty ROI Calculator
+                    </CardTitle>
+                    <CardDescription>
+                      Ước tính hiệu quả kinh tế khi chuyển đổi các nhóm rủi ro thành trung thành.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Khách hàng At-Risk</p>
+                        <p className="text-2xl font-black">84 <span className="text-sm font-medium text-muted-foreground">thành viên</span></p>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Email nhận</Label>
-                        <div className="flex gap-2">
-                          <Input value={reportEmail} onChange={(e) => setReportEmail(e.target.value)} placeholder="email@company.com" className="bg-background/50" />
-                          <Button variant="outline" className="rounded-[10px]" onClick={() => toast.success(`Đã gửi bản xem trước tới ${reportEmail}`)}><Send className="w-4 h-4 mr-2" /> Gửi thử</Button>
-                        </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Mục tiêu chuyển đổi</p>
+                        <p className="text-2xl font-black text-emerald-500">10% <span className="text-sm font-medium text-muted-foreground">ROI+</span></p>
                       </div>
-                      {scheduledEnabled && (
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-2 rounded-[10px] border border-emerald-500/20">
-                          <CheckCircle2 className="w-3 h-3" /> Đang hoạt động
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm h-full">
-                    <CardHeader>
-                      <CardTitle className="font-heading">Ghi chú vận hành</CardTitle>
-                      <CardDescription>Các lưu ý quan trọng trong phân tích dữ liệu.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="p-4 bg-primary/5 rounded-[10px] border border-primary/10">
-                        <p className="text-xs text-foreground/80 leading-relaxed italic">
-                          "Dữ liệu Doanh thu được tính toán dựa trên điểm tích lũy và tỷ lệ chuyển đổi trung bình. Các chỉ số có thể thay đổi tùy cấu hình Earn Rule."
-                        </p>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Doanh thu dự phóng</p>
+                        <p className="text-2xl font-black text-[#2f6cf5]">~ 405.000.000 <span className="text-sm font-medium text-muted-foreground">₫</span></p>
                       </div>
-                      <div className="p-4 bg-amber-500/5 rounded-[10px] border border-amber-500/10">
-                        <p className="text-xs text-foreground/80 leading-relaxed">
-                          Phân khúc "Classic Elegant" hiện đang mang lại ROI cao nhất, hãy tập trung các chiến dịch Marketing vào nhóm này.
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                    </div>
+                    <div className="mt-6 p-4 bg-primary/10 rounded-[10px] border border-primary/20 flex items-center justify-between">
+                       <p className="text-xs font-bold">Kích hoạt chiến dịch "Win-back" tự động?</p>
+                       <Button size="sm" className="rounded-[10px] font-bold">Khởi tạo ngay</Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </main>
+
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm relative overflow-hidden border-primary/20">
+                <CardHeader className="border-b border-border/40 pb-5">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-heading text-lg">Dự báo chi tiêu tương lai (6 tháng)</CardTitle>
+                    <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">AI Smart Prediction</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="h-[350px] pt-6">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={predictedSpendData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.4)" />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} tickFormatter={(val) => `${val/1000000}tr`} />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="spend" stroke="#2f6cf5" strokeWidth={4} dot={{ r: 6, fill: "#2f6cf5" }} activeDot={{ r: 8 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+                <div className="px-6 pb-6 pt-2 flex flex-wrap gap-4 border-t border-border/40 mt-4">
+                  {predictedSpendData.slice(0, 3).map((d, i) => (
+                    <div key={i} className="flex-1 min-w-[120px] bg-muted/40 p-3 rounded-[10px] border border-border/50">
+                      <p className="text-[10px] uppercase font-black text-muted-foreground tracking-wider">{d.month}</p>
+                      <p className="text-sm font-bold text-foreground mt-0.5">~{formatCurrency(d.spend, currentCurrency)}</p>
+                      <p className="text-[10px] text-emerald-500 font-bold mt-1">Tin cậy: {d.confidence}%</p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          </section>
+
+          {/* 6. CÀI ĐẶT BÁO CÁO (SETTINGS) */}
+          <section id="settings" className="space-y-8 scroll-mt-24 pb-10">
+            <div className="flex items-center gap-3 border-b border-border/40 pb-4">
+              <div className="p-2 bg-slate-500/10 rounded-lg">
+                <Clock className="w-5 h-5 text-slate-500" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black font-heading tracking-tight">Cài đặt Định kỳ</h3>
+                <p className="text-xs text-muted-foreground font-medium">Tự động hóa luồng báo cáo gửi đến quản trị viên.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm h-full">
+                <CardHeader>
+                  <CardTitle className="font-heading flex items-center gap-2 text-lg">
+                    <Clock className="w-5 h-5 text-primary" /> Báo cáo định kỳ
+                  </CardTitle>
+                  <CardDescription>Tự động gửi bản tóm tắt hàng tuần tới email quản trị.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-[10px] border border-border/60">
+                    <div className="space-y-1">
+                      <Label className="text-sm font-bold">Kích hoạt chuyển phát</Label>
+                      <p className="text-[10px] text-muted-foreground">Thứ Hai hàng tuần, 08:00 AM</p>
+                    </div>
+                    <Switch checked={scheduledEnabled} onCheckedChange={setScheduledEnabled} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Email nhận</Label>
+                    <div className="flex gap-2">
+                      <Input value={reportEmail} onChange={(e) => setReportEmail(e.target.value)} placeholder="email@company.com" className="bg-background/50 h-10" />
+                      <Button variant="outline" className="rounded-[10px] h-10 font-bold" onClick={() => toast.success(`Đã gửi bản xem trước tới ${reportEmail}`)}><Send className="w-4 h-4 mr-2" /> Gửi thử</Button>
+                    </div>
+                  </div>
+                  {scheduledEnabled && (
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-2 rounded-[10px] border border-emerald-500/20">
+                      <CheckCircle2 className="w-3 h-3" /> Đang hoạt động
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm h-full">
+                <CardHeader>
+                  <CardTitle className="font-heading text-lg">Ghi chú vận hành</CardTitle>
+                  <CardDescription>Các lưu ý quan trọng trong phân tích dữ liệu.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-primary/5 rounded-[10px] border border-primary/10">
+                    <p className="text-xs text-foreground/80 leading-relaxed italic">
+                      "Dữ liệu Doanh thu được tính toán dựa trên điểm tích lũy và tỷ lệ chuyển đổi trung bình. Các chỉ số có thể thay đổi tùy cấu hình Earn Rule."
+                    </p>
+                  </div>
+                  <div className="p-4 bg-amber-500/5 rounded-[10px] border border-amber-500/10">
+                    <p className="text-xs text-foreground/80 leading-relaxed">
+                      Phân khúc "Classic Elegant" hiện đang mang lại ROI cao nhất, hãy tập trung các chiến dịch Marketing vào nhóm này.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );

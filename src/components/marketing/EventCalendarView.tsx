@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Calendar, ChevronLeft, ChevronRight, Plus, Trash2, CalendarDays, Bell, Sparkles, Tag, Info, AlertCircle } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Plus, Trash2, CalendarDays, Bell, Sparkles, Tag, Info, AlertCircle, Activity, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 interface PromoEvent {
@@ -12,6 +12,9 @@ interface PromoEvent {
   multiplier: number;
   category: "points_boost" | "double_tier" | "exclusive_discount" | "free_gift" | "other";
   color: string;
+  company?: string;
+  branch?: string;
+  imageUrl?: string;
 }
 
 const CATEGORIES = [
@@ -22,38 +25,7 @@ const CATEGORIES = [
   { value: "other", label: "Khác", color: "text-sky-500 bg-sky-500/10 border-sky-500/20" },
 ];
 
-const PRESETS: PromoEvent[] = [
-  {
-    id: "preset-1",
-    title: "Ngày Hội Thành Viên - Double Points",
-    description: "Nhân đôi điểm thưởng cho toàn bộ đơn hàng thanh toán qua ví điện tử.",
-    startDate: "2026-06-15",
-    endDate: "2026-06-18",
-    multiplier: 2.0,
-    category: "points_boost",
-    color: "#eab308", // amber-500
-  },
-  {
-    id: "preset-2",
-    title: "Sự Kiện Tri Ân VIP Diamond",
-    description: "Được đổi voucher quà tặng độc quyền không giới hạn số lượng ngày cuối tuần.",
-    startDate: "2026-06-25",
-    endDate: "2026-06-27",
-    multiplier: 1.0,
-    category: "exclusive_discount",
-    color: "#f43f5e", // rose-500
-  },
-  {
-    id: "preset-3",
-    title: "Chương Trình Đón Hè: Mini Gift",
-    description: "Tặng ngẫu nhiên Summer Drink Box cho hội viên có phát sinh giao dịch trên 300K.",
-    startDate: "2026-07-04",
-    endDate: "2026-07-06",
-    multiplier: 1.0,
-    category: "free_gift",
-    color: "#10b981", // emerald-500
-  }
-];
+const PRESETS: PromoEvent[] = [];
 
 export function EventCalendarView() {
   const [events, setEvents] = useState<PromoEvent[]>(() => {
@@ -70,6 +42,7 @@ export function EventCalendarView() {
 
   const [currentDate, setCurrentDate] = useState(new Date(2026, 5, 1)); // June 2026 (matching preset dates context)
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date(2026, 5, 15));
+  const [subTab, setSubTab] = useState<"promo" | "recurring">("promo");
 
   // Form states
   const [title, setTitle] = useState("");
@@ -79,6 +52,9 @@ export function EventCalendarView() {
   const [multiplier, setMultiplier] = useState(2.0);
   const [category, setCategory] = useState<PromoEvent["category"]>("points_boost");
   const [color, setColor] = useState("#eab308");
+  const [company, setCompany] = useState("");
+  const [branch, setBranch] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     localStorage.setItem("marketing_promo_events", JSON.stringify(events));
@@ -128,6 +104,17 @@ export function EventCalendarView() {
     return events.filter(event => isEventOnDate(event, checkDate));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddEvent = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
@@ -152,6 +139,9 @@ export function EventCalendarView() {
       multiplier: Number(multiplier),
       category,
       color,
+      company,
+      branch,
+      imageUrl,
     };
 
     setEvents([...events, newEvent]);
@@ -160,6 +150,9 @@ export function EventCalendarView() {
     // Reset form
     setTitle("");
     setDescription("");
+    setCompany("");
+    setBranch("");
+    setImageUrl("");
   };
 
   const handleDeleteEvent = (id: string) => {
@@ -186,7 +179,46 @@ export function EventCalendarView() {
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left animate-in fade-in duration-500">
+    <div className="space-y-6">
+      {/* Sub-tab Pill controllers */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 gap-4">
+        <div>
+          <h2 className="text-xl font-black text-foreground tracking-tight flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            Lịch trình & Tiến trình tự động
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Theo dõi các chiến dịch khuyến mại VIP hàng tháng và hệ thống tự động hóa định kỳ.
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5 p-1 bg-muted/60 border border-border/50 rounded-full shrink-0">
+          <button
+            onClick={() => setSubTab("promo")}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              subTab === "promo"
+                ? "bg-white dark:bg-card text-foreground shadow-xs border border-border/40 font-extrabold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            Lịch sự kiện khuyến mại
+          </button>
+          <button
+            onClick={() => setSubTab("recurring")}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              subTab === "recurring"
+                ? "bg-white dark:bg-card text-foreground shadow-xs border border-border/40 font-extrabold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5 text-rose-500" />
+            Lịch & Chu kỳ định kỳ
+          </button>
+        </div>
+      </div>
+
+      {subTab === "promo" ? (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left animate-in fade-in duration-500">
       
       {/* Dynamic Month Calendar Grid inside dynamic card */}
       <Card className="lg:col-span-8 bg-card border-border shadow-md">
@@ -297,24 +329,34 @@ export function EventCalendarView() {
               );
             })}
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Interactive view of selected date events */}
-          {selectedDate && (
-            <div className="mt-6 p-4 border bg-muted/10 rounded-[12px] text-left">
-              <div className="flex items-center justify-between mb-3 border-b border-border/60 pb-2">
-                <span className="text-sm font-black text-foreground flex items-center gap-1.5">
-                  <CalendarDays className="w-4 h-4 text-primary" />
-                  Sự kiện ngày {selectedDate.toLocaleDateString("vi-VN", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                </span>
-                <span className="text-xs text-muted-foreground font-semibold">
-                  {selectedDateEvents.length} ưu đãi đã cài đặt
-                </span>
+      {/* Side event creation & upcoming rules schedule form */}
+      <div className="lg:col-span-4 space-y-6">
+        {/* Interactive view of selected date events - MOVED FROM CALENDAR CARD */}
+        {selectedDate && (
+          <Card className="bg-card border-border shadow-md animate-in slide-in-from-right duration-300">
+            <CardHeader className="pb-3 border-b">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 border rounded-[8px] bg-primary/10">
+                    <CalendarDays className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-sm font-bold">Chi tiết ngày {selectedDate.getDate()}/{selectedDate.getMonth() + 1}</CardTitle>
+                    <CardDescription className="text-[10px]">
+                      {selectedDateEvents.length} ưu đãi đã cài đặt
+                    </CardDescription>
+                  </div>
+                </div>
               </div>
-
+            </CardHeader>
+            <CardContent className="p-4">
               {selectedDateEvents.length === 0 ? (
-                <div className="py-4 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-1">
-                  <Bell className="w-8 h-8 opacity-20 mb-1" />
-                  Không có sự kiện quảng cáo hoặc nhân điểm nào được lên lịch vào ngày này.
+                <div className="py-6 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-1 opacity-60">
+                  <Bell className="w-8 h-8 mb-1" />
+                  Trống lịch trình
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -323,48 +365,53 @@ export function EventCalendarView() {
                     return (
                       <div 
                         key={evt.id} 
-                        className="p-3 border rounded-[10px] bg-background shadow-xs flex items-start justify-between gap-4"
+                        className="p-3 border rounded-[10px] bg-muted/20 flex flex-col gap-2 relative group"
                       >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span 
-                              style={{ backgroundColor: evt.color }}
-                              className="w-2.5 h-2.5 rounded-full" 
-                            />
-                            <h4 className="font-extrabold text-sm text-foreground">{evt.title}</h4>
-                            <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full border ${catObj?.color || ""}`}>
+                        <div className="flex gap-2.5">
+                          {evt.imageUrl && (
+                            <div className="w-12 h-12 rounded-[8px] overflow-hidden border shrink-0">
+                              <img src={evt.imageUrl} alt={evt.title} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          <div className="space-y-1 flex-1 overflow-hidden">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h4 className="font-extrabold text-xs text-foreground truncate">{evt.title}</h4>
+                              {evt.multiplier > 1 && (
+                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-amber-500/15 text-amber-600 rounded-full">
+                                  x{evt.multiplier}
+                                </span>
+                              )}
+                            </div>
+                            <span className={`inline-block px-1.5 py-0.5 text-[8px] font-bold rounded-full border ${catObj?.color || ""}`}>
                               {catObj?.label || "Khác"}
                             </span>
-                            {evt.multiplier > 1 && (
-                              <span className="px-2 py-0.5 text-[10px] font-black bg-amber-500/15 text-amber-600 rounded-full border border-amber-500/20">
-                                x{evt.multiplier} Điểm thưởng
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground leading-normal">{evt.description}</p>
-                          <div className="text-[10px] text-muted-foreground font-mono">
-                            Khung giờ diễn ra: <strong>{evt.startDate}</strong> đến <strong>{evt.endDate}</strong>
                           </div>
                         </div>
 
+                        <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2 italic">{evt.description}</p>
+                        
+                        {(evt.company || evt.branch) && (
+                          <div className="flex items-center gap-2 text-[9px] text-primary/80 font-bold border-t border-border/40 pt-2">
+                            {evt.company && <span className="truncate">🏢 {evt.company}</span>}
+                            {evt.branch && <span className="truncate">📍 {evt.branch}</span>}
+                          </div>
+                        )}
+
                         <button
                           onClick={() => handleDeleteEvent(evt.id)}
-                          className="p-1.5 text-muted-foreground hover:text-rose-500 bg-muted/40 hover:bg-rose-500/10 rounded-[8px] transition-colors cursor-pointer"
+                          className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-rose-500 bg-muted/40 hover:bg-rose-500/10 rounded-[6px] transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3" />
                         </button>
                       </div>
                     );
                   })}
                 </div>
               )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Side event creation & upcoming rules schedule form */}
-      <div className="lg:col-span-4 space-y-6">
         <Card className="bg-card border-border shadow-md">
           <CardHeader className="pb-4 border-b">
             <div className="flex items-center gap-3">
@@ -454,6 +501,61 @@ export function EventCalendarView() {
                 </div>
               )}
 
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Công ty</label>
+                  <input 
+                    type="text" 
+                    placeholder="Tên công ty"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    className="w-full bg-background border rounded-[10px] p-2.5 text-xs text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Chi nhánh</label>
+                  <input 
+                    type="text" 
+                    placeholder="Tên chi nhánh"
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                    className="w-full bg-background border rounded-[10px] p-2.5 text-xs text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider block mb-1">Hình ảnh sự kiện</label>
+                <div className="flex flex-col gap-2">
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="event-image-upload"
+                  />
+                  <label 
+                    htmlFor="event-image-upload"
+                    className="w-full py-2 px-3 border-2 border-dashed border-border rounded-[10px] text-xs text-muted-foreground hover:bg-muted/50 cursor-pointer flex flex-col items-center justify-center gap-1 transition-all"
+                  >
+                    <Plus className="w-5 h-5 opacity-50" />
+                    <span>Click để tải ảnh lên</span>
+                  </label>
+                  {imageUrl && (
+                    <div className="relative w-full aspect-video rounded-[10px] overflow-hidden border">
+                      <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                      <button 
+                        type="button"
+                        onClick={() => setImageUrl("")}
+                        className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-1">
                 <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider block mb-1">Mã màu nhận diện</label>
                 <div className="flex items-center gap-3">
@@ -479,18 +581,122 @@ export function EventCalendarView() {
           </CardContent>
         </Card>
 
-        {/* Dynamic tips card */}
-        <div className="bg-sky-500/5 p-4 rounded-[12px] border border-sky-500/10 text-xs text-muted-foreground flex items-start gap-2.5">
-          <Info className="w-4.5 h-4.5 text-sky-500 shrink-0 mt-0.5" />
+        {/* Dynamic tips card - simplified and separated */}
+        <div className="p-4 text-xs text-muted-foreground flex items-start gap-2.5 opacity-80 italic">
+          <Info className="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-bold text-foreground block">Đồng bộ các chiến dịch</span>
+            <span className="font-bold text-foreground block not-italic">Đồng bộ các chiến dịch</span>
             <p className="leading-relaxed">
               Các chiến dịch sau khi lên lịch sẽ được biểu diễn sinh động trực quan. Bạn có thể thay đổi tháng để theo dõi lịch trình quảng cáo rộng khắp năm 2026.
             </p>
           </div>
         </div>
+        </div>
       </div>
+    ) : (
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start text-left animate-in fade-in duration-500">
+          {/* Automated Schedules */}
+          <Card className="lg:col-span-7 border border-border/60 shadow-sm bg-card">
+            <CardHeader className="border-b bg-muted/5 pb-4 text-left">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-rose-500/10 text-rose-500 rounded-[8px]">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm font-black">Lịch Chiến Dịch Định Kỳ & Định Kỳ Mỗi Tuần</CardTitle>
+                  <CardDescription className="text-[10px]">Tự động hóa nhân hệ số loyalty và phân bổ phần quà định kỳ.</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-5 space-y-4 text-left">
+              <div className="space-y-3">
+                <div className="p-3 border rounded-[10px] bg-[#2f6cf5]/5 border-[#2f6cf5]/20 flex items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-foreground">💎 Cuối Tuần Vàng Trang Sức (Weekly Gold Event)</span>
+                    <p className="text-[11px] text-muted-foreground">Diễn ra định kỳ thứ 7 & Chủ Nhật hàng tuần, tự động nhân x2.0 điểm thưởng cho tất cả các chi nhánh vàng 18K.</p>
+                  </div>
+                  <div className="bg-[#2f6cf5] text-white select-none whitespace-nowrap text-[9px] font-bold px-2.5 py-1 rounded-full uppercase shrink-0">HÀNG TUẦN</div>
+                </div>
 
+                <div className="p-3 border rounded-[10px] bg-emerald-500/5 border-emerald-500/20 flex items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-[#20a16b]">🎂 Sinh Nhật Vàng Tri Ân (Birthday Golden Gift)</span>
+                    <p className="text-[11px] text-muted-foreground">Quét tự động vào lúc 08:00 sáng mỗi ngày, gửi trực tiếp voucher chiết khấu 10% cho khách hàng VIP có sinh nhật trùng với tháng.</p>
+                  </div>
+                  <div className="bg-emerald-500 text-white select-none whitespace-nowrap text-[9px] font-bold px-2.5 py-1 rounded-full uppercase shrink-0">HÀNG NGÀY</div>
+                </div>
+
+                <div className="p-3 border rounded-[10px] bg-amber-500/5 border-amber-500/20 flex items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-foreground">🏅 Đánh Giá Lịch Sử Thăng Hạng Định Kỳ (Monthly Tier Clean)</span>
+                    <p className="text-[11px] text-muted-foreground">Tự động hóa quét doanh số tổng lũy kế trong 365 ngày qua vào ngày 1 hàng tháng để cập nhật hạng & điểm thành viên chuẩn xác.</p>
+                  </div>
+                  <div className="bg-amber-500 text-white select-none whitespace-nowrap text-[9px] font-bold px-2.5 py-1 rounded-full uppercase shrink-0">HÀNG THÁNG</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Automated Task Queue */}
+          <Card className="lg:col-span-5 border border-border/60 shadow-sm bg-card">
+            <CardHeader className="border-b bg-muted/5 pb-4 text-left">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-[#2f6cf5]/10 text-[#2f6cf5] rounded-[8px]">
+                  <Activity className="w-4 h-4" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm font-black">Xử Lý Đồng Bộ Cron-Job Định Kỳ</CardTitle>
+                  <CardDescription className="text-[10px]">Trạng thái thiết lập các quy trình tự động hóa.</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-5 space-y-4 text-left">
+              <div className="space-y-3.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Đăng ký thành viên tự động CRM</span>
+                  </div>
+                  <span className="font-bold text-emerald-500 font-mono">Hoạt động</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Gửi mã OTP & Kích hoạt qua Zalo</span>
+                  </div>
+                  <span className="font-bold text-emerald-500 font-mono">Hoạt động</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span>Sao lưu cơ sở dữ liệu lên Cloud Firestore</span>
+                  </div>
+                  <span className="font-bold text-emerald-500 font-mono">Đồng bộ</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-400" />
+                    <span>Giao tiếp API SMS Brandname</span>
+                  </div>
+                  <span className="font-bold text-muted-foreground font-mono">Tạm dừng</span>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border/60">
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.success("Tiến trình phân tích định kỳ đã được làm mới thành công!");
+                  }}
+                  className="w-full text-center py-2.5 bg-[#2f6cf5] text-white hover:bg-[#2f6cf5]/90 rounded-[10px] text-xs font-black tracking-wider uppercase transition-all shadow-md shadow-[#2f6cf5]/20 cursor-pointer"
+                >
+                  Trigger Kiểm Tra Định Kỳ Ngay
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

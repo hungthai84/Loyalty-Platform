@@ -1777,7 +1777,7 @@ export function CustomersView() {
         {activeViewTab === "list" && (
           <div className="space-y-6">
             <RfmSegmentationEngine customers={customers} />
-            <div className="bg-card/45 border border-border/60 rounded-[10px] overflow-hidden shadow-xs backdrop-blur-md">
+            <div className="bg-card border border-border/60 rounded-[16px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.15)] backdrop-blur-md">
               {/* Header Banner - Merged */}
               <div className="relative overflow-hidden border-b border-border/40 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-6 md:p-8 text-left">
                 <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500 via-background to-background pointer-events-none" />
@@ -2269,7 +2269,7 @@ export function CustomersView() {
             )}
           </div>
 
-          <Card className="border border-border/50 bg-background/55 shadow-xs relative">
+          <Card className="border border-border/60 bg-card shadow-[0_8px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.15)] rounded-[16px] overflow-hidden relative">
             {/* Bulk Action Floating Banner */}
             {selectedCustomerIds.length > 0 && (
               <div className="absolute top-0 left-0 right-0 z-50 bg-[#2f6cf5] text-white px-6 py-3 rounded-t-xl shadow-md flex items-center justify-between border-b border-[#2f6cf5]/20 animate-in fade-in slide-in-from-top-2">
@@ -2602,11 +2602,11 @@ export function CustomersView() {
                 </motion.div>
               )}
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10 text-center">
+                <TableHeader className="bg-muted/30 border-b border-border/60">
+                  <TableRow className="hover:bg-transparent border-none">
+                    <TableHead className="w-12 text-center py-4">
                       <input
                         type="checkbox"
                         className="rounded border-border text-[#2f6cf5] focus:ring-[#2f6cf5] h-4 w-4 cursor-pointer"
@@ -2626,26 +2626,26 @@ export function CustomersView() {
                         }}
                       />
                     </TableHead>
-                    {visibleColumns.id && <TableHead>Mã KH</TableHead>}
+                    {visibleColumns.id && <TableHead className="text-[10px] font-black tracking-wider uppercase text-muted-foreground/80 py-4">Mã KH</TableHead>}
                     {visibleColumns.nameEmail && (
-                      <TableHead>Họ tên / Số điện thoại</TableHead>
+                      <TableHead className="text-[10px] font-black tracking-wider uppercase text-muted-foreground/80 py-4">Họ tên / Số điện thoại</TableHead>
                     )}
                     {visibleColumns.social && (
-                      <TableHead>Mạng xã hội</TableHead>
+                      <TableHead className="text-[10px] font-black tracking-wider uppercase text-muted-foreground/80 py-4">Mạng xã hội</TableHead>
                     )}
-                    {visibleColumns.company && <TableHead>Công ty</TableHead>}
-                    {visibleColumns.status && <TableHead>Trạng thái</TableHead>}
+                    {visibleColumns.company && <TableHead className="text-[10px] font-black tracking-wider uppercase text-muted-foreground/80 py-4">Công ty</TableHead>}
+                    {visibleColumns.status && <TableHead className="text-[10px] font-black tracking-wider uppercase text-muted-foreground/80 py-4">Trạng thái</TableHead>}
                     {visibleColumns.churnRisk && (
-                      <TableHead>Rủi ro rời bỏ</TableHead>
+                      <TableHead className="text-[10px] font-black tracking-wider uppercase text-muted-foreground/80 py-4">Rủi ro rời bỏ</TableHead>
                     )}
-                    {visibleColumns.points && <TableHead>Điểm CRM</TableHead>}
+                    {visibleColumns.points && <TableHead className="text-[10px] font-black tracking-wider uppercase text-muted-foreground/80 py-4">Điểm CRM</TableHead>}
                     {visibleColumns.customAttributes &&
                       attributes
                         .slice(0, 1)
                         .map((attr) => (
-                          <TableHead key={attr.id}>{attr.label}</TableHead>
+                          <TableHead key={attr.id} className="text-[10px] font-black tracking-wider uppercase text-muted-foreground/80 py-4">{attr.label}</TableHead>
                         ))}
-                    {visibleColumns.actions && <TableHead>Hành động</TableHead>}
+                    {visibleColumns.actions && <TableHead className="text-[10px] font-black tracking-wider uppercase text-[#2f6cf5] font-sans py-4 text-right pr-6">Thao tác</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -2735,24 +2735,16 @@ export function CustomersView() {
                     sortedAndFilteredCustomers.slice(0, visibleLimit).map((customer) => (
                       <TableRow
                         key={customer.id}
-                        onClick={() => {
-                          if (false) {
-                            toast.error(
-                              "Tài khoản của bạn không có quyền xem thông tin chi tiết khách hàng!",
-                            );
-                            return;
-                          }
-                          setSelectedCustomer(customer);
-                        }}
-                        className={`cursor-pointer transition-all duration-200 group/row border-b ${selectedCustomerIds.includes(customer.id) ? "bg-[#2f6cf5]/5 border-[#2f6cf5]/20" : "hover:bg-muted/40 active:bg-muted/60 border-border/50"}`}
+                        onClick={() => setSelectedCustomer(customer)}
+                        className={`cursor-pointer transition-all duration-300 group/row border-b border-border/40 ${selectedCustomerIds.includes(customer.id) ? "bg-[#2f6cf5]/5 dark:bg-[#2f6cf5]/10 border-[#2f6cf5]/15" : "hover:bg-muted/30 active:bg-muted/50"}`}
                       >
                         <TableCell
                           onClick={(e) => e.stopPropagation()}
-                          className="w-10 text-center"
+                          className="w-12 text-center py-3.5"
                         >
                           <input
                             type="checkbox"
-                            className="rounded border-border text-[#2f6cf5] focus:ring-[#2f6cf5] h-4 w-4 cursor-pointer"
+                            className="rounded border-border text-[#2f6cf5] focus:ring-[#2f6cf5] h-4 w-4 cursor-pointer transition-all"
                             checked={selectedCustomerIds.includes(customer.id)}
                             onChange={(e) => {
                               if (e.target.checked) {
@@ -2770,16 +2762,16 @@ export function CustomersView() {
                         </TableCell>
                         {/* ID */}
                         {visibleColumns.id && (
-                          <TableCell className="text-xs font-mono text-muted-foreground">
+                          <TableCell className="text-[11px] font-mono font-bold text-muted-foreground/90 py-3.5">
                             {getCustomerCode(customer, companies)}
                           </TableCell>
                         )}
 
                         {/* AVATAR + NAME */}
                         {visibleColumns.nameEmail && (
-                          <TableCell className="font-medium">
+                          <TableCell className="font-sans py-3.5">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-[10px] overflow-hidden border border-border bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-xs font-bold text-xs uppercase">
+                              <div className="w-9 h-9 rounded-full overflow-hidden border border-border/80 bg-primary/5 text-primary flex items-center justify-center shrink-0 shadow-xs font-bold text-xs uppercase relative group-hover/row:scale-105 transition-transform duration-200">
                                 {customer.avatarUrl ? (
                                   <img
                                     src={customer.avatarUrl}
@@ -2790,12 +2782,14 @@ export function CustomersView() {
                                   customer.name.slice(0, 2)
                                 )}
                               </div>
-                              <div>
-                                <div className="font-extrabold text-foreground transition-colors flex items-center gap-1.5 flex-wrap">
-                                  {customer.name}
+                              <div className="space-y-0.5">
+                                <div className="font-bold text-foreground text-sm flex items-center gap-1.5 flex-wrap">
+                                  <span>{customer.name}</span>
                                   {Number(customer.customFields?.clv) >
                                     100000000 && (
-                                    <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shadow-sm" />
+                                    <span className="p-0.5 bg-amber-500/10 rounded-full border border-amber-500/20" title="Khách VIP đặc quyền lớn">
+                                      <Crown className="w-3 h-3 text-amber-500 fill-amber-500" />
+                                    </span>
                                   )}
                                   {customer.dynamicSegments?.map(
                                     (t: any, idx: number) => {
@@ -2806,7 +2800,7 @@ export function CustomersView() {
                                       return (
                                         <span
                                           key={idx}
-                                          className={`inline-block px-2 py-0.5 text-xs font-black uppercase rounded border tracking-wide leading-none ${colorClass}`}
+                                          className={`inline-block px-1.5 py-0.5 text-[9px] font-black uppercase rounded border tracking-wider leading-none shadow-3xs ${colorClass}`}
                                         >
                                           {t.tag}
                                         </span>
@@ -2814,7 +2808,7 @@ export function CustomersView() {
                                     },
                                   )}
                                 </div>
-                                <p className="text-xs text-muted-foreground font-normal">
+                                <p className="text-xs text-muted-foreground font-medium tracking-tight">
                                   {customer.phone || "Không có SĐT"}
                                 </p>
                               </div>
@@ -2824,16 +2818,16 @@ export function CustomersView() {
 
                         {/* SOCIAL LINKS CONNECTIVITY */}
                         {visibleColumns.social && (
-                          <TableCell onClick={(e) => e.stopPropagation()}>
+                          <TableCell onClick={(e) => e.stopPropagation()} className="py-3.5">
                             <div className="flex items-center gap-1.5">
                               {/* Facebook */}
                               <span
                                 title={
                                   customer.facebook || "Chưa liên kết Facebook"
                                 }
-                                className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs shadow-2xs transition-all ${
+                                className={`w-6 h-6 rounded-full flex items-center justify-center border text-[10px] shadow-3xs transition-all ${
                                   customer.facebook
-                                    ? "bg-blue-600/10 text-blue-600 border-blue-600/30"
+                                    ? "bg-blue-600/10 text-blue-600 border-blue-600/30 font-semibold"
                                     : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
                                 }`}
                               >
@@ -2843,9 +2837,9 @@ export function CustomersView() {
                               {/* Zalo */}
                               <span
                                 title={customer.zalo || "Chưa liên kết Zalo"}
-                                className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs font-extrabold shadow-2xs transition-all ${
+                                className={`w-6 h-6 rounded-full flex items-center justify-center border text-[10px] font-extrabold shadow-3xs transition-all ${
                                   customer.zalo
-                                    ? "bg-sky-500/10 text-sky-600 border-sky-500/35 font-sans"
+                                    ? "bg-sky-500/10 text-sky-600 border-sky-500/35 font-mono"
                                     : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
                                 }`}
                               >
@@ -2857,7 +2851,7 @@ export function CustomersView() {
                                 title={
                                   customer.linkedin || "Chưa liên kết LinkedIn"
                                 }
-                                className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs shadow-2xs transition-all ${
+                                className={`w-6 h-6 rounded-full flex items-center justify-center border text-[10px] shadow-3xs transition-all ${
                                   customer.linkedin
                                     ? "bg-blue-700/10 text-blue-700 border-blue-700/30"
                                     : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
@@ -2872,7 +2866,7 @@ export function CustomersView() {
                                   customer.instagram ||
                                   "Chưa liên kết Instagram"
                                 }
-                                className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs shadow-2xs transition-all ${
+                                className={`w-6 h-6 rounded-full flex items-center justify-center border text-[10px] shadow-3xs transition-all ${
                                   customer.instagram
                                     ? "bg-pink-600/10 text-pink-600 border-pink-600/30"
                                     : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
@@ -2886,7 +2880,7 @@ export function CustomersView() {
                                 title={
                                   customer.tiktok || "Chưa liên kết TikTok"
                                 }
-                                className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold shadow-2xs transition-all ${
+                                className={`w-6 h-6 rounded-full flex items-center justify-center border text-[10px] font-bold shadow-3xs transition-all ${
                                   customer.tiktok
                                     ? "bg-foreground/10 text-foreground border-foreground/30"
                                     : "bg-muted/10 text-muted-foreground/30 border-dashed border-border/60"
@@ -2900,10 +2894,10 @@ export function CustomersView() {
 
                         {/* COMPANY */}
                         {visibleColumns.company && (
-                          <TableCell>
+                          <TableCell className="py-3.5">
                             {customer.companyId ? (
                               <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-[10px] bg-muted flex items-center justify-center overflow-hidden border border-border shrink-0">
+                                <div className="w-6 h-6 rounded-md bg-muted/65 flex items-center justify-center overflow-hidden border border-border/60 shrink-0">
                                   {companies.find(
                                     (comp) => comp.id === customer.companyId,
                                   )?.logoUrl ? (
@@ -2927,8 +2921,8 @@ export function CustomersView() {
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-xs text-muted-foreground italic">
-                                Cá nhân
+                              <span className="text-xs text-muted-foreground font-medium italic">
+                                Khách cá nhân
                               </span>
                             )}
                           </TableCell>
@@ -2936,14 +2930,17 @@ export function CustomersView() {
 
                         {/* STATUS */}
                         {visibleColumns.status && (
-                          <TableCell>
+                          <TableCell className="py-3.5">
                             <TooltipProvider>
                               <Tooltip>
-                                <TooltipTrigger className="cursor-help">
+                                <TooltipTrigger className="cursor-help block">
                                   {renderStatusBadge(customer.activityStatus)}
                                 </TooltipTrigger>
-                                <TooltipContent className="bg-card border-border shadow-xl p-2 rounded-[10px]">
-                                  <p className="text-xs font-bold text-foreground">
+                                <TooltipContent className="bg-popover border border-border shadow-xl p-3.5 rounded-[12px] text-left">
+                                  <p className="text-xs font-extrabold text-foreground tracking-tight">
+                                    Thăng tiến Hạng (Tier):
+                                  </p>
+                                  <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
                                     {getNextTierInfo(customer.points || 0)}
                                   </p>
                                 </TooltipContent>
@@ -2954,7 +2951,7 @@ export function CustomersView() {
 
                         {/* CHURN RISK */}
                         {visibleColumns.churnRisk && (
-                          <TableCell onClick={(e) => e.stopPropagation()}>
+                          <TableCell onClick={(e) => e.stopPropagation()} className="py-3.5">
                             {(() => {
                               const risk = getChurnRisk(customer);
                               return (
@@ -2962,22 +2959,22 @@ export function CustomersView() {
                                   <Tooltip>
                                     <TooltipTrigger className="cursor-help inline-block">
                                       <div
-                                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border w-fit shadow-2xs ${risk.color} ${risk.bg}`}
+                                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase border w-fit shadow-3xs ${risk.color} ${risk.bg}`}
                                       >
-                                        <risk.icon className="w-3 h-3" />
-                                        <span>AI Score: {risk.score}% ({risk.label})</span>
+                                        <risk.icon className="w-3 h-3 shrink-0" />
+                                        <span>AI SCORE: {risk.score}%</span>
                                       </div>
                                     </TooltipTrigger>
-                                    <TooltipContent className="bg-card border border-border shadow-xl p-3 rounded-[10px] max-w-xs text-left">
-                                      <div className="space-y-1.5">
-                                        <p className="text-xs font-black text-rose-500 uppercase tracking-widest flex items-center gap-1">
+                                    <TooltipContent className="bg-popover border border-border shadow-xl p-4 rounded-[12px] max-w-xs text-left">
+                                      <div className="space-y-2">
+                                        <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest flex items-center gap-1">
                                           🧠 Đánh giá Churn AI
                                         </p>
                                         <p className="text-xs font-semibold text-foreground leading-relaxed">
                                           {risk.reason}
                                         </p>
-                                        <div className="text-[10px] font-bold text-muted-foreground border-t border-border/80 pt-1 flex justify-between">
-                                          <span>Xếp hạng: {risk.label}</span>
+                                        <div className="text-[10px] font-bold text-muted-foreground border-t border-border/60 pt-1.5 flex justify-between">
+                                          <span>Hành vi: {risk.label}</span>
                                           <span className="text-[#2f6cf5]">Tin cậy: 94.6%</span>
                                         </div>
                                       </div>
@@ -2991,7 +2988,7 @@ export function CustomersView() {
 
                         {/* POINTS */}
                         {visibleColumns.points && (
-                          <TableCell className="font-extrabold text-[#2f6cf5]">
+                          <TableCell className="font-extrabold text-xs text-[#2f6cf5] tracking-tight py-3.5">
                             {customer.points?.toLocaleString() || 0} pts
                           </TableCell>
                         )}
@@ -3001,7 +2998,7 @@ export function CustomersView() {
                           attributes.slice(0, 1).map((attr) => (
                             <TableCell
                               key={attr.id}
-                              className="text-xs text-muted-foreground font-medium"
+                              className="text-xs text-muted-foreground font-semibold py-3.5"
                             >
                               {customer.customFields?.[attr.key]?.toString() ||
                                 "—"}
@@ -3010,43 +3007,38 @@ export function CustomersView() {
 
                         {/* ACTIONS */}
                         {visibleColumns.actions && (
-                          <TableCell className="pr-6 flex items-center justify-end">
+                          <TableCell className="pr-6 py-3.5 text-right font-sans" onClick={(e) => e.stopPropagation()}>
                             <TooltipProvider>
-                              <div className="flex items-center justify-end gap-1 font-sans">
-                                <Tooltip>
-                                  <TooltipTrigger
-                                    render={<button />}
-                                    onClick={() => setSelectedCustomer(customer)}
-                                    className="p-1.5 text-[#2f6cf5] hover:bg-primary/10 rounded-[10px] text-xs font-extrabold flex items-center cursor-pointer gap-0.5"
-                                  >
-                                    Chi tiết ➜
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p className="text-xs">Xem chi tiết khách hàng</p>
-                                  </TooltipContent>
-                                </Tooltip>
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedCustomer(customer)}
+                                  className="px-2.5 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[#2f6cf5] rounded-lg text-xs font-bold flex items-center gap-1 transition-all"
+                                >
+                                  Chi tiết ➜
+                                </button>
 
                                 <Tooltip>
                                   <TooltipTrigger
-                                    render={<button />}
+                                    type="button"
                                     onClick={() => setSelectedQrCustomer(customer)}
-                                    className="p-1.5 text-muted-foreground hover:bg-muted border border-transparent hover:border-border rounded-[10px] transition-all cursor-pointer"
+                                    className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/80 border border-transparent hover:border-border/60 rounded-md transition-all cursor-pointer"
                                   >
                                     <QrCode className="w-3.5 h-3.5" />
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p className="text-xs">Xuất mã Định danh QR</p>
+                                    <p className="text-xs">Mã Định danh QR</p>
                                   </TooltipContent>
                                 </Tooltip>
 
                                 <Tooltip>
                                   <TooltipTrigger
-                                    render={<button />}
+                                    type="button"
                                     onClick={() => {
                                       setLogCustomer(customer);
                                       setShowActivityLog(true);
                                     }}
-                                    className="p-1.5 text-muted-foreground hover:bg-muted rounded-[10px] transition-colors cursor-pointer"
+                                    className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-md transition-all cursor-pointer"
                                   >
                                     <History className="w-3.5 h-3.5" />
                                   </TooltipTrigger>

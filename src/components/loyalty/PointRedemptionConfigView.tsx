@@ -17,7 +17,9 @@ import {
   X,
   Shield,
   Smartphone,
-  LayoutGrid
+  LayoutGrid,
+  Calendar,
+  ShoppingBag
 } from "lucide-react";
 import { useFirebase } from "@/components/FirebaseProvider";
 import { db } from "@/lib/firebase";
@@ -701,27 +703,38 @@ export function PointRedemptionConfigView({ onAddRule }: PointRedemptionConfigVi
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRules.map((rule: any) => {
             const typeInfo =
               REWARD_TYPE_OPTIONS.find((o) => o.value === rule.rewardType) ||
               REWARD_TYPE_OPTIONS[0];
             const TypeIcon = typeInfo.icon;
+            const rewardBadgeText = rule.rewardType === "discount_percent"
+              ? `${rule.rewardValue}% OFF`
+              : rule.rewardType === "discount_fixed"
+                ? `${(rule.rewardValue / 1000).toLocaleString()}k OFF`
+                : "VIP GIFT";
+
+            const minSpendText = rule.minBillValue > 0
+              ? `Tối thiểu: ${(rule.minBillValue / 1000000).toLocaleString()}M ₫`
+              : "Không giới hạn đơn";
 
             return (
               <motion.div
                 layout
                 key={rule.id}
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className="group h-full"
+                whileHover={{ y: -6 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="group h-full flex"
               >
                 <Card
                   className={cn(
-                    "h-full p-0 border bg-card overflow-hidden rounded-[10px] flex flex-col shadow-sm transition-all duration-300 hover:shadow-xl",
-                    rule.isEnabled !== false ? "border-border/80" : "opacity-70 border-dashed"
+                    "h-full w-full border bg-card overflow-hidden rounded-[16px] flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all duration-300 hover:shadow-[0_14px_32px_rgba(0,0,0,0.08)]",
+                    rule.isEnabled !== false ? "border-border/60" : "opacity-75 border-dashed border-muted-foreground/30"
                   )}
                 >
-                  <div className="relative h-44 w-full bg-muted overflow-hidden">
+                  {/* Card Header Media area */}
+                  <div className="relative h-48 w-full bg-muted overflow-hidden">
                     <img
                       src={
                         rule.imageUrl ||
@@ -730,81 +743,110 @@ export function PointRedemptionConfigView({ onAddRule }: PointRedemptionConfigVi
                         )}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`
                       }
                       alt={rule.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-106"
                       referrerPolicy="no-referrer"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    
+                    {/* Dark radial overlay for reading badges */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
 
+                    {/* Left Active/Inactive Status Badge */}
                     <div className="absolute top-3 left-3 flex gap-1">
                       <span
                         className={cn(
-                          "text-[10px] font-extrabold px-2.5 py-0.5 rounded-full select-none text-white",
-                          rule.isEnabled !== false ? "bg-emerald-500" : "bg-slate-500"
+                          "text-[9px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full select-none text-white flex items-center gap-1 shadow-sm",
+                          rule.isEnabled !== false ? "bg-emerald-500/90 backdrop-blur-md" : "bg-zinc-650/90 backdrop-blur-md"
                         )}
                       >
-                        {rule.isEnabled !== false ? "Đang hiệu lực" : "Tạm ngưng"}
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                        {rule.isEnabled !== false ? "Đang phát hành" : "Đã tạm dừng"}
                       </span>
                     </div>
 
-                    <div className="absolute bottom-3 left-3 right-3 text-left">
-                      <div className="bg-black/40 backdrop-blur-md py-1 border border-white/10 px-2.5 rounded-[10px] w-fit">
-                        <span className="text-[10px] font-bold text-amber-400 flex items-center gap-1">
-                          <Coins className="w-3.5 h-3.5 fill-amber-400/10" />
-                          Trừ {rule.pointsRequired.toLocaleString()} pts
+                    {/* Exclusivity Ribbon / Discount Value Badge on top right */}
+                    <div className="absolute top-3 right-3">
+                      <span 
+                        className={cn(
+                          "text-[10px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-md text-white shadow-md flex items-center gap-1 backdrop-blur-md",
+                          rule.rewardType.includes("discount") ? "bg-[#2f6cf5]" : "bg-amber-500"
+                        )}
+                      >
+                        {rewardBadgeText}
+                      </span>
+                    </div>
+
+                    {/* Points Requirement prominently featured at bottom-left */}
+                    <div className="absolute bottom-3 left-3 text-left">
+                      <div className="bg-black/45 backdrop-blur-md py-1 px-3 border border-white/10 rounded-[8px] w-fit shadow-md">
+                        <span className="text-[11px] font-black text-amber-300 flex items-center gap-1.5 font-mono">
+                          <Coins className="w-4 h-4 text-amber-400 fill-amber-400/20" />
+                          {rule.pointsRequired.toLocaleString()} PTS
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <CardContent className="flex-1 flex flex-col p-5 text-left justify-between gap-4">
-                    <div className="space-y-2">
-                       <div className="flex items-center gap-2">
-                        <div className={cn("p-1.5 rounded-md", typeInfo.color)}>
+                  {/* Card content area */}
+                  <CardContent className="flex-1 flex flex-col p-5.5 text-left justify-between gap-5">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className={cn("p-1.5 rounded-md shrink-0", typeInfo.color)}>
                           <TypeIcon className="w-3.5 h-3.5" />
                         </div>
-                        <h4 className="font-extrabold text-sm text-foreground line-clamp-1 group-hover:text-[#2f6cf5] transition-colors">
+                        <h4 className="font-extrabold text-[15px] text-foreground line-clamp-1 group-hover:text-[#2f6cf5] transition-colors leading-tight">
                           {rule.name}
                         </h4>
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 h-[32px]">
-                        {rule.description || "Ưu đãi khách hàng thân thiết."}
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 h-[36px] font-medium">
+                        {rule.description || "Quy tắc ưu đãi đặc quyền dành cho các hội viên chính quy của Seva Retail."}
                       </p>
                     </div>
 
-                    <div className="space-y-3 pt-3 border-t border-border/10">
-                      <div className="flex items-center justify-between text-[11px]">
-                         <span className="text-muted-foreground font-semibold">Giá trị quy đổi:</span>
-                         <span className="font-bold text-foreground">
-                            {rule.rewardType === "discount_percent"
-                                ? `Giảm ${rule.rewardValue}%`
-                                : rule.rewardType === "discount_fixed"
-                                  ? `Giảm ${rule.rewardValue?.toLocaleString()}₫`
-                                  : "Quyền lợi đặc biệt"}
-                         </span>
+                    {/* Extra Parameter Badges Row */}
+                    <div className="grid grid-cols-2 gap-3.5 py-3.5 border-t border-b border-border/40 text-[11px]">
+                      <div className="flex items-center gap-1.5 text-muted-foreground/90 font-medium">
+                        <ShoppingBag className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" />
+                        <span className="truncate font-bold text-foreground/80">{minSpendText}</span>
                       </div>
+                      <div className="flex items-center gap-1.5 text-muted-foreground/90 font-medium justify-end">
+                        <Calendar className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" />
+                        <span className="truncate font-bold text-foreground/80">Hạn {rule.expiryDays || 30} ngày</span>
+                      </div>
+                    </div>
 
-                      <div className="flex items-center justify-end gap-1.5">
+                    {/* Unified Actions Row with beautiful styling */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-widest font-black">
+                        Mã: {rule.id.split('-').pop()?.substring(0, 8).toUpperCase() || 'RULE'}
+                      </span>
+                      
+                      <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => handleToggleRuleStatus(rule)}
-                          className="p-1.5 bg-background border border-border hover:bg-muted text-muted-foreground hover:text-foreground rounded-[10px] transition-colors cursor-pointer"
+                          className={cn(
+                            "p-1.5 border hover:bg-muted text-muted-foreground hover:text-foreground rounded-[8px] transition-all cursor-pointer",
+                            rule.isEnabled !== false 
+                              ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700" 
+                              : "bg-background border-border"
+                          )}
                           title={rule.isEnabled !== false ? "Ngưng kích hoạt" : "Kích hoạt"}
                         >
-                          <Power className={cn("w-3.5 h-3.5", rule.isEnabled !== false ? "text-emerald-500" : "text-muted-foreground")} />
+                          <Power className="w-3.5 h-3.5" />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleEditRule(rule)}
-                          className="p-1.5 bg-background border border-border hover:bg-muted text-muted-foreground hover:text-foreground rounded-[10px] transition-colors cursor-pointer"
-                          title="Chỉnh sửa"
+                          className="p-1.5 bg-background border border-border hover:bg-muted text-muted-foreground hover:text-[#2f6cf5] rounded-[8px] transition-all cursor-pointer hover:border-[#2f6cf5]/30"
+                          title="Chỉnh sửa ưu đãi"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteRule(rule.id, rule.name)}
-                          className="p-1.5 bg-background border border-border text-muted-foreground hover:text-red-500 hover:bg-red-50/10 rounded-[10px] transition-colors cursor-pointer"
-                          title="Xóa"
+                          className="p-1.5 bg-background border border-border text-muted-foreground hover:text-rose-600 hover:bg-rose-500/5 rounded-[8px] transition-all cursor-pointer hover:border-rose-500/20"
+                          title="Xóa ưu đãi"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

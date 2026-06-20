@@ -84,7 +84,7 @@ import {
   saveGuestCustomer,
 } from "@/data/guestData";
 
-type TabType = "tiers" | "points" | "gifts" | "redemption" | "automated" | "segments";
+type TabType = "tiers" | "points" | "gifts" | "redemption";
 
 const COLOR_PRESET_MAP: Record<
   string,
@@ -1109,12 +1109,10 @@ export function LoyaltyView() {
   };
 
   const tabs = [
-    { id: "tiers", label: "Cấp bậc", icon: Star },
-    { id: "points", label: "Điểm thưởng", icon: Award },
+    { id: "tiers", label: "Cấp bậc", icon: Crown },
+    { id: "points", label: "Điểm thưởng", icon: Sparkles },
     { id: "redemption", label: "Ưu đãi", icon: Gem },
     { id: "gifts", label: "Quà tặng", icon: Gift },
-    { id: "automated", label: "Automated Rules", icon: Zap },
-    { id: "segments", label: "Segments", icon: Tag },
   ];
 
   const portalTarget = typeof document !== "undefined" ? document.getElementById("dashboard-upper-portal") : null;
@@ -1482,18 +1480,6 @@ export function LoyaltyView() {
             {activeTab === "gifts" && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-left">
                 <GiftsManagementView />
-              </div>
-            )}
-
-            {activeTab === "automated" && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-left">
-                <AutomatedRulesBuilder />
-              </div>
-            )}
-
-            {activeTab === "segments" && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-left">
-                <SegmentsTab customers={customers} segmentationRules={segmentationRules} />
               </div>
             )}
 

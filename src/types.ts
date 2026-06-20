@@ -144,16 +144,30 @@ export interface SegmentationRule {
 }
 
 export interface Company {
- id: string;
- name: string;
- logoUrl?: string;
- iconUrl?: string;
- websiteUrl?: string;
- address?: string;
- type?: 'company' | 'product' | 'branch' | 'project';
- parentId?: string;
- userId: string;
- createdAt: any;
+  id: string;
+  name: string;
+  address?: string;
+  phone?: string;
+  avatarUrl?: string; // New avatar field
+  websiteUrl?: string;
+  userId: string;
+  createdAt: any;
+  // Legacy fields for backward compatibility
+  logoUrl?: string;
+  iconUrl?: string;
+  type?: 'company' | 'product' | 'branch' | 'project';
+  parentId?: string;
+}
+
+export interface CatalogProduct {
+  id: string;
+  name: string;
+  description: string;
+  avatarUrl?: string; // Avatar
+  website?: string; // Website
+  companyId: string;
+  userId: string;
+  createdAt: any;
 }
 
  

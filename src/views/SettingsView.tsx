@@ -38,8 +38,11 @@ import { db } from "@/lib/firebase";
 import { collection, doc, setDoc, onSnapshot } from "firebase/firestore";
 import { getGuestTiers } from "@/data/guestData";
 
+import { CatalogView } from "./CatalogView";
+
 type SettingsTab =
   | "general"
+  | "catalog"
   | "api"
   | "automation"
   | "inventory"
@@ -193,6 +196,7 @@ export function SettingsView() {
 
   const tabs = [
     { id: "general", label: "Cài đặt chung", icon: Globe },
+    { id: "catalog", label: "Sản phẩm & Công ty", icon: BookOpen },
     { id: "api", label: "Kết nối API", icon: Webhook },
     { id: "automation", label: "Quy tắc Tự động", icon: Zap },
     { id: "inventory", label: "Kho quà tặng (Stock)", icon: Gift },
@@ -256,12 +260,9 @@ export function SettingsView() {
     <div className="flex-1 space-y-6">
       {portalTarget ? createPortal(bannerContent, portalTarget) : bannerContent}
 
-      <div className="pt-6 flex flex-col lg:flex-row gap-6">
-        {/* Left Side: Vertical Tabs */}
-        <div className="w-full lg:w-72 bg-card/45 backdrop-blur-md border border-border/60 rounded-[10px] flex flex-col p-4 shrink-0 gap-1 h-fit">
-          <span className="text-xs font-extrabold text-muted-foreground/60 uppercase tracking-widest px-3 mb-2 block">
-            Mục cấu hình
-          </span>
+      <div className="pt-2 flex flex-col gap-6">
+        {/* Top Side: Horizontal Tabs */}
+        <div className="w-full bg-card/45 backdrop-blur-md border border-border/60 rounded-[10px] flex flex-row overflow-x-auto p-2 shrink-0 gap-1 h-fit no-scrollbar items-center">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -271,7 +272,7 @@ export function SettingsView() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as SettingsTab)}
                 className={cn(
-                  "flex items-center px-4 py-2.5 rounded-[10px] text-xs font-bold transition-all gap-3 text-left w-full cursor-pointer relative overflow-hidden",
+                  "flex items-center px-4 py-2.5 rounded-[10px] text-xs font-bold transition-all gap-2 text-left shrink-0 cursor-pointer relative overflow-hidden",
                   isActive
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
@@ -280,18 +281,21 @@ export function SettingsView() {
               >
                 <Icon
                   className={cn(
-                    "w-4.5 h-4.5 shrink-0",
+                    "w-4 h-4 shrink-0",
                     isSaved ? "text-emerald-500" : (isActive ? "text-primary" : "text-muted-foreground/80"),
                   )}
                 />
-                <span className="truncate flex-1">{tab.label}</span>
+                <span className="truncate">{tab.label}</span>
                 {isSaved ? (
-                  <span className="text-[10px] font-black uppercase text-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-0.5 rounded-[10px] flex items-center gap-1 animate-pulse shrink-0">
+                  <span className="ml-1 text-[10px] font-black uppercase text-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-0.5 rounded-[10px] flex items-center gap-1 animate-pulse shrink-0">
                     <Check className="w-3.5 h-3.5" /> Saved
                   </span>
                 ) : (
                   isActive && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 animate-pulse" />
+                    <motion.div 
+                      layoutId="activeTabSettings"
+                      className="absolute bottom-0 left-0 w-full h-0.5 bg-primary"
+                    />
                   )
                 )}
               </button>
@@ -299,7 +303,7 @@ export function SettingsView() {
           })}
         </div>
 
-        {/* Right Side: Active Setting Panel */}
+        {/* Bottom Side: Active Setting Panel */}
         <div className="flex-1 min-w-0">
           <AnimatePresence mode="wait">
             <motion.div
@@ -310,6 +314,11 @@ export function SettingsView() {
               transition={{ duration: 0.15 }}
               className="h-full"
             >
+              {activeTab === "catalog" && (
+                <div className="h-full">
+                  <CatalogView />
+                </div>
+              )}
               {activeTab === "general" && (
                 <div className="max-w-4xl mx-auto space-y-6">
                   <div className="bg-card rounded-[10px] border border-border overflow-hidden shadow-sm">

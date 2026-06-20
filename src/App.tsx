@@ -10,10 +10,10 @@ import { CustomerPortalView } from "@/views/CustomerPortalView";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsView } from "./views/AnalyticsView";
 import { AnalysisView } from "./views/AnalysisView";
+import { CatalogView } from "./views/CatalogView";
 import { FirebaseProvider, useFirebase } from "@/components/FirebaseProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
-import { FloatingChatWidget } from "@/components/layout/FloatingChatWidget";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { Sparkles } from "lucide-react";
 
@@ -60,6 +60,7 @@ function AppContent() {
                 {safeActiveView === "marketing" && <MarketingView />}
                 {safeActiveView === "settings" && <SettingsView />}
                 {safeActiveView === "portal" && <CustomerPortalView />}
+                {safeActiveView === "catalog" && <CatalogView />}
                 {safeActiveView === "analysis" && <AnalysisView />}
                 {safeActiveView === "analytics" && <AnalyticsView />}
                 
@@ -76,7 +77,6 @@ function AppContent() {
           </div>
         </main>
       </div>
-      <FloatingChatWidget />
     </div>
   );
 }
